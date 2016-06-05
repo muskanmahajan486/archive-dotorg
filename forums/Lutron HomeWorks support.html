@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Lutron HomeWorks support</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Lutron HomeWorks support
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 19, 2010 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>I have started work on adding support for the Lutron HomeWorks system to OpenRemote and will use this thread to document the implementation and design decisions as well as ask any questions to help me move forward and integrate correctly in OR.</p>
+
+<p>I've created 2 branches in the SVN repository for this implementation, you can find them at:</p>
+
+<p><a href="https://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Designer_2_0_0_Alpha7-LutronHomeWorks-ebariaux">https://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Designer_2_0_0_Alpha7-LutronHomeWorks-ebariaux</a> for modifications made to the modeler</p>
+
+<p>and</p>
+
+<p><a href="https://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha9-LutronHomeWorks-ebariaux">https://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha9-LutronHomeWorks-ebariaux</a> for modifications made to the controller</p>
+
+<p>All feedback and suggestions are welcomed.</p>
+
+<p>Eric</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-13303961"></a>
+                                    <font class="smallfont"><p>Let's start with a quick description of the system.<br/>
+Lutron is a company making high end Lighting control systems. It has been in the business for quite some time (&gt; 50 years) and has several products on the market addressing needs from single load to whole house.<br/>
+The product I'm integrating into OR is the HomeWorks system (current version, not the coming QS version), which is a whole house system.<br/>
+In a nutshell, the system is composed of a central processor (or up to 16 for big installations) and a bunch of devices for input (keypad, contact closure) and output (relays, dimmers, blind controllers) sitting on the processor bus. Each device (or element in a device e.g. one of the loads of a dimmer) has a specific address on the bus.</p>
+
+<p>OR will connect to the central processor through an IP connection and will provide command and feedback.</p>
+
+<p>The different types of command that will be implemented are roughly as follows:</p>
+<ul class="alternate" type="square">
+	<li>dimmer (raise, lower, stop or fade) : this addresses a specific load, having a unique address. Raise/lower will start raising or lowering the level until the stop command is sent. Fade will move to a specified level (taking a specified amount of time to do so). Note that blinds are also included in this category.</li>
+	<li>scene select : one of the device setting on the bus can be a GrafikEye. This is typically used to control 1 room that has several loads. In addition the centralized control as above, it offers local control of each load and definition of local scenes. This command recalls those local scenes from the central controller.</li>
+	<li>keypad "emulation" (push, release, hold, double tap) : this emulates the user action on a keypad device (either a physical keypad or a virtual one).</li>
+</ul>
+
+
+<p>Some other less used or system wide commands are available in addition to those ones but I'll start with that, this will cover 80% of the needs and 95% of the design decision required.</p>
+
+<p>I'll go into more details on how this is implemented as I cover my changes made to the modeler and controller.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 19, 2010 11:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13303962"></a>
+                                    <font class="smallfont"><p>Modifications made to the Modeler.</p>
+
+<p>The main modification is adding the protocols/protocols/lutron_homeworks.xml file.<br/>
+This adds another protocol type to the modeler interface to enter Lutron specific information.</p>
+
+<p>So when adding a command to a device, you can now choose the "Lutron HomeWorks" protocol.<br/>
+Doing this will display 4 additional fields to enter information:</p>
+<ul>
+	<li>address : address of the device on the bus, required for all the currently implemented command. This will be relaxed later for system wide commands. Also, regular expression used for validation will be improved in future.</li>
+	<li>command : one of the possible action : RAISE, LOWER, STOP, SCENE, PUSH, RELEASE, HOLD, DOUBLE_TAP. FADE has been left out at this stage, I'll take care of it later. Also, it would be nice if this could be a drop down menu instead of requiring the user to type in the command but this requires changes to the modeler code and protocol XML schema.</li>
+	<li>scene : only used by the scene command. Again, making this appear/disappear or disable based on the command entered above would be nice but not supported without code modification at this stage.</li>
+	<li>key : only used by the keypad commands. Some comment as scene.</li>
+</ul>
+
+
+
+<p>The other modification to the modeler is adding a custom configuration section for the login information.<br/>
+For an external device to connect to the HomeWorks processor, a username and password must be configured on Link 9 of the HomeWorks system (using the Lutron software). This username/password must be provided by the client upon connection (i.e. by OR controller in this case).<br/>
+Communication with the HomeWorks is basically a telnet session. So OR needs IP/name of processor and port to use (default telnet port of 23 can be changed). For the sake of completeness, Lutron also broadcasts an AMX DDDP beacon that can be used for auto-discovery, so IP and port are optional.</p>
+
+<p>All this configuration information should normally be associated with 1 HomeWorks processor, thus 1 device in OR.<br/>
+As it is not possible to define this at this stage, I did create a system wide custom configuration. This is done in the file config/controller-config-2.0-M7.xml and appears in the modeler under "Config for Controller". </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 19, 2010 11:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13303963"></a>
+                                    <font class="smallfont"><p>Related to this, I have a question on the implementation to do in the controller.</p>
+
+<p>What is the correct way to access to this custom configuration section? Looking at the existing code, I see that there is a specific class for roundrobin configuration but that everything else is packed in 1 class.<br/>
+I would tend to think that adding a LutronHomeWorksConfig class under org.openremote.controller would be the most appropriate. Still I'm a bit puzzled by the way this class is instantiated and accessed as there are several methods in ConfigFactory for getting it. Can you shed some lights on that?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 19, 2010 11:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13303964"></a>
+                                    <font class="smallfont"><p>Given the above described command, I'd like to have one button the raise a level or blind that will behave so that when I press on the button, the RAISE command is send and when I release the button, the STOP command is send. Is this possible with the current system? I haven't found a way to do this.</p>
+
+<p>Basically a similar but even more complex scenario is the one of the keypad commands above, as based on the interaction of the user with the button potentially 4 different commands could be sent. Already having push and release (so same scenario as above) would be good. I believe hold and double tap might be left out of the protocol implementation.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 19, 2010 12:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13303965"></a>
+                                    <font class="smallfont"><p>Right now I've no idea &#8211; anything that works is good enough for me for the time being.</p>
+
+<p>It looks like getCustomBasicConfigFromDefaultControllerXML() is what you're looking for.</p>
+
+<p>It needs to be cleaned up. It's a proper mess.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 19, 2010 12:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13303966"></a>
+                                    <font class="smallfont"><p>he he, we were commenting on this with juha this morning.  China... Essentially tell yourself it is the same in parts of the android codebase.  Sometimes we "refactor" is one way of putting it.  Feel free to leave little "refactor me!" nuggets' with your comments if feasible.  </p>
+
+<p>it is not "you", horror stories around a beer sometime...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marcf at Nov 19, 2010 14:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13303974"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Given the above described command, I'd like to have one button the raise a level or blind that will behave so that when I press on the button, the RAISE command is send and when I release the button, the STOP command is send. Is this possible with the current system? I haven't found a way to do this.</p></blockquote>
+
+<p>The current 'repeat' for a button repeats the command (repeated send, like infrared) until released, but press and release are not handled as two distinct events &#8211; can only bind one command to a button (or macro set of commands).</p>
+
+<p>Properly done would need to be addressed with an updated XML schema, something we can add to TODO for next iteration.</p>
+
+<p>I am trying to think of if we can hack together something intermediate by setting properties on designer (lutron specific) and handling them in the protocol implementation... need to think about it.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 19, 2010 19:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

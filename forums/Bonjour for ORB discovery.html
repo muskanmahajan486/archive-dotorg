@@ -1,0 +1,412 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Bonjour for ORB discovery</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Bonjour for ORB discovery
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jun 12, 2009 by <font color="#0050B2">mredeker</font>.
+				    </div>
+
+				    <p>Hi guys,</p>
+
+<p>looking at the latest code in trunk I saw that the iPhone console includes a lot of code for the ORB discovery and also on the controller side quite some work. I was wondering if the "zeroconf" specifications would help making this much easier to implement?</p>
+
+<p>On the iPhone side the Bonjour service is already there to use and implements the zeroconf protocols and for the controller side we could use jmdns which is distributed under the apache licence.</p>
+
+<p>Here is a presentation which describes the stuff:<a href="http://www.bosatsu.net/talks/JmDNS.pdf">http://www.bosatsu.net/talks/JmDNS.pdf</a><br/>
+You can find JmDNS on sourceforge: <a href="http://jmdns.sourceforge.net/">http://jmdns.sourceforge.net/</a></p>
+
+<p>On the iPhone side you just create a delegate to react on bonjour events and start NSNetServiceBrowser. The code would be a&nbsp; 3-liner :
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">id delegateObject; <span class="code-comment">// Assume <span class="code-keyword">this</span> exists.
+</span>NSNetServiceBrowser *serviceBrowser;
+serviceBrowser = [[NSNetServiceBrowser alloc] init];
+[serviceBrowser setDelegate:delegateObject];
+[serviceBrowser searchForServicesOfType:@<span class="code-quote">"_orb._tcp"</span> inDomain:@""];
+</pre>
+</div></div>What do you think?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-2981946"></a>
+                                    <font class="smallfont"><p>Not that I am one to comment but anything by Arthur Van Hoff is golden.&nbsp; He was one of the original java creators and left to do Marimba, he is one hell of a guy.&nbsp; In general, discovery of ORB is going to be important and anything that can automate discovery should be welcomed.&nbsp; Wait for juha's feedback but this sounds like a winner. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marcf at Jun 12, 2009 15:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981950"></a>
+                                    <font class="smallfont"><p>Why are you guys always so Java-centric? Why not just install the mDNS package which is part of Debian? A simple <br/>
+<tt>apt-get install avahi-daemon</tt> <br/>
+gives you all the functionality you need. Beside this - the jmdns will not work if there is already avahi installed (only one mdns responder allowed per IP address) which is sometimes the case on some desktop linux distributions...</p>
+
+<p>As I know from experience, we will have to register a service type ID somewhere (I will have to check) - I did this some years ago for the printers I build.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jfalkenberg at Jun 13, 2009 07:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981952"></a>
+                                    <font class="smallfont"><p>why are we so java centric?</p>
+
+<p>You were schnoozing while we were furously chatting yesterday so I will give you a summerized version: write once, run everywhere. Means more distribution for us.</p>
+
+
+<p>JP Joubert, an integrator&nbsp; you have seen writing on the sales alias says "can I test on my PC" (meaning windows).&nbsp; He uses KNX.&nbsp; Answer: yes, in principle it should work AS IS on a windows PC. The bottom line there will be that it will be easier to test. Lower barrier to adoption is good.</p>
+
+<p>KNX uses Calimero, Calimero is pure java, voila&#33;</p>
+
+<p>unfortunatetly not everything is java and there I agree we should prioritize linux support for the ORB. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marcf at Jun 13, 2009 09:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981961"></a>
+                                    <font class="smallfont"><p>Marc, sorry if I tapped on your foot. However, the famous "run once, run everywhere" is only a marketing slogan from sun. In principle yes, but. At least for Java applets it is not true. My collegue lost a lot of hair writing his applets so they could run properly on the different VMs, different Java versions and so on. Even the same Java versions behave differently on Windows and Linux.</p>
+
+<p>However, I agree that Java is great for applications without need of direct control of the underlying system. But we should concentrate on the OR system itself. If there's already support for some things in the system (like the mDNS here), there's no need to do the work twice.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jfalkenberg at Jun 13, 2009 12:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981962"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>I was looking for something like application discovery for another project. There is many ways to do it, Bonjour is one of them, and in OR case, can be very usefull as it is native to the IPhone as you mentionned.</p>
+
+<p>I has also a look with UPnP and DPWS for the same usage, assuming that a DHCP server is available on the target network (which is often the case in automated houses).</p>
+
+<p>My guess is that on such a project, all "discovery" protocols may be used... </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mgallissot at Jun 13, 2009 13:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981967"></a>
+                                    <font class="smallfont"><p>OK, boring TV program today. Mosquitoes outside, so time to configure mDNS <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Just login to your ORB (Alix with Voyage linux assumed):</p>
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>remountrw
+apt-get install avahi-daemon
+cd /etc/avahi/services
+vi orb.service
+</pre>
+</div></div>
+
+<p>Now put the following XML into the new file:</p>
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>&lt;?xml version="1.0" standalone='no'?&gt;&lt;!--*-nxml-*--&gt;
+&lt;!DOCTYPE service-group SYSTEM "avahi-service.dtd"&gt;
+&lt;service-group&gt;
+  &lt;name replace-wildcards="yes"&gt;OpenRemote on %h&lt;/name&gt;
+  &lt;service&gt;
+    &lt;type&gt;_orb._tcp&lt;/type&gt;
+    &lt;port&gt;80&lt;/port&gt;
+  &lt;/service&gt;
+&lt;/service-group&gt;
+</pre>
+</div></div>
+
+<p>Just restart avahi now (<tt>/etc/init.d/avahi restart</tt>).</p>
+
+<p>Et voila <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Using your favorite mDNS browser (e.g. the free mDNS app on the iPhone), you can now find a _orb._tcp service on your local net. Who's doing the registering of the ORB services on dns-sd.org now?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jfalkenberg at Jun 13, 2009 21:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981968"></a>
+                                    <font class="smallfont"><p>Hi Mathieu,</p>
+
+<p>the LinuxMCE project is using the DHCP approach. But that means the LinuxMCE must be the one and only DHCP server in the house. Most of the users probably already have an internet router which acts as a DHCP server and then you have a problem.</p>
+
+<p>Using an independent service like zeroconf would make things easier I suppose. And since we want the ORB to be the interface to all other HA hardware it's good enough if we can just detect the ORB who then will do the rest of the communication.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 14, 2009 00:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981969"></a>
+                                    <font class="smallfont"><p>For the controller software running on a Linux system or on the ORB hardware that is fine. But if a user want to have the controller run on Windows we have a problem.</p>
+
+<p>I was just trying the Java solution which I mentioned and that works nicely. All I had todo was create a bean and register that with our spring context. So we have one line in our applicationContext.xml:
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">&lt;bean id=<span class="code-quote">"bonjourService"</span> class=<span class="code-quote">"org.openremote.controller.service.impl.BonjourService"</span> lazy-init=<span class="code-quote">"<span class="code-keyword">false</span>"</span> /&gt;
+</pre>
+</div></div>And the service class could look like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">package</span> org.openremote.controller.service.impl;
+
+<span class="code-keyword">import</span> java.io.IOException;
+<span class="code-keyword">import</span> java.net.InetAddress;
+
+<span class="code-keyword">import</span> javax.jmdns.JmDNS;
+<span class="code-keyword">import</span> javax.jmdns.ServiceInfo;
+
+<span class="code-keyword">public</span> class BonjourService {
+
+  <span class="code-keyword">public</span> BonjourService() {
+    <span class="code-keyword">try</span> {
+      InetAddress thisIp = InetAddress.getLocalHost();
+      <span class="code-keyword">final</span> JmDNS jmdns = JmDNS.create();
+      ServiceInfo info = ServiceInfo.create(<span class="code-quote">"_http._tcp.local."</span>, <span class="code-quote">"ORB"</span>, 8080, 0, 0, <span class="code-quote">"orbURL=http:<span class="code-comment">//"</span>+thisIp.getHostAddress()+<span class="code-quote">"/controller/"</span>);
+</span>      jmdns.registerService(info);
+      <span class="code-object">System</span>.out.println(<span class="code-quote">"\nRegistered Service as "</span>+info);
+    } <span class="code-keyword">catch</span> (IOException e) {
+      e.printStackTrace();
+    }
+  }
+}
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 14, 2009 00:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981972"></a>
+                                    <font class="smallfont"><p>Bonjour is certainly interesting for the long term, and in particular for iPhone since it is supported by the SDK. It also means one less ad-hoc multicast discovery protocol on the network. </p>
+
+<p>However, what is the implementation overhead for non-iPhone clients?</p>
+
+<p>Feel free to provide an implementation in branches/feature. Also, using the javax.* package name extension for jmdns looks very iffy to me.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 14, 2009 03:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981973"></a>
+                                    <font class="smallfont"><p>I was also wondering about javax but maybe they thought that it would make it into java <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>When I tried it also on the iPhone side I will create something that can be checked in.</p>
+
+<p>What other non-iPhone clients do you have in mind? For HTML and Flash we need to enter the ORB URL in the browser anyway.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 14, 2009 08:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981974"></a>
+                                    <font class="smallfont"><p>I still suspect that this will break if the underlying OS already has support for mDNS - which is the case in every modern Linux and Mac OS. There is only mDNS responder allowed per IP address. This means you have to disable mDNS on your Linux machine before jmDNS can start. Or is there support for the different OS mDNS APIs in jmDNS?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jfalkenberg at Jun 14, 2009 13:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981978"></a>
+                                    <font class="smallfont"><p>I suppose my MAC is already running the responder and it still worked without disabling anything. Could it be that the Java implementation is only starting the responder if none is disvovered and otherwise only registers the service? That would make sense, I guess.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 14, 2009 15:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981980"></a>
+                                    <font class="smallfont"><p>In this case I will take back my objections. Can anybody verify this under a Linux with an enabled Avahi stack?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jfalkenberg at Jun 14, 2009 18:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981981"></a>
+                                    <font class="smallfont"><p>Applets? did you say applets?</p>
+
+<p>You stopped learning java in 96 didn't you? and it &#42;write&#42; once, run everywhere, and it yes it works well, very well on server side.</p>
+
+<p>Again the point here is that we don't want to tie to an ORB. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marcf at Jun 14, 2009 18:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981982"></a>
+                                    <font class="smallfont">
+<blockquote><p>What other non-iPhone clients do you have in mind? For HTML and Flash we need to enter the ORB URL in the browser anyway.</p></blockquote>
+
+<p>What kinds of clients? All kinds. Who knows what requirements Neil will come up with! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Also I think for Flash client it should be possible to do a discovery on a local network. I was under the impression that ZeroConf can direct to mDNS for local links anyway? That's why I am asking about the client cause everybody's showing how the server-side works but what does the client query translate to? The RFC seems to indicate its a DNS client lookup to a specifically allocated IP range?</p>
+
+<p>Does anybody have the details?</p>
+
+<p>If the above doesn't work, then Flash client starting point should be a global static URL, such as openremote.org/config, from where you download a SWF that knows how to execute the discovery on the local network (in the browser) and then fetches the local XML UI definition. Your initial configuration becomes simpler since you don't have to figure out what the URL you connect to is (but ZeroConf is supposed to solve this, although at least for Microsoft browsers seems to require a special plugin).  At least on Flash you should have access to sockets I think. But you know that better than I do.</p>
+
+<p>SmartHome does something like the above for browser-based discovery although I think they are using ActiveX instead of Flash.</p>
+
+<p>For pure JavaScript it will be trickier.</p>
+
+<p>Looking at Bonjour it looks interesting for the long term but much of an overkill for the simple ORB discovery we are targeting for 1.0. A simple multicast beacon will do. The beacon has an advantage in that the client can be fairly passive just listening for a packet, rather than having to actively connect and query DNS-SD service.</p>
+
+<p>Also, Mathieu is correct in that we cannot live by one discovery mechanism alone. Having a ZeroConf for someone who is managing the rest of the network with UPnP is not as interesting as the UPnP native SSD protocol I think. In other HA setups beacons seem to be pretty well established. For example, GlobalCacheé unit sends out one. I believe they follow a format AMX has specified so they are manageable within an AMX installation. ORB should do the same.</p>
+
+<p>So I wouldn't remove the existing implementation. It seems to have some issues with deployment flexibility but should turn it into a beacon-type discovery mechanism. Bonjour can be added as an extra service but it does way more than what we need for 1.0 (100+ pages of RFC after all). It becomes interesting when you don't have routed IP address (the IPv4 Link-Local RFC) or when the rest of your devices already support DNS-SD service categorization/discovery and you're using an existing browser, all your networked devices including ORB will show up. </p>
+
+<p>So go ahead with the branch to build features but keep in mind the above points &#8211; we can do ZeroConf but we also need to integrate (UPnP, AMX, et al). Flash should still be able to do discovery. HTML discovery might work if the web browser already supports ZeroConf? Safari should but any others ?</p>
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 14, 2009 19:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981983"></a>
+                                    <font class="smallfont"><blockquote><p> At least on Flash you should have access to sockets I think. </p></blockquote>
+<p>Nope, not if you download it from a server. Then the flash program is only allowed to connect back to the server it came from.</p>
+<blockquote><p>So go ahead with the branch to build features but keep in mind the above points - we can do ZeroConf but we also need to integrate (UPnP, AMX, et al).</p></blockquote>
+<p>Once I figured out the iPhone part I will put it into the feature branch.</p>
+
+<p>By the way, how does the current implementation work? My iPhone is not discovering my ORB when I use the stuff from trunk.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 14, 2009 19:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981984"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Nope, not if you download it from a server. Then the flash program is only allowed to connect back to the server it came from.</p></blockquote>
+
+<p>Can you do a signed app, like with Java? I guess you can't listen on a socket for a beacon either?</p>
+
+<p>Then I guess the only option is to find ZeroConf-enabled browser.</p>
+
+
+<blockquote>
+<p>By the way, how does the current implementation work? My iPhone is not discovering my ORB when I use the stuff from trunk.</p></blockquote>
+
+<p>Use the source, Luke. It's two simple classes: <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/trunk/Controller/src/org/openremote/controller/net/">http://openremote.svn.sourceforge.net/viewvc/openremote/trunk/Controller/src/org/openremote/controller/net/</a></p>
+
+<p>I'm pretty sure it's not portable though <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>  Needs some fixes for deployment configuration as well.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 14, 2009 20:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981985"></a>
+                                    <font class="smallfont">
+
+<p>See: 16. Considerations for Multiple Responders on the Same Machine</p>
+
+<p><a href="http://files.multicastdns.org/draft-cheshire-dnsext-multicastdns.txt">http://files.multicastdns.org/draft-cheshire-dnsext-multicastdns.txt</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 14, 2009 20:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981986"></a>
+                                    <font class="smallfont"><p>Juha,</p>
+
+<p>From what I remember the smarthome thing did the discovery in the webbased iPhone application, so that cannot have been using Flash? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jlvh at Jun 14, 2009 20:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2981987"></a>
+                                    <font class="smallfont"><p>You're right, I just checked. They require Javascript only.</p>
+
+<p>Maybe they just scan the local address space then with XMLHttpRequest. Brute-force style. That's all I can think of at the moment.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 14, 2009 20:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

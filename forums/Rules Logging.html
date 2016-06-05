@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Rules Logging</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Rules Logging
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jun 09, 2013 by <font color="#0050B2">dgltx</font>.
+				    </div>
+
+				    <p>Currently making some progress with rules however a debugging feature / logfile would be helpful.<br/>
+Is there an easy way to get a logfile from drools where each action of a rule is noted?<br/>
+So each time the "then" part of the rule is executed a corresponding statement should be written to a logfile or screen. Tried to set up the KnowledgeRuntimeLogger as described on the JBoss website without success.<br/>
+Any ideas?<br/>
+Adding a line to each rule like <br/>
+  System.out.println ( "Frontdoor Light was turned on at 15 Minutes after Sunset" );<br/>
+is not really convincing when drools would have a logging feature.<br/>
+In case I would have to resort to the above mentioned system.out.println solution, how could I easily add system date &amp; time (maybe call a subroutine?) and how could this be written to a logfile rather than the screen?</p>
+
+<p>Thanks for any help,<br/>
+Dennis</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22872509"></a>
+                                    <font class="smallfont"><p>You can write to a log file from rules using the same logging API as what the controller uses.</p>
+
+<p>For example:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+<span class="code-keyword">import</span> org.openremote.controller.utils.Logger;
+<span class="code-keyword">import</span> org.openremote.controller.Constants;
+
+
+function void log(<span class="code-object">String</span> msg)
+{
+  Logger.getLogger(Constants.CONTROLLER_ROOT_LOG_CATEGORY + <span class="code-quote">".MyBogusRule"</span>).info(msg);
+}
+
+rule <span class="code-quote">"logging"</span> 
+
+timer (cron: 0/5 * * * * ?) when eval(<span class="code-keyword">true</span>)
+
+then log(<span class="code-quote">"I'm Alive!"</span>);
+
+end
+</pre>
+</div></div>
+
+<p>And in your controller's webapps/controller/WEB-INF/classes/log4j.properties file add:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>log4j.logger.OpenRemote.Controller.MyBogusRule = ALL, rule-file, openremote-console
+
+log4j.appender.rule-file = org.apache.log4j.RollingFileAppender
+log4j.appender.rule-file.File = ../logs/MyBogusRule.log
+log4j.appender.rule-file.Threshold = DEBUG
+log4j.appender.rule-file.MaxFileSize = 500KB
+log4j.appender.rule-file.MaxBackupIndex = 1
+log4j.appender.rule-file.layout = org.apache.log4j.PatternLayout
+log4j.appender.rule-file.layout.ConversionPattern = %p %d : %m%n
+</pre>
+</div></div>
+
+<p>This will log all statements from your rule into a file /logs/MyBogusRule.log, e.g.:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>INFO 2013-06-10 09:50:20,013 : I'm Alive!
+INFO 2013-06-10 09:50:25,002 : I'm Alive!
+</pre>
+</div></div>
+
+
+<p>The ConversionPattern is used for formatting the log messages, you can Google for the full format, e.g: <a href="http://www.tutorialspoint.com/log4j/log4j_patternlayout.htm">http://www.tutorialspoint.com/log4j/log4j_patternlayout.htm</a></p>
+
+
+<p>Will be adding more debug/log features to rule engine as soon as I get a chance to touch that part of the code again.</p>
+
+<p>HTH</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 10, 2013 15:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873675"></a>
+                                    <font class="smallfont"><p>This works fine, thanks a lot. However since this is implemented I get the following warnings when I shut down the controller:<br/>
+log4j:WARN No appenders could be found for logger (OpenRemote.Controller.runtime.sensors).<br/>
+log4j:WARN Please initialize the log4j system properly.</p>
+
+<p>Doesn't bother me too much as I see this only when I kill the controller, but would be curious how to fix it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dgltx at Jul 06, 2013 05:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873748"></a>
+                                    <font class="smallfont"><p>There's no obvious work-around to the warning that I kind think of. It is caused by undefined shutdown order where it seems the shutdown hook on either log4j or Tomcat triggers the shutdown of the logging system prior to all OR services shutting down. It shouldn't be an issue for now, it likely only causes some log statements written at shutdown not to appear in log files.</p>
+
+<p>I'll see at some point later in time if this cosmetic can be fixed (by ordering the shutdown hooks between runtime services and OR services correctly).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 09, 2013 06:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

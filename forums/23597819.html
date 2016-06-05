@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OR and generic TCP devices?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OR and generic TCP devices?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 22, 2015 by <font color="#0050B2">djb_rh</font>.
+				    </div>
+
+				    <p>I've searched and not found anything easily, but before I go installing all this and trying it, I'm wondering if someone can tell me if the following is possible and relatively easy to do with OpenRemote:</p>
+
+<p>I have a Kaleidescape movie server and players.  K makes a nice iOS app of their own to control the players, too.  So nice, in fact, that it's way better to just switch to that app than to build control for the K into other apps (I use iRule now but have also successfully used Roomie Remote).  But for everything else in my AV system, I use iRule running on iOS to talk direct to IP devices and to talk to Global Cache iTach boxes to control the IR stuff.</p>
+
+<p>Now, the K app situation is pretty cool in that they provide a nice way to also do volume control in their app.  Basically, if you have a conduit of your own (and I've had success doing this with Indigo on a Mac, but I <b>really</b> want to make this work with OpenRemote on a Raspberry Pi), the K app can be made to show volume buttons.  Press them, and the K server publishes volume requests on its TCP port.</p>
+
+<p>So you have to have a program that can connect to the TCP port on the K player.  It tells the server its there by sending a text command (which in turn is how the K app knows to show the volume buttons at all).  Now when you press a volume button, the K player spits some text out the TCP port saying a volume change has been requested.  So the app has to listen for that and then send the right command to the Global Cache to change the volume on the receiver.</p>
+
+<p>Make sense?</p>
+
+<p>This works great using Indigo on a Mac Mini, but I don't want to spend $150 on Indigo and a few hundred on a Mini <b>just</b> to do this one dumb thing.</p>
+
+<p>Can OpenRemote do it?  If so, can someone point me to the proper document explaining how to do the generic TCP network side?  I don't see Kaleidescape listed as a supported device, but I see other TCP devices that I'll bet work in similar ways.  Any pointers welcome.  I can say for sure that the Kaleidescape stuff works similar to how the TCP interface works on some projectors and the like.  I just need to be able to listen for certain text strings and then fire off remote commands when I get them.  And ignore strings that I don't care about.</p>
+
+
+<p>--Donnie</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23597898"></a>
+                                    <font class="smallfont"><p>Donnie, I'm an OR newb. So I won't be much help on that, really. But can't you send that TCP command directly from the K app to the iTach? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gregoryx at Apr 23, 2015 03:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597911"></a>
+                                    <font class="smallfont"><p>The simple answer is: It doesn't work that way.</p>
+
+<p>My use case happens to be a Global Cache in most cases, but what if your receiver were IP based control?  Or serial?  K doesn't want to get into all that, and assumes you probably have some other high end control system anyway.  </p>
+
+<p>So why do they do an app?  Because they could do a really good app that works similar to their on-screen appearance and thus you don't have to take your eyes off the tablet to the screen and back and forth like most control systems.  But how do you integrate that?</p>
+
+<p>They figured that out, too.  iOS provides a facility where one app can call another app <b>and</b> tell the called app how to return to the parent.  If you call the Kapp that way, the Kapp automatically puts a "return" button at the top of the screen.  So it's pretty easy to integrate the Kapp into another control system.  </p>
+
+<p>The volume thing is just another short cut to add support for the <b>one</b> thing you're likely to want to do without having to switch in and out of the Kapp.</p>
+
+<p>And the K system already publishes a LOT of useful information via that TCP port.  Pretty neat things like a message that "credits are rolling" when you get to that point in a movie.  An advanced control system listening to that stuff could choose to go ahead and bring the lights up softly as a movie ends.  Or bring the lights down and close blinds when a movie starts, etc.  So that's why they publish the volume commands that way only.  It's nice and generic.</p>
+
+<p>But it does require <b>some</b> kind of "middle man" to do the heavy lifting.  All-in-one remote applications like iRule and Roomie Remote do EVERYTHING through the app.  But that doesn't help you unless that app is running at the time you need things to happen, and in this case you'd be running Kapp and not iRule, so iRule can't "listen" to that port and do the right thing for you.</p>
+
+<p>Like I said in the first post, I use iRule at my home now and have Indigo running on a Mac as the middleman.  Works great, but it's a big investment.  At my vacation house, I don't want to invest that kind of hardware if something like a Pi running something open source like OpenRemote can do the same thing.  I just wanted to know if I was on the right track.</p>
+
+<p>Further investigation shows the "telnet" hardware support in the online docs, so I believe I can do what I want.  The part I'm not sure of is you need maintain that connection to the server and when you open it, you need to tell the K device that you want to enable the volume support (or the app won't show the buttons at all).  But I believe there's a way to do that part, too.</p>
+
+<p>So at some point in the next week I'm going to try it.  I just wanted to hear if there was anyone here using OpenRemote for something like this.  Obviously I only NEED the controller portion, but I figured I'd use the designer to make a remote screen to do the volume functions just to test them that way, too.</p>
+
+
+<p>--Donnie</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by djb_rh at Apr 23, 2015 16:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597913"></a>
+                                    <font class="smallfont"><p>Sounds like we've been seeking pretty similar stuff, Donnie. </p>
+
+<p>As I said, I'm a newbie to OR. I tried iRule and Roomie and decided against them for the reasons you mention: I want a "controller" doing everything. For the last decade, that's been Cinemar's MainLobby Server. Before that, it was HomeSeer. Before that, it was some hideous Linux scripts &lt;shudder&gt;. </p>
+
+<p>I'm still in what I'd call "testing" mode with OR; but it's running pretty quickly and reliably on an RPi2 right now (after testing in QNAP and Windows). </p>
+
+<p>I'd guess there's a way to get what you're looking for because the "app" side of OR (on Android or iPhone) must be doing exactly that. And then there's the webapp funky thing. Ultimately, there's clearly some IP-based 2-way channel of information; probably Java based from all the code snips I've seen. If you're techy, maybe look at the source code for the Android app? I'm pretty sure that was published somewhere. </p>
+
+<p>Or maybe one of the knowledgeable folks here will link you to a sample of where they're doing that already. </p>
+
+<p>FTR, that setup with K sounds really cool. I would love it if there's a way to map the YATSE / KODI volume buttons to an OR push; so I'll be looking for how this comes out. Worst case, I've been able to control my Rotel pre/pro via serial through GC with both OR and MainLobby at the same time... so there's always that (less elegant) solution. (Come to think of it, that's how the ISY and Elk work as well: IP/serial control both through OR and direct.) </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gregoryx at Apr 23, 2015 18:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597921"></a>
+                                    <font class="smallfont"><p>OR does support generic TCP protocol commands but without keeping it open, so that won't help you in this case.</p>
+
+<p>The way to go about this is to implement a Kaleidescape protocol similar to the Lutron or Marantz one, which can keep the connection open and listen asynchronously to events received from the K server.<br/>
+This requires Java programming, not just configuration. If you want to have a go at it, I would look at how the implementation of an existing protocol is done (Marantz should be a good starting point I think).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Apr 24, 2015 08:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597932"></a>
+                                    <font class="smallfont"><p>That's unfortunate since I've never touched any Java code.  <b>sigh</b></p>
+
+
+<p>--Donnie</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by djb_rh at Apr 24, 2015 11:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

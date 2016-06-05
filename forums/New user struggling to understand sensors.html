@@ -1,0 +1,739 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : New user struggling to understand sensors</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : New user struggling to understand sensors
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 13, 2013 by <font color="#0050B2">sadgamergeek</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm very new to OpenRemote. I've set-up the Controller (2.0.1) on my Raspberry Pi, and I'm trying to make some panels for my iPad. So far I've successfully created some buttons that run simple perl scripts to turn on &amp; off my LightWaveRF sockets and wake a server, but now I want to do some monitoring. </p>
+
+<p>I thought I'd start simple, so I've created a very basic script which converts a ping response to "on" or "off" when I call it with a host name:</p>
+
+<p>pi@raspberrypi /usr/local/scripts $ ./ping_on_off.sh sb_dining<br/>
+off</p>
+
+<p>It also writes a line to a log file so I can see when it has been called.</p>
+
+<p>I've created a command "SB DR on off detect" that runs it using shell execution protocol. I've linked a button to that, and I have confirmed (via the log file) that it successfully runs the script.</p>
+
+<p>I can't work out how to integrate it into a sensor though. I've set a sensor name of "sb_dining" in that command and a polling interval of 2s, then I've created a sensor called "sb_dining". Is that correct? I've tried to use that sensor in a switch and a label, but can't get any sensible output out of them. I can see from the log that the script never even gets called when used with a sensor like this.</p>
+
+<p>The catalina.out log shows this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">Apr 13, 2013 5:45:14 PM org.openremote.controller.utils.Logger error
+SEVERE: Attempted to access sensor with id '162' which did not exist in device state cache.</pre>
+</div></div>
+
+<p>Something else I don't understand is that the controller.xml file hasn't been updated with the last few saves I've made - is that normal?</p>
+
+<p>Here it is, including various objects that I've recently deleted for some reason....</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;</span>
+<span class="code-tag">&lt;openremote xmlns=<span class="code-quote">"http://www.openremote.org"</span> <span class="code-keyword">xmlns:xsi</span>=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span> xsi:schemaLocation=<span class="code-quote">"http://www.openremote.org http://www.openremote.org/schemas/controller.xsd"</span>&gt;</span>
+  <span class="code-tag">&lt;components&gt;</span>
+    <span class="code-tag">&lt;switch id=<span class="code-quote">"52"</span>&gt;</span>
+      <span class="code-tag">&lt;on /&gt;</span>
+      <span class="code-tag">&lt;off /&gt;</span>
+    <span class="code-tag">&lt;/switch&gt;</span>
+    <span class="code-tag">&lt;switch id=<span class="code-quote">"142"</span>&gt;</span>
+      <span class="code-tag">&lt;on&gt;</span>
+        <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"146"</span> /&gt;</span>
+      <span class="code-tag">&lt;/on&gt;</span>
+      <span class="code-tag">&lt;off&gt;</span>
+        <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"147"</span> /&gt;</span>
+      <span class="code-tag">&lt;/off&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"162"</span> /&gt;</span>
+    <span class="code-tag">&lt;/switch&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"102"</span> /&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"136"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"159"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"100"</span> /&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"116"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"159"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"114"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"148"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"110"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"147"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"108"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"146"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"122"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"144"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"104"</span> /&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"120"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"145"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;image id=<span class="code-quote">"118"</span> /&gt;</span>
+    <span class="code-tag">&lt;image id=<span class="code-quote">"112"</span> /&gt;</span>
+    <span class="code-tag">&lt;image id=<span class="code-quote">"106"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"161"</span> /&gt;</span>
+    <span class="code-tag">&lt;/image&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"138"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"162"</span> /&gt;</span>
+    <span class="code-tag">&lt;/label&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"98"</span> /&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"140"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"162"</span> /&gt;</span>
+    <span class="code-tag">&lt;/label&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"128"</span> /&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"134"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"162"</span> /&gt;</span>
+    <span class="code-tag">&lt;/label&gt;</span>
+  <span class="code-tag">&lt;/components&gt;</span>
+  <span class="code-tag">&lt;sensors&gt;</span>
+    <span class="code-tag">&lt;sensor id=<span class="code-quote">"161"</span> name=<span class="code-quote">"bob"</span> type=<span class="code-quote">"custom"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"160"</span> /&gt;</span>
+    <span class="code-tag">&lt;/sensor&gt;</span>
+    <span class="code-tag">&lt;sensor id=<span class="code-quote">"162"</span> name=<span class="code-quote">"sb_dining"</span> type=<span class="code-quote">"switch"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"159"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"on"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/sensor&gt;</span>
+    <span class="code-tag">&lt;sensor id=<span class="code-quote">"174"</span> name=<span class="code-quote">"ON/OFF_sb_dining"</span> type=<span class="code-quote">"switch"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"159"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"on"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/sensor&gt;</span>
+  <span class="code-tag">&lt;/sensors&gt;</span>
+  <span class="code-tag">&lt;commands&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"144"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R1D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Hall lamp OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"145"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R1D1F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Hall lamp ON"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"146"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R2D1F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"SB DR on"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"147"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R2D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"SB DR off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"148"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D1F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen Coffee Maker ON"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"149"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen Coffee Maker OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"150"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D2F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen HiFi ON"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"151"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D?F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen HiFi OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"153"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R1D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Hall Lamp OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"154"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R?D?F?"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"** dummy LWRF switch"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"159"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"sb_dining"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"pollingInterval"</span> value=<span class="code-quote">"2s"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"sensorNamesList"</span> value=<span class="code-quote">"sb_dining"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/ping_on_off.sh"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"SB DR on off detect"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"160"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"HELLOOOOOOOO"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"pollingInterval"</span> value=<span class="code-quote">"1s"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"sensorNamesList"</span> value=<span class="code-quote">"bob"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/bin/echo "</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"test"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"143"</span> protocol=<span class="code-quote">"wol"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"broadcastIp"</span> value=<span class="code-quote">"192.168.0.255"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"macAddress"</span> value=<span class="code-quote">"00:21:85:f:91:e8"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Wakeup - HomeServer"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+  <span class="code-tag">&lt;/commands&gt;</span>
+  <span class="code-tag">&lt;config&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.roundrobin.multicast.port"</span> value=<span class="code-quote">"10000"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.roundrobin.tcpserver.port"</span> value=<span class="code-quote">"20000"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.groupname"</span> value=<span class="code-quote">"floor20"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"multicast.port"</span> value=<span class="code-quote">"3333"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.groupmember.autodetect.on"</span> value=<span class="code-quote">"true"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"amx_ni.port"</span> value=<span class="code-quote">"50000"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.commLayer"</span> value="" /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"copy.lircd.conf.on"</span> value=<span class="code-quote">"true"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"irsend.path"</span> value=<span class="code-quote">"/usr/local/bin/irsend"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.applicationname"</span> value=<span class="code-quote">"controller"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"multicast.address"</span> value=<span class="code-quote">"224.0.1.100"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"Macro.IR.Execution.Delay"</span> value=<span class="code-quote">"500"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.roundrobin.multicast.address"</span> value=<span class="code-quote">"224.0.1.200"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.comPort"</span> value="" /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.pad.port"</span> value=<span class="code-quote">"7876"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.password"</span> value=<span class="code-quote">"openremote"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lircd.conf.path"</span> value=<span class="code-quote">"/etc/lircd.conf"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.port"</span> value=<span class="code-quote">"23"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.address"</span> value=<span class="code-quote">"192.168.1.1"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.pad.host"</span> value=<span class="code-quote">"localhost"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.username"</span> value=<span class="code-quote">"openremote"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"webapp.port"</span> value=<span class="code-quote">"8080"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"protocol.zwave.classname"</span> value=<span class="code-quote">"org.openremote.controller.protocol.zwave.ZWaveCommandBuilder"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"resource.upload.enable"</span> value=<span class="code-quote">"true"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"amx_ni.address"</span> value=<span class="code-quote">"192.168.1.1"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lagarto_network.broadcast"</span> value=<span class="code-quote">"tcp://127.0.0.1:5001"</span> /&gt;</span>
+  <span class="code-tag">&lt;/config&gt;</span>
+<span class="code-tag">&lt;/openremote&gt;</span>
+</pre>
+</div></div>
+
+
+<p>Can anyone explain what I'm doing wrong please?</p>
+
+<p>Richard</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21860240"></a>
+                                    <font class="smallfont"><p>If the controller.xml does not update with controller you can try it manually.</p>
+<ul class="alternate" type="square">
+	<li>In designer export your design as ZIP</li>
+	<li>Extract this zip to directory webapps/controller.</li>
+</ul>
+
+
+<p>PS: Please include your XML in {code:xml}...{code} tags, tag logs with {code}...{code} for better reading </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 13, 2013 21:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860244"></a>
+                                    <font class="smallfont"><p>Thanks. I've now edited my original post to include those tags.</p>
+
+<p>I've done the manual export / extract and after doing that subsequent syncs seem to have worked.</p>
+
+<p>I'm still getting the same error though (different IDs now as I've deleted some stuff)</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR [HTTP-<span class="code-object">Thread</span>-12]: CommandException occurs
+org.openremote.controller.exception.NoSuchComponentException: No such component in status cache : 159
+</pre>
+</div></div>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;</span>
+<span class="code-tag">&lt;openremote xmlns=<span class="code-quote">"http://www.openremote.org"</span> <span class="code-keyword">xmlns:xsi</span>=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span> xsi:schemaLocation=<span class="code-quote">"http://www.openremote.org http://www.openremote.org/schemas/controller.xsd"</span>&gt;</span>
+  <span class="code-tag">&lt;components&gt;</span>
+    <span class="code-tag">&lt;switch id=<span class="code-quote">"52"</span>&gt;</span>
+      <span class="code-tag">&lt;on /&gt;</span>
+      <span class="code-tag">&lt;off /&gt;</span>
+    <span class="code-tag">&lt;/switch&gt;</span>
+    <span class="code-tag">&lt;switch id=<span class="code-quote">"142"</span>&gt;</span>
+      <span class="code-tag">&lt;on&gt;</span>
+        <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"148"</span> /&gt;</span>
+      <span class="code-tag">&lt;/on&gt;</span>
+      <span class="code-tag">&lt;off&gt;</span>
+        <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"149"</span> /&gt;</span>
+      <span class="code-tag">&lt;/off&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"159"</span> /&gt;</span>
+    <span class="code-tag">&lt;/switch&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"102"</span> /&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"136"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"158"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"100"</span> /&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"116"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"158"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"114"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"150"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"110"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"149"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"108"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"148"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"122"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"146"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"104"</span> /&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"120"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"147"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;image id=<span class="code-quote">"118"</span> /&gt;</span>
+    <span class="code-tag">&lt;image id=<span class="code-quote">"112"</span> /&gt;</span>
+    <span class="code-tag">&lt;image id=<span class="code-quote">"106"</span> /&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"138"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"159"</span> /&gt;</span>
+    <span class="code-tag">&lt;/label&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"98"</span> /&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"140"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"159"</span> /&gt;</span>
+    <span class="code-tag">&lt;/label&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"128"</span> /&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"134"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"159"</span> /&gt;</span>
+    <span class="code-tag">&lt;/label&gt;</span>
+  <span class="code-tag">&lt;/components&gt;</span>
+  <span class="code-tag">&lt;sensors&gt;</span>
+    <span class="code-tag">&lt;sensor id=<span class="code-quote">"159"</span> name=<span class="code-quote">"sb_dining"</span> type=<span class="code-quote">"switch"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"158"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"on"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/sensor&gt;</span>
+  <span class="code-tag">&lt;/sensors&gt;</span>
+  <span class="code-tag">&lt;commands&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"146"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R1D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Hall lamp OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"147"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R1D1F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Hall lamp ON"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"148"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R2D1F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"SB DR on"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"149"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R2D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"SB DR off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"150"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D1F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen Coffee Maker ON"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"151"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen Coffee Maker OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"152"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D2F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen HiFi ON"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"153"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D2F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen HiFi OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"155"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R1D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Hall Lamp OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"156"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R?D?F?"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"** dummy LWRF switch"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"158"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"sb_dining"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"pollingInterval"</span> value=<span class="code-quote">"2s"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"sensorNamesList"</span> value=<span class="code-quote">"sb_dining"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/ping_on_off.sh"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"SB DR on off detect"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"145"</span> protocol=<span class="code-quote">"wol"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"broadcastIp"</span> value=<span class="code-quote">"192.168.0.255"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"macAddress"</span> value=<span class="code-quote">"00:21:85:f:91:e8"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Wakeup - HomeServer"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+  <span class="code-tag">&lt;/commands&gt;</span>
+  <span class="code-tag">&lt;config&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.roundrobin.multicast.port"</span> value=<span class="code-quote">"10000"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.roundrobin.tcpserver.port"</span> value=<span class="code-quote">"20000"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.groupname"</span> value=<span class="code-quote">"floor20"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"multicast.port"</span> value=<span class="code-quote">"3333"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.groupmember.autodetect.on"</span> value=<span class="code-quote">"true"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"amx_ni.port"</span> value=<span class="code-quote">"50000"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.commLayer"</span> value="" /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"copy.lircd.conf.on"</span> value=<span class="code-quote">"true"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"irsend.path"</span> value=<span class="code-quote">"/usr/local/bin/irsend"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.applicationname"</span> value=<span class="code-quote">"controller"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"multicast.address"</span> value=<span class="code-quote">"224.0.1.100"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"Macro.IR.Execution.Delay"</span> value=<span class="code-quote">"500"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.roundrobin.multicast.address"</span> value=<span class="code-quote">"224.0.1.200"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.comPort"</span> value="" /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.pad.port"</span> value=<span class="code-quote">"7876"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.password"</span> value=<span class="code-quote">"openremote"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lircd.conf.path"</span> value=<span class="code-quote">"/etc/lircd.conf"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.port"</span> value=<span class="code-quote">"23"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.address"</span> value=<span class="code-quote">"192.168.1.1"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.pad.host"</span> value=<span class="code-quote">"localhost"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.username"</span> value=<span class="code-quote">"openremote"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"webapp.port"</span> value=<span class="code-quote">"8080"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"protocol.zwave.classname"</span> value=<span class="code-quote">"org.openremote.controller.protocol.zwave.ZWaveCommandBuilder"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"resource.upload.enable"</span> value=<span class="code-quote">"true"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"amx_ni.address"</span> value=<span class="code-quote">"192.168.1.1"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lagarto_network.broadcast"</span> value=<span class="code-quote">"tcp://127.0.0.1:5001"</span> /&gt;</span>
+  <span class="code-tag">&lt;/config&gt;</span>
+<span class="code-tag">&lt;/openremote&gt;</span>
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sadgamergeek at Apr 14, 2013 00:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860248"></a>
+                                    <font class="smallfont"><p>I'am afraid I can't help you with this one. My non-expert eye does not spot anything wrong in your XML. Maybe the error is caused by something deeper.<br/>
+I have done some things with ping myself.  I found this <a href="http://www.openremote.org/pages/viewpage.action?pageId=21037421">thread on using ping and shelexe</a> useful.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 14, 2013 09:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860261"></a>
+                                    <font class="smallfont"><p>That's a useful thread, cheers.</p>
+
+<p>I've also made a little bit of progress. When searching the site for "status cache", I noticed that there is a newer release of the controller, 2.0.2, which includes this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">Bug fix: sensor status cache was throwing a runtime exception
+   which was not handled <span class="code-keyword">if</span> a panel requested a sensor status on
+   a sensor which failed to start (due to configuration or
+   other errors). The unhandled exception caused the client
+   call to fail instead of gracefully falling back to <span class="code-keyword">default</span> or
+   error value. (Eric Bariaux, ORCJAVA-268)</pre>
+</div></div>
+
+<p>That sounded like it might be relevant, so I installed it. My sensor still doesn't work, but the logs provide a bit more information now.</p>
+
+<p>This what I see when I open the console now:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">Apr 14, 2013 11:12:15 AM org.openremote.controller.utils.Logger error
+SEVERE: Requested sensor id '157' was not found. Defaulting to 'N/A'.
+Apr 14, 2013 11:12:15 AM org.openremote.controller.utils.Logger info
+INFO: Querying changed state from ChangedStatus table...
+Apr 14, 2013 11:12:15 AM org.openremote.controller.utils.Logger info
+INFO: Found: [device =&gt; 27109eff1600a6a5f771dcf8ac7ebc4188fbaebc, sensorIDs =&gt; 157] in ChangedStatus table.
+Apr 14, 2013 11:12:15 AM org.openremote.controller.utils.Logger info
+INFO: DEVICEID:27109eff1600a6a5f771dcf8ac7ebc4188fbaebc sensorID:[157]statusChangedSensorID:[]Waiting...
+</pre>
+</div></div>
+
+<p>...and sure enough I see "N/A" in my console now where I'm trying to display the sensor output (previously I was seeing nothing or just label text).</p>
+
+<p>As before, my log tells me the script associated with the sensor is not even being run.</p>
+
+<p>I don't understand why it can't find the sensor though, when it appears in the xml:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">  <span class="code-tag">&lt;components&gt;</span>
+    <span class="code-tag">&lt;switch id=<span class="code-quote">"52"</span>&gt;</span>
+      <span class="code-tag">&lt;on /&gt;</span>
+      <span class="code-tag">&lt;off /&gt;</span>
+    <span class="code-tag">&lt;/switch&gt;</span>
+    <span class="code-tag">&lt;switch id=<span class="code-quote">"142"</span>&gt;</span>
+      <span class="code-tag">&lt;on&gt;</span>
+        <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"146"</span> /&gt;</span>
+      <span class="code-tag">&lt;/on&gt;</span>
+      <span class="code-tag">&lt;off&gt;</span>
+        <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"147"</span> /&gt;</span>
+      <span class="code-tag">&lt;/off&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"157"</span> /&gt;</span>
+    <span class="code-tag">&lt;/switch&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"102"</span> /&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"136"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"156"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"100"</span> /&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"116"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"156"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"114"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"148"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"110"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"147"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"108"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"146"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"122"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"144"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"104"</span> /&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"120"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"145"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;image id=<span class="code-quote">"118"</span> /&gt;</span>
+    <span class="code-tag">&lt;image id=<span class="code-quote">"112"</span> /&gt;</span>
+    <span class="code-tag">&lt;image id=<span class="code-quote">"106"</span> /&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"138"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"157"</span> /&gt;</span>
+    <span class="code-tag">&lt;/label&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"98"</span> /&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"140"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"157"</span> /&gt;</span>
+    <span class="code-tag">&lt;/label&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"128"</span> /&gt;</span>
+    <span class="code-tag">&lt;label id=<span class="code-quote">"134"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"157"</span> /&gt;</span>
+    <span class="code-tag">&lt;/label&gt;</span>
+  <span class="code-tag">&lt;/components&gt;</span>
+  <span class="code-tag">&lt;sensors&gt;</span>
+    <span class="code-tag">&lt;sensor id=<span class="code-quote">"157"</span> name=<span class="code-quote">"sb_dining"</span> type=<span class="code-quote">"switch"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"156"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"on"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/sensor&gt;</span>
+  <span class="code-tag">&lt;/sensors&gt;</span>
+  <span class="code-tag">&lt;commands&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"144"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R1D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Hall lamp OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"145"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R1D1F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Hall lamp ON"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"146"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R2D1F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"SB DR on"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"147"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R2D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"SB DR off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"148"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D1F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen Coffee Maker ON"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"149"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen Coffee Maker OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"150"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D2F1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen HiFi ON"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"151"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R3D2F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Kitchen HiFi OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"153"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R1D1F0"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Hall Lamp OFF"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"154"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"R?D?F?"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/LWRF_switch.pl"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"** dummy LWRF switch"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"156"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"sb_dining"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"pollingInterval"</span> value=<span class="code-quote">"2s"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"sensorNamesList"</span> value=<span class="code-quote">"sb_dining"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"/usr/local/scripts/ping_on_off.sh"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"SB DR on off detect"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"143"</span> protocol=<span class="code-quote">"wol"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"broadcastIp"</span> value=<span class="code-quote">"192.168.0.255"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"macAddress"</span> value=<span class="code-quote">"00:21:85:f:91:e8"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Wakeup - HomeServer"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+  <span class="code-tag">&lt;/commands&gt;</span>
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sadgamergeek at Apr 14, 2013 12:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860274"></a>
+                                    <font class="smallfont"><p>I am afraid the 2.0.1 controller does not include the ShellExe that supports sensors <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Try the 2.1.0 Alpha-Snapshot.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 14, 2013 20:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860283"></a>
+                                    <font class="smallfont"><p>Excellent - cheers. That made a big difference!</p>
+
+<p>The script associated with the sensor is getting run now. </p>
+
+<p>I'm almost there, but it looks like there is one last (hopefully simple) issue. OR doesn't seem to like the output of my script:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">Apr 14, 2013 11:17:34 PM org.openremote.controller.utils.Logger warn
+WARNING: Event producer bound to sensor (ID = 157) returned a value that is not consistent with sensor's datatype : 'yes'  setting sensor value to 'N/A'
+</pre>
+</div></div>
+
+<p>This happens for yes and no. I've tried it with and without the newline character, but it doesn't seem to like either.</p>
+
+<p>The switch sensor is defined like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">  <span class="code-tag">&lt;sensors&gt;</span>
+    <span class="code-tag">&lt;sensor id=<span class="code-quote">"157"</span> name=<span class="code-quote">"sb_dining"</span> type=<span class="code-quote">"switch"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"156"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"on"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/sensor&gt;</span>
+  <span class="code-tag">&lt;/sensors&gt;</span>
+</pre>
+</div></div>
+
+<p>...and my simple script looks like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">#!/bin/bash
+onOff=$((ping -c 1 -W 1 $1 &gt;/dev/<span class="code-keyword">null</span> &amp;&amp; echo yes) || echo no)
+printf <span class="code-quote">"${onOff}"</span>
+echo `date` $1 $onOff &gt;&gt; /usr/local/scripts/$(basename $0)_log
+</pre>
+</div></div>
+
+<p>(currently with no newline but same issue with <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">printf <span class="code-quote">"${onOff}\n"</span></pre>
+</div></div>)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sadgamergeek at Apr 15, 2013 00:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860308"></a>
+                                    <font class="smallfont"><p>Your script has to return "on" or "off" and not "yes" or "no" if you use a switch sensor.<br/>
+If you only want to display sensor values, you can use a custom sensor which accepts any text.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 15, 2013 09:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860310"></a>
+                                    <font class="smallfont"><p>What an idiot I am!</p>
+
+<p>Yeah, of course you're right Marcus. Stupidly, I knew this, even my script name and variable refer to 'on'  &amp; 'off'. For some reason when I made the last "tweak" to it (change from using regular expression to return code) I somehow had a brain fart and replaced on &amp; off with yes &amp; no. </p>
+
+<p>That has fixed that - thanks very much for your patient help.</p>
+
+<p>One other thing (there's always one more thing...). I'm not sure if it was when I went to 2.1, but my linkage between my buttons and commands appears to have got screwed up now. I've got 3 pairs of on &amp; off buttons to turn on and off 3 different devices (LightwaveRF power sockets). Each button calls a different command (which in turn call one script with a unique parameter). I realised last night that all three on buttons are calling the same on command and all three off ones are calling the same off command! They are correct in the UI designer, but I guess the sync is muddling them up somehow. It wouldn't be a big deal to delete the 4 wrong ones and recreate them but I wondered if it might be useful if I / we could work out what was going wrong. </p>
+
+<p>Should I perhaps create a new thread to talk about this? I guess it could be a 2.1 alpha issue....</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sadgamergeek at Apr 15, 2013 10:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860311"></a>
+                                    <font class="smallfont"><p>A new thread would make it easier to follow.<br/>
+Might be an issue in the designer when creating the controller.xml.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 15, 2013 12:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860337"></a>
+                                    <font class="smallfont"><p>Cheers. I've now created a new one.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sadgamergeek at Apr 15, 2013 16:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

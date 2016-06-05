@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : filtrete thermostat 3m50</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : filtrete thermostat 3m50
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 04, 2015 by <font color="#0050B2">robnas</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>i would like to share my experience with the filtrete 3m50 thermostat but i have also a question about a send command.</p>
+
+<p>ive got the filtrete thermostat 3m50 <a href="http://www.radiothermostat.com/filtrete/products/3M-50/">http://www.radiothermostat.com/filtrete/products/3M-50/</a>   and i can read out the temperature from it<br/>
+here you can find the<a href="https://www.dropbox.com/s/5nnd31fiq3qty4g/3m50filtrete-API-RTCOAWiFIAPIV1_3.pdf?dl=0">API</a></p>
+
+<p>create a http GET command as image shows and create a costum sensor for it. in the panel you can now add a label and read out this sensor. it will show the temperature in fahrenheit<br/>
+the ip adress i used is 192.168.1.8 but that could be different. <br/>
+<img src="attachments/23596310/23789778.png" align="absmiddle" border="0"/><br/>
+to read it out in celcius you will need a rule:</p>
+
+
+<p>rule "Huidige temperatuur"<br/>
+when<br/>
+  CustomState(source=="sensor temperatuur", $v: value)<br/>
+then<br/>
+  double correctedValue1 = Double.parseDouble($v.toString()) - 32;<br/>
+  double correctedValue = (correctedValue1/9) * 5;<br/>
+  execute.command("VTEMP", String.format("%.1f \u2103", correctedValue));<br/>
+ execute.command("VTEMPer", String.format("%.1f ", correctedValue));<br/>
+temp(String.format("%.1f ", correctedValue));<br/>
+end </p>
+
+
+<p>"sensor temperatuur" is the reading sensor, it will do a math (-32 / 9 * 5)  to get the celcius format and stores it in a virtual STATUS command called "VTEMP" with the celcius char(°C) behind it and "VTEMPer" without the celcius char. create a costum sensor(no mappings) for these virtual commands to read them in the pannel via a label</p>
+
+<p>you can also read other json values for example the target-temperature<br/>
+it will also show the temperature in fahrenheit:<br/>
+<img src="attachments/23596310/23789775.png" align="absmiddle" border="0"/><br/>
+if you want to read it out and change it to celcius than use the same rule as mentioned before, just use diffrent names for everything.</p>
+
+
+<p>my problem is to set the temperature to the thermostat in openremote with a http post command.<br/>
+i downloaded <a href="http://www.telerik.com/fiddler">fiddler</a> to do some tests, see the image below and this works:<br/>
+<img src="attachments/23596310/23789776.png" align="absmiddle" border="0"/></p>
+
+<p>it will set  the temperature to 65 degrees fahrenheit</p>
+
+<p>i made some pushbuttons which will increase and decrease the target temperature:</p>
+
+<p> rule "Increase Temp"<br/>
+no-loop<br/>
+when<br/>
+$e: Event(source=="temp up", value=="on")<br/>
+$t: Event(source=="sensor temperatuur")<br/>
+then<br/>
+double correctedValueaa = Double.parseDouble($t.getValue().toString()) +0.5;<br/>
+execute.command("temp up","off");<br/>
+execute.command("insteltemp", String.format("%.1f", correctedValueaa));<br/>
+log(String.format("%.1f",correctedValueaa));<br/>
+end</p>
+
+
+<p>rule "decrease Temp"<br/>
+no-loop<br/>
+when<br/>
+$e: Event(source=="temp down", value=="on")<br/>
+$t: Event(source=="sensor temperatuur")<br/>
+then<br/>
+double correctedValueaa = Double.parseDouble($t.getValue().toString()) -0.5;<br/>
+execute.command("temp down","off");<br/>
+execute.command("insteltemp", String.format("%.1f", correctedValueaa));<br/>
+log(String.format("%.1f",correctedValueaa));<br/>
+end </p>
+
+<p>i made a HTTP POST command as below but i will not work, when i change {"t_heat" : {$param}} to a fixed value (change {$param} to 65) and run it via a push button it still not works.<br/>
+<img src="attachments/23596310/23789777.png" align="absmiddle" border="0"/><br/>
+the pushbutton script works because when i make a virtual status command "insteltemp" and and costum sensor i can read the value in the panel via a label.</p>
+
+<p>what is wrong with the http post command?<br/>
+i also noticed that i cant use the serial and email protocol anymore when creating a new command. its not in the list anymore which was before</p>
+
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23596310/23789774.png">Naamloos.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23596310/23789775.png">Naamloos1.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23596310/23789776.png">Naamloos2.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23596310/23789777.png">Naamloos3.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23596310/23789778.png">Naamloos5.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:36</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

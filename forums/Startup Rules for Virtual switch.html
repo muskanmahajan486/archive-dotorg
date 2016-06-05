@@ -1,0 +1,224 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Startup Rules for Virtual switch</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Startup Rules for Virtual switch
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 18, 2013 by <font color="#0050B2">jules_bike</font>.
+				    </div>
+
+				    <p>Hi - I've got a Sony AV receiver which is operated using an ITach IP2IR sender.  I've got it working fine with in memory virtual commands and rules following Eric's posts on this forum.</p>
+
+<p>The only issue I have is I can't get hold of a discrete power off function which means using a power toggle for off.  So when OR loads for the first time it resets the switch to off and in turn this turns the amp on.  I can use discrete codes for startup (eg: DVD) so I can get the switch back in sync but if we have a power cut in the night the server reboot will turn on the AV amp automatically.</p>
+
+<p>Is there a way to fix this?  I think one option would be to have the power off rule as a macro eg:  "DVD"  "delay" then "Power toggle" but macros don't seem to work in rules.   My Rules skills are quite limited so not sure how to code this.  At the moment my power on and off rules are as follows:</p>
+
+<p>rule "Living Music on"<br/>
+when<br/>
+Event(source=="LIVINGMUSIC_SENSOR", value=="on")<br/>
+then<br/>
+execute.command("MD/TAPE");<br/>
+end</p>
+
+<p>rule "Living Music off"<br/>
+when<br/>
+Event(source=="LIVINGMUSIC_SENSOR", value=="off")<br/>
+then<br/>
+execute.command("POWER_TOGGLE");<br/>
+end</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22414459"></a>
+                                    <font class="smallfont"><p>Jules,<br/>
+may I ask what UI you are using and what Designer version you are using.<br/>
+I need something similar, but I don't even get the switch working like it should.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dclaeys at May 18, 2013 15:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414460"></a>
+                                    <font class="smallfont"><p>Hi Dieter - I've got this working on IOS and Android - I've also used the preview and demo designer versions and it works on both.  What is the problem?<br/>
+Normally you set up a dummy switch in Designer with a Sensor attached (in my case called LIVINGMUSIC_SENSOR) then the rules call the actual commands for the AMP.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at May 18, 2013 15:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872939"></a>
+                                    <font class="smallfont"><p>Is anyone able to help?  I can't figure out how to put a delay in the middle of a rule?</p>
+
+<p>I've improved the Living Music Off function so that it firstly turns the amp to a non used function (MD/TAPE) which also has the effect of turning the Amp on if it not already on.  It then does a POWER_TOGGLE to turn it off.  However if it is starting up the AMP  after a reset then the power up takes too long and it misses the second command - so I really need a delay...</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jun 17, 2013 21:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872940"></a>
+                                    <font class="smallfont">
+<p>I didn't write an example to test this but hope it leads you to a right direction.</p>
+
+<p>Timer allows you to set an initial interval before executing rule (repeat is optional), so you could have a rule with 'timer (int: 5s)'.</p>
+
+<p>Now separate your two commands to two rules: both match the same when condition (so both are triggered when the sensor states are as you defined them).</p>
+
+<p>You create a rule with and without the timer. Both will execute. The other only after the initial delay.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 17, 2013 21:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872946"></a>
+                                    <font class="smallfont"><p>Thanks Juha I think that is a good solution although I've now hit another problem!  </p>
+
+<p>So basically the AMP can switch between MUSIC and MOVIES.  I have two virtual switches which allow me to use these two functions.  So in fact I have 2 sets of rules for switching on and off. </p>
+
+<p>How can one virtual switch know the status of another one?  </p>
+
+<p>So lets say I turn on MUSIC then I turn on MOVIES then the MUSIC virtual switch should automatically turn off. </p>
+
+<p>Likewise if the controller resets I don't want it to turn on for MUSIC then 5 seconds later turn off for MUSIC whilst also trying to do the same for MOVIES.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jun 17, 2013 22:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872947"></a>
+                                    <font class="smallfont"><p>I'm not really able to follow from verbal descriptions what it is that you're trying to achieve. It maybe easier if you try to describe it with pseudo-code instead.</p>
+
+<p>when<br/>
+  MOVIES = on and<br/>
+  MUSIC = on</p>
+
+<p>then<br/>
+  MUSIC = off</p>
+
+<p>?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 17, 2013 22:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872948"></a>
+                                    <font class="smallfont"><p>sorry!</p>
+
+<p>when MOVIES = on <br/>
+then MUSIC = off</p>
+
+<p>when MUSIC = on<br/>
+then MOVIES = off</p>
+
+<p>when MUSIC = off<br/>
+and MOVIES = off<br/>
+then UNUSED OUTPUT = on <br/>
+wait 5 s <br/>
+then POWERTOGGLE </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jun 17, 2013 22:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872950"></a>
+                                    <font class="smallfont"><p>Not sure why the first two rules would really depend on the last one, they seem to run with an independent logic?</p>
+
+<p>The last one should logically be two rules something like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+rule <span class="code-quote">"Turn output on"</span>
+
+when
+  Event (source == <span class="code-quote">"virtualswitch?"</span> value == <span class="code-quote">"on"</span>)
+  Event (source == <span class="code-quote">"Music Status"</span>, value == <span class="code-quote">"off"</span>)
+  Event (source == <span class="code-quote">"Movies Status"</span>, value == <span class="code-quote">"off"</span>)
+
+then
+
+  execute.command(<span class="code-quote">"output on"</span>)
+
+end
+
+rule <span class="code-quote">"Power toggle after output on"</span>
+
+timer (<span class="code-object">int</span>: 5s)
+
+when
+  Event (source == <span class="code-quote">"virtualswitch?"</span> value == <span class="code-quote">"on"</span>)
+  Event (source == <span class="code-quote">"Music Status"</span>, value == <span class="code-quote">"off"</span>)
+  Event (source == <span class="code-quote">"Movies Status"</span>, value == <span class="code-quote">"off"</span>)
+
+then
+
+  execute.command(<span class="code-quote">"toggle power"</span>)
+
+end
+</pre>
+</div></div>
+
+
+<p>I don't think I'm really able to help you further without understanding what devices and commands you're working with.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 17, 2013 23:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

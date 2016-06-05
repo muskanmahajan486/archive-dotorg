@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Openremote-increment button</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Openremote-increment button
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 19, 2015 by <font color="#0050B2">ckbsmart</font>.
+				    </div>
+
+				    <p>Hello, <br/>
+I have been trying to make a Button that increments a in memory value(Alarm-pin1 Sensor). Every time the Button is pushed on, the number for the in memory value goes up with one. I first saw that the incrementation does not stop because the value of in memory sensor(the range sensor Alarm-pin1 Sensor) changes and I have that value as a request after WHEN statement so I tryed to make it only active when a new Event is triggered. I am not sure why it's not working.... can someone please help?</p>
+
+<p>rule "test rule"<br/>
+when <br/>
+Switch(source == "Alarm Sensor", value == "on")<br/>
+( $pin : Range( source == "Alarm-pin1 Sensor" ) AND<br/>
+ Event(source == "Alarm Sensor") )<br/>
+then<br/>
+ Integer contor = Integer.parseInt( $pin.getValue().toString() )  + 1;<br/>
+ execute.command("Alarm-pin1", contor);</p>
+
+<p>end</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23599103"></a>
+                                    <font class="smallfont"><p>Increasing/decreasing of in-memory variables is a part of my <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+retrofit+bedroom+air-conditioning+system">design</a>. The rules for doing it look like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"ARC: VACSetPoint.inc"</span>
+  timer(<span class="code-object">int</span>:300ms) <span class="code-comment">// debounce
+</span>when
+  Event(source == <span class="code-quote">"GVACSetPoint"</span>, $v: value, eval(_GetTemp(value) &lt;30))
+  Event($s:source == <span class="code-quote">"VACSetPoint.inc"</span>, value == <span class="code-quote">"ON"</span>)
+then
+  execute.command($s,<span class="code-quote">"OFF"</span>);
+  execute.command(<span class="code-quote">"GVACSetPoint"</span>, _ShiftTemp($v.toString(), 0.5));
+end
+
+rule <span class="code-quote">"ARC: VACSetPoint.dec"</span>
+  timer(<span class="code-object">int</span>:300ms) <span class="code-comment">// debounce
+</span>when
+  Event(source == <span class="code-quote">"GVACSetPoint"</span>, $v: value, eval(_GetTemp(value) &gt;15))
+  Event($s:source == <span class="code-quote">"VACSetPoint.dec"</span>, value == <span class="code-quote">"ON"</span>)
+then
+  execute.command($s,<span class="code-quote">"OFF"</span>);
+  execute.command(<span class="code-quote">"GVACSetPoint"</span>, _ShiftTemp($v.toString(), -0.5));
+end
+</pre>
+</div></div>
+<p>You can adopt them for your needs.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 19, 2015 14:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599108"></a>
+                                    <font class="smallfont"><p>I am not sure what is that I am doing wrong.</p>
+
+<p>THIS WORKS:<br/>
+rule "Alarm get1"<br/>
+when<br/>
+ Event(source == "Alarm-get1 Sensor", value == "ON")  <br/>
+then<br/>
+ execute.command("Alarm-get1","OFF");<br/>
+ execute.command("Alarm-pin1", 1);<br/>
+end</p>
+
+<p>THIS DOES NOT WORK<br/>
+rule "Alarm get1"<br/>
+when <br/>
+ Event(source == "Alarm-pin1 Sensor", $pin: value)<br/>
+ Event(source == "Alarm-pin2 Sensor", $pin2: value)<br/>
+ Event(source == "Alarm-get1 Sensor", value == "ON")  <br/>
+then<br/>
+ execute.command("Alarm-get1","OFF");<br/>
+ execute.command("Alarm-pin1", 1);<br/>
+end</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ckbsmart at May 19, 2015 16:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599113"></a>
+                                    <font class="smallfont"><p>I not see anything wrong in rules, but there can be problems in sensor definition itself.</p>
+
+<p>Please remember that there is a long time living bug in the drools engine implementation, that you need to hard reboot the controller after every design sync. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 19, 2015 18:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599234"></a>
+                                    <font class="smallfont"><p>For example if i do the following:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"hour Increase"</span>
+when
+  Event(source==<span class="code-quote">"hour-Alarm"</span>, $hour: value)
+  Event($s:source==<span class="code-quote">"hPlus"</span>, value==<span class="code-quote">"ON"</span>)
+then
+  execute.command($s, <span class="code-quote">"off"</span>);
+  <span class="code-object">int</span> cnt = <span class="code-object">Integer</span>.parseInt($hour.toString())+1;
+  execute.command(<span class="code-quote">"hour-Alarm"</span>, ""+cnt);
+end
+</pre>
+</div></div>
+
+<p>I am not sure why when i press the button it increments twice(+2) instead of incrementing only once.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ckbsmart at May 23, 2015 19:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599238"></a>
+                                    <font class="smallfont"><p>Because you don't debounce the button.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 23, 2015 20:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

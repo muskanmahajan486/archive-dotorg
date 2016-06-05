@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Float value from a Telnet Server</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Float value from a Telnet Server
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 31, 2012 by <font color="#0050B2">moafrancky</font>.
+				    </div>
+
+				    <p>Good evening,</p>
+
+<p>I'm trying to get a value from a telnet server. It runs fine with integer values but I'm having difficulties with float values.</p>
+
+<p>I receive this message<br/>
+java.lang.NumberFormatException: For input string: "23,29"<br/>
+or<br/>
+java.lang.NumberFormatException: For input string: "23.29"<br/>
+if I use a different separator.</p>
+
+<p>Any idea ?</p>
+
+<p>Thanks for your support</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20450232"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>What type of sensor are you trying to feed the return value into, without looking into it I'd guess that the controller is trying to parse the number string as an int which is failing.</p>
+
+<p>If you can paste the full error from your log file and also the command from your controller.xml I will be able to confirm this and offer a solution/fix.</p>
+
+<p>Thanks.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Sep 01, 2012 07:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450260"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>The command from controller.xml</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;command id=<span class="code-quote">"17"</span> protocol=<span class="code-quote">"telnet"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"23"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"&amp;gt;|getvalue MAISON / Temperature Piscine"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"statusFilter"</span> value=<span class="code-quote">"^(?i)(?s)(?m).*Value=(\d+.\d{2}).*$"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"pollingInterval"</span> value=<span class="code-quote">"1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"statusFilterGroup"</span> value=<span class="code-quote">"1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"127.0.0.1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Temperature Piscine"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+<p>And the full error</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ERROR [Polling Sensor Thread ID = 17, Name ='test']: Implementation error in protocol handler org.openremote.controller.protocol.telnet.TelnetCommand@1dddba : For input string: "23,20"
+java.lang.NumberFormatException: For input string: "23,20"
+        at java.lang.NumberFormatException.forInputString(NumberFormatException.java:48)
+        at java.lang.Integer.parseInt(Integer.java:458)
+        at java.lang.Integer.parseInt(Integer.java:499)
+        at org.openremote.controller.protocol.telnet.TelnetCommand.read(TelnetCommand.java:399)
+        at org.openremote.controller.model.sensor.Sensor$DeviceReader.read(Sensor.java:682)
+        at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Sensor.java:608)
+        at java.lang.Thread.run(Thread.java:662)
+</pre>
+</div></div>
+
+
+<p>You are right, I see parseInt in the error log. I'm using a 'level' sensor. Is there a sensor that accepts float values ?</p>
+
+<p>Many thanks,<br/>
+Franck</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moafrancky at Sep 01, 2012 18:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450267"></a>
+                                    <font class="smallfont"><p>You can use 'custom' type sensor and bind it to a label &#8211; it will display the returned string as-is.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 01, 2012 19:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450302"></a>
+                                    <font class="smallfont"><p>It works. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moafrancky at Sep 02, 2012 15:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Turn on Samsung TV with openremote</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Turn on Samsung TV with openremote
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 04, 2013 by <font color="#0050B2">puthplaza</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>I finnaly found a way to turn on my samsung TV with openremote. Possibly it will help somebody out here. <br/>
+I hooked up a raspberry pi with raspbmc installed as a media center. It´s connected via HDMI.<br/>
+Openremote is also running on another raspberry pi.</p>
+
+<p>Step 1.<br/>
+Create a .sh file on raspbmc that turns on the TV (/home/pi/turnonsamgungtv.sh).<br/>
+This file contains: (cec client seems to be in the standard raspbmc distr.)<br/>
+echo "on 0" | cec-client -s</p>
+
+<p>Step 2.<br/>
+Create a .sh file on the openremote controller that calls the file in step 1.<br/>
+This file contains:<br/>
+ssh pi@192.168.178.23 bash -l -c "/home/pi/turnonsamsungtv.sh" &gt; /dev/null</p>
+
+<p>Step 3.<br/>
+Make sure no password is required when U start the file in step 2.<br/>
+Here's the howto: <a href="http://www.linuxproblem.org/art_9.html">http://www.linuxproblem.org/art_9.html</a><br/>
+Note: OpenRemote is running as root on my raspberry. Make sure there's a passwordless login for user root.</p>
+
+<p>Step 4.<br/>
+Create a command in Openremote which calls the file in step3 (Shell execution protocol) and hookup your button to call it in your design.</p>
+
+<p>Note: Don.t forget to make the sh files executable.  ( chmod +x filename.sh ) </p>
+
+<p>-------------------</p>
+
+<p>How to tell if your TV is on or off:<br/>
+Step 1.<br/>
+Create a file called ping.sh on your openremote server.<br/>
+ping.sh contains:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#!/bin/bash
+status=off
+<span class="code-keyword">for</span> i in {1..3}
+<span class="code-keyword">do</span>
+onOff=$((ping -c 1 $1 &gt;/dev/<span class="code-keyword">null</span> &amp;&amp; echo on) || echo off)
+#printf <span class="code-quote">"${onOff}"</span>
+<span class="code-keyword">if</span> [ $onOff = <span class="code-quote">"on"</span> ]
+then
+status=on
+fi
+sleep 1
+done
+printf <span class="code-quote">"${status}"</span>
+</pre>
+</div></div>
+
+<p>Step 2.<br/>
+Create a command in openremote<br/>
+<img src="attachments/22877456/23036161.png" align="absmiddle" border="0"/></p>
+
+<p>Step 3.<br/>
+Hookup a sensor to command in step 2</p>
+
+<p>Note: I also use this ping script to ping my smartphone. This way OpenRemote can detect if I'm home.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22877456/23036161.png">tv ping.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22877456/23036162.png">pingscript.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22877462"></a>
+                                    <font class="smallfont"><p>Michel, nice post. Do use {code}...{code} instead of the html tags to include your code. No back slash in {code} closing tag!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 04, 2013 12:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877464"></a>
+                                    <font class="smallfont"><p>Done! Thank you. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by puthplaza at Oct 04, 2013 12:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877553"></a>
+                                    <font class="smallfont"><p>Nice <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> I wish Samsung would be able to use Wake-On-Lan though.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 05, 2013 21:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

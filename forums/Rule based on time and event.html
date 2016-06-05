@@ -1,0 +1,929 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Rule based on time and event</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Rule based on time and event
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 01, 2013 by <font color="#0050B2">istian</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I am newbie at both openremote and the language used for coding rules.<br/>
+Except for my lack of experience and know how in terms of java language, Openremote and the possibilities<br/>
+are amazing!! <br/>
+Hopefulle someone in here are kind enough to give me some tips and help<br/>
+on how to do "master" this <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>I have created a few rules all ready but there is one rule (so far) that I am struggeling with:</p>
+
+<p>I want to create a rule that turns the light on in a room, when the door opens, but only if the door is<br/>
+opended between 13 and 13:45.</p>
+
+<p>I have tried with this rule, but this rule does not turn the light on when the door opens, however it controls the<br/>
+status every minute or so, and if the door is open the light turns on. If I open and close the door before the status control the light<br/>
+never turns on. </p>
+
+<p>rule "Turn on light when door opens"</p>
+
+<p>  timer (cron: 0 00-05 13 ? * 2-6)</p>
+
+<p>when</p>
+
+<p>  Event( source == "Status - Dør - 1 etg - Gang", value == "off" )</p>
+
+<p>then</p>
+
+<p>  execute.command("Lys - Av/På - 1 etg - WC (ON)");</p>
+
+<p>end</p>
+
+<p>What do I need to alter?</p>
+
+<p>Help is appreciated.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22877256/23036175.png">Skjermbilde 2013-10-10 kl. 19.14.22.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22877256/23036176.png">Skjermbilde 2013-10-10 kl. 21.56.18.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22877257"></a>
+                                    <font class="smallfont"><p>If you change the timer to:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+timer (cron: * 00-05 13 ? * 2-6)
+</pre>
+</div></div>
+
+<p>Using the asterisk on the seconds would mean the condition gets checked every second, rather than once a minute. Would that have an impact (assuming you don't open and close the door faster than in one second)?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 01, 2013 12:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877316"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>That did the trick for some of the operations/functions that I wanted, however solving the problem this way creates an<br/>
+issue for me further down the line.</p>
+
+<p>The idea was to use the status of the door to turn lights on/off for a bedroom. But I do not want the light to turn on<br/>
+during night time if the door opens. So far the rule works, but this is where the rules creates issues:</p>
+
+<p>1. If the door stays open during daytime there is now way to turn the light off since the rule uses the status off the door.<br/>
+The only way to turn off the light is to close the door... I have written a rule to turn the light of in the bedroom after 45 min, but this do not happen due to the constant check against the status of the door.</p>
+
+
+<p>2. Switching the time setting for the rule does not work either from (cron: * 00-59 7-23 ? * 2-6) to (cron: * 00-59 00-7 ? * 2-6), because during night time the Alarm is turned on, and one of the functions of the Alarm is to turn the bedroom lights on 100% if any sensor in the house changes status. With this rule running and the lights dont turn on due the constant check against the status of the bedroom door.</p>
+
+<p>Is there a way to write a rule, that only is active between a certain time of the day, or a rule that only reacts to change on status between certain times?</p>
+
+<p>PS I also think I am doing the time settings wrong (cron: * 00-59 7-23 ? * 2-6) to (cron: * 00-59 00-7 ? * 2-6), what I am trying to write is between 7 in the morning to 24 or from 24 to 7 in the morning.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 02, 2013 08:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877332"></a>
+                                    <font class="smallfont"><p>On case 1, I think it could be possibly solved by having your timer based on two separate conditions.</p>
+
+<p>Pseudo code:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>declare WallSwitchOverride
+
+  isEnabled : boolean
+
+end
+
+rule "foo"
+
+timer (daytime)
+
+when 
+  Event (source = "door status", value == "on)
+  WallSwitchOverride ( isEnabled == false)
+
+then
+
+  execute.command("turn light on")
+
+end
+
+
+rule "for light switch"
+
+when 
+  Event (source = "light switch", value == "off")
+
+then
+  insert(new WallSwitchOverride(true))
+  execute.command("light off")
+
+end
+
+</pre>
+</div></div>
+
+<p>Sorry do not have a good practical example to show how to implement this exactly correctly, and no time to write one at the moment. Basically it is trying to say:</p>
+
+<ul class="alternate" type="square">
+	<li>if it is daytime and the door is open and wall switch didn't override then turn the light on</li>
+</ul>
+
+
+
+<p>This isn't a complete example for your use case, some of the interactions are not clear to me, so you will need to write more rules to manage all the possibilities you describe. But it does attempt to show that you can insert your own facts into the rules (the 'declare' keyword) and have your timers and conditions based on those custom facts in addition to the event values.</p>
+
+<p>There are some examples of using declared facts as part of your rules in this thread (search for the declare keyword): <a href="One more question about rules..html" title="One more question about rules.">One more question about rules.</a>. And there's a example that shows the full syntax of declaring your own facts here: <a href="http://www.openremote.org/display/docs/Advanced+Rule+Examples" title="Advanced Rule Examples">Advanced Rule Examples</a> but not much documentation around this yet.</p>
+
+<p>It will probably require you to get into Drool programming a bit and reading the Drool language documentation to get to the final outcome. And you will need to write several rules to manage the 'WallSwitchOverride' state in all the different scenarios you describe.</p>
+
+
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 02, 2013 12:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877343"></a>
+                                    <font class="smallfont"><p>Another way to do this could be to use the in-memory virtual commands (which are good enough for simple boolean states). Then instead have the "daytime" condition based on two events, the door open status and what your additional "switch" for the light says (this doesn't have a physical device representation). And then include the controls to change the in-memory switch only from the wall switch, not affected by the door open/close status.</p>
+
+<p>Basically replacing the 'declare' variable with an additional "virtual" device in the designer.</p>
+
+<p>Unfortunately no documentation on this either, but there's a forum discussion here: <a href="In-Memory Virtual Command Help.html" title="In-Memory Virtual Command Help">In&#45;Memory Virtual Command Help</a>.</p>
+
+<p>Hopefully these help you move forward.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 02, 2013 12:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877347"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>Thank you for help so far!!</p>
+
+<p>This could also fix my issue, i think, not the best sulotion, but it works and it also<br/>
+enables the light in the room to be turned on if the alarm goes of... well as long as the door is<br/>
+closed.</p>
+
+<p>rule "Master Bedroom light on" when</p>
+
+<p>  Event( source == "Door", value == "on" )</p>
+
+<p>then</p>
+
+<p>  execute.command("Dim Light", 30);</p>
+
+<p>end</p>
+
+<p>rule "Turn light of after 45 min"</p>
+
+<p>timer (int: 45min)</p>
+
+<p>when eval(true)</p>
+
+<p>  Event( source == "Door", value == "on" )</p>
+
+<p>then</p>
+
+<p>  execute.command("Lys - Av/På - 2 etg - Master Bedroom (OFF)");</p>
+
+<p>end</p>
+
+<p>rule "Blocking light in Master Bedroom"</p>
+
+<p>timer (cron: * 00-59 0-6 ? * 2-6)</p>
+
+<p>when</p>
+
+<p>  Event( source == "Status - Dør - 2 etg - MasterBedroom", value == "on" )</p>
+
+<p>then</p>
+
+<p>  execute.command("Lys - Av/På - 2 etg - Master Bedroom (OFF)");</p>
+
+<p>end</p>
+
+
+<p>But I will definately look into In Memory Virtual Commands and read more about Drool programming.<br/>
+Up untill now I have been using a Siemens LOGO to do logical functions, but this is far better and</p>
+
+<p>alot more flexible and it will allow me to integrate my mediacenter (denon, samsung etc) in one app <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>One small question, when writing rules in the OR Designer, when having multiple rules it tends to become quite difficult to keep track of each rule. Is there a way to separete them with a line or something so it becomes easier to see where one code ends, and another begins? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 02, 2013 13:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877352"></a>
+                                    <font class="smallfont"><p>Nothing wrong with using a timer. It is simple, simple is elegant, and if it works, it works.</p>
+
+<p>I wouldn't write the rules in the designer's editor &#8211; use your favorite editor and then copy/paste the final result in the designer when done.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 02, 2013 14:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877393"></a>
+                                    <font class="smallfont"><p>I am trying to make a rule based on multiple events,but i do not know how to write this:</p>
+
+<p>rule " xxxxxxx" when</p>
+
+<p>  Event( source == "ccccccccccccc", value == "off" )<br/>
+or<br/>
+  Event( source == "ccccccccccccc", value == "off" )<br/>
+or<br/>
+  Event( source == "ccccccccccccc", value == "off" )<br/>
+or<br/>
+  Event( source == "ccccccccccccc", value == "off" )</p>
+
+<p>then</p>
+
+<p>  execute.command("cccccccccc (OFF)");</p>
+
+<p>end</p>
+
+<p>I assume this is possible, but how do I write this kinde of rule?<br/>
+Also, are words like "and","if", "or" not used in this type of programming?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 03, 2013 13:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877406"></a>
+                                    <font class="smallfont">
+<p>The keyword 'or' is valid on the left-hand side (in the 'when' condition), so the example should work as-is.</p>
+
+<p>Conditional "and" is implicit, so:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">" xxxxxxx"</span> when
+
+  Event( source == <span class="code-quote">"A"</span>, value == <span class="code-quote">"off"</span> )
+  Event( source == <span class="code-quote">"B"</span>, value == <span class="code-quote">"off"</span> )
+  Event( source == <span class="code-quote">"C"</span>, value == <span class="code-quote">"off"</span> )
+  Event( source == <span class="code-quote">"D"</span>, value == <span class="code-quote">"off"</span> )
+
+then
+
+  execute.command(<span class="code-quote">"cccccccccc (OFF)"</span>);
+
+end
+</pre>
+</div></div>
+
+<p>Would read: when event from source A and event from source B and event from source C and event from source D all have a current state value of 'off' then execute command OFF.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 03, 2013 17:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877415"></a>
+                                    <font class="smallfont"><p>Thanks, that did work, I just got the code wrong the first time I tried.</p>
+
+<p>If I wanted to use the following rule:</p>
+
+<p>rule " xxxxxxx" when</p>
+
+<p>Event( source == "ccccccccccccc", value == "off" )<br/>
+or<br/>
+Event( source == "ccccccccccccc", value == "off" )<br/>
+or<br/>
+Event( source == "ccccccccccccc", value == "off" )<br/>
+or<br/>
+Event( source == "ccccccccccccc", value == "off" )</p>
+
+<p>then</p>
+
+<p>execute.command("cccccccccc (OFF)");</p>
+
+<p>end</p>
+
+
+<p>But this was depending on that "status" of the house (thinking In Virtuel Memory), lets call it night mode switch on/off.</p>
+
+<p>If I wanted to say that if nigthmode is On and one of the eventes in the rule happens, then execute the command.<br/>
+How would i write that?</p>
+
+
+<p>rule " xxxxxxx" </p>
+
+<p>if ( source == "Nightmode", value == "on" )</p>
+
+<p>and (one of the events below should happen)</p>
+
+<p>Event( source == "ccccccccccccc", value == "off" )<br/>
+or<br/>
+Event( source == "ccccccccccccc", value == "off" )<br/>
+or<br/>
+Event( source == "ccccccccccccc", value == "off" )<br/>
+or<br/>
+Event( source == "ccccccccccccc", value == "off" )</p>
+
+<p>then</p>
+
+<p>execute.command("cccccccccc (OFF)");</p>
+
+<p>end</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 03, 2013 20:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877416"></a>
+                                    <font class="smallfont"><p>You can group conditions using parenthesis:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">" xxxxxxx"</span> when 
+
+ ( Event ( source == <span class="code-quote">"Nightmode"</span>, value == <span class="code-quote">"on"</span> ) 
+
+   AND
+   
+   ( Event( source == <span class="code-quote">"A"</span>, value == <span class="code-quote">"off"</span> ) OR
+     Event( source == <span class="code-quote">"B"</span>, value == <span class="code-quote">"off"</span> ) OR
+     Event( source == <span class="code-quote">"C"</span>, value == <span class="code-quote">"off"</span> ) OR
+     Event( source == <span class="code-quote">"D"</span>, value == <span class="code-quote">"off"</span> ) )
+ )
+
+then
+
+  execute.command(<span class="code-quote">"cccccccccc (OFF)"</span>);
+
+end
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 03, 2013 21:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877418"></a>
+                                    <font class="smallfont"><p>Thanks for the answer, and not at least for the quick respons time!!!</p>
+
+<p>If I could ask another small question, if I want to execute a command not based on status being ON or OFF, <br/>
+but based on a change in status, no matter what the status was. </p>
+
+<p>Is there an easy way to write that?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 03, 2013 21:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877419"></a>
+                                    <font class="smallfont"><p>You just leave the value out of the condition evaluation:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">" xxxxxxx"</span> when 
+
+  Event ( source == <span class="code-quote">"Nightmode"</span> ) 
+
+then
+
+  execute.command(<span class="code-quote">"cccccccccc (OFF)"</span>);
+
+end
+</pre>
+</div></div>
+
+<p>Any time there's a change of value from the event source, the command is executed.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 03, 2013 21:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877421"></a>
+                                    <font class="smallfont"><p>Thanks <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 03, 2013 21:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877452"></a>
+                                    <font class="smallfont"><p>The following rule works fine, but it creates an unwanted side effect.<br/>
+Hopefully there is a way around that.</p>
+
+<p>The issue is as follows:<br/>
+If value "Nightmode" is OFF, and any of the sources A,B,C or D changes status nothing happes, so far so good.<br/>
+However when using a button to change the Nightmode Value from OFF to ON, then the "light" command is executed, despite no change in sources A,B,C or D. Basically, changing value from OFF to ON on the "Nightmode" switch, it becomes a light switch.<br/>
+How do I go about turning the Nightmode ON without triggering the command? The command should only be executed when there is a change.</p>
+
+<p>rule " xxxxxxx" when </p>
+
+<p> ( Event ( source == "Nightmode", value == "on" ) </p>
+
+<p>   AND</p>
+
+<p>   ( Event( source == "A", ) OR<br/>
+     Event( source == "B", ) OR<br/>
+     Event( source == "C", ) OR<br/>
+     Event( source == "D", ) )<br/>
+ )</p>
+
+<p>then</p>
+
+<p>  execute.command("Light (ON)");</p>
+
+<p>end</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 04, 2013 10:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877509"></a>
+                                    <font class="smallfont"><p>You would need to switch it from the cloud mode into stream mode (it is only 2 lines in source code change, I don't know if it can be done through config properties). When you do this then the code that will do what you want is:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare myEventABCD
+  @role(event)
+  @expires(1m)
+  on : <span class="code-object">boolean</span>
+end
+
+declare myEventNight
+  @role(event)
+  @expires(20h)
+  on : <span class="code-object">boolean</span>
+end
+
+rule <span class="code-quote">"myRuleABCD"</span>
+when
+  Event(source==<span class="code-quote">"A"</span>)or
+  Event(source==<span class="code-quote">"B"</span>)or
+  Event(source==<span class="code-quote">"C"</span>)or
+  Event(source==<span class="code-quote">"D"</span>)
+then
+  insert(<span class="code-keyword">new</span> myEventABCD());
+end
+
+rule <span class="code-quote">"myRuleNightOn"</span>
+when
+  Event ( source == <span class="code-quote">"Nightmode"</span>, value == <span class="code-quote">"on"</span> )
+then
+  insert(<span class="code-keyword">new</span> myEventNight());
+end
+
+rule <span class="code-quote">"myRuleNightOff"</span>
+when
+  Event ( source == <span class="code-quote">"Nightmode"</span>, value == <span class="code-quote">"off"</span> )
+  $e:myEventNight()
+then
+  retract($e);
+end
+
+rule <span class="code-quote">"xxxxxxx"</span> when
+  $e:myEventNight()
+  myEventABCD(<span class="code-keyword">this</span> after $e) 
+then
+  execute.command(<span class="code-quote">"Light (ON)"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 04, 2013 18:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877522"></a>
+                                    <font class="smallfont"><p>Well, although it should be done in the stream mode, your particular example can be coded in the cloud too. It is a bit ugly but it is working:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare myEventABCD
+  on : <span class="code-object">boolean</span>
+end
+
+rule <span class="code-quote">"myRuleABCD"</span>
+when
+  Event(source==<span class="code-quote">"A"</span>)or
+  Event(source==<span class="code-quote">"B"</span>)or
+  Event(source==<span class="code-quote">"C"</span>)or
+  Event(source==<span class="code-quote">"D"</span>)
+then
+  insert(<span class="code-keyword">new</span> myEventABCD());
+end
+
+rule <span class="code-quote">" xxxxxxx"</span> when
+  Event ( source == <span class="code-quote">"Nightmode"</span>, value == <span class="code-quote">"on"</span> )
+  $e:myEventABCD() 
+then
+  execute.command(<span class="code-quote">"Light (ON)"</span>);
+  retract($e);
+end
+
+rule <span class="code-quote">" yxxxxxx"</span> when
+  Event ( source == <span class="code-quote">"Nightmode"</span>, value != <span class="code-quote">"on"</span> )
+  $e:myEventABCD() 
+then
+  <span class="code-comment">// simply remove event so it wont be active when the night comes
+</span>  retract($e);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 04, 2013 22:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877861"></a>
+                                    <font class="smallfont"><p>Hi Michal,</p>
+
+<p>I am new to this whole programming language and I don't quite understand the rule above.</p>
+
+<p>declare myEventABCD // is this a new event/command I need to create in Virtual Memory?<br/>
+  on : boolean<br/>
+end</p>
+
+<p>rule "myRuleABCD"<br/>
+when<br/>
+  Event(source=="A")or<br/>
+  Event(source=="B")or<br/>
+  Event(source=="C")or<br/>
+  Event(source=="D")<br/>
+then<br/>
+  insert(new myEventABCD()); // do I need to put on/off or any value in the ()?<br/>
+end</p>
+
+<p>rule " xxxxxxx" when<br/>
+  Event ( source == "Nightmode", value == "on" )<br/>
+  $e:myEventABCD() // what do I write her, the name of the sensor?<br/>
+then<br/>
+  execute.command("Light (ON)");<br/>
+  retract($e);<br/>
+end</p>
+
+<p>rule " yxxxxxx" when<br/>
+  Event ( source == "Nightmode", value != "on" )<br/>
+  $e:myEventABCD() // what do I write her, the name of the sensor?<br/>
+then<br/>
+  // simply remove event so it wont be active when the night comes // i just remove this line?<br/>
+  retract($e);<br/>
+end</p>
+
+<p>Also you write something about stream mode vs cloud mode.<br/>
+I understand the above rule works in cloud mode, but what is the difference between cloud vs stream?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 09, 2013 16:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877875"></a>
+                                    <font class="smallfont"><p>Hi Stian,</p>
+
+<p>Please just copy the code as is in your rule file</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare myEventABCD
+  @role(event)
+  on : <span class="code-object">boolean</span>
+end
+
+declare myEventNight
+  @role(event)
+  on : <span class="code-object">boolean</span>
+end
+
+rule <span class="code-quote">"myRuleABCD"</span>
+when
+  Event(source==<span class="code-quote">"A"</span>)or
+  Event(source==<span class="code-quote">"B"</span>)or
+  Event(source==<span class="code-quote">"C"</span>)or
+  Event(source==<span class="code-quote">"D"</span>)
+then
+  insert(<span class="code-keyword">new</span> myEventABCD());
+end
+
+rule <span class="code-quote">"myRuleNightOn"</span>
+when
+  Event ( source == <span class="code-quote">"Nightmode"</span>, value == <span class="code-quote">"on"</span> )
+then
+  insert(<span class="code-keyword">new</span> myEventNight());
+end
+
+rule <span class="code-quote">"myRuleNightOff"</span>
+when
+  Event ( source == <span class="code-quote">"Nightmode"</span>, value == <span class="code-quote">"off"</span> )
+  $e:myEventNight()
+then
+  retract($e);
+end
+
+rule <span class="code-quote">" xxxxxxx"</span> when
+  $e:myEventNight()
+  myEventABCD(<span class="code-keyword">this</span> after $e) 
+then
+  execute.command(<span class="code-quote">"Light (ON)"</span>,<span class="code-quote">"on from stream rule"</span>);
+end
+</pre>
+</div></div>
+<p>Here there are 4 sensors: A, B, C, D, Nightmode. The rest is internal to drools to process the logic. Leave the empty braces as they are.</p>
+
+<p>In the cloud mode there is no concept of /now/, so events cannot expire by themselves. You must always retract inserted facts otherwise after a while the memory will be full and controller either slow downs or crashes.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 09, 2013 16:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877925"></a>
+                                    <font class="smallfont"><p>Hi Michal,</p>
+
+<p>Thanks for your reply.<br/>
+I copied the code, but replaced the relevant events (A,B,C etc) and inserted my command to turn<br/>
+the light on.<br/>
+My initial problem has been solved in terms of, when turning on the nightmode, the light was also turned on. This does not happen any more.</p>
+
+<p>However, the code does not make the light turn on when a change in status for one of the sensors are detected. So it fixed my initial problem, but now the nightmode does not work.</p>
+
+<p>I have copied the code that I have inserted, maybe you can see why it does not work.<br/>
+There is no error in the controller log. </p>
+
+<p>The "nightmode" is a command/sensor created In Memory Virtual Command.<br/>
+I have a switch that turns the alarm on and off.<br/>
+I am not sure if that has any impact on why this does not work.</p>
+
+<p>Thanks for helping me out so far.</p>
+
+<p>declare myEventABCD</p>
+
+<p>  @role(event)</p>
+
+<p>  on : boolean</p>
+
+<p>end</p>
+
+<p>declare myEventNight</p>
+
+<p>  @role(event)</p>
+
+<p>  on : boolean</p>
+
+<p>end</p>
+
+<p>rule "myRuleABCD"</p>
+
+<p>when</p>
+
+<p>  Event( source == "Status - Lås - 1 etg - Ytterdør" ) <br/>
+or<br/>
+  Event( source == "Status - Dør - 1 etg - Ytterdør" )<br/>
+or<br/>
+  Event( source == "Status - Dør - 2 etg - Soverom 1" )<br/>
+or<br/>
+  Event( source == "Status - Dør - 2 etg - Trimrom" )<br/>
+or<br/>
+  Event( source == "Status - Vindu - 2 etg - Trimrom" )<br/>
+or<br/>
+  Event( source == "Status - Vindu - 2 etg - Soverom 1 1-1," )<br/>
+or<br/>
+  Event( source == "Status - Vindu - 2 etg - Soverom 1 1-2" )<br/>
+or<br/>
+  Event( source == "Status - Vindu - 2 etg - Bad" )<br/>
+or<br/>
+  Event( source == "Status - Vindu - 1 etg - Kjøkken" )<br/>
+or<br/>
+  Event( source == "Status - Dør - 1 etg - Gang" )<br/>
+or<br/>
+  Event( source == "Status - Dør - 1 etg - Verandadør" )<br/>
+or<br/>
+  Event( source == "Status - Dør - Kjeller - Ytterdør" )<br/>
+or<br/>
+  Event( source == "Status - Lås - Kjeller - Ytterdør" )<br/>
+or<br/>
+  Event( source == "Status - Dør - Kjeller - EL-Bod" )<br/>
+or<br/>
+  Event( source == "Status - Dør - Kjeller - Gang" )<br/>
+or<br/>
+  Event( source == "Status - Dør - Kjeller - Frysebod" )<br/>
+or<br/>
+  Event( source == "Status - Dør - Kjeller - Bod" )<br/>
+or<br/>
+  Event( source == "Status - Dør - 1 etg - WC" )<br/>
+or<br/>
+  Event( source == "Status - Dør - Kjeller - Bad" )<br/>
+or<br/>
+  Event( source == "Status - Vindu - Kjeller - Bod" )<br/>
+or<br/>
+  Event( source == "Status - Vindu - Kjeller - Kjellerstue" );</p>
+
+<p>then</p>
+
+<p>  insert(new myEventABCD());</p>
+
+<p>end</p>
+
+<p>rule "myRuleNightOn"</p>
+
+<p>when</p>
+
+<p>  Event( source == "Nightmode", value == "on" )</p>
+
+<p>then</p>
+
+<p>  insert(new myEventNight());</p>
+
+<p>end</p>
+
+<p>rule "myRuleNightOff"</p>
+
+<p>when</p>
+
+<p>  Event( source == "Nightmode", value == "off" )<br/>
+  $e:myEventNight()</p>
+
+<p>then</p>
+
+<p>  retract($e);</p>
+
+<p>end</p>
+
+<p>rule " xxxxxxx" when</p>
+
+<p>  $e:myEventNight()<br/>
+  myEventABCD(this after $e) </p>
+
+<p>then</p>
+
+<p>execute.command("Lys - Av/På - 2 etg - Master Bedroom (ON)","on from stream rule" );</p>
+
+<p>end</p>
+
+<p>After some checking I found I get the following error:</p>
+
+<p><img src="attachments/22877256/23036175.png" align="absmiddle" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 10, 2013 15:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877944"></a>
+                                    <font class="smallfont"><p>Hi Stian,</p>
+
+<p>the problem is in the command</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+execute.command(<span class="code-quote">"Lys - Av/På - 2 etg - Master Bedroom (ON)"</span>,<span class="code-quote">"on from stream rule"</span> );
+</pre>
+</div></div>
+<p>The log file shows that the parameter should be integer, so perhaps it should be changed to something like this</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+execute.command(<span class="code-quote">"Lys - Av/På - 2 etg - Master Bedroom (ON)"</span>, 1 );
+</pre>
+</div></div>
+<p>or maybe simple</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+execute.command(<span class="code-quote">"Lys - Av/På - 2 etg - Master Bedroom (ON)"</span>);
+</pre>
+</div></div>
+<p>Log file shows that the parameter to your command should be an integer.<br/>
+You were able to switch light on from the rule previously, so simply copy the command you used here. My example was just to see it in the virtual memory label that the rule was triggered.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 10, 2013 20:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877947"></a>
+                                    <font class="smallfont"><p><img src="attachments/22877256/23036176.png" align="absmiddle" border="0"/></p>
+
+<p>execute.command("Lys - Av/På - 2 etg - Master Bedroom (ON)"<br/>
+This command is basically a DPT 1.001 and bit 1. In my other rules I use no integer.<br/>
+Writing the command as I have done above makes the lights turn on.<br/>
+This is an ON switch command.</p>
+
+<p>Playing around a bit I have used the follow command:</p>
+
+<p>execute.command("Lys - Settverdi - 2 etg - Master Bedroom", 95 );<br/>
+This is not a switch command, but a command that tells the lights to turn ON, to the<br/>
+spesified value, in my case 95%. This seem to work.</p>
+
+<p>If there is no need for this text "on from stream rule", then the rule now seems to work <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Thanks you for your help!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 10, 2013 21:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

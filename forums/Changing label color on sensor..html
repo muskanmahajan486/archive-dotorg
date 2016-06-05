@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Changing label color on sensor.</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Changing label color on sensor.
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 23, 2013 by <font color="#0050B2">aktur</font>.
+				    </div>
+
+				    <p>I'm testing now a power sensor and display wattage in a label. I wonder how hard would it be to change the label color according to number of watts the sensor is indicating? Of course doing it from drools, but due to references etc. probably this would mean heavy hacking, wouldn't it?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22880222"></a>
+                                    <font class="smallfont"><p>This is something we've been thinking about for some time and how to fit a generic implementation of this in the roadmap (basically allowing all/most of the attributes of widgets to be linked to a sensor or somehow modified from the controller (or from local scripting in the console). But it'll take time and we're not there yet.</p>
+
+<p>The "hack" I can think about now (but have not tested) is that if you e.g. only want 2 colors, add 2 labels on top of each other, each with their own color. From the rules, send the text to the label with the desired color and an empty string to the other.</p>
+
+<p>If you do try that, please let me know how it works out.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 24, 2013 09:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880261"></a>
+                                    <font class="smallfont"><p>Unfortunately this hack does not work. When I send an empty string to the label then the old string is kept. If you can point me to the java source which does that then I can try to modify it and test if it works.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 24, 2013 16:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880300"></a>
+                                    <font class="smallfont"><p>Correction to my previous test. It does not work on iOS (iOS 7, OR 2.1.3) but it works on Android. Therefore, IMHO it has to do with the console app and not the controller.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 25, 2013 22:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880313"></a>
+                                    <font class="smallfont"><p>Thanks for the investigation, I'll take a look at the iOS code</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 26, 2013 08:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880358"></a>
+                                    <font class="smallfont"><p>Michal, would you mind posting the Code-snippet to Set a label from inside a rule.</p>
+
+<p>Would be interesting for unexperienced Users (like me)</p>
+
+<p>Thank you</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Nov 26, 2013 18:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880359"></a>
+                                    <font class="smallfont"><p>Sure, here it is:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-comment">// Power Measurement Label color
+</span>rule <span class="code-quote">"Socket Switching Power"</span>
+when
+  Event(source==<span class="code-quote">"SocketSwitching1.POWER"</span>, $v: value)
+then
+  <span class="code-object">String</span> s = $v.toString();
+  <span class="code-object">int</span> v=<span class="code-object">Integer</span>.parseInt($v.toString());
+  <span class="code-keyword">if</span>(v&lt;80){
+    execute.command(<span class="code-quote">"SocketSwitching1.POWER.Green"</span>, s);
+    execute.command(<span class="code-quote">"SocketSwitching1.POWER.Yellow"</span>, <span class="code-quote">" "</span>);
+    execute.command(<span class="code-quote">"SocketSwitching1.POWER.Red"</span>, <span class="code-quote">" "</span>);
+  }<span class="code-keyword">else</span> <span class="code-keyword">if</span>(v&lt;150){
+    execute.command(<span class="code-quote">"SocketSwitching1.POWER.Green"</span>, <span class="code-quote">" "</span>);
+    execute.command(<span class="code-quote">"SocketSwitching1.POWER.Yellow"</span>, s);
+    execute.command(<span class="code-quote">"SocketSwitching1.POWER.Red"</span>, <span class="code-quote">" "</span>);
+  }<span class="code-keyword">else</span>{
+    execute.command(<span class="code-quote">"SocketSwitching1.POWER.Green"</span>, <span class="code-quote">" "</span>);
+    execute.command(<span class="code-quote">"SocketSwitching1.POWER.Yellow"</span>, <span class="code-quote">" "</span>);
+    execute.command(<span class="code-quote">"SocketSwitching1.POWER.Red"</span>, s);
+  }
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 26, 2013 19:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880395"></a>
+                                    <font class="smallfont"><p>I've seen that indeed the current iOS code does check for empty string (and I suppose it gets trimmed somewhere in the path, so a space would not help) and do not update the label in that case.</p>
+
+<p>I'm doing a lot of rework on the iOS console and will drop that check to see if it causes any issue.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 27, 2013 20:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : SNMP oids problem</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : SNMP oids problem
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 21, 2015 by <font color="#0050B2">hellion</font>.
+				    </div>
+
+				    <p>Hello everyone!<br/>
+I have a Linux Mint 17.1 running snmp 5.7.2 and using snmp version 2c but I've some problem with memory oids:<br/>
+I found oids documentation everywhere and all sites suggest using this oids for memory statistics:</p>
+
+<p>Memory Statistics</p>
+
+<p>Total Swap Size: .1.3.6.1.4.1.2021.4.3.0<br/>
+Available Swap Space: .1.3.6.1.4.1.2021.4.4.0<br/>
+Total RAM in machine: .1.3.6.1.4.1.2021.4.5.0<br/>
+Total RAM used: .1.3.6.1.4.1.2021.4.6.0<br/>
+Total RAM Free: .1.3.6.1.4.1.2021.4.11.0<br/>
+Total RAM Shared: .1.3.6.1.4.1.2021.4.13.0<br/>
+Total RAM Buffered: .1.3.6.1.4.1.2021.4.14.0<br/>
+Total Cached Memory: .1.3.6.1.4.1.2021.4.15.0 </p>
+
+<p>when I try to run :<br/>
+Input:<br/>
+sudo snmpget -v 2c -c "ComunityName" 127.0.0.1 .1.3.6.1.4.1.2021.4.5.0<br/>
+#it return the right total memory size (RAM):   <br/>
+Output:<br/>
+iso.3.6.1.4.1.2021.4.5.0 = INTEGER: 1025892 and It's right!!</p>
+
+<p>PROBLEM 1<br/>
+when i try to run:<br/>
+Input:<br/>
+sudo snmpget -v 2c -c "ComunityName" 127.0.0.1 .1.3.6.1.4.1.2021.4.11.0<br/>
+#It should return the Total RAM free but the value returned is greater then total memory size!!<br/>
+Output:<br/>
+iso.3.6.1.4.1.2021.4.11.0 = INTEGER: 1127912</p>
+
+<p>PROBLEM 2<br/>
+when I try to run:<br/>
+Input:<br/>
+sudo snmpget -v 2c -c "ComunityName" 127.0.0.1 .1.3.6.1.4.1.2021.4.6.0<br/>
+#It should return the Total RAM used but the value returned is equal then total memory free !<br/>
+Output:<br/>
+iso.3.6.1.4.1.2021.4.6.0 = INTEGER: 80432</p>
+
+<p>administrator@mint ~ $ sudo cat /proc/meminfo <br/>
+MemTotal:        1025892 kB<br/>
+MemFree:           80488 kB     *this value is a little bit different because i run meminfo next... <br/>
+Buffers:          148184 kB<br/>
+Cached:           252660 kB<br/>
+SwapCached:            4 kB<br/>
+Active:           355116 kB<br/>
+Inactive:         362692 kB<br/>
+Active(anon):     188216 kB<br/>
+Inactive(anon):   177108 kB<br/>
+Active(file):     166900 kB<br/>
+Inactive(file):   185584 kB<br/>
+Unevictable:           0 kB<br/>
+Mlocked:               0 kB<br/>
+HighTotal:        135040 kB<br/>
+HighFree:          11212 kB<br/>
+LowTotal:         890852 kB<br/>
+LowFree:           71876 kB<br/>
+SwapTotal:       1046524 kB<br/>
+SwapFree:        1046292 kB<br/>
+Dirty:                36 kB<br/>
+Writeback:             0 kB<br/>
+AnonPages:        316996 kB<br/>
+Mapped:           142940 kB<br/>
+Shmem:             48360 kB<br/>
+Slab:             203932 kB<br/>
+SReclaimable:     192432 kB<br/>
+SUnreclaim:        11500 kB<br/>
+KernelStack:        2792 kB<br/>
+PageTables:         5700 kB<br/>
+NFS_Unstable:          0 kB<br/>
+Bounce:                0 kB<br/>
+WritebackTmp:          0 kB<br/>
+CommitLimit:     1559468 kB<br/>
+Committed_AS:    1894952 kB<br/>
+VmallocTotal:     122880 kB<br/>
+VmallocUsed:        3272 kB<br/>
+VmallocChunk:     114932 kB<br/>
+HardwareCorrupted:     0 kB<br/>
+AnonHugePages:     69632 kB<br/>
+HugePages_Total:       0<br/>
+HugePages_Free:        0<br/>
+HugePages_Rsvd:        0<br/>
+HugePages_Surp:        0<br/>
+Hugepagesize:       2048 kB<br/>
+DirectMap4k:       30712 kB<br/>
+DirectMap2M:      882688 kB</p>
+
+<p>and this is the used ram</p>
+<ol>
+	<li>dmidecode 2.12<br/>
+SMBIOS 2.8 present.</li>
+</ol>
+
+
+<p>Handle 0x1000, DMI type 16, 23 bytes<br/>
+Physical Memory Array<br/>
+	Location: Other<br/>
+	Use: System Memory<br/>
+	Error Correction Type: Multi-bit ECC<br/>
+	Maximum Capacity: 1 GB<br/>
+	Error Information Handle: Not Provided<br/>
+	Number Of Devices: 1</p>
+
+<p>Handle 0x1100, DMI type 17, 40 bytes<br/>
+Memory Device<br/>
+	Array Handle: 0x1000<br/>
+	Error Information Handle: Not Provided<br/>
+	Total Width: Unknown<br/>
+	Data Width: Unknown<br/>
+	Size: 1024 MB<br/>
+	Form Factor: DIMM<br/>
+	Set: None<br/>
+	Locator: DIMM 0<br/>
+	Bank Locator: Not Specified<br/>
+	Type: RAM<br/>
+	Type Detail: Other<br/>
+	Speed: Unknown<br/>
+	Manufacturer: QEMU<br/>
+	Serial Number: Not Specified<br/>
+	Asset Tag: Not Specified<br/>
+	Part Number: Not Specified<br/>
+	Rank: Unknown<br/>
+	Configured Clock Speed: Unknown<br/>
+	Minimum voltage:  Unknown<br/>
+	Maximum voltage:  Unknown<br/>
+	Configured voltage:  Unknown</p>
+
+<p>Does anybody know why snmpget return with wrong values ?Thanks for your time !! </p>
+
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,448 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Updates on ping with shell command</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Updates on ping with shell command
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 23, 2014 by <font color="#0050B2">robnas</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>ive read this article<a href="http://www.openremote.org/pages/viewpage.action?pageId=21037421">http://www.openremote.org/pages/viewpage.action?pageId=21037421</a><br/>
+and im running into the same problem</p>
+
+<p><img src="attachments/23594858/23789725.png" align="absmiddle" border="0"/><br/>
+when executing the result is:<br/>
+PING 192.169.1.13 (192.168.1.13): 56 data bytes</p>
+
+<p>but i need to get this info:</p>
+
+<p>PING 192.168.1.13 (192.168.1.13): 56 data bytes</p>
+
+<p>&#8212; 192.168.1.13 ping statistics &#8212;<br/>
+1 packets transmitted, 0 packets received, 100% packet loss<br/>
+NAS&gt;</p>
+
+
+
+<p>i will only receive 1 line of information and the regex code is unable to parse the data. so my sensor will not switch.<br/>
+is there already a fix in the controller? im using: OpenRemote-Controller-2.2.0_TTS-Email-Serial.zip</p>
+
+
+<p>i also tried this option:<br/>
+ <a href="http://www.openremote.org/display/forums/Shell+Command+Example">http://www.openremote.org/display/forums/Shell+Command+Example</a></p>
+
+<p>to execute an .sh file, im running the controller on a synology NAS but it gives a java error: error=13, Permission denied<br/>
+i tried to chmod 777 and +x  the .sh filename    command <a href="http://stackoverflow.com/questions/3085897/permission-denied-error-in-java-for-chmod-command">http://stackoverflow.com/questions/3085897/permission-denied-error-in-java-for-chmod-command</a><br/>
+i can execute the file in telnet or in SSH but the controller cannot start it</p>
+
+
+<p>any suggestions?</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23594858/23789725.png">Naamloos.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23594877"></a>
+                                    <font class="smallfont"><p>1. Please make sure that you reboot the controller each time you are using the shell protocol and update design. Restart is not enough. On NAS it would be enough to stop and start the Openremote package through the package centre.</p>
+
+<p>2. Look into log files and check if the response from the shell command is what it should be.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 24, 2014 10:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594879"></a>
+                                    <font class="smallfont"><p>Thanks Michal,</p>
+
+<p>that did the trick.<br/>
+my shell logfile says:</p>
+
+<p>&#8212; 192.168.1.13 ping statistics &#8212;<br/>
+1 packets transmitted, 0 packets received, 100% packet loss<br/>
+#DEBUG 2014-12-24 12:02:10,786 (Shell): Building ShellExe command<br/>
+#DEBUG 2014-12-24 12:02:10,857 (Shell): ShellExe Command: commandParams = 192.168.1.13 -c 1 -W 1<br/>
+#DEBUG 2014-12-24 12:02:10,857 (Shell): ShellExe Command: regex = (\d+)\spackets\sreceived<br/>
+#DEBUG 2014-12-24 12:02:10,857 (Shell): ShellExe Command: pollingInterval = 10s<br/>
+#DEBUG 2014-12-24 12:02:10,858 (Shell): ShellExe Command: sensorNamesList = controle2<br/>
+#DEBUG 2014-12-24 12:02:10,879 (Shell): ShellExe Command: commandPath= /bin/ping<br/>
+#DEBUG 2014-12-24 12:02:10,880 (Shell): ShellExe Command created successfully<br/>
+#DEBUG 2014-12-24 12:02:16,464 (Shell): *** setSensor called as part of EventListener init *** sensor is: Sensor (Name = 'controle gsm thuis', #ID = '5845920', State Mappings: <div class="error"><span class="error">Unknown macro: {1=off, 0=on}</span> </div>)<br/>
+#DEBUG 2014-12-24 12:02:16,470 (Shell): Thread started: Polling thread for sensor: controle gsm thuis 5845920<br/>
+#DEBUG 2014-12-24 12:02:16,470 (Shell): Will start shell command: /bin/ping and use params: 192.168.1.13 -c 1 -W 1<br/>
+#DEBUG 2014-12-24 12:02:17,489 (Shell): Shell command: /bin/ping returned: PING 192.168.1.13 (192.168.1.13): 56 data bytes</p>
+
+<p>&#8212; 192.168.1.13 ping statistics &#8212;</p>
+
+
+
+<p>now i have to look what the sensor says and if it will switch </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Dec 24, 2014 11:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594882"></a>
+                                    <font class="smallfont"><p>it works <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> many thanks.</p>
+
+<p>i have another issue when i look at the boot.log there are some unknow errors for me:</p>
+
+<p>-------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>ERROR 2014-12-24 12:05:39,631 : Reading controller's definition failed : Unable to parse controller definition from '/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml' (accessing schema from '/volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/classes/controller-2.0-M7.xsd') : Error on line 1655 of document <a href="file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:">file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:</a> XML document structures must start and end within the same entity.<br/>
+org.openremote.controller.exception.XMLParsingException: Unable to parse controller definition from '/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml' (accessing schema from '/volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/classes/controller-2.0-M7.xsd') : Error on line 1655 of document <a href="file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:">file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:</a> XML document structures must start and end within the same entity.<br/>
+	at org.openremote.controller.deployer.Version20ModelBuilder.readControllerXMLDocument(Version20ModelBuilder.java:639)<br/>
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:152)<br/>
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:858)<br/>
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)<br/>
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)<br/>
+	at java.lang.Thread.run(Thread.java:662)<br/>
+Caused by: org.jdom.input.JDOMParseException: Error on line 1655 of document <a href="file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:">file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:</a> XML document structures must start and end within the same entity.<br/>
+	at org.jdom.input.SAXBuilder.build(SAXBuilder.java:465)<br/>
+	at org.jdom.input.SAXBuilder.build(SAXBuilder.java:810)<br/>
+	at org.jdom.input.SAXBuilder.build(SAXBuilder.java:789)<br/>
+	at org.openremote.controller.deployer.Version20ModelBuilder.readControllerXMLDocument(Version20ModelBuilder.java:634)<br/>
+	... 5 more<br/>
+Caused by: org.xml.sax.SAXParseException: XML document structures must start and end within the same entity.<br/>
+	at com.sun.org.apache.xerces.internal.util.ErrorHandlerWrapper.createSAXParseException(ErrorHandlerWrapper.java:195)<br/>
+	at com.sun.org.apache.xerces.internal.util.ErrorHandlerWrapper.fatalError(ErrorHandlerWrapper.java:174)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLErrorReporter.reportError(XMLErrorReporter.java:388)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLScanner.reportFatalError(XMLScanner.java:1427)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.endEntity(XMLDocumentFragmentScannerImpl.java:905)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.endEntity(XMLDocumentScannerImpl.java:604)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLEntityManager.endEntity(XMLEntityManager.java:1391)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLEntityScanner.load(XMLEntityScanner.java:1763)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLEntityScanner.scanLiteral(XMLEntityScanner.java:1064)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLScanner.scanAttributeValue(XMLScanner.java:987)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.scanAttribute(XMLNSDocumentScannerImpl.java:460)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.scanStartElement(XMLNSDocumentScannerImpl.java:277)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2756)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:647)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.next(XMLNSDocumentScannerImpl.java:140)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:511)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:808)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:737)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:119)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1205)<br/>
+	at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:522)<br/>
+	at org.jdom.input.SAXBuilder.build(SAXBuilder.java:453)<br/>
+	... 8 more<br/>
+INFO 2014-12-24 12:05:40,467 : Startup complete.<br/>
+INFO 2014-12-24 12:05:42,477 : </p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  UNDEPLOYING CURRENT CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>INFO 2014-12-24 12:05:42,479 : Stopped event processor : Drools Rule Engine<br/>
+INFO 2014-12-24 12:05:42,479 : Stopped event processor : RRD4J Data Logger<br/>
+INFO 2014-12-24 12:05:42,479 : Stopped event processor : EmonCMS Data Logger<br/>
+INFO 2014-12-24 12:05:42,480 : Shutdown complete.<br/>
+INFO 2014-12-24 12:05:42,481 : </p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>ERROR 2014-12-24 12:05:46,587 : Can't copy lircd.conf to /etc/lircd.conf<br/>
+java.io.FileNotFoundException: /etc/lircd.conf (Permission denied)<br/>
+	at java.io.FileOutputStream.open(Native Method)<br/>
+	at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:194)<br/>
+	at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:145)<br/>
+	at org.apache.commons.io.FileUtils.doCopyFile(FileUtils.java:671)<br/>
+	at org.apache.commons.io.FileUtils.copyFile(FileUtils.java:653)<br/>
+	at org.apache.commons.io.FileUtils.copyFileToDirectory(FileUtils.java:587)<br/>
+	at org.apache.commons.io.FileUtils.copyFileToDirectory(FileUtils.java:558)<br/>
+	at org.openremote.controller.service.Deployer.copyLircdConf(Deployer.java:1125)<br/>
+	at org.openremote.controller.service.Deployer.deployFromZip(Deployer.java:507)<br/>
+	at org.openremote.controller.service.Deployer.deployFromOnline(Deployer.java:540)<br/>
+	at org.openremote.controller.action.ConfigManageController.syncOnline(ConfigManageController.java:140)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)<br/>
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)<br/>
+	at java.lang.reflect.Method.invoke(Method.java:597)<br/>
+	at org.springframework.web.servlet.mvc.multiaction.MultiActionController.invokeNamedMethod(MultiActionController.java:434)<br/>
+	at org.springframework.web.servlet.mvc.multiaction.MultiActionController.handleRequestInter</p>
+
+<p>the rest of the log looks good except these lines:</p>
+
+<p>ERROR 2014-12-24 12:05:46,587 : Can't copy lircd.conf to /etc/lircd.conf<br/>
+java.io.FileNotFoundException: /etc/lircd.conf (Permission denied)</p>
+
+<p>and:</p>
+
+<p>ERROR 2014-12-24 12:05:39,631 : Reading controller's definition failed : Unable to parse controller definition from '/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml' (accessing schema from '/volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/classes/controller-2.0-M7.xsd') : Error on line 1655 of document <a href="file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:">file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:</a> XML document structures must start and end within the same entity.<br/>
+org.openremote.controller.exception.XMLParsingException: Unable to parse controller definition from '/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml' (accessing schema from '/volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/classes/controller-2.0-M7.xsd') : Error on line 1655 of document <a href="file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:">file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:</a> XML document structures must start and end within the same entity.</p>
+
+
+<p>everything works fine but sometimes my android app crashes mabe that could be the problem?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Dec 24, 2014 11:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594891"></a>
+                                    <font class="smallfont"><blockquote>
+<p>ERROR 2014-12-24 12:05:46,587 : Can't copy lircd.conf to /etc/lircd.conf<br/>
+java.io.FileNotFoundException: /etc/lircd.conf (Permission denied)</p></blockquote>
+<p>Permission denied means that openremote cannot read /etc/lircd.conf file. Only needed when you are using lircd, but I suppose you don't, otherwise you will know that it is not working.</p>
+
+<blockquote>
+<p>ERROR 2014-12-24 12:05:39,631 : Reading controller's definition failed : Unable to parse controller definition from '/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml' (accessing schema from '/volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/classes/controller-2.0-M7.xsd') : Error on line 1655 of document <a href="file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:">file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:</a> XML document structures must start and end within the same entity.<br/>
+org.openremote.controller.exception.XMLParsingException: Unable to parse controller definition from '/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml' (accessing schema from '/volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/classes/controller-2.0-M7.xsd') : Error on line 1655 of document <a href="file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:">file:/volume1/@appstore/OpenRemote/bin/../webapps/controller/controller.xml:</a> XML document structures must start and end within the same entity.</p></blockquote>
+<p>This happens during syncing when controller is already trying to read the new design but it is not yet fully synced. Usually this error goes away by itself when syncing completes.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 24, 2014 15:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594910"></a>
+                                    <font class="smallfont"><p>now i have made some more shell ping comands the openremote controller stops executing shell commands, my logfile stays empty and shell comands are not working.</p>
+
+<p>the boot log shows no error</p>
+
+<p>any idea?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Dec 25, 2014 18:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594912"></a>
+                                    <font class="smallfont"><p>im back with the same problem. ive reboted the controller and synology but it still reads 1 line, it has worked before. very odd</p>
+
+<p>DEBUG 2015-02-05 12:27:13,931 (Shell): Building ShellExe command<br/>
+DEBUG 2015-02-05 12:27:13,949 (Shell): ShellExe Command: commandParams = google.com -c 2 -W 1<br/>
+DEBUG 2015-02-05 12:27:13,950 (Shell): ShellExe Command: regex = (\d+)\spackets\sreceived<br/>
+DEBUG 2015-02-05 12:27:13,950 (Shell): ShellExe Command: pollingInterval = 30m<br/>
+DEBUG 2015-02-05 12:27:13,951 (Shell): ShellExe Command: sensorNamesList = ping sensor<br/>
+DEBUG 2015-02-05 12:27:13,951 (Shell): ShellExe Command: commandPath= /bin/ping<br/>
+DEBUG 2015-02-05 12:27:13,972 (Shell): ShellExe Command created successfully<br/>
+DEBUG 2015-02-05 12:27:19,746 (Shell): Building ShellExe command<br/>
+DEBUG 2015-02-05 12:27:19,747 (Shell): ShellExe Command: commandParams = 192.168.1.124 -c  -W 1<br/>
+DEBUG 2015-02-05 12:27:19,747 (Shell): ShellExe Command: regex = (\d+)\spackets\sreceived<br/>
+DEBUG 2015-02-05 12:27:19,748 (Shell): ShellExe Command: pollingInterval = 60m<br/>
+DEBUG 2015-02-05 12:27:19,748 (Shell): ShellExe Command: sensorNamesList = sensor mediapl<br/>
+DEBUG 2015-02-05 12:27:19,748 (Shell): ShellExe Command: commandPath= /bin/ping<br/>
+DEBUG 2015-02-05 12:27:19,749 (Shell): ShellExe Command created successfully<br/>
+DEBUG 2015-02-05 12:27:31,535 (Shell): Building ShellExe command<br/>
+DEBUG 2015-02-05 12:27:31,535 (Shell): ShellExe Command: commandParams = 192.168.1.90 -c 1 -W 1<br/>
+DEBUG 2015-02-05 12:27:31,536 (Shell): ShellExe Command: regex = (\d+)\spackets\sreceived<br/>
+DEBUG 2015-02-05 12:27:31,536 (Shell): ShellExe Command: pollingInterval = 30m<br/>
+DEBUG 2015-02-05 12:27:31,537 (Shell): ShellExe Command: sensorNamesList = ping pc<br/>
+DEBUG 2015-02-05 12:27:31,537 (Shell): ShellExe Command: commandPath= /bin/ping<br/>
+DEBUG 2015-02-05 12:27:31,538 (Shell): ShellExe Command created successfully<br/>
+DEBUG 2015-02-05 12:27:36,073 (Shell): Building ShellExe command<br/>
+DEBUG 2015-02-05 12:27:36,074 (Shell): ShellExe Command: commandParams = 192.168.1.13 -c 1 -W 1<br/>
+DEBUG 2015-02-05 12:27:36,074 (Shell): ShellExe Command: regex = (\d+)\spackets\sreceived<br/>
+DEBUG 2015-02-05 12:27:36,075 (Shell): ShellExe Command: pollingInterval = 30s<br/>
+DEBUG 2015-02-05 12:27:36,075 (Shell): ShellExe Command: sensorNamesList = controle gsm<br/>
+DEBUG 2015-02-05 12:27:36,075 (Shell): ShellExe Command: commandPath= /bin/ping<br/>
+DEBUG 2015-02-05 12:27:36,076 (Shell): ShellExe Command created successfully<br/>
+DEBUG 2015-02-05 12:27:56,158 (Shell): Building ShellExe command<br/>
+DEBUG 2015-02-05 12:27:56,159 (Shell): ShellExe Command: regex = (\d+)\spackets\sreceived<br/>
+DEBUG 2015-02-05 12:27:56,160 (Shell): ShellExe Command: pollingInterval = 30s<br/>
+DEBUG 2015-02-05 12:27:56,160 (Shell): ShellExe Command: sensorNamesList = gsm1<br/>
+DEBUG 2015-02-05 12:27:56,160 (Shell): ShellExe Command: commandPath= /volume1/public/openremote_scripts/pinggsm.sh<br/>
+DEBUG 2015-02-05 12:27:56,161 (Shell): ShellExe Command created successfully<br/>
+DEBUG 2015-02-05 12:27:56,856 (Shell): *** setSensor called as part of EventListener init *** sensor is: Sensor (Name = 'gsm1', ID = '106627756', State Mappings: 1=on, 0=off)<br/>
+DEBUG 2015-02-05 12:27:56,933 (Shell): Thread started: Polling thread for sensor: gsm1 106627756<br/>
+DEBUG 2015-02-05 12:27:56,939 (Shell): Will start shell command: /volume1/public/openremote_scripts/pinggsm.sh and use params: null<br/>
+DEBUG 2015-02-05 12:27:57,374 (Shell): Shell command: /volume1/public/openremote_scripts/pinggsm.sh returned: PING 192.168.1.13 (192.168.1.13): 56 data bytes<br/>
+INFO 2015-02-05 12:27:57,376 (Shell): regex evaluation did not find a match<br/>
+DEBUG 2015-02-05 12:27:57,773 (Shell): *** setSensor called as part of EventListener init *** sensor is: Sensor (Name = 'controle gsm', ID = '105745920', State Mappings: 1=on, 0=off)<br/>
+DEBUG 2015-02-05 12:27:57,784 (Shell): Thread started: Polling thread for sensor: controle gsm 105745920<br/>
+DEBUG 2015-02-05 12:27:57,808 (Shell): Will start shell command: /bin/ping and use params: 192.168.1.13 -c 1 -W 1<br/>
+DEBUG 2015-02-05 12:27:57,812 (Shell): *** setSensor called as part of EventListener init *** sensor is: Sensor (Name = 'ping sensor', ID = '105746766', State Mappings: 1=on, 0=off)<br/>
+DEBUG 2015-02-05 12:27:57,823 (Shell): *** setSensor called as part of EventListener init *** sensor is: Sensor (Name = 'ping pc', ID = '105746776', State Mappings: 1=on, 0=off)<br/>
+DEBUG 2015-02-05 12:27:57,824 (Shell): Thread started: Polling thread for sensor: ping sensor 105746766<br/>
+DEBUG 2015-02-05 12:27:57,825 (Shell): Will start shell command: /bin/ping and use params: google.com -c 2 -W 1<br/>
+DEBUG 2015-02-05 12:27:57,827 (Shell): Thread started: Polling thread for sensor: ping pc 105746776<br/>
+DEBUG 2015-02-05 12:27:57,828 (Shell): Will start shell command: /bin/ping and use params: 192.168.1.90 -c 1 -W 1<br/>
+DEBUG 2015-02-05 12:27:57,840 (Shell): *** setSensor called as part of EventListener init *** sensor is: Sensor (Name = 'sensor mediapl', ID = '105747858', State Mappings: 1=on, 0=off)<br/>
+DEBUG 2015-02-05 12:27:57,843 (Shell): Thread started: Polling thread for sensor: sensor mediapl 105747858<br/>
+DEBUG 2015-02-05 12:27:57,844 (Shell): Will start shell command: /bin/ping and use params: 192.168.1.124 -c  -W 1<br/>
+DEBUG 2015-02-05 12:27:58,060 (Shell): Shell command: /bin/ping returned: PING 192.168.1.90 (192.168.1.90): 56 data bytes<br/>
+INFO 2015-02-05 12:27:58,061 (Shell): regex evaluation did not find a match<br/>
+DEBUG 2015-02-05 12:27:58,189 (Shell): Shell command: /bin/ping returned: <br/>
+INFO 2015-02-05 12:27:58,190 (Shell): regex evaluation did not find a match<br/>
+DEBUG 2015-02-05 12:27:58,196 (Shell): Shell command: /bin/ping returned: PING google.com (173.194.113.72): 56 data bytes<br/>
+INFO 2015-02-05 12:27:58,197 (Shell): regex evaluation did not find a match<br/>
+DEBUG 2015-02-05 12:27:58,282 (Shell): Shell command: /bin/ping returned: PING 192.168.1.13 (192.168.1.13): 56 data bytes<br/>
+INFO 2015-02-05 12:27:58,357 (Shell): regex evaluation did not find a match</p>
+
+
+<p>it builds a new command and loads no cache commands, ive also made a sh file and when i run that file it still gives 1 line in the log</p>
+
+<p>when i put the full command in the telnet of the synology it will give full reply</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Dec 25, 2014 19:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596626"></a>
+                                    <font class="smallfont"><p>does anyone know this problem? <br/>
+i believe it started sinds a synology nas update but im not sure. it give 1 line as output no matter what. ive tried to make a script and run it but still openremote returns one line. rebooting does not help</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Feb 18, 2015 20:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596635"></a>
+                                    <font class="smallfont"><p>IMHO it has to do with permissions. On Synology ping is not a real ping. It links to busybox:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+michal@DiskStation /volume1/homes/michal&gt; ls -l `which ping`
+lrwxrwxrwx 1 root root 7 2015-01-31 12:58 /bin/ping -&gt; busybox
+</pre>
+</div></div>
+<p>and can be called only by root:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+michal@DiskStation /volume1/homes/michal&gt; ping openremote.org
+PING openremote.org (92.63.141.4): 56 data bytes
+ping: permission denied (are you root?)
+
+michal@DiskStation /volume1/homes/michal&gt; sudo ping openremote.org -w1   
+PING openremote.org (92.63.141.4): 56 data bytes
+64 bytes from 92.63.141.4: seq=0 ttl=54 time=23.694 ms
+
+--- openremote.org ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 23.694/23.694/23.694 ms
+</pre>
+</div></div>
+<p>Openremote daemon has no root privileges (check /etc/passwd) </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 19, 2015 10:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596638"></a>
+                                    <font class="smallfont"><p>Executing following command should help:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+sudo chmod u+s `which ping`
+</pre>
+</div></div>
+<p>You will need to do this after each Synology DSM software update.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 19, 2015 12:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596687"></a>
+                                    <font class="smallfont"><p>Michal,</p>
+
+<p>thanks again for your great help i executed this command and my pings are working again <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+is it not possible to set root privileges for openremote?</p>
+
+<p>in etc/passwd is says: openremote:x:1032:100:OpenRemote daemon user:/var/services/homes/openremote:/sbin/nologin</p>
+
+<p>is it not possible to change this to:<br/>
+openremote:x:0:0:OpenRemote daemon user:/var/services/homes/openremote:/sbin/nologin</p>
+
+<p>sinds the root line is also 0:0</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Feb 21, 2015 17:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596710"></a>
+                                    <font class="smallfont"><p>I think that you should discuss this topic on Synology <a href="http://forum.synology.com/">forum</a>. As they decide to use non standard ping command the solution can be very Synology specific.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 22, 2015 11:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596713"></a>
+                                    <font class="smallfont"><p>I've <a href="http://forum.synology.com/enu/viewtopic.php?f=90&amp;t=62561&amp;hilit=ping">discussed it there</a>.<br/>
+I don't remember if I did try to install the "IPKG-ping". But I do have a <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Monitor+Solar+Power+-+FuturePower4All+PVlogger">working batchfile</a> though.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 22, 2015 11:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

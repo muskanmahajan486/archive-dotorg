@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : *Resolved* Temperature format as desired</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : *Resolved* Temperature format as desired
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 15, 2012 by <font color="#0050B2">trevormf</font>.
+				    </div>
+
+				    <p>Hi,<br/>
+I'm using OpenRemote for now 10 days to create wonderfull home aotomation interfaces for a low cost tablet (AINOL NOVO 7 Paladin), a small ARCHOS 32 tablet and a NEXUS S Samsung phone. I'm enjoying myself in creating so easily, such powerfull interfaces in a short time. That's a good job. Thank you for all people involved in devellopping OR.</p>
+
+<p>As written in the title, I would like to format the temperature of sensors differently of what i did till now. </p>
+
+<p>The sesors' informations (temperature humidity...) are issued from an XML file givn by home automation box named "Zibase" from Zodianet. In this XML file the temperature is written with three digits but no decimal : </p>
+
+<p>by example : 123 means 12.3°C and as you understand, instead of reading 123, I would prefer read 12.3°C.</p>
+
+<p>I tried to introduce rules to manage this but no joy : this is a rule from a previous post; the result was 123,00. I tried to convert string to double and make division then convert back double to string but I surely did mistakes because that wasn't efficient.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+<span class="code-keyword">import</span> java.text.DecimalFormat;
+
+rule <span class="code-quote">"format temperature"</span>
+when
+  $tempSensor:CustomState( source == <span class="code-quote">"Sonde virtelle"</span> )
+then
+  $tempSensor.setValue(""+formatDouble(<span class="code-object">Double</span>.valueOf($tempSensor.getValue())));
+end
+
+function <span class="code-object">String</span> formatDouble(<span class="code-object">double</span> d) {
+  <span class="code-keyword">return</span> (<span class="code-keyword">new</span> DecimalFormat(<span class="code-quote">"##.0"</span>)).format(d);
+</pre>
+</div></div>
+
+<p>So here are my questions : </p>
+<ul class="alternate" type="square">
+	<li>is it possible to define the output format (introduce decimal and adequate unity) in "Custom state items" of "Edit sensor" window?</li>
+	<li>do I need to write a specific rule to have right formats? If so could you give me orientations?</li>
+</ul>
+
+
+<p>Thanks for Help.</p>
+
+<p>Jack</p>
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20449845"></a>
+                                    <font class="smallfont"><p>One day we will want to have an option on the sensor to introduce formatting which will automatically create a rule for you, but this is only on the wishlist in the moment.<br/>
+Your rule looks good except you have to divide by 10 to move the decimal point <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> In the formatDouble function just say "....format(d/10)".</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Aug 15, 2012 08:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449860"></a>
+                                    <font class="smallfont"><p>If you just want to divide the temperature value by 10, then I don't think you need the format part. This should also work.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+rule <span class="code-quote">"format temperature"</span>
+when
+  $tempSensor:CustomState( source == <span class="code-quote">"Sonde virtelle"</span> )
+then
+  $tempSensor.setValue(<span class="code-object">Double</span>.toString((<span class="code-object">Double</span>.valueOf($tempSensor.getValue()))/10));
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Aug 15, 2012 10:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449862"></a>
+                                    <font class="smallfont"><p>Thank you very much for answers.</p>
+
+<p>The two versions get a pleasant result : now I have to choice with:</p>
+<ul class="alternate" type="square">
+	<li>12,3 using the DecimalFormat class</li>
+	<li>12.3 using the non format example.</li>
+</ul>
+
+
+<p>For my personnal use, I will use the comma style.</p>
+
+<p>For people who are interested, this is the rule with 6 temprature sensors.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+<span class="code-keyword">import</span> java.text.DecimalFormat;
+
+rule <span class="code-quote">"SV"</span>
+when
+  $tempSensor1:CustomState( source == <span class="code-quote">"SV"</span> )
+then
+  $tempSensor1.setValue(formatDouble(<span class="code-object">Double</span>.valueOf($tempSensor1.getValue()))+<span class="code-quote">" degC"</span>);
+end
+rule <span class="code-quote">"STCH2"</span>
+when
+  $tempSensor2:CustomState( source == <span class="code-quote">"STCH2"</span> )
+then
+  $tempSensor2.setValue(formatDouble(<span class="code-object">Double</span>.valueOf($tempSensor2.getValue()))+<span class="code-quote">" degC"</span>);
+end
+rule <span class="code-quote">"STSDB"</span>
+when
+  $tempSensor3:CustomState( source == <span class="code-quote">"STSDB"</span> )
+then
+  $tempSensor3.setValue(formatDouble(<span class="code-object">Double</span>.valueOf($tempSensor3.getValue()))+<span class="code-quote">" degC"</span>);
+end
+rule <span class="code-quote">"STS"</span>
+when
+  $tempSensor4:CustomState( source == <span class="code-quote">"STS"</span> )
+then
+  $tempSensor4.setValue(formatDouble(<span class="code-object">Double</span>.valueOf($tempSensor4.getValue()))+<span class="code-quote">" degC"</span>);
+end
+rule <span class="code-quote">"STB"</span>
+when
+  $tempSensor5:CustomState( source == <span class="code-quote">"STB"</span> )
+then
+  $tempSensor5.setValue(formatDouble(<span class="code-object">Double</span>.valueOf($tempSensor5.getValue()))+<span class="code-quote">" degC"</span>);
+end
+rule <span class="code-quote">"STC"</span>
+when
+  $tempSensor6:CustomState( source == <span class="code-quote">"STC"</span> )
+then
+  $tempSensor6.setValue(formatDouble(<span class="code-object">Double</span>.valueOf($tempSensor6.getValue()))+<span class="code-quote">" degC"</span>);
+end
+
+function <span class="code-object">String</span> formatDouble(<span class="code-object">double</span> d) {
+  <span class="code-keyword">return</span> (<span class="code-keyword">new</span> DecimalFormat(<span class="code-quote">"##.0"</span>)).format(d/10);
+}
+</pre>
+</div></div>
+
+<p>Jack</p>
+
+<p>PS : I don't know how to insert code in post. Can this be shared? Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by trevormf at Aug 15, 2012 10:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449868"></a>
+                                    <font class="smallfont"><p>Nice job guys.</p>
+
+<p>Jack, the tag to format code is {code}</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 15, 2012 11:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451802"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>Today I struggled with setting up the graph and I came to some conclusions. If I use rule for decimal format (1-Wire sensors), the data doesn't appear on the graph. I tried to modify the rule, that corrected value would be stored in virtual command, but no joy. </p>
+
+<p>I also have a question which relates to the display of 1-wire data. <br/>
+I noticed that N/A value periodically appears. The duration of N/A value depend on the polling interval. Any idea why?</p>
+
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 12, 2012 21:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451805"></a>
+                                    <font class="smallfont"><p>What graphs are using?<br/>
+Do you see anything in the log files for 1-wire?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 12, 2012 22:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451806"></a>
+                                    <font class="smallfont"><p>I'm using RRD4J graphs, which are integrated into the last controller and I can't see anyhing special in the log files.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 12, 2012 22:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451807"></a>
+                                    <font class="smallfont"><p>The RRD4J EventProcessor is converting the sensor data to Double automatically. No need todo any conversion before.<br/>
+If you attach your sensor to a label field, do you see all temperatures or only same and between N/A?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 12, 2012 22:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451808"></a>
+                                    <font class="smallfont"><p>I know that for graph I don't need any conversion, but I need it to display the temperature in to label filed on panel.</p>
+
+<p>1-Wire:<br/>
+I set 3s polling interval and label displays temperature about 12s, then 2s N/A and this is repeated.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 12, 2012 22:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451810"></a>
+                                    <font class="smallfont"><p>You don't need to convert for the label field if you just want to see the raw data.<br/>
+I just put the 1-wire command into a custom sensor and that's it.<br/>
+The data should be written into rrd file even if n/a is displayed. You would just have gaps in the graph.<br/>
+If no graph is displayed at all, it must be something else.</p>
+
+<p>Did you follow the tutorial?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 12, 2012 23:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451811"></a>
+                                    <font class="smallfont"><p>I know don't need to convert value but I would like to convert it because of appearance on the panel.<br/>
+Also, there is no gaps in the graph, but I ask because it is little strange to see N/A on the panel.</p>
+
+<p>Otherwise I follow tutorial, but I have had the problem. I described it here: <a href="http://www.openremote.org/pages/viewpage.action?pageId=19988490">http://www.openremote.org/pages/viewpage.action?pageId=19988490</a>. I hope that I have the latest updates of controller.</p>
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 13, 2012 00:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879086"></a>
+                                    <font class="smallfont"><p>Setting the same sensor from when after then would usually result in an infinitive loop: you get new sensor value-&gt;modify it-&gt;again new value-&gt;modify it-&gt; etc ad inf<br/>
+However, because you convert double to string which is later not convertible to double (because of " degC"), then after modification you create runtime error which breaks the infinitive loop. <br/>
+I wonder what happens next, is the rule engine stopped and no further conversion happens again, or is it restarted automatically?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 30, 2013 10:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

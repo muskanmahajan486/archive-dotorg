@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Virtual switch error (no ACK when execute commands)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Virtual switch error (no ACK when execute commands)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 31, 2014 by <font color="#0050B2">dorakiki</font>.
+				    </div>
+
+				    <p>Hi,<br/>
+I use OpenRemote from some months and now I have a little problem with one of my Rules.<br/>
+The rules "Controllo valvola acqua ON" and "Controllo valvola acqua OFF" simply controlled a water valve (OPEN COM CLOSE) by two actuator's channel.<br/>
+I've created une Virtual Switch to control valve state and the rule actioning fisical valve channel.<br/>
+The problem is that when I set Switch ON or OFF, the rule engine go down because not received ACK from "Stato valvola acqua".<br/>
+Can you help me?</p>
+
+
+
+<p>-------------------------- RULES: ----------------------------------</p>
+
+<p>package org.openremote.controller.protocol</p>
+
+<p>global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+global org.openremote.controller.statuscache.SwitchFacade switches;</p>
+
+<p>import org.openremote.controller.model.event.*<br/>
+import java.util.concurrent.TimeUnit<br/>
+import org.openremote.controller.protocol.*</p>
+
+<p>rule "Controllo valvola acqua ON"<br/>
+  when<br/>
+    Event  ( source == "Stato valvola acqua", value == "on"  )<br/>
+  then<br/>
+    execute.command ( "Apri ACQUA (OFF)"   );<br/>
+    TimeUnit.MILLISECONDS.sleep(200);<br/>
+    execute.command ( "Chiudi ACQUA (OFF)" );<br/>
+    TimeUnit.MILLISECONDS.sleep(200);<br/>
+    execute.command ( "Apri ACQUA (ON)"    );<br/>
+    TimeUnit.MILLISECONDS.sleep(60000);<br/>
+    execute.command ( "Apri ACQUA (OFF)"   );<br/>
+end</p>
+
+<p>rule "Controllo valvola acqua OFF" <br/>
+  when<br/>
+    Event  ( source == "Stato valvola acqua", value == "off" )<br/>
+  then<br/>
+    execute.command ( "Apri ACQUA (OFF)"   );<br/>
+    TimeUnit.MILLISECONDS.sleep(200);<br/>
+    execute.command ( "Chiudi ACQUA (OFF)" );<br/>
+    TimeUnit.MILLISECONDS.sleep(200);<br/>
+    execute.command ( "Chiudi ACQUA (ON)"  );<br/>
+    TimeUnit.MILLISECONDS.sleep(60000);<br/>
+    execute.command ( "Chiudi ACQUA (OFF)" );<br/>
+end</p>
+
+
+
+
+<p>-------------------------- LOG (stderrout.log): ----------------------------------</p>
+
+<p>ERROR Polling Sensor Thread ID = 5847153, Name ='Stato valvola acqua': Service failed<br/>
+org.openremote.controller.protocol.knx.ip.KnxIpException: Service failed, no ACK<br/>
+        at org.openremote.controller.protocol.knx.ip.IpTunnelClient.service(IpTunnelClient.java:84)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager$KNXConnectionImpl.service(KNXIpConnectionManager.java:850)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager$KNXConnectionImpl.send(KNXIpConnectionManager.java:670)<br/>
+        at org.openremote.controller.protocol.knx.KNXCommand.write(KNXCommand.java:328)<br/>
+        at org.openremote.controller.protocol.knx.GroupValueWrite.send(GroupValueWrite.java:117)<br/>
+        at org.openremote.controller.model.Command.execute(Command.java:230)<br/>
+        at org.openremote.controller.model.Command.execute(Command.java:199)<br/>
+        at org.openremote.controller.statuscache.CommandFacade.command(CommandFacade.java:80)<br/>
+        at org.openremote.controller.statuscache.CommandFacade.command(CommandFacade.java:57)<br/>
+        at org.openremote.controller.protocol.Rule_Controllo_valvola_acqua_ON_0.defaultConsequence(Rule_Controllo_valvola_acqua_ON_0.java:9)<br/>
+        at org.openremote.controller.protocol.Rule_Controllo_valvola_acqua_ON_0DefaultConsequenceInvoker.evaluate(Rule_Controllo_valvola_acqua_ON_0DefaultConsequenceInvoker.java:25)<br/>
+        at org.drools.common.DefaultAgenda.fireActivation(DefaultAgenda.java:917)<br/>
+        at org.drools.common.DefaultAgenda.fireNextItem(DefaultAgenda.java:856)<br/>
+        at org.drools.common.DefaultAgenda.fireAllRules(DefaultAgenda.java:1071)<br/>
+        at org.drools.common.AbstractWorkingMemory.fireAllRules(AbstractWorkingMemory.java:785)<br/>
+        at org.drools.common.AbstractWorkingMemory.fireAllRules(AbstractWorkingMemory.java:751)<br/>
+        at org.drools.impl.StatefulKnowledgeSessionImpl.fireAllRules(StatefulKnowledgeSessionImpl.java:218)<br/>
+        at org.openremote.controller.statuscache.rules.RuleEngine.push(RuleEngine.java:177)<br/>
+        at org.openremote.controller.statuscache.EventProcessorChain.push(EventProcessorChain.java:188)<br/>
+        at org.openremote.controller.statuscache.StatusCache.update(StatusCache.java:260)<br/>
+        at org.openremote.controller.model.sensor.Sensor.update(Sensor.java:342)<br/>
+        at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Sensor.java:608)<br/>
+        at java.lang.Thread.run(Thread.java:701)</p>
+
+
+
+
+
+<p>-------------------------- XML (controller.xml): ----------------------------------</p>
+
+<p>&lt;command id="972" protocol="virtual"&gt;<br/>
+  &lt;property name="address" value="switchb" /&gt;<br/>
+  &lt;property name="command" value="on" /&gt;<br/>
+  &lt;property name="name" value="Valvola acqua ON" /&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;command id="973" protocol="virtual"&gt;<br/>
+  &lt;property name="address" value="switchb" /&gt;<br/>
+  &lt;property name="command" value="off" /&gt;<br/>
+  &lt;property name="name" value="Valvola acqua OFF" /&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;command id="971" protocol="virtual"&gt;<br/>
+  &lt;property name="address" value="switchb" /&gt;<br/>
+  &lt;property name="command" value="status" /&gt;<br/>
+  &lt;property name="name" value="Valvola acqua STATUS" /&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;sensor id="5847153" name="Stato valvola acqua" type="switch"&gt;<br/>
+  &lt;include type="command" ref="971" /&gt;<br/>
+  &lt;state name="on" /&gt;<br/>
+  &lt;state name="off" /&gt;<br/>
+&lt;/sensor&gt;</p>
+
+
+<p>&lt;command id="855" protocol="knx"&gt;<br/>
+  &lt;property name="command" value="on" /&gt;<br/>
+  &lt;property name="groupAddress" value="2/4/1" /&gt;<br/>
+  &lt;property name="DPT" value="1.001" /&gt;<br/>
+  &lt;property name="name" value="Chiudi ACQUA (ON)" /&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;command id="854" protocol="knx"&gt;<br/>
+  &lt;property name="command" value="off" /&gt;<br/>
+  &lt;property name="groupAddress" value="2/4/1" /&gt;<br/>
+  &lt;property name="DPT" value="1.001" /&gt;<br/>
+  &lt;property name="name" value="Chiudi ACQUA (OFF)" /&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;command id="843" protocol="knx"&gt;<br/>
+  &lt;property name="command" value="status" /&gt;<br/>
+  &lt;property name="groupAddress" value="2/4/3" /&gt;<br/>
+  &lt;property name="DPT" value="1.001" /&gt;<br/>
+  &lt;property name="name" value="Chiudi valvola ACQUA feedback" /&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;sensor id="5112287" name="Stato Chiudi valvola ACQUA" type="switch"&gt;<br/>
+  &lt;include type="command" ref="843" /&gt;<br/>
+  &lt;state name="on" /&gt;<br/>
+  &lt;state name="off" /&gt;<br/>
+&lt;/sensor&gt;</p>
+
+
+<p>&lt;command id="848" protocol="knx"&gt;<br/>
+  &lt;property name="command" value="on" /&gt;<br/>
+  &lt;property name="groupAddress" value="2/4/0" /&gt;<br/>
+  &lt;property name="DPT" value="1.001" /&gt;<br/>
+  &lt;property name="name" value="Apri ACQUA (ON)" /&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;command id="849" protocol="knx"&gt;<br/>
+  &lt;property name="command" value="off" /&gt;<br/>
+  &lt;property name="groupAddress" value="2/4/0" /&gt;<br/>
+  &lt;property name="DPT" value="1.001" /&gt;<br/>
+  &lt;property name="name" value="Apri ACQUA (OFF)" /&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;command id="844" protocol="knx"&gt;<br/>
+  &lt;property name="command" value="status" /&gt;<br/>
+  &lt;property name="groupAddress" value="2/4/2" /&gt;<br/>
+  &lt;property name="DPT" value="1.001" /&gt;<br/>
+  &lt;property name="name" value="Apri valvola ACQUA feedback" /&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;sensor id="5112286" name="Stato Apri valvola ACQUA" type="switch"&gt;<br/>
+  &lt;include type="command" ref="844" /&gt;<br/>
+  &lt;state name="on" /&gt;<br/>
+  &lt;state name="off" /&gt;<br/>
+&lt;/sensor&gt;</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23601926"></a>
+                                    <font class="smallfont"><p>Hi Adam,</p>
+
+<p>I am seeing the same error:<br/>
+KnxIpException: Service failed, no ACK</p>
+
+<p>Have you managed to resolve it?</p>
+
+<p>Thanks</p>
+
+<p>Gideon</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gheinert at Oct 29, 2015 12:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : How can I use UDPListener and Drools to update Sensors</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : How can I use UDPListener and Drools to update Sensors
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 18, 2014 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <blockquote><p>May 29, 2014<br/>
+<a href="http://www.openremote.org/pages/viewpage.action?pageId=22886530&amp;focusedCommentId=22886776#comment-22886776">Marcus Redeker says:</a></p>
+
+<p>This is used by the console to send an action to the controller. Maybe if you use a virtual command and rules to take the received command to update a sensor this could be a workaround.</p></blockquote>
+
+<p>In this discussion it became apparant that the REST API is not meant as a communication path for smart autonomous devices like Raspberry Pi, Vera, Arduino, and the like.</p>
+
+<p>In my case the RaZberry Z-Wave controller is used. This controller can send update messages to an other intelligent agent.<br/>
+As in one of the many discussions UDPListener was mentioned as a good route, I wrote some provisional small <a href="http://forum.z-wave.me/viewtopic.php?f=3422&amp;t=20816">modules on the Razberry</a> side, that send (sensorname,value)-pairs to OpenRemote. That part is functioning now for two devices.</p>
+
+<p>Ideally UDPListener could process these pairs directly. I understand that there is an experimental version that processes multiple predefined sensors to which a list of values is sent. That would not work well in this case where data is coming in in unpredictable order.</p>
+
+<p>I am realistic enough to know that it will take time (if ever) before handling pairs wil be implemented. So as Marcus stated I should revert to Drools and virtual commands.</p>
+
+<p>Has anyone out there tried such a thing? Can only virtual status commands be updated from rules? I vaguely remember that plain custom sensors could be written to, but not to sensors of type switch?  </p>
+
+
+
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23593849/23789661.png">TempSensor.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23593849/23789662.png">Sensor.PNG</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23593860"></a>
+                                    <font class="smallfont"><p>Rules cannot set sensors, they can only execute commands. Sensors are linked to commands, not commands to sensors, i.e. sensor can execute a command to read something but command cannot kick a sensor. The only workaround is through in-memory variable, one command can write to it and another command instance (linked to a sensor) can read it. Linked sensor can be any sensor, custom, switch, level, etc. Does not matter, as long as written value corresponds to the sensor type. As custom command is the most flexible, it accepts everything written, I use only them. The other type of sensors I don't need.</p>
+
+<p>What you can do in your UDP listener is receive (command, value) pair. If this command would write to in-memory variable and some sensor would read it then you are OK. For, me as I frequently use the same name for commands and sensors which use them, this indeed would mean ("sensor", value), but only because the command would have the same name as sensor. Communication though would go through the in-memory var anyway.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 19, 2014 10:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593865"></a>
+                                    <font class="smallfont"><p>Michal, thanks for this confirmation. I was confused by some posts suggesting one could write from within a rule to a sensor of type custom.<br/>
+In the context of Drools I am not sure yet how to parse the received SensorName into a CommandName other than make a lengthy case statement. With many sensors that would be a bit awkward to maintain.<br/>
+I'll start give it a try with one or two sensors</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 19, 2014 11:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593869"></a>
+                                    <font class="smallfont"><blockquote>
+<p>I am not sure yet how to parse the received SensorName into a CommandName other than make a lengthy case statement</p></blockquote>
+<p>This is why I use the same names for commands and sensors and some naming conventions. Look at my example of variables persistence: <a href="http://mqlservice.net/openremote/2014/09/16/persistent-in-memory-variables/">http://mqlservice.net/openremote/2014/09/16/persistent-in-memory-variables/</a></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Store values"</span>
+timer(<span class="code-object">int</span>: 1s)                                                                                             
+when
+  Event($s:source matches <span class="code-quote">"^GV.*"</span>, $v:value!=<span class="code-quote">"status"</span>)
+then
+  _WriteToFile($s, $v);
+end
+</pre>
+</div></div>
+<p>You see that every sensor which name begins with GV is written to the file. The same you can do for your ras, for example:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+when
+  Event($s: source matches <span class="code-quote">"^RAS.*"</span>, $v: value!=<span class="code-quote">"status"</span>)
+then
+  execute.command($s, $v.toString());
+end
+</pre>
+</div></div>
+<p>It will work for e.g. "RAStemperature", "RASrain", etc, but not for "temperature" or "rain".</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 19, 2014 12:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593871"></a>
+                                    <font class="smallfont"><p>Thanks, that looks quite doable. On further thinking I came to the conclusion that for the slowly changing sensors like battery status for the time being I better continue to rely on polling from OR</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 19, 2014 13:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593922"></a>
+                                    <font class="smallfont"><p><a class="confluence-thumbnail-link 319x173" href='http://www.openremote.org/download/attachments/23593849/TempSensor.PNG'><img src="attachments/thumbnails/23593849/23789661" align="right" border="0"/></a><a class="confluence-thumbnail-link 318x310" href='http://www.openremote.org/download/attachments/23593849/Sensor.PNG'><img src="attachments/thumbnails/23593849/23789662" align="right" border="0"/></a> Looks as if I don't get anything in my imVC's<br/>
+For example for this sensor I see that I do receive the pair (ZWay_13-5,29.06). My Drools file looks like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">package</span> org.openremote.controller.protocol.preserve;
+<span class="code-keyword">import</span> java.io.*;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+global org.openremote.controller.statuscache.CommandFacade execute;
+ 
+ 
+rule <span class="code-quote">"Store values"</span>
+timer(<span class="code-object">int</span>: 1s)                                                                                             
+when
+  Event($s: source matches <span class="code-quote">"^ZWay.*"</span>, $v: value!=<span class="code-quote">"status"</span>)
+then
+  execute.command($s, $v.toString());
+end
+</pre>
+</div></div>
+
+<p>Sofar haven't seen anything remarkable in the logs either.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 21, 2014 19:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593924"></a>
+                                    <font class="smallfont"><p>You don't need the rule from my example but a rule for parsing the string from UDP messages. Suppose you have the UDP listener sensor "UDPlistenerSensor"</p>
+
+<p>Then the rule for your in-memory sensor would be:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"UDP listener"</span>
+when
+  Event(source==<span class="code-quote">"UDPlistenerSensor"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"\\(?(ZWay.*),([\\d\\.]+)\\)?"</span>);
+  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+  }
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 21, 2014 22:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593937"></a>
+                                    <font class="smallfont"><p>Michal, thank for this. During the night I suddenly realised that I did not make use of the sensor for UDPListener.<br/>
+It brought me an important step further. Values of my temperature sensors are being processed correctly. Switches are not yet working. On my OR console display the pair looks like (<b>ZWay_21,on</b>), but I suspect that behind the scenes there may be quotes around it. The OpenRemote API in RaZberry delivers</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">http:<span class="code-comment">//raspberry:8083/OpenRemote/SwitchBinaryStatus/21/0
+</span><span class="code-quote">"on"</span></pre>
+</div></div>
+<p>In my OpenRemote http call I do use RegEx <b>on|off</b> to get rid of the quotes. This call is based on the same <b>status</b> value as used in the UDP send part for RaZberry.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+zway.devices[21].instances[0].SwitchBinary.data.level.bind(function() 
+{
+   <span class="code-keyword">var</span> status = (zway.devices[21].SwitchBinary.data.level.value) ? <span class="code-quote">"on"</span> : <span class="code-quote">"off"</span>;
+   system(<span class="code-quote">"/opt/z-way-server/automation/storage/status.sh"</span>, <span class="code-quote">"ZWay_21,"</span> + status ) ;
+} );
+</pre>
+</div></div>
+
+<p>So I have to do a bit more digging.</p>
+
+<p><b>Latest UDPListener.drl</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol.preserve;
+<span class="code-keyword">import</span> java.util.*;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+global org.openremote.controller.statuscache.CommandFacade execute;
+ 
+ 
+rule <span class="code-quote">"UDPListener"</span>
+timer(<span class="code-object">int</span>: 1s)                                                                                             
+when
+  Event(source==<span class="code-quote">"RaZ-UDP-Status"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"\\(?(ZWay.*),([\\d\\.]+)\\)?"</span>);
+  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+  }
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 22, 2014 10:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593941"></a>
+                                    <font class="smallfont"><p>This is because my regex filters on numbers, the second group is (<a href="file://d//.">\\d\\.</a>+), which means any digit or dot. You probably want (<a href="file://d//.">\\d\\.</a>+|on|off) or even (.+) - but the last one is dangerous as it can catch any rubbish. Probably you would like to test your regex on regexplanet.com before putting it in the rule. This way you know that it is matching what you want.</p>
+
+<p>By the way, you don't really need timer() delay here. I've used it in the store values rule as I want to avoid my HDD burn when the sensor goes crazy and becomes oscillating, which is quite possible in some cases.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 22, 2014 10:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593947"></a>
+                                    <font class="smallfont"><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">You probably want (\\d\\.+|on|off)</pre>
+</div></div>
+<p>Great it works now</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">By the way, you don't really need timer() delay here</pre>
+</div></div>
+<p>I deliberatly left it in, since I did not want the system hang in this experimental phase. I must remove it later, as I quess I may loose events</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 22, 2014 11:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593949"></a>
+                                    <font class="smallfont"><p>Do you mind if I also publish this code on the RaZberry site?</p>
+
+<p><b>UDPListener.drl</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-comment">// Code provide by Michal Rutka 
+</span><span class="code-keyword">package</span> org.openremote.controller.protocol.preserve;
+<span class="code-keyword">import</span> java.util.*;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+global org.openremote.controller.statuscache.CommandFacade execute;
+ 
+ 
+rule <span class="code-quote">"UDPListener"</span>
+                                                                                      
+when
+  Event(source==<span class="code-quote">"RaZ-UDP-Status"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"\\(?(ZWay.*),([\\d\\.+|on|off]+)\\)?"</span>);
+  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+  }
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 22, 2014 11:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593993"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Do you mind if I also publish this code on the RaZberry site?</p></blockquote>
+<p>Not at all, please do. BTW, it can be in standard package a bit shorter:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-comment">// Code provide by Michal Rutka 
+</span><span class="code-keyword">package</span> org.openremote.controller.protocol;
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+rule <span class="code-quote">"UDPListener"</span>
+when
+  Event(source==<span class="code-quote">"RaZ-UDP-Status"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"\\(?(ZWay.*),([\\d\\.+|on|off]+)\\)?"</span>);
+  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+  }
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 22, 2014 17:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594044"></a>
+                                    <font class="smallfont"><p>I have prepared a <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-wave+with+Razberry+via+UDP">HowTo</a> for this.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 23, 2014 11:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599507"></a>
+                                    <font class="smallfont"><p>I followed the HOW TO.<br/>
+in my Zwave server logs i find:</p>
+
+
+<p><span class="error">&#91;2015-06-09 19:46:39.329&#93;</span> I core Executing script:   /*** CustomUserCodeLoader ZAutomation module **************************************** ...<br/>
+<span class="error">&#91;2015-06-09 19:46:39.345&#93;</span> I core Instantiating module 14 from class CustomUserCodeLoader<br/>
+<span class="error">&#91;2015-06-09 19:46:39.354&#93;</span> I core &#8212; Starting module Load custom JavaScript file<br/>
+<span class="error">&#91;2015-06-09 19:46:39.396&#93;</span> I core Executing script: 	var sock = new sockets.udp(); ...<br/>
+<span class="error">&#91;2015-06-09 19:46:39.620&#93;</span> E core result: Error: ReferenceError: sockets is not defined<br/>
+    at automation/storage/UDPORSock.js:1:17<br/>
+    at automation/modules/CustomUserCodeLoader/index.js:39:13<br/>
+    at Array.forEach (native)<br/>
+    at CustomUserCodeLoader.init (automation/modules/CustomUserCodeLoader/index.js:34:33)<br/>
+    at AutomationController.instantiateModule (automation/classes/AutomationController.js:227:22)<br/>
+    at AutomationController.&lt;anonymous&gt; (automation/classes/AutomationController.js:304:22)<br/>
+    at Array.forEach (native)<br/>
+    at AutomationController.loadModule (automation/classes/AutomationController.js:303:86)<br/>
+    at AutomationController.&lt;anonymous&gt; (automation/classes/AutomationController.js:320:73)<br/>
+    at Array.forEach (native)<br/>
+<span class="error">&#91;2015-06-09 19:46:39.769&#93;</span> I core Notification: error (core): Can not init module CustomUserCodeLoader: Error: Uncaught ReferenceError: sockets is not defined<br/>
+<span class="error">&#91;2015-06-09 19:46:39.804&#93;</span> I core Error: Uncaught ReferenceError: sockets is not defined<br/>
+    at Error (native)<br/>
+    at automation/modules/CustomUserCodeLoader/index.js:39:13<br/>
+    at Array.forEach (native)<br/>
+    at CustomUserCodeLoader.init (automation/modules/CustomUserCodeLoader/index.js:34:33)<br/>
+    at AutomationController.instantiateModule (automation/classes/AutomationController.js:227:22)<br/>
+    at AutomationController.&lt;anonymous&gt; (automation/classes/AutomationController.js:304:22)<br/>
+    at Array.forEach (native)<br/>
+    at AutomationController.loadModule (automation/classes/AutomationController.js:303:86)<br/>
+    at AutomationController.&lt;anonymous&gt; (automation/classes/AutomationController.js:320:73)<br/>
+    at Array.forEach (native)</p>
+
+
+<p>why is sockets not defined? is this an error in the custom script?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by icefluffy at Jun 09, 2015 18:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599515"></a>
+                                    <font class="smallfont"><p>Which Z-Way version do you use? You need at least v2.0.1-rc33. (Just added that requirement to the HowTo).<br/>
+PS: Since this community is almost dead, I do prefer to deal with this Z-Way OR issues on the Z-Wave&gt;me forum thread <a href="http://forum.z-wave.me/viewtopic.php?f=3424&amp;t=20849">HowTo Send status updates as UDP messages</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jun 10, 2015 08:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599520"></a>
+                                    <font class="smallfont"><p>Thank you, updating the firmware to version v2.0.1-rc33 took away my error.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by icefluffy at Jun 10, 2015 11:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599947"></a>
+                                    <font class="smallfont"><p>On March 25, I have submitted feature request <a href="http://jira.openremote.org/browse/ORCJAVA-467">ORCJAVA-467</a> on the Jira. In essence it asks for an additional feature in UDPListener, to overcome the necessity to use the DROOLS rule discussed in this thread. I do think it not only fits my requirements, but is a generic extension useful for e.g. arduino like smart devices.</p>
+
+<p>I do understand the development capacity constraints of the openremote organisation, but I do find it disturbing that there is no response in terms of desirability, technical feasibility, for the adaptation I suggested. Neither on this forum nor on the Jira. </p>
+
+<p>If there is no interest, it is better delete the issue, or explicitly give it a status that is not considered for implementation, than clog the Jira further with long forgotten "open" issues. </p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jul 05, 2015 10:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599949"></a>
+                                    <font class="smallfont"><p>I think that the main reason this is not answered yet is a reason that it is not a trivial thing to do. Does not fit in the current architecture of the controller. Mind, that doing this through UPD listener, in order to get it working you need to add virtual commands and sensors linked to this command. The rule is just a small addition and in fact it can be made very general and written into separate DRL file, so a user might even not be aware of it. What the real problem would be is to create virtual commands and sensors on a fly based on UDP listener reception. Currently adding commands and sensors requires controller restart, you wouldn't like this when UDP listener receives a new (sensor, value) pair - either on purpose or error. Moreover, what to do if received (sensor, value) pair interfere with existing sensors in the design? This can create very hard to trace bugs.</p>
+
+<p>Many people are not eager to say no - therefore, I think, there is no reply from the core team.</p>
+
+<p>On the other hand, this would be a nice feature if it fits into design. Maybe, when a major redesign work will be considered, this is one item which can be included from the start. That is why it shouldn't be just deleted from Jira.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jul 05, 2015 10:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600312"></a>
+                                    <font class="smallfont"><p>@Pieter: I hadn't see your issue in the JIRA (did not have notifications turned on for new issues, only reviewed from time to time) but it does make sense to create the issues in JIRA and don't delete them. We still do review them from time to time, do searches in the JIRA to check if something similar was reported in the past, ...</p>
+
+<p>I haven't looked in detail at this but I think Michal is right in his answers.</p>
+
+<p>You would still need to create commands/sensors for each individual name in the designer in order to be able to link them to UI elements (if you did not intend to link to UI elements, then I guess you would use in rules, that would certainly be more complex to write than the rule that takes the UDP payload and stores it in a virtual command sensor).</p>
+
+<p>If you define the format of your payload and use some naming conventions, you could achieve what you want with a single rule that would parse the payload and execute the appropriate virtual command (but again you would have created the commands/sensors manually in the designer).</p>
+
+<p>Dynamic creation of sensors in the controller is something we discussed internally for some project, but the work required to implement that correctly was too big at the time. However, we see that as a valid requirement for certain use cases and we'll take that into account in the roadmap.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jul 29, 2015 13:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600313"></a>
+                                    <font class="smallfont"><p>@Michal</p>
+<blockquote><p>I think that the main reason this is not answered yet is a reason that it is not a trivial thing to do. Does not fit in the current architecture of the controller. Mind, that doing this through UPD listener, in order to get it working you need to add virtual commands and sensors linked to this command.</p></blockquote>
+
+<p>We can do that right now as I have shown in my applications.</p>
+
+<blockquote><p> The rule is just a small addition and in fact it can be made very general and written into separate DRL file, so a user might even not be aware of it.</p></blockquote>
+<p>That is what I have done. I have no other rules in Drools anymore since its behaviour is not always predictable, and I feared it would interfere with the Drools UDP handler you wrote for me. </p>
+
+<blockquote><p> What the real problem would be is to create virtual commands and sensors on a fly based on UDP listener reception. Currently adding commands and sensors requires controller restart, you wouldn't like this when UDP listener receives a new (sensor, value) pair - either on purpose or error. Moreover, what to do if received (sensor, value) pair interfere with existing sensors in the design? This can create very hard to trace bugs.</p></blockquote>
+<p>This is just a matter of mindset. If you consider OpenRemote as <b>the</b> Integration and Visualisation almighty platform that controls everything, I do agree. However, the question is if OR has to police everything, or if you can leave things to peer controllers. At this moment I already can do many bad things with UDPListener. So there is no protection whatsoever already. </p>
+
+<p>Therefor the responsibility must be (partially) with the integrator (me in this case). I am happy to take that responsibility. </p>
+
+<p>Development of protocols for devices like Z-Wave have proven to be very time consuming. That is why I did choose Z-Way as my peer Z-Wave controller. To ease that integration task, and to further enforce naming consistency between "peers", I would highly welcome a standard XML import format for devices. Could initially be restricted to In Memory Virtual devices. The XML creation task is relatively easy with Zway.</p>
+
+<p>As a matter of fact import is my top priority, far beyond this UPDListener issue.   </p>
+
+<blockquote><p>Many people are not eager to say no - therefore, I think, there is no reply from the core team.</p></blockquote>
+<p>For me complexity never is a reason not to discuss. From what I have seen, I think I may say that UDPListener is very much unfinished business. Public documentation is lacking, and some functionality sits half? tested in a snapshot. So at least some public assessment would be welcome </p>
+
+<blockquote><p>On the other hand, this would be a nice feature if it fits into design. Maybe, when a major redesign work will be considered, this is one item which can be included from the start. That is why it shouldn't be just deleted from Jira.</p></blockquote>
+<p>Given the activities in the last two years or so, and the lack of public shared visions, I don't think it is realistic to expect a major redesign.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jul 29, 2015 14:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600314"></a>
+                                    <font class="smallfont"><p>@Eric<br/>
+I think I have covered your main issues in my post to Michal<br/>
+PZ</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jul 29, 2015 14:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:36</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OpenRemote, Http GET, and Pushbullet</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OpenRemote, Http GET, and Pushbullet
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 14, 2014 by <font color="#0050B2">voltron43</font>.
+				    </div>
+
+				    <p>I'm trying to implement notifications from OpenRemote using <a href="https://www.pushbullet.com/api">Pushbullet</a>, but I can't seem to get the Http GET command to work properly.</p>
+
+<p>I've followed the <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+HTTP+Protocol">Wunderground Weather</a> example and was able to it working, so my setup seems to be okay.</p>
+
+<p>The error I receive is an " ClientProtocolException when executing HTTP method org.apache.http.client.HttpResponseException: Unauthorized".</p>
+
+<p>dev.log output:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2014-01-14 20:41:00,545 DEBUG [HTTP-<span class="code-object">Thread</span>-8]: Building HttGetCommand
+2014-01-14 20:41:00,550 DEBUG [HTTP-<span class="code-object">Thread</span>-8]: HttpGetCommand: username = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+2014-01-14 20:41:00,553 DEBUG [HTTP-<span class="code-object">Thread</span>-8]: HttpGetCommand: method = GET
+2014-01-14 20:41:00,557 DEBUG [HTTP-<span class="code-object">Thread</span>-8]: HttpGetCommand: url = https:<span class="code-comment">//api.pushbullet.com/api/devices
+</span>2014-01-14 20:41:01,912 ERROR [HTTP-<span class="code-object">Thread</span>-8]: ClientProtocolException when executing HTTP method
+org.apache.http.client.HttpResponseException: Unauthorized
+        at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+        at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+        at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:238)
+        at org.openremote.controller.protocol.http.HttpGetCommand.send(HttpGetCommand.java:166)
+        at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+        at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+        at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+        at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+        at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+        at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1146)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+        at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:679)
+2014-01-14 20:41:01,989 INFO [HTTP-<span class="code-object">Thread</span>-8]: received message:</pre>
+</div></div>
+
+<p>My command settings:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Name: Devices
+Protocol: HTTP
+URL: https:<span class="code-comment">//api.pushbullet.com/api/devices
+</span>HTTP Method: GET
+Username: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+</pre>
+</div></div>
+
+<p>The password can be blank because the following curl command works from the commandline:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">curl -u XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX: https:<span class="code-comment">//api.pushbullet.com/api/devices</span></pre>
+</div></div>
+
+<p>The curl command also works for any password.</p>
+
+<p>Am I getting this error because the URL is https?</p>
+
+<p>Note: I'm using the OpenRemote-Controller-2.1.0_FM_ORCJAVA-400 build on a Raspberry Pi with java version:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+$ java -version
+java version <span class="code-quote">"1.6.0_27"</span>
+OpenJDK <span class="code-object">Runtime</span> Environment (IcedTea6 1.12.6) (6b27-1.12.6-1~deb7u1+rpi1)
+OpenJDK Zero VM (build 20.0-b12, mixed mode)</pre>
+</div></div>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22882844"></a>
+                                    <font class="smallfont"><p>Can't help you, as the pushbullet site does not show any information unless I register with them, which I won't<br/>
+So please tell me a bit more about its API. As you suggest that you got Wunderground working, may I assume that this pushbullet also is an XML-based resource? If so, please give me a sample of the XML, and the elements/attributes you want to retrieve.</p>
+
+<p>For the  https <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+HTTP+Protocol?focusedCommentId=21858176#comment-21858176">see comment here</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 14, 2014 21:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882872"></a>
+                                    <font class="smallfont"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>may I assume that this pushbullet also is an XML-based resource? If so, please give me a sample of the XML</pre>
+</div></div>
+<p>The response is in <a href="http://en.wikipedia.org/wiki/JSON">JSON</a> format.  However, my "JSONPath Expression" field in my command is blank.  Must this be filled out?</p>
+
+<p>My JSON response using curl:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">{
+    <span class="code-quote">"devices"</span>: [
+        {
+            <span class="code-quote">"extras"</span>: {
+                <span class="code-quote">"android_version"</span>: <span class="code-quote">"4.2.2"</span>,
+                <span class="code-quote">"app_version"</span>: 44,
+                <span class="code-quote">"manufacturer"</span>: <span class="code-quote">"motorola"</span>,
+                <span class="code-quote">"model"</span>: <span class="code-quote">"XT1049"</span>,
+                <span class="code-quote">"nickname"</span>: <span class="code-quote">"X"</span>,
+                <span class="code-quote">"sdk_version"</span>: <span class="code-quote">"17"</span>
+            },
+            <span class="code-quote">"id"</span>: XXXXXXXXXXXXXXXX,
+            <span class="code-quote">"iden"</span>: <span class="code-quote">"XXXXXXXXXXXXXXXXXXXXXX"</span>
+        },
+        {
+            <span class="code-quote">"extras"</span>: {
+                <span class="code-quote">"android_version"</span>: <span class="code-keyword">null</span>,
+                <span class="code-quote">"app_version"</span>: 8,
+                <span class="code-quote">"manufacturer"</span>: <span class="code-quote">"Mozilla"</span>,
+                <span class="code-quote">"model"</span>: <span class="code-quote">"Firefox"</span>,
+                <span class="code-quote">"nickname"</span>: <span class="code-quote">"Work"</span>,
+                <span class="code-quote">"sdk_version"</span>: <span class="code-keyword">null</span>
+            },
+            <span class="code-quote">"id"</span>: XXXXXXXXXXXXXXXX,
+            <span class="code-quote">"iden"</span>: <span class="code-quote">"XXXXXXXXXXXXXXXXXXXXXX"</span>
+        },
+        {
+            <span class="code-quote">"extras"</span>: {
+                <span class="code-quote">"android_version"</span>: <span class="code-keyword">null</span>,
+                <span class="code-quote">"app_version"</span>: 19,
+                <span class="code-quote">"manufacturer"</span>: <span class="code-quote">"Google"</span>,
+                <span class="code-quote">"model"</span>: <span class="code-quote">"Chrome"</span>,
+                <span class="code-quote">"nickname"</span>: <span class="code-quote">"Glacier"</span>,
+                <span class="code-quote">"sdk_version"</span>: <span class="code-keyword">null</span>
+            },
+            <span class="code-quote">"id"</span>: XXXXXXXXXXXXXXXX,
+            <span class="code-quote">"iden"</span>: <span class="code-quote">"XXXXXXXXXXXXXXXXXXXXXX"</span>
+        }
+    ],
+    <span class="code-quote">"shared_devices"</span>: []
+</pre>
+</div></div>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>and the elements/attributes you want to retrieve</pre>
+</div></div>
+<p>I'd like to retrieve the "id" fields from the response.</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>For the https see comment here</pre>
+</div></div>
+<p>I came across this comment in my research but can't figure out how to investigate it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by voltron43 at Jan 15, 2014 05:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882877"></a>
+                                    <font class="smallfont"><p>Sorry, I do not know JSON. Hope someone else can answer that</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 15, 2014 08:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882878"></a>
+                                    <font class="smallfont"><p>Okay, thanks for the effort.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by voltron43 at Jan 15, 2014 08:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882880"></a>
+                                    <font class="smallfont"><p>I have recently discovered OpenRemote and had a go at the JSONPath expression yesterday.</p>
+
+<p>In order to retrieve all the id fields from the devices you should use this expression:<br/>
+$.devices..id</p>
+
+<p>This should return all id's in the devices element.</p>
+
+<p>For more details on the JSONPath: <a href="http://goessner.net/articles/JsonPath/">JSONPath details</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tjoek at Jan 15, 2014 08:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882881"></a>
+                                    <font class="smallfont"><p>Took a quick look at the source code and for whatever reason, the HTTP protocol implementation expects that a password is provided when a user is.<br/>
+And if both are not provided, it'll not create an authorization header for the HTTP request.</p>
+
+<p>I have no idea why this decision was made but it basically means that if you can't have an empty password.</p>
+
+<p>So easiest fix for you is: can you define a password on Pushbullet ?</p>
+
+<p>If not, then it means patching the HTTP implementation.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 15, 2014 08:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882922"></a>
+                                    <font class="smallfont"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>So easiest fix for you is: can you define a password on Pushbullet ?</pre>
+</div></div>
+<p>I tried using a password in a curl command and Pushbullet still gave a good response.</p>
+
+<p>I tried putting the same password into OR and recieved an "Internal Server Error"</p>
+
+<p>dev.log</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">2014-01-15 20:33:38,959 DEBUG [HTTP-<span class="code-object">Thread</span>-5]: Building HttGetCommand
+2014-01-15 20:33:38,978 DEBUG [HTTP-<span class="code-object">Thread</span>-5]: HttpGetCommand: username = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+2014-01-15 20:33:38,982 DEBUG [HTTP-<span class="code-object">Thread</span>-5]: HttpGetCommand: method = GET
+2014-01-15 20:33:38,986 DEBUG [HTTP-<span class="code-object">Thread</span>-5]: HttpGetCommand: password = password
+2014-01-15 20:33:38,990 DEBUG [HTTP-<span class="code-object">Thread</span>-5]: HttpGetCommand: url = https:<span class="code-comment">//api.pushbullet.com/api/devices
+</span>2014-01-15 20:33:48,524 ERROR [HTTP-<span class="code-object">Thread</span>-5]: ClientProtocolException when executing HTTP method
+org.apache.http.client.HttpResponseException: Internal Server Error
+        at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+        at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+        at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:238)
+        at org.openremote.controller.protocol.http.HttpGetCommand.send(HttpGetCommand.java:166)
+        at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+        at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+        at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+        at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+        at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+        at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1146)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+        at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:679)
+2014-01-15 20:33:48,602 INFO [HTTP-<span class="code-object">Thread</span>-5]: received message:
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by voltron43 at Jan 15, 2014 20:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882923"></a>
+                                    <font class="smallfont"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>In order to retrieve all the id fields from the devices you should use this expression:
+$.devices..id</pre>
+</div></div>
+
+<p>After adding this expression to the JSONPath expression field and adding a password as ERIC has stated <a href="http://www.openremote.org/display/forums/OpenRemote%2C+Http+GET%2C+and+Pushbullet?focusedCommentId=22882881#comment-22882881">below</a>, I still receive an "Internal Sever Error".</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by voltron43 at Jan 15, 2014 20:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883212"></a>
+                                    <font class="smallfont"><p>POST method now works.  As it turns out, I was missing the Content-Type field in the POST request.  Apparently, according to <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Control+XBMC?focusedCommentId=22872583#comment-22872583">this comment</a>, the Content-Type field is only present in the <a href="https://composer.openremote.org/preview/Modeler.jsp">2.14 Designer</a>.</p>
+
+<p><b>NOTE:</b> Do be careful if you decide to use the 2.14 preview version - it is <b>NOT backwards compatible</b> with the current 2.13.x version. If you log back in to 2.13 version of the designer, you may lose your account data.</p>
+
+<p>Final PushBullet POST fields:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Protocol: HTTP
+URL: https:<span class="code-comment">//api.pushbullet.com/api/pushes
+</span>HTTP Method: POST
+Content-Type: application/x-www-form-urlencoded
+Workload: device_id=xxxxxxxxxxxxxxxx&amp;type=note&amp;title=Title&amp;body=Body
+Username: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Password: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+</pre>
+</div></div>
+
+<p>Any idea when Designer will be updated?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by voltron43 at Jan 22, 2014 10:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

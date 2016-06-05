@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : DenonAVRSerial issue</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : DenonAVRSerial issue
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 28, 2012 by <font color="#0050B2">philetaylor</font>.
+				    </div>
+
+				    <p>Hi.</p>
+
+<p>I have noticed with the DenonAVRSerial protocol that if you have a repeating button (like a volume control), the repeat is happening too fast for the controller as it hasn't released the serial port lock from the previous command. I receive lots of:  </p>
+
+<p>RXTX fhs_lock() Error: creating lock file: /var/lock/LCK..ttyUSB0: File exists<br/>
+Error sending serial command Port: /dev/ttyUSB0 gnu.io.NoSuchPortException</p>
+
+<p>I don't know if this is just because the Raspberry Pi is a bit slow to release the lock or if it happens on other platforms as well but it is a bit of a pain! Any ideas if it is possible to implement some sort of message queueing or (not as elegant) slow down the repeat?</p>
+
+<p>Thanks</p>
+
+<p>Phil</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/21039133/21135461.png">photo.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21039161"></a>
+                                    <font class="smallfont"><p>Supposedly there are issues with RXTX <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> <br/>
+If you push your button only every x seconds, then it works ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 29, 2012 00:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039164"></a>
+                                    <font class="smallfont"><p>Yes it works perfectly if I press the button every 1-2 seconds but as the range is -80 to 0 dB in 0.5dB steps it takes a while <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>I am thinking of trying the built-in serial port on the Raspberry Pi, it should be possible to use pi4j instead of RXTX I would have thought. <a href="http://pi4j.com/example/serial.html">http://pi4j.com/example/serial.html</a></p>
+
+<p>Phil</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philetaylor at Dec 29, 2012 02:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039168"></a>
+                                    <font class="smallfont"><p>I did not know pi4j but this looks really cool <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Thanks for the link.<br/>
+More stuff on the list to look at.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 29, 2012 12:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039170"></a>
+                                    <font class="smallfont"><p>Yes I think my first protocol for OR will probably be something that interfaces directly with pi4j to control the GPIO lines etc. </p>
+
+<p>Phil</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philetaylor at Dec 29, 2012 15:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039184"></a>
+                                    <font class="smallfont"><p>There is a also commands in the Denon serial protocol for setting the amplification directly in decibel. I found that in practice decibel buttions for -20, -30, -40 and -50 dB is much more convenient then trying to pan up and down with the Volume up and Volume down commands. In my case I find the reaction to the latter commands is very slow at the beginning and then at some point they accellerate to change the volume at a furious pace. I was always attributing this behaviour to the receiver but admittedly I never experimented much.  </p>
+
+<p>Sorry if I did not directly answer your question. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Dec 30, 2012 12:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039185"></a>
+                                    <font class="smallfont"><p>Btw. The coolest solution is probably to enhance the Denon Command implementation so that you can read out the current volume value. If you create a sensor for the volume and a command component for the set volume command you can combine them into a UI slider component to set the volume. Absolutely awesome. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Dec 30, 2012 12:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039190"></a>
+                                    <font class="smallfont"><p>I was thinking the same thing and I will probably try that.</p>
+
+<p>Phil </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philetaylor at Dec 30, 2012 15:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039363"></a>
+                                    <font class="smallfont"><p>I have made extensive changes to the protocol which is working well at my end:</p>
+
+<p>1. A static class to manage the connection to the serial port which fixes the locking issue.<br/>
+2. All responses from the serial port are stored in a HashMap <br/>
+3. A sensor EventListener which returns the value of the above HashMap if the sensor command matches.</p>
+
+<p>I AM NOT A JAVA PROGRAMMER so I can't attest to the quality of the programming. I have also not done anything with the UDP side of it as my controller is connected directly to my receiver although that should still work (without any of the additions above).</p>
+
+<p>Switches are working and showing the correct states as are sliders. One quite nice benefit is that by using labels attached to sensors, you can replicate key parts of the receiver display as well!</p>
+
+<p>Here is a test panel that I have created/modified and all parts of it are working fine. If anybody wants the changes, please let me know.</p>
+
+<p><img src="attachments/21039133/21135461.png" align="absmiddle" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philetaylor at Jan 05, 2013 13:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

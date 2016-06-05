@@ -1,0 +1,856 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Dynamic labels in UI</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Dynamic labels in UI
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 25, 2013 by <font color="#0050B2">jda</font>.
+				    </div>
+
+				    <p>Can anyone provide an example of how to manipulate a label from rules?  For example, I'd like a label to indicate the last time a switch was turned on or off.  Thanks!</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036295.png">Boiler_V1_10.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036297.png">impulse_command.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036298.png">impulse_sensor.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036299.png">counter_command.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036300.png">counter_sensor.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036301.png">labels_ui_design.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036302.png">rule_init.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036304.png">console_init_command.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036303.png">console_init_command.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880305/23036305.png">Diagram.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22880311"></a>
+                                    <font class="smallfont"><p>Code not tested, so please beware of typos.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+<span class="code-keyword">import</span> java.util.Date
+<span class="code-keyword">import</span> java.text.SimpleDateFormat;
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+rule <span class="code-quote">"Time when <span class="code-keyword">switch</span> was turned on or off"</span>
+when
+  Event(<span class="code-quote">"mySwitch"</span>)
+then
+  Date now;
+  SimpleDateFormat dateFormatter = <span class="code-keyword">new</span> SimpleDateFormat(<span class="code-quote">"H:mm:ss"</span>);
+  execute.command(<span class="code-quote">"myVCommand"</span>, <span class="code-quote">"Switched on "</span>+dateFormatter.format(now));
+end
+</pre>
+</div></div>
+
+<p>For this to work you need to have in your design:<br/>
+1. Sensor for reading your switch with the name "mySwitch" - this can be the same which is used inside your switch;<br/>
+2. In memory virtual command with the name "myVCommand" and command "status";<br/>
+3. sensor type custom linked to the virtual command from pt. 2<br/>
+4. Label linked to the sensor from pt. 3</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 26, 2013 08:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880736"></a>
+                                    <font class="smallfont"><p>Thank you!  Everything works after this simple change to your code:</p>
+ <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  Date now = <span class="code-keyword">new</span> Date();
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jda at Dec 05, 2013 23:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880741"></a>
+                                    <font class="smallfont"><p>Jack, I haven't got the explanation. Could you please help me to understand the answer?</p>
+
+<p>I would like to make a smart boiler that indicates how much hot water still in it.<br/>
+Water counter connected directly to boiler out pipe.</p>
+
+<p>Receiving integer values from water counter via 1-wire DS2423.<br/>
+Quite kickly with help of manual I found the way to make<br/>
+Command "GetCounter" to read the values.<br/>
+Then added Command to a Sensor "SensCounter" (type:custom, with Command "GetCounter").<br/>
+Added this to a Label "liters total" and now it shows total quantity of<br/>
+liters passed via counter.</p>
+
+<p>And that's all. 10 hours on this forum spent but very few things understood.</p>
+
+<p>At the very first stage I need some way to understand how to interact with buttons and switches.<br/>
+At least it would be nice to press the Button and save the value to some label and variable.</p>
+
+<p>Then we need trace water counter change in event and to implement a simple formula:<br/>
+$UsedWater = $CurrentCounterValue - $SavedCounterValue;<br/>
+$HotWaterInBoiler = 100 - $UsedWater;<br/>
+After it output $HotWaterInBoiler to a label.</p>
+
+<p>Quite simple task to do in Delphi ot PHP, but really hard to solve with Drools. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>I used example MICHAL RUTKA'S<br/>
+Temperature sensor's calibration
+<a href="http://mqlservice.net/openremote/2013/05/22/temperature-sensors-calibration/">http://mqlservice.net/openremote/2013/05/22/temperature-sensors-calibration/</a><br/>
+In this example Michael reads real value and outputs corrected - almost<br/>
+the same I need.</p>
+
+<p>So we have:<br/>
+SensCounter (Real sensor that reads values from counter)<br/>
+==CmdGetCounter (reading counter values via 1-wire)</p>
+
+<p>SensConsOpen (sensor, type switch attached to command SaveCounterR)<br/>
+==SaveCounterR (In-memory virt command, STATUS, address:copycount)</p>
+
+<p>This "virtual" sensor will be used to copy and output the value.<br/>
+In the article Michal says:<br/>
+"for the virtual sensor, you would have 2 "in-memory" commands: a<br/>
+read (command: STATUS) and a<br/>
+write (command : ON)"<br/>
+Can't attach 2 commands for one sensor. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Then we need to attach a button to a switch that will triger event for rule, like<br/>
+in example CHANGING SET TEMPERATURE USING SWITCHES AND BUTTONS:
+<a href="http://www.openremote.org/display/forums/Changing+set+temperature+using+switches+and+buttons?focusedCommentId=22877996#comment-22877996">http://www.openremote.org/display/forums/Changing+set+temperature+using+switches+and+buttons?focusedCommentId=22877996#comment-22877996</a></p>
+
+
+<p>But this will be another part of job.<br/>
+First I would appreacite your help with at least reading the value,<br/>
+calculating it and outup it to another label.</p>
+
+<p>&#8212;<br/>
+package org.openremote.controller.protocol</p>
+
+<p>global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+global org.openremote.controller.statuscache.SwitchFacade switches;</p>
+
+<p>rule "Consumption Tracer"<br/>
+when<br/>
+== $evt : Event(source=="SensConsOpen", value=="on") // button pressed<br/>
+== $cnt : Event(source=="SensCounter") // bind $cnt with counter value<br/>
+== $blr : Event(source=="* * * *") // here we need to bind $blr with output string?<br/>
+then<br/>
+  double SavedValue = $cnt.getValue().toString();<br/>
+  execute.command("SaveCounterR", String (SavedValue) );<br/>
+end<br/>
+&#8212;</p>
+
+<p>Friendly speaking I am shocked with the complexity of such simple task.<br/>
+Possibly it is only because not knowing Drools and Java.</p>
+
+<p>As I understand Button works this way:<br/>
+&#8212;<br/>
+Button (WaterOpened) =&gt; Command (ConsuptOpen) =&gt; Sensor (SensConsOpen, type:Switch) =&gt; Switch (SwConsOpen) =&gt; Event(source=="SensConsOpen", value=="on")</p>
+
+<p>Is it correct?</p>
+
+<p>It would be nice to find simple examples for every part if this project, but even the most simple ones, that I found, didn't helped.</p>
+
+<p>Thank you in advance.</p>
+
+<p>Alex</p>
+
+<p><img src="attachments/22880305/23036295.png" align="left" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 02:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880743"></a>
+                                    <font class="smallfont"><p>One more question: Does this document may help with rules language usage?</p>
+
+<p>Drools Expert User Guide<br/>
+Version 5.4.0.Final<br/>
+by The JBoss Drools team <a href="http://www.jboss.org/drools/team.html">http://www.jboss.org/drools/team.html</a></p>
+
+<p><a href="http://docs.jboss.org/drools/release/5.4.0.Final/drools-expert-docs/pdf/drools-expert-docs.pdf">http://docs.jboss.org/drools/release/5.4.0.Final/drools-expert-docs/pdf/drools-expert-docs.pdf</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 02:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880744"></a>
+                                    <font class="smallfont"><p>Forgot to say - I am going to press the button when hot water usage starts and press another button when it stops to reset the variable with hot water. This will make scripts simple.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 02:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880749"></a>
+                                    <font class="smallfont"><p>OpenRemote is still on Drools 5.1.1. Link to that manual is at the botom of <a href="http://www.openremote.org/display/docs/Designer+2.0+-+Controller+Rules" title="Designer 2.0 - Controller Rules">Designer 2.0 &#45; Controller Rules</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 06, 2013 08:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880763"></a>
+                                    <font class="smallfont"><blockquote>
+<p>This "virtual" sensor will be used to copy and output the value.<br/>
+In the article Michal says:<br/>
+"for the virtual sensor, you would have 2 "in-memory" commands: a<br/>
+read (command: STATUS) and a<br/>
+write (command : ON)"<br/>
+Can't attach 2 commands for one sensor.</p></blockquote>
+<p>This is not true as I discovered that command STATUS can be used as well for read and write. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 06, 2013 10:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880781"></a>
+                                    <font class="smallfont"><p>Transformation</p>
+
+<p>Thank you for your kind reply Michal.<br/>
+As there are very few examples, I will try to write an article - step by step guide for my project.</p>
+
+<p>The very first and simple step will be transformation of impulses to litters. It is very close to your article about temperature but now we will try to use only one command STATUS for data read/write.</p>
+
+<p>First we will create<br/>
+command GetImpulse to read 1-wire impulse data and a<br/>
+sensor SensImpulse (type: custom) to get data from command GetImpulse:</p>
+
+<p><a class="confluence-thumbnail-link 609x407" href='http://www.openremote.org/download/attachments/22880305/impulse_command.png'><img src="attachments/thumbnails/22880305/23036297" align="absmiddle" border="0"/></a></p>
+
+<p><a class="confluence-thumbnail-link 578x451" href='http://www.openremote.org/download/attachments/22880305/impulse_sensor.png'><img src="attachments/thumbnails/22880305/23036298" align="absmiddle" border="0"/></a></p>
+
+
+<p>Then we create In-memory virtual<br/>
+command MakeCounter for liters conversion and a<br/>
+sensor SensCounter (type: custom) to get data from MakeCounter:</p>
+
+<p><a class="confluence-thumbnail-link 609x269" href='http://www.openremote.org/download/attachments/22880305/counter_command.png'><img src="attachments/thumbnails/22880305/23036299" align="absmiddle" border="0"/></a></p>
+
+<p><a class="confluence-thumbnail-link 585x451" href='http://www.openremote.org/download/attachments/22880305/counter_sensor.png'><img src="attachments/thumbnails/22880305/23036300" align="absmiddle" border="0"/></a></p>
+
+<p>After it, in UI Designer we create 2 labels<br/>
+attached to 2 our sensors:</p>
+
+<p><a class="confluence-thumbnail-link 388x582" href='http://www.openremote.org/download/attachments/22880305/labels_ui_design.png'><img src="attachments/thumbnails/22880305/23036301" align="absmiddle" border="0"/></a></p>
+
+<p>Then we save the project in online designer and sync it with the server.<br/>
+It is fun but at this stage Android application crashes.<br/>
+It works fine only if both labels are attached to working<br/>
+real sensor SensImpulse. If I use SensCounter for the second label,<br/>
+Android app crashes. But I am sure - everything done correctly.</p>
+
+<p>Michal please confirm that everything fine and I will proceed to create the rule.</p>
+
+<p>Thank you in advance.</p>
+
+<p>Alex</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 14:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880788"></a>
+                                    <font class="smallfont"><p>It looks OK to me. I have no idea why Android app crashes. I test mostly on iOS which is slighty different. Anyway, have you tried this on the webconsole through a web browser?</p>
+
+<p>You can also try to initialize the virtual mem variable during startup of the controller:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"init adrcount"</span>
+when
+then
+  execute.command(<span class="code-quote">"adrcount"</span>, <span class="code-quote">"0"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 06, 2013 15:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880790"></a>
+                                    <font class="smallfont"><p>I entered this code, but it didn't help:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+<span class="code-keyword">import</span> java.util.Date
+<span class="code-keyword">import</span> java.text.SimpleDateFormat;
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+rule <span class="code-quote">"init adrcount"</span>
+when
+then
+  execute.command(<span class="code-quote">"adrcount"</span>, <span class="code-quote">"0"</span>);
+end
+
+</pre>
+</div></div>
+
+<p><a class="confluence-thumbnail-link 840x434" href='http://www.openremote.org/download/attachments/22880305/rule_init.png'><img src="attachments/thumbnails/22880305/23036302" align="absmiddle" border="0"/></a></p>
+
+<p>&lt;b&gt;Does it mean - there is no way to continue with rules code developing?&lt;/b&gt; <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Didn't know about web console. As I see it is here:
+<a href="http://192.168.8.6:8080/webconsole">http://192.168.8.6:8080/webconsole</a><br/>
+so the result is also strange -<br/>
+black hole instead of zero:</p>
+
+<p><a class="confluence-thumbnail-link 367x557" href='http://www.openremote.org/download/attachments/22880305/console_init_command.png'><img src="attachments/thumbnails/22880305/23036303" align="absmiddle" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 15:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880793"></a>
+                                    <font class="smallfont"><p>I would think more that the problem is the Android app or the device you are using. Which version do you have? IMHO the latest is 2.1.0 beta. Anyway, please try the design in web console or/and if you can on iOS device.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 06, 2013 15:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880794"></a>
+                                    <font class="smallfont"><p>OpenRemote was downloaded yesterday.<br/>
+&#8212;<br/>
+So it is: OpenRemContr_2_1_0.<br/>
+System: Windows XP, Java version.<br/>
+OWServer: under Cygwin.<br/>
+Phone: Samsung Galaxy Nexus.</p>
+
+<p>Anyway, please try the design in web console<br/>
+//<br/>
+You mean here: <a href="http://192.168.8.6:8080/webconsole">http://192.168.8.6:8080/webconsole</a><br/>
+It is tested. The result is black hole:</p>
+
+<p><a class="confluence-thumbnail-link 367x557" href='http://www.openremote.org/download/attachments/22880305/console_init_command.png'><img src="attachments/thumbnails/22880305/23036303" align="absmiddle" border="0"/></a></p>
+
+<p>As for iOS - I will find next week one. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+But if it doesn't work in webconsole, so iOS hardly helps...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 16:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880799"></a>
+                                    <font class="smallfont"><p>I had a black hole initially and found it was a typo in my code.  Remember all names are case-sensitive.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jda at Dec 06, 2013 16:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880800"></a>
+                                    <font class="smallfont"><p>Jack, <br/>
+Thank you for your reply.</p>
+
+<p>There is no code and Android app crash/ Webconsole black hole.</p>
+
+<p>Michal recommended to add code just to init the variable and see if crash/black hole will be solved:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"init adrcount"</span>
+when
+then
+  execute.command(<span class="code-quote">"adrcount"</span>, <span class="code-quote">"0"</span>);
+end
+</pre>
+</div></div>
+
+<p>No place for typo. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 17:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880804"></a>
+                                    <font class="smallfont"><p>Can you get the virtual command to store a dummy value such as "Test" and then see it in the label?  That will at least prove you've got the command, sensor, and UI set up correctly.  Then it's on to figuring out what breaks in the calculation or passing the value to the command.  Try to build and deploy it one step at a time since there is no debugger.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jda at Dec 06, 2013 17:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880806"></a>
+                                    <font class="smallfont"><p>Jack, you are right. This is exactly what Michal recommended to do with rule command:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  execute.command(<span class="code-quote">"adrcount"</span>, <span class="code-quote">"0"</span>);
+</pre>
+</div></div>
+
+<p>And it seems "In-memory Virtual Command" doesn't work correctly on my server as it never gives it's value to a label whatever I do.</p>
+
+<p>Real command/censor and slider bind with label - work fine.</p>
+
+<p>I have Java JDK 6 and JRE 7 on the same server with Windows XP. Could it be the problem?</p>
+
+<p>I also have error </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">Failed to reload configuration and clear cache!</pre>
+</div></div>
+<p>trying to "Reload configuration and clear cache" but found no solution for it.<br/>
+So just press the button "Sync with Online Designer" and it works fine.</p>
+
+<p>But "In-memory Virtual Command" doesn't work correctly.</p>
+
+<p>I will install OWServer and OpenRemote<br/>
+on CentOs 5 (if it will be possible) and check the difference.</p>
+
+<p>It seems the problem is in Java or OpenRemote under Windows XP.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 18:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880808"></a>
+                                    <font class="smallfont"><p>What does "adrcount" for? I would expect the name of one of your virtual status commands there. I did not spot one with that name.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 06, 2013 18:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880810"></a>
+                                    <font class="smallfont"><p>Pieter, You are right! <img class="emoticon" src="images/icons/emoticons/biggrin.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>adrcount - is an address for command MakeCounter.<br/>
+But it should be the name itself: MakeCounter.</p>
+
+<p>After changing the Address of command to its Name, black hole problem solved!<br/>
+Thank you!</p>
+
+<p>Time to move forward. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 19:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880825"></a>
+                                    <font class="smallfont"><p>Michal, could you please help with the rules?</p>
+
+<p>First rule "init MakeCounter" works fine if there is no second rule. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+<span class="code-keyword">import</span> java.util.Date;
+<span class="code-keyword">import</span> java.text.SimpleDateFormat;
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+rule <span class="code-quote">"init MakeCounter"</span>
+when
+then
+  execute.command(<span class="code-quote">"MakeCounter"</span>, <span class="code-quote">"15"</span>);
+  execute.command(<span class="code-quote">"GetLevel"</span>, <span class="code-quote">"35"</span>);
+end
+</pre>
+</div></div>
+
+<p>If I set the rule "Make proper counter value" no commands executed at all. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Make proper counter value"</span>
+when
+  CustomState (source == <span class="code-quote">"SensImpulse"</span>, $Imp: value)
+then
+  execute.command(<span class="code-quote">"MakeCounter"</span>, <span class="code-quote">"50"</span>);
+end;
+</pre>
+</div></div>
+
+<p>After 4 hours of forum reading and experiments realized,<br/>
+that for Sensor type: custom we need event:<br/>
+CustomState (source == "SensImpulse", $Imp: value)</p>
+
+<p>For other sensors - other events. Is there any list?</p>
+
+<p>Thank you for replies.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 06, 2013 22:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880826"></a>
+                                    <font class="smallfont"><p>In my experience, if I include one rule with bad syntax all the rules stop working.  Unfortunately, I don't know java well enough to know what's wrong with your syntax but I would suggest replacing "$Imp: value" with a dummy string and if your rules start working again you know that's where the syntax problem is.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jda at Dec 06, 2013 22:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880829"></a>
+                                    <font class="smallfont"><p>The syntax problem is probably the ; after final end.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 07, 2013 00:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880844"></a>
+                                    <font class="smallfont"><p>Mea culpa. I have a custom of giving the command the same name as address fieled (just to memorize less and to see in the designer which addresses are there). Anyway, of course it should be "MakeCounter" there.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 07, 2013 10:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880899"></a>
+                                    <font class="smallfont"><p>Yes, Michal! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+The problem was in the last character of the code. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Yes! You are right. Now it finally works!!! <img class="emoticon" src="images/icons/emoticons/biggrin.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Thank you.</p>
+
+<p>The code is mainly finished. I found how to convert variables<br/>
+from string to integer and back.</p>
+
+<p>Now I will try to find out how to read the value from<br/>
+sensor or command without event (not after WHEN). I mean event is already<br/>
+happened (impulse counter changed its value).<br/>
+Now it is time to get integer value from sensor (or command)<br/>
+and copy it into another command.</p>
+
+<p>I tried to use inside the "then" part</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  CustomState (source == <span class="code-quote">"SensImpulses"</span>, $Impulses: value)
+</pre>
+</div></div>
+<p>but it didn't help.</p>
+
+<p><img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 07, 2013 18:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880901"></a>
+                                    <font class="smallfont"><p>Found your post. Learning.</p>
+
+<p>READING A SENSOR VALUE FROM INSIDE A RULE.<br/>
+Michal Rutka<br/>
+On May 26, 2013 15:29</p>
+
+<p>Switch also doesn't work for me.<br/>
+Moreover it stops working new rules or makes some other problems<br/>
+even after I delete the SWITCH! - needed to reboot the server.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 07, 2013 18:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880903"></a>
+                                    <font class="smallfont"><p>As I see, there is now way to read sensor inside the rule. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Only read it after WHEN and that's all. Correct?</p>
+
+<p>Juha didn't gave any special example for this:
+<a href="http://www.openremote.org/display/forums/Reading+a+sensor+value+from+inside+a+rule.?focusedCommentId=22415040">http://www.openremote.org/display/forums/Reading+a+sensor+value+from+inside+a+rule.?focusedCommentId=22415040</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 07, 2013 19:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880913"></a>
+                                    <font class="smallfont"><p>Could you please look at this during the week?</p>
+
+<p>This is very strange, but when I try to acces the value via </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Make proper counter value"</span>
+when
+  CustomState (source == <span class="code-quote">"SensWaterStartL"</span>, $UsageStartLit: value)
+  <span class="code-comment">// Trying to get SensWaterStartL value and compare it with the current counter value.
+</span>then
+</pre>
+</div></div>
+
+<p>it triggers</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Trace water usage starts"</span>
+when
+  CustomState (source == <span class="code-quote">"SensLiters"</span>, $Liters: value) <span class="code-comment">// Get value
+</span>  <span class="code-comment">//SensWaterStartL created here to trace usage start.
+</span>then
+</pre>
+</div></div>
+
+<p>and refreshes (destroyes) value of SensWaterStartL.</p>
+
+
+<p>Complete code and diagram. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+<span class="code-keyword">import</span> java.util.Date;
+<span class="code-keyword">import</span> java.text.SimpleDateFormat;
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-comment">//---------------------------------------
+</span>rule <span class="code-quote">"init Command Values"</span>
+when
+then
+  execute.command(<span class="code-quote">"MakeLitersValue"</span>, <span class="code-quote">"0"</span>);
+  execute.command(<span class="code-quote">"WaterVolumeInBoiler"</span>, <span class="code-quote">"100"</span>);
+  execute.command(<span class="code-quote">"WaterStartLit"</span>, <span class="code-quote">"0"</span>);
+  execute.command(<span class="code-quote">"WaterStartTime"</span>, <span class="code-quote">"0:00"</span>);
+  execute.command(<span class="code-quote">"BoilerOff"</span>, <span class="code-quote">"Off"</span>);
+  execute.command(<span class="code-quote">"TemperIn"</span>, <span class="code-quote">"0"</span>);
+  execute.command(<span class="code-quote">"TemperOut"</span>, <span class="code-quote">"0"</span>);
+end
+
+<span class="code-comment">// Transform impulses to liters and show last impulse time
+</span><span class="code-comment">//---------------------------------------
+</span>rule <span class="code-quote">"Make proper counter value"</span>
+when
+  CustomState (source == <span class="code-quote">"SensImpulses"</span>, $Impulses: value)
+  <span class="code-comment">//CustomState (source == <span class="code-quote">"SensWaterStartL"</span>, $UsageStartLit: value)
+</span>then
+  <span class="code-comment">// Convert sensor data to integer value
+</span>  <span class="code-object">Integer</span> iLitersCnt = <span class="code-object">Integer</span>.parseInt($Impulses.toString() );
+  <span class="code-comment">// 4178 impulses - offset betwen water counter and impulse counter
+</span>  iLitersCnt = iLitersCnt - 5311; 
+  <span class="code-comment">// Convert from integer to string value, adding L sign at the end
+</span>  <span class="code-object">String</span> sLtCnt = <span class="code-object">String</span>.format(<span class="code-quote">"%,d"</span>, iLitersCnt);
+  <span class="code-comment">// Set command <span class="code-quote">"MakeLitersValue"</span> to string value sLtCnt
+</span>  execute.command(<span class="code-quote">"MakeLitersValue"</span>,  sLtCnt);
+
+  Date now = <span class="code-keyword">new</span> Date();
+  SimpleDateFormat dateFormatter = <span class="code-keyword">new</span> SimpleDateFormat(<span class="code-quote">"H:mm"</span>);
+  execute.command(<span class="code-quote">"LastImpulseTime"</span>, dateFormatter.format(now));
+
+/*
+  <span class="code-object">Integer</span> iDeltaLit = <span class="code-object">Integer</span>.parseInt($UsageStartLit.toString() );
+  iDeltaLit = iLitersCnt - iDeltaLit;
+  <span class="code-object">String</span> sDltLit = <span class="code-object">String</span>.format(<span class="code-quote">"%,d"</span>, iDeltaLit);
+  execute.command(<span class="code-quote">"TemperOut"</span>,  sDltLit);
+*/
+end
+
+<span class="code-comment">// Water usage button clicked: Copy liters counter and show start time
+</span><span class="code-comment">//---------------------------------------
+</span>rule <span class="code-quote">"Trace water usage starts"</span>
+when
+  Event (source == <span class="code-quote">"SensBoilerOnOff"</span>)
+  CustomState (source == <span class="code-quote">"SensLiters"</span>, $Liters: value) <span class="code-comment">// Get value
+</span>then
+  Date now = <span class="code-keyword">new</span> Date();
+  SimpleDateFormat dateFormatter = <span class="code-keyword">new</span> SimpleDateFormat(<span class="code-quote">"H:mm"</span>);
+  execute.command(<span class="code-quote">"WaterStartTime"</span>, dateFormatter.format(now) );
+
+  execute.command(<span class="code-quote">"WaterStartLit"</span>,  $Liters.toString() );
+end
+</pre>
+</div></div>
+
+
+<p><a class="confluence-thumbnail-link 1485x852" href='http://www.openremote.org/download/attachments/22880305/Diagram.png'><img src="attachments/thumbnails/22880305/23036305" align="absmiddle" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 08, 2013 01:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880960"></a>
+                                    <font class="smallfont"><p>It seems there is something wrong with ther sever of OpenRemote bacause my code stopped working. I changed nothing so it 100% sure not me.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 08, 2013 23:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880980"></a>
+                                    <font class="smallfont"><p>You've created a loop. This is nothing unusual with it. How to prevent loops you can find in this article <a href="http://ilesteban.wordpress.com/2012/11/16/about-drools-and-infinite-execution-loops/">http://ilesteban.wordpress.com/2012/11/16/about-drools-and-infinite-execution-loops/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 09, 2013 11:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880981"></a>
+                                    <font class="smallfont"><p>Sometimes it is good to hard reboot your machine. Especially after many updates.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 09, 2013 11:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880995"></a>
+                                    <font class="smallfont"><p>Michal, thank you very much for an article.</p>
+
+<p>As I see, there is no way to read sensor inside the rule. <br/>
+Only read it after WHEN and that's all. Correct?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 09, 2013 16:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881011"></a>
+                                    <font class="smallfont"><p>Thank you. I usually make system reboot.</p>
+
+<p>As I see, there is no way to read sensor inside the rule. <br/>
+Only read it after WHEN and that's all. Correct?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 09, 2013 23:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881132"></a>
+                                    <font class="smallfont"><blockquote>
+<p>As I see, there is no way to read sensor inside the rule. <br/>
+Only read it after WHEN and that's all. Correct?</p></blockquote>
+<p>Well, it is all Java, therefore with enough hacking everything is possible. However, removing sensor from when statement would make your rule insensitive to the sensor. This has more drawbacks than advantages. If you want simply ignore some values of sensors then you can use simple if(){} statement in the then part.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 12, 2013 08:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:35</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

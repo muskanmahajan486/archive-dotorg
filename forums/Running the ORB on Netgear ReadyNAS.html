@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Running the ORB on Netgear ReadyNAS</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Running the ORB on Netgear ReadyNAS
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 17, 2011 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>I've been using Netgear ReadyNAS for at least 5 years now, these are just great NAS devices that I use for backups and to store and stream media.</p>
+
+<p>As the NAS is running 24/7 and the latest generation is quite powerful (Ultra 6 has a dual-core Intel Atom processor), I've recently started investigating running the ORB on it.<br/>
+I'm still in the process of setting this up but as there seems to be some interest on this topic, I'll start this thread and come back to it as I improve the set-up.</p>
+
+<p>The following has been done on an Ultra 6 NAS, it should work with all Ultra and Pro models. The older NV series run on much less powerful processor (Sparc architecture), I'm not sure it's possible to install Java or that there is enough power to run the ORB correctly.</p>
+
+<p>1. Get access to the NAS</p>
+
+<p>You need to get SSH root access to your NAS. By default, this is disabled.<br/>
+Go to the ReadyNAS site, download and install the "Enable Root SSH Access" add-on. You'll find it <a href="http://www.readynas.com/?p=4203">here</a>. Be sure to download to x86 version of it.</p>
+
+<p>2. Log-in and install Java</p>
+
+<p>I did google a bit and found some information <a href="https://crashplan.zendesk.com/entries/303683-problem-starting-crashplan-engine-on-readynas-ultra-6-intel-atom-powered">here</a> on installing Java.</p>
+
+<p>Here are the steps I performed:</p>
+<ul class="alternate" type="square">
+	<li>ssh as root to your ReadyNAS</li>
+	<li>vi /etc/apt/sources.list and add at the bottom
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">deb http:<span class="code-comment">//archive.debian.org/debian-backports etch-backports main non-free</span></pre>
+</div></div></li>
+	<li>apt-get update</li>
+	<li>dpkg-reconfigure debconf, select the "Dialog" option (1) and "Medium" prompt level (3)</li>
+	<li>apt-get install sun-java6-jdk</li>
+</ul>
+
+
+<p>3. Install Tomcat</p>
+
+<p>I'm using the "pre-configured" tomcat installation that can be found in the OpenRemote repository.<br/>
+So on your computer, execute <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">svn export https:<span class="code-comment">//openremote.svn.sourceforge.net/svnroot/openremote/trunk/<span class="code-object">Runtime</span>/apache-tomcat-6.0.18</span></pre>
+</div></div><br/>
+Transfer this directory to your ReadyNAS. I did tar the directory and scp'ed it to the NAS.<br/>
+On the NAS, un-tar'ed it in /usr/local/or</p>
+
+<p>By default, Tomcat runs on port 8080 but so does the BitTorrent manager that is already installed on the ReadyNAS. The BitTorrent manager is not running by default, so if you never intend to run it, this should not be an issue. To be on the safe side however, I decided to change the configuration of Tomcat to run on 9080 instead. To do so, edit the conf/server.xml file in the tomcat installation directory. You'll see definition for several ports (8080, 8005, 8443, ...). I just bumped them all by a 1000.</p>
+
+<p>4. Next steps ...</p>
+
+<p>I'll write up about the next steps shortly as I'm still doing some experimentation there. But in a nutshell, download an ORB war file, install in webapps and run ./openremote.sh from the bin directory should get you started.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-18251877"></a>
+                                    <font class="smallfont"><p>Packing it into a ReadyNAS addon package would be a great thing - especially if you plan to re-program your devices on KNX bus with ETS software and LAN interface. SIEMENS N148 allows only one connection at a time. So either Controller has the connection or ETS3.<br/>
+On a ReadyNAS addon settings page you could place a switch to start/stop the Controller service so ETS3 settings can be done and Controller service easily restarted afterwards.</p>
+
+<p>thanks for you work!<br/>
+Achim </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by obelix at Jul 17, 2011 10:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18251894"></a>
+                                    <font class="smallfont"><p>Thanks for the info, Eric.<br/>
+I really have to look into these devices becauase running a full PC as Linux server 24x7 is probably consuming more power?<br/>
+How much power does the Ultra 6 take?</p>
+
+<p>Would it be possible to run a MythTV server on there? That is something I am currently using on my Linux server also. I could change the internal TV card to a USB based one which could be attached to the ReadyNAS USB ports.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 17, 2011 13:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18251898"></a>
+                                    <font class="smallfont"><p>Yes, I was also thinking about this for the best solution to have OR on the ReadyNAS.<br/>
+I did take a quick look at the developer page on the ReadyNAS site, and I believe I should be able to put something together.<br/>
+I'll continue my tests and I'll post here as soon as I've got something.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jul 17, 2011 20:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18251899"></a>
+                                    <font class="smallfont"><p>Not sure how much power it really takes. I don't have anything precise enough to measure the consumption.</p>
+
+<p>I was looking for the specs and it seems I was wrong about the Ultra 2 and 4 being single cores. Not sure how much power those really have but I think this should be enough. Seems the least powerful is an Atom dual core 1.6 GHz.</p>
+
+<p>As for MythTV and a USB tuner, I did a quick search in the ReadyNAS forums and found a thread talking about this but I did not seem to find a conclusion that anybody had it running yet.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jul 17, 2011 20:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433045"></a>
+                                    <font class="smallfont"><p>Created placeholder documentation page for this at <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Controller+on+Netgear+ReadyNAS" title="OpenRemote 2.0 How To - Controller on Netgear ReadyNAS">OpenRemote 2.0 How To &#45; Controller on Netgear ReadyNAS</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 15, 2011 20:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 11:01</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Regarding Lutron Integration "address of the device on the Lutron bus"</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Regarding Lutron Integration "address of the device on the Lutron bus"
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 11, 2013 by <font color="#0050B2">nasser</font>.
+				    </div>
+
+				    <p>I have started looking into making basic interface working with my Lutron installation.  In the documentation for the designer, for creating the Lutron command, it refers to the "Address" field as one of the required fields.  The description states this field is "address of the device on the Lutron bus".  I have a full Integration report printed out of my Lutron system and have the device ID for each device on the system.  I have also managed to use the direct Telnet from command line and use standard Lutron integration commands to click on a button of a keypad or raise/lower a shade successfully.</p>
+
+<p>I am having a hard time to figure out what to enter in the Address field in the designer to designate a keypad device in my system.  I tried to enter the device ID (from Lutron integration report) and it fails with error.  In the controller I see an exception thrown indicating Address field is invalid.  I looked into the source code and found that the Address field format is actually quite complex using the following regex:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">\x5b?(\d{1,2})[.:/\\-](\d{1,2})[.:/\\-](\d{1,2})(?:[.:/\\-](\d{1,2}))?(?:[.:/\\-](\d{1,2}))?\x5d?</pre>
+</div></div>
+
+<p>Can someone who is familiar for Lutron kindly point me to the right direction by providing an example of what I should enter in the Address field?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22879752"></a>
+                                    <font class="smallfont"><p>Hi Nasser,</p>
+
+<p>It should look something like 1:6:1<br/>
+meaning processor 1, link 6, unit 1</p>
+
+<p>Can you share the device id of one of your keypad in your installation ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 12, 2013 10:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879756"></a>
+                                    <font class="smallfont"><p>Hi Eric,</p>
+
+<p>Thanks for your answer.  So where does device ID come into play?  I ended up brushing up on my regex skills and figured out the format!  <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>It seems that the dash works as well as : so something like [1-6-1] is a legal entry to the address field.</p>
+
+<p>I also found the place in the code where the parser does address validation further in the LutronHomeWorksAddress class.  But could not make sense of it and come up with a combination of numbers that works for my system.  For example I have device ID of 34 but the validation accounts for last number to be between 1 and 32.  So I could not use device ID there for my keypad (i.e. [1-6-34]).  In your example what do you mean by unit?</p>
+
+<p>When I go to my Lutron software I am able to generate a full "Integration Report" of the system.  This report starts by pages that has one device per page.  For example a keypad device report looks like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Device Name                     Model          ID    Component       Component <span class="code-object">Number</span>   Component Name
+------------------------------------------------------------------------------------------------------
+Main Floor\Entrance\Main    HQWD­W6BRL­WH        38    Button 1               1             Stairs 
+Floor Stairs                                         Button 2               2             Master
+                                                     Button 3               3             Main Flr
+                                                     Button 4               4             2nd Flr
+                                                     Button 5               5             Office
+                                                     Button 6               6             HomeOff
+                                                     Button 18              18             
+                                                     Button 19              19             
+                                                     Default1583            81             
+                                                     Default1584            82             
+                                                     Default1585            83             
+                                                     Default1586            84             
+                                                     Default1587            85             
+                                                     Default1588            86             
+                                                     Sensor Connection 001  25            Sensor Connection 001
+                                                     Sensor Connection 002  26            Sensor Connection 002
+</pre>
+</div></div>
+
+<p>I have been able to successfully use this integration ID and perform telnet commands to control the devices based on the "Lutron Integration Protocol" document from here:</p>
+
+<p><a href="http://www.lutron.com/TechnicalDocumentLibrary/040249.pdf">http://www.lutron.com/TechnicalDocumentLibrary/040249.pdf</a></p>
+
+<p>So since I couldn't get this working last night I was able to use telnet protocol in designer successfully.  However, I would like to be able to start controlling my Lutron system in the most efficient way which I am guessing is using the Lutron protocol in OR.</p>
+
+<p>Some background...</p>
+
+<p>My Current System:  About 60% of my house is automated using Lutron.  This includes lighting and shades which I paid for dearly!  I have recently started looking into Z-Wave DYI automation with a Vera controller and so far it has been a smooth experience.  With Z-Wave I am planning to automate the rest of the switches in the house so that I can control everything remotely.  I also have another hobby of maintaining a saltwater aquarium which I have just started planning an elaborated system to build in the next 6-10 months in my new house.  I would like to automate/monitor all the Saltwater aquarium devices as well.</p>
+
+<p>Long Term Goal:  Given that I am not too fond of the Lutron or the VeraMobile apps, I would like to have a single iOS app that can control everything in my house and is designed to my specific needs and liking.  That is why I have ended up here.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nasser at Nov 12, 2013 11:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879758"></a>
+                                    <font class="smallfont"><p>From the document, it looks like you have a QS system.<br/>
+The current Lutron protocol in OR only works with HomeWorks P5 systems (the older one, before QS).</p>
+
+<p>If you have Java development skills, or someone else on the forums is interested, I can give pointers as to how to implement a Lutron protocol for QS support.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 12, 2013 12:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879770"></a>
+                                    <font class="smallfont"><p>I have 17 years of Java development skills and I would be happy to implement and test this and contribute to OR.</p>
+
+<p>Another thing to note is that in my Integration Report I get the following blocks as well (after all devices are listed):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+Zone Name                         ID
+----------------------------------------
+Basement\Bar ￼  ￼                   109
+Basement\Rec Room ￼ ￼                42
+Basement\Rec Cove ￼                ￼ 47
+Basement\Foyer ￼ ￼                   44
+...
+Shade Name                        ID
+----------------------------------------
+Main Floor\Entrance\Middle         83
+shade
+Main Floor\Entrance\Right          85
+shade
+...
+
+</pre>
+</div></div>
+
+<p>So every logical area/zone/group also seems to have a unique ID within the system.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nasser at Nov 12, 2013 13:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879786"></a>
+                                    <font class="smallfont"><p>Great,</p>
+
+<p>I'll take a closer look at the QS protocol and see how we can adapt the current HomeWorks implementation, either to add a new QS protocol, either to have a unified Lutron protocol to supports both.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 13, 2013 08:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879800"></a>
+                                    <font class="smallfont"><p>Hi Eric,</p>
+
+<p>Can you share the documentation source you have on QA protocol?  I only found the Integration document I mentioned earlier.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nasser at Nov 13, 2013 13:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879833"></a>
+                                    <font class="smallfont"><p>I was just referring to the document you posted, I don't have anything else.<br/>
+I've taken a quick glance at it and believe it has all the information required to implement the protocol.</p>
+
+<p>It's telnet based (or can be, can also support RS232) as for the HomeWorks one but the commands, addresses, ... are different.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 14, 2013 09:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879834"></a>
+                                    <font class="smallfont"><p>So the Lutron command types in OR are only an abstraction on top of telnet?</p>
+
+<p>If yes, then I think I am equipped to get started on this.  For now I will just reuse the "address" field of the designer to enter integration ID.  That seems to be the only thing required to communicate with my Lutron.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nasser at Nov 14, 2013 10:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597917"></a>
+                                    <font class="smallfont"><p>Resurrecting an old thread.</p>
+
+<p>I currently have a number of Lutron products (Maestro wireless, Caseta Wireless and Serena Wireless shades) in my home. I am now looking <br/>
+at a way to integrate these with the rest of the Openremote system I am building. Currently on the Free version, but will be moving to the <br/>
+Pro version in the near future.</p>
+
+<p>Has there been any progress updating the current Homeworks integration to QS as discussed above?</p>
+
+<p>Has any work been done on integrating either RadioRA2 or Caseta wireless (Lutron SmartBridge Pro)?</p>
+
+<p>If there are any ideas as to how this can be done, it would be appreciated.</p>
+
+<p>I am not a Java programmer, but I am prepared to help if some direction could be provided.</p>
+
+<p>Thanks</p>
+
+<p>John</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by johnwb at Apr 23, 2015 19:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

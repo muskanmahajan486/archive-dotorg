@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Help with Multi source for Text To Speech rule</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Help with Multi source for Text To Speech rule
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 08, 2016 by <font color="#0050B2">mdar</font>.
+				    </div>
+
+				    <p>Hello</p>
+
+<p>I'm working with an Android app programmer to create a Text_To_Speech background app to convert http strings to speech.</p>
+
+<p>When the app is available in Google Play I'll paste the link here.</p>
+
+
+<p>To prepare, I'm trying to get my head around how a rule should be formatted to trigger from a single source, for example when my phone connects to my home network, then have a command constructed from multiple sources.</p>
+
+<p>For example, the heating mode and number of voice mail messages.</p>
+
+
+<p>I've mashed this rule together, could someone far better with Drools cast an eye over it and rearrange it to work please?</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+<span class="code-keyword">import</span> java.util.*;
+
+
+
+rule <span class="code-quote">"Heating Mode and Answer machine Text to Speech 01"</span>
+
+when
+
+  $evt0:Event(source matches <span class="code-quote">"Owner_Present"</span>, $source0 : source) <span class="code-comment">// This returns PRESENT or ABSENT
+</span>
+   $evt1:Event(source matches <span class="code-quote">"01-52-HeaterMode"</span>, $source1 : source) <span class="code-comment">// This returns COMFORT, DAY, NIGHT or SAFE
+</span>
+   $evt2:Event(source matches <span class="code-quote">"Answer_Phone_MSG_Count"</span>, $source2 : source) <span class="code-comment">// This returns a number value
+</span>
+
+
+
+then
+
+    <span class="code-object">String</span> OwnerStatus = $evt0.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"PRESENT"</span>); <span class="code-comment">// I only want the rule to operate when the owner returns, I.E. becomes <span class="code-quote">"PRESENT"</span> on the LAN
+</span>
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Resident is :"</span> + OwnerStatus);
+
+
+
+  <span class="code-object">String</span> Source1Str = $source1.toString();
+
+
+  <span class="code-object">String</span> Source2Str = $source2.toString();
+
+
+  execute.command(<span class="code-quote">"memo_text"</span>, <span class="code-quote">"Welcome Home, Heating is in"</span>  + Source1Str + <span class="code-quote">" mode: <span class="code-object">Number</span> of Answer phone messages is"</span> + Source2Str);
+
+
+  execute.command(<span class="code-quote">"TextToSpeech_Android_01"</span>, <span class="code-quote">" Welcome Home, Heating is in"</span>  + Source1Str + <span class="code-quote">" mode: <span class="code-object">Number</span> of Answer phone messages is"</span> + Source2Str);
+
+
+
+end
+
+</pre>
+</div></div>
+
+
+<p>Many thanks in advance.</p>
+
+<p>Stuart</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23605981"></a>
+                                    <font class="smallfont"><p>Stuart<br/>
+May be something missing in your headers? I have asked in the past for an explanation about which ones to include. Never found a satisfying Howto</p>
+
+<p>I ended up adding the whole caboodle I found in other examples <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+From the little understanding I have, I think you may be missing</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">import</span> org.openremote.controller.model.event</pre>
+</div></div>
+<p>Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Mar 08, 2016 09:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605982"></a>
+                                    <font class="smallfont"><p>If there are no compilations errors then no import is missing. In this case </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">import</span> org.openremote.controller.model.event
+</pre>
+</div></div>
+<p>is not necessary because Event() is visible in</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 08, 2016 11:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605983"></a>
+                                    <font class="smallfont"><p>Hi Stuart, the very good rule of thumb is that most logic conditions should be solved in the LHS (between when ... then). On the RHS very simple statements should be used, best one liners.</p>
+
+<p>Anyway, you want trigger a rule WHEN you come home, so you need to detect when "Owner_preset" becomes "PRESENT". Therefore, you need to catch the previous state of "Owner_present" sensor and compare it with the current state. For the previous state you can either use in-memory virtual variable or internal Drools fact. I prefer the second methodology, but the first approach has its advantage too as you can link the variable with a sensor and see it in UI, making debugging a bit easier. Enough intro, lets code <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Below are example of rules I would use as a start, not tested by me so you can spot some syntax errors. Nevertheless, the idea should give you some food to think.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+declare OwnerPresent
+  state: <span class="code-object">String</span>
+end
+
+rule <span class="code-quote">"Create OwnerPresent internal fact"</span>
+<span class="code-comment">// It will be executed only once when controller starts
+</span>then
+  insert(<span class="code-keyword">new</span> OwnerPresent(<span class="code-quote">"n/a"</span>));
+end
+
+when <span class="code-quote">"Fetch previous present state"</span>
+salience -10 <span class="code-comment">// <span class="code-keyword">do</span> <span class="code-keyword">this</span> after TTS rule fired
+</span>when
+  Event(source==<span class="code-quote">"Owner_Present"</span>, $v: value)
+  $op : OwnerPresent(state != $v)
+then
+  $op.setState($v.toString());
+  update($op); <span class="code-comment">// Lets Drools know that the fact has changed
+</span>end
+
+rule <span class="code-quote">"Heating Mode and Answer machine Text to Speech 01"</span>
+when
+  Event(source==<span class="code-quote">"Owner_Present"</span>, value==<span class="code-quote">"PRESENT"</span>) <span class="code-comment">// This returns PRESENT or ABSENT
+</span>  OwnerPresent(state==<span class="code-quote">"ABSENT"</span>)
+  Event(source matches <span class="code-quote">"01-52-HeaterMode"</span>, $v1 : value) <span class="code-comment">// This returns COMFORT, DAY, NIGHT or SAFE
+</span>  Event(source matches <span class="code-quote">"Answer_Phone_MSG_Count"</span>, $v2 : value) <span class="code-comment">// This returns a number value
+</span>then
+  execute.command(<span class="code-quote">"memo_text"</span>, <span class="code-quote">"Welcome Home, Heating is in"</span>  + Sv1.toString() + <span class="code-quote">" mode: <span class="code-object">Number</span> of Answer phone messages is"</span> + $v2.toString());
+  execute.command(<span class="code-quote">"TextToSpeech_Android_01"</span>, <span class="code-quote">" Welcome Home, Heating is in"</span>  + $v1.toString() + <span class="code-quote">" mode: <span class="code-object">Number</span> of Answer phone messages is"</span> + $v2.toString());
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 08, 2016 12:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606042"></a>
+                                    <font class="smallfont"><p>Thanks Michal,</p>
+
+<p>When we get the android TextToSpeech via IP app finished, I'll post the results on here for all to see.</p>
+
+<p>Cheers,</p>
+
+<p>Stuart</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Mar 13, 2016 13:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

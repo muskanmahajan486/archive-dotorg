@@ -1,0 +1,355 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : & in sensor data breaks sensor?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : & in sensor data breaks sensor?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 07, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Gentlemen (and Ladies),</p>
+
+<p>First let me commend all the great folks that have created and contributed work to Openremote.  I am moving from the 'Mote' app to Openremote as it is much more powerful.  Thanks everyone.</p>
+
+<p>Now, here is my problem...I have a sensor that is uses a HTTP call using the GET method, it returns data that I am parsing using regex.  (I have the same problem with HTTP/GET returning JSON formatted data and parsing using the JSON parser).  The regex works great except when the returned data contains a '&amp;', such as the following...</p>
+
+<p>The HTTP/GET returns the following data, I want just the artist and song (basically skip the first line).  This is from a status.txt request from SqueezeboxServer.</p>
+
+<p>Now Playing (299 of 369) <br/>
+Starlight Orchestra &amp; Choir - Silver Bells</p>
+
+<p>I am using the following regex parser syntax,</p>
+
+<p>\n([a-zA-Z0-9\s-\.\&amp;,&#40;&#41;'.]){1,}</p>
+
+<p>This works for all types of things except for when the data contains a '&amp;', then the sensor breaks until the data returned does not contain that character. </p>
+
+<p>Can anyone suggest a solution?</p>
+
+<p>BTW, a JSON formatted return from a DirecTV call for current program also has the same problem, if the data contains a '&amp;' the sensor breaks, for instance for the show 'Law &amp; Order'.</p>
+
+<p>Thanks,<br/>
+Erik </p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22880858"></a>
+                                    <font class="smallfont"><p>When you say the sensor breaks, is there an error on the logs, or does it just mean the regex fails to parse to a desired result?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 07, 2013 11:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880894"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>Thanks for your reply.  I have looked at the logs and there are no errors, in fact the regex works as well according to the log file...</p>
+
+<p>2013-12-07 09:50:08,089 INFO [Polling thread for sensor: Squeezebox_ArtistSong]: received message: Now Playing (360 of 365) <br/>
+Starlight Orchestra &amp; Choir - We Three Kings Of Orient Are</p>
+
+<p>2013-12-07 09:50:08,089 INFO [Polling thread for sensor: Squeezebox_ArtistSong]: result of regex evaluation: <br/>
+Starlight Orchestra &amp; Choir - We Three Kings Of Orient Are</p>
+
+<p>2013-12-07 09:50:08,089 TRACE [Polling thread for sensor: Squeezebox_ArtistSong]: Processed '<br/>
+Starlight Orchestra &amp; Choir - We Three Kings Of Orient Are<br/>
+', received 'Starlight Orchestra &amp; Choir - We Three Kings Of Orient Are'</p>
+
+<p>The label that I am trying to update using the sensor data is not updating when there is a '&amp;' in the message.  That is, the previous label data remains on the label while the sensor is returning text with a '&amp;', when the sensor returns text that does not contain a '&amp;' the label updates to the new data.</p>
+
+<p>In summary, there is no error in the sensor log, and the regex seems to work correctly, but the sensor cannot update the label when the data contains a '&amp;'.</p>
+
+<p>BTW, I just got my first slider switch to work with my Veralite, totally awesome, thanks guys you rock.</p>
+
+<p>Erik</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by skogen75 at Dec 07, 2013 17:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880896"></a>
+                                    <font class="smallfont"><p>Ok, is this on iOS, Android or web console?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 07, 2013 17:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880904"></a>
+                                    <font class="smallfont"><p>This is using...<br/>
+iOS<br/>
+OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17<br/>
+Designer (Markab)<br/>
+running controller on a win7 OS</p>
+
+<p>have never tried the web console, but I just tried and don't know how to get the web console to work.  I'll keep trying though and report back if I learn anything new. </p>
+
+<p>Thanks, <br/>
+Erik</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by skogen75 at Dec 07, 2013 19:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880906"></a>
+                                    <font class="smallfont"><p>Sure, if you can check if the behavior is the same with the web console, might be good for comparison. There's some instructions to use web console here: <a href="http://www.openremote.org/display/docs/Web+Console" title="Web Console">Web Console</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 07, 2013 19:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880907"></a>
+                                    <font class="smallfont"><p>Okay, I got the web console working...</p>
+
+<p>The web console works fine until an artist/song name contains the '&amp;' and then the following error message pops up...</p>
+
+<p>Web Console<br/>
+Error!</p>
+
+<p>The following error occurred: -</p>
+
+<p>XML to JSON Parsing Error</p>
+
+<p>At that point the web console crashes and the panels need to be reloaded.  I checked the dev.log and no error is listed, and actually indicated successful parsing of the regex like what I showed in the post above.  </p>
+
+<p>Strange...</p>
+
+<p>Thanks, <br/>
+Erik</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by skogen75 at Dec 07, 2013 19:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880915"></a>
+                                    <font class="smallfont">
+<p>Ok thanks,</p>
+
+<p>I think Eric is following the thread and may check if he can reproduce it on iOS (when he has time). That both iOS and web console would fail in the same issue seems a bit strange since they are independently developed codebases. But once he has time to try to verify the issue, should be able to test the same case for both iOS and web consoles.</p>
+
+<p>&#8211; Juha</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 08, 2013 05:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880967"></a>
+                                    <font class="smallfont"><p>I did reproduce this, testing on iOS.<br/>
+Issue is that &amp; is not escaped / enclosed in CDATA in the XML providing the sensor values, e.g.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;openremote xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> 
+</span>            xmlns:xsi=<span class="code-quote">"http:<span class="code-comment">//www.w3.org/2001/XMLSchema-instance"</span> 
+</span>            xsi:schemaLocation="http:<span class="code-comment">//www.openremote.org 
+</span>            http:<span class="code-comment">//www.openremote.org/schemas/controller.xsd"&gt;
+</span>&lt;status id=<span class="code-quote">"232163"</span>&gt;Header &amp; Trailer&lt;/status&gt;
+</pre>
+</div></div>
+
+<p>This is not valid XML and the parsers in the consoles will just not process that.<br/>
+So first fix is to ensure the XML generated by controller is valid, then assess again how the consoles behave.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 09, 2013 09:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880969"></a>
+                                    <font class="smallfont"><p>The W3 consortium maintains a <b>Markup validation service</b> at: 
+<a href="http://validator.w3.org/#validate_by_input">http://validator.w3.org/#validate_by_input</a><br/>
+There you can test the validity of "web documents" using either URL's, uploaded files or just pasted text.<br/>
+Has been very useful for me over the years</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 09, 2013 10:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880985"></a>
+                                    <font class="smallfont"><p>Eric,</p>
+
+<p>Yea, I kind of figured something like that was going on.  I'm a little confused on what the fix is though.  Will you do something in the controller, perhaps replace all '&amp;' with '/&amp;', or are you saying I should do something to prevent the controller from ever getting the '&amp;'?  Of course I don't want to bother you guys, you're working very hard as it is, so thanks for looking into this for me.  I also saw on the forum that someone else has posted a similar problem with the '&amp;'.</p>
+
+<p>I have one more question, maybe this is a new thread, is there a character limit in a reply from a device on which the regex parser will operate?  I have run into a problem with a long return string from a device and I cannot get a valid parsed result within the Openremote environment.  My regex expression works in various testers I have tried.  </p>
+
+<p>Once again, thanks very much, I am so glad I found Openremote.</p>
+
+<p>Erik</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by skogen75 at Dec 09, 2013 14:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880988"></a>
+                                    <font class="smallfont"><p>For my music collection in Squeezebox I used the <a href="http://www.mp3tag.de/en/">MP3tag</a> "action command" to globally change in the Titles all "&amp;" into "and". <br/>
+Took a while for the whole collection.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 09, 2013 14:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880994"></a>
+                                    <font class="smallfont"><p>Controller code needs to be fixed to produce valid XML, ideally writing a unit test first to exhibit the problem and prove it's gonna be fixed.<br/>
+If somebody wants to have a go at it, I can point in the right direction, otherwise it'll have to wait a bit as I need to finish some higher priority tasks on my TODO list.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 09, 2013 15:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880997"></a>
+                                    <font class="smallfont"><p>@Eric, great thanks. I suppose that this will be included in the update log when a new snapshot of controller comes out? (If you get to it before a new version comes out, that is).</p>
+
+<p>@Pieter, thanks for the suggestion and yea, I started to update my library tags. But, I also return program information from DirecTV and there are a surprising number of television shows that have '&amp;' in the name, this is something I cannot work around.</p>
+
+<p>Thanks all.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by skogen75 at Dec 09, 2013 16:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881022"></a>
+                                    <font class="smallfont"><p>Took a quick glance at the code and it's very local, so I tried a fix and on a 1min test it does seem to work.</p>
+
+<p>Code that generate this XML output is in StatusPollingServiceImpl.java and StatusCommandServiceImpl.java (for poll and status calls respectively) and generates the XML by manually building the string.</p>
+
+<p>I did use StringEscapeUtils.escapeXml() from Apache lang framework (already used by controller) to escape the sensor values and that did the trick.<br/>
+So e.g. for StatusPollingServiceImpl, I end up with this line</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">sb.append(StringEscapeUtils.escapeXml(changedStatuses.get(sensorID)));</pre>
+</div></div>
+
+<p>If you can compile the controller yourself, then this should be pretty easy to apply.</p>
+
+<p>Although this works, as longer term fix, I'm thinking going to an XML library (jdom or dom4j) to build the DOM and generate the string should be the way to go. We can also have a schema validate that the generated XML is per our specs.<br/>
+Juha, a thought on that ?</p>
+
+<p>BTW, I did create issue <a href="http://jira.openremote.org/browse/ORCJAVA-416">JIRA-416</a> to track this.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 10, 2013 08:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881073"></a>
+                                    <font class="smallfont"><p>I think we already use JDOM. The one liner fix is fine. The validation will be relevant to add later when the response documents contain more than individual sensor values (e.g. property changes driven by server-side rules).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 11, 2013 07:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881078"></a>
+                                    <font class="smallfont"><p>I'll create a patch branch with the quick fix.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 11, 2013 08:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881133"></a>
+                                    <font class="smallfont"><p>Gentlemen,</p>
+
+<p>I would be more than happy to give the fix a long term test in my environment; if you would be so kind as to direct me to the patch and give me a few instructions as to how to implement/install the patch on my system. </p>
+
+<p>I would report back with any results.</p>
+
+<p>Thanks, <br/>
+Erik</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by skogen75 at Dec 12, 2013 13:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881148"></a>
+                                    <font class="smallfont"><p>The patch branch is here : svn+ssh://svn.code.sf.net/p/openremote/code/patches/individual/Controller_2_0_2_ORCJAVA-416</p>
+
+<p>If all the features you need from the controller are included in v2.0.2, then you can check out that branch using an svn client and build (just typing ant will build a controller package in output folder).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 13, 2013 08:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

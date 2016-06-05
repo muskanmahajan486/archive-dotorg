@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Session Tracking or Authentication</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Session Tracking or Authentication
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 05, 2014 by <font color="#0050B2">tomas.morton</font>.
+				    </div>
+
+				    <p>Hi guys,</p>
+
+<p>I'm looking for a way to track what device a command is sent from (MAC / IP / SessionID), in order to provide authentication.  Is there any way to do this?<br/>
+I've had a look through the code but I can't see anywhere that I would be able to access that sort of information from my protocol (and if commands are sent to a RESTful service there's no guarantee there is any session tracking done at all).</p>
+
+
+<p>Thanks,</p>
+
+<p>Tomas.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22887437"></a>
+                                    <font class="smallfont"><p>What device are you referring to (that one you want to track) ?<br/>
+Is it the device under control by OR ? Or the "computer" running the OR controller ? Or the OR console ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jul 05, 2014 15:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887440"></a>
+                                    <font class="smallfont"><p>I'm looking to track the devices connecting to the controller - the android / iOS / web console devices.</p>
+
+<p>The Protege controller requires you to login using a PIN code before commands will be accepted.  We have set it up so that you can login with a typical keypad type interface through the app, but of course the PIN used needs to be remembered on the OR controller.  The problem here is that if a new device was to send a command to the OR controller, currently the Protege controller would treat the two devices as the same.</p>
+
+<p>If I am able to track which device is trying to send commands I can ensure that they are properly authorized to send commands.</p>
+
+
+<p>But maybe I am missing a fundamental element of OR here - is the CommandBuilder singleton, one-per-device or one-per-command?<br/>
+Can commands be sent to the OR controller through basic HTTP requests, and if so how would that know which device sent the command?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tomas.morton at Jul 05, 2014 22:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887475"></a>
+                                    <font class="smallfont"><p>Thanks, I better understand what you're after.<br/>
+Unfortunately, I don't really think this can be achieved with the current design.</p>
+
+<p>There is no general mechanism to identify a particular panel to the controller so for instance when a button a pressed, the REST call to the controller does not have any indication of which device it comes from.</p>
+
+<p>The only place where there is some kind of identification is in the status polling call, so that the cache knows which data to send. But this information is not propagated to the "protocol layer", only used by the sensor polling service itself.</p>
+
+<p>You can use security at the Tomcat level (in web.xml) to ensure that all REST calls need to be authenticated, but again I don't think you can get access to the principal in your protocol implementation and that would probably introduce a dependency on servlet API, which is not desirable.</p>
+
+<p>We should keep this use case in mind for an update version of the controller API, but I'm this stage, don't see a way to make that work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jul 08, 2014 13:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887483"></a>
+                                    <font class="smallfont"><p>Thanks for the reply Eric.  That is very unfortunate.  I'll talk to my team and client and see if anyone has further ideas.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tomas.morton at Jul 08, 2014 19:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

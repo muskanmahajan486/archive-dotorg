@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : In memory rules at statup</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : In memory rules at statup
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jun 16, 2014 by <font color="#0050B2">jules_bike</font>.
+				    </div>
+
+				    <p>I've got a few devices which are IR controlled using an Itach IP2IR and some of them do not have discrete POWER On or Off just a Power toggle command.   I am using In memory virtual commands with switches which work fine. </p>
+
+<p>However when I start OR it automatically sets all the switches to OFF which means that it sends a POWERTOGGLE command which turns on the devices.  Is there anyway to stop these commands running at statup?</p>
+
+<p>I have used the no loop function to have a switch turn on at startup but I can't figure out whether it could be used in the instance?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22887112"></a>
+                                    <font class="smallfont"><p>Save the state of a switch to a file after toggle and read it back during the startup. no-loop has no relevance here. Moreover, due to the drools implementation in Openremote, no-loop does not behave one would expect.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jun 17, 2014 11:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887115"></a>
+                                    <font class="smallfont"><p>Thanks Michal <br/>
+Ignoring the saving to file element for now, how do you stop drools from running the off scenario at startup? I assume you read in the file status and this acts as a precedence?  I can't find an example of this on the forums.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jun 17, 2014 13:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887127"></a>
+                                    <font class="smallfont"><blockquote>
+<p> how do you stop drools from running the off scenario at startup?</p></blockquote>
+<p>Drools does not run the scenario at startup by itself. You can easily check it with an empty rules file. It is the controller itself which initialises all variables at the startup &#8211; the behaviour is inherited from Java. However, you can overwrite this with drools by reading from a file. I'm not aware of any other mechanism you can use unless you are able to read an actual status from your switch. I don't think that there are any examples of reading a file on this forum, however this is just a standard Java file read routine which can be easily Googled. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jun 17, 2014 16:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887145"></a>
+                                    <font class="smallfont"><p>So the controller has a switch with a virtual sensor it starts up in the OFF position which then causes my Rule to send a POWERTOGGLE command.  I don't see how the reading from file would change anything because the equipment is OFF and the POWERTOGGLE is then turning it on.   What I want is a way to ignore the controller initialisation at startup which is putting my equipment out of sync.  I have a workround I can use in certain cases which is this -</p>
+
+<p>If the equipment can be started with another IR command such as DVD then I send that then do a POWERTOGGLE.   This ensures it is on before turning it off.  Not ideal and because my projector only has POWERTOGGLE so this does not work.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jun 18, 2014 10:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887147"></a>
+                                    <font class="smallfont"><blockquote>
+<p>I don't see how the reading from file would change anything...</p></blockquote>
+<p>You would have the previous value of the switch. You can compare it with current value and see if it changes. Then you would send the toggle only when this value is indeed different.</p>
+
+<p>There are other solutions possible, however the one with preserving the switch value in a file is IMHO the better one. Of course sensing the actual switch state with a sensor would be the best. Giving, that switches which allow easy status feedback are widely available I would go this path after all. It is always possible to go out of sync on different reasons, like switching manually or by other remote.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jun 18, 2014 12:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887156"></a>
+                                    <font class="smallfont"><p>Ok thanks that makes sense - so in fact you are always writing the values of switches to an external file - I guess there may be some performance overhead with this approach but at least it would persist in the case of a restart. I'll give it a try...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jun 18, 2014 19:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

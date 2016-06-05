@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Designer issue with new protocol</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Designer issue with new protocol
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 08, 2013 by <font color="#0050B2">digitaldan</font>.
+				    </div>
+
+				    <p>This is in regards to my HAI onmilink integration.  In my version of the designer, users enter their systems ip, port and keys in a import window form and the server will pull down all of the devices on the remote system.  This part works great.  Once the devices are all loaded in the system, my forms onSuccess callback gets called (in gwt land).</p>
+
+<p>The behavior I want is for the designer to reload the devices from the database and then hide the import window. Right now neither of these things are happening. I have a rather anemic callback implementation below, I don't really understand what the correct impl should be.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  <span class="code-keyword">public</span> void onSuccess(CreateOmnilinkDeviceResult result) {
+            	wrapper.fireEvent(<span class="code-keyword">new</span> DeviceUpdatedEvent(<span class="code-keyword">null</span>));
+              hide();
+            }            
+          });
+</pre>
+</div></div>
+
+<p>Can someone point me in the right direction?</p>
+
+<p>Thanks!</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22879769"></a>
+                                    <font class="smallfont"><p>Is your code already committed in SVN ? It would help if I can take a look at the whole thing, to understand the flow and better help you.</p>
+
+<p>In a nutshell, you should not pass null to the DeviceUpdatedEvent. The event should reference the device that has been updated, otherwise nothing will update.<br/>
+It might very well be that passing null there results in a null pointer exception in some listener on the event bus and that's why the hide() code is not executed.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 12, 2013 13:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880262"></a>
+                                    <font class="smallfont"><p><a href="https://svn.code.sf.net/p/openremote/code/workspace/digitaldan/Designer_2_14_0_SNAPSHOT-2013-05-11-HAI">https://svn.code.sf.net/p/openremote/code/workspace/digitaldan/Designer_2_14_0_SNAPSHOT-2013-05-11-HAI</a></p>
+
+<p>I figured that was not the correct behavior. I have tried a few things, but its an area of the code base that I am the least familiar with.  My desired result would be when that callback gets called i can do something that completely refreshes devices from the server. </p>
+
+<p>Thanks.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Nov 24, 2013 16:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881890"></a>
+                                    <font class="smallfont"><p>So I have changed my code to return back a valid array of DeviceDTO.  My callback looks like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ @Override
+            <span class="code-keyword">public</span> void onSuccess(CreateOmnilinkDeviceResult result) {
+              wrapper.fireEvent(SubmitEvent.SUBMIT, <span class="code-keyword">new</span> SubmitEvent(result.getDevices()));
+            }            
+</pre>
+</div></div>
+
+<p>I have logged that the result contains non null device dtos that are created on the backend, but the window, which extends CommonForm, never hides and the devices are never refreshed.  As a workaround I am just reloading the browser after an import to get the gui back in a proper state.  I used the RussoundWizardForm as a template since it was fairly simple, so I'm at a loss of what to do.   Once I create the devices and return back those DTO's, what should I be doing in my callback to close the window (hide() is not working)  and refresh the device list.</p>
+
+<p>Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Dec 29, 2013 17:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882008"></a>
+                                    <font class="smallfont"><p>Sorry, I have it on my todo list to take a look at your branch but did not get to it yet.<br/>
+I'll do that in the coming days and will post back here.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 02, 2014 10:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883202"></a>
+                                    <font class="smallfont"><p>Did you have a chance to look at this yet?</p>
+
+<p>I have one more issue as well.  In my action handler I have an instance of the device service, I would like to load all devices for a user with the call deviceService.loadAll(account).  I was getting a hibernate error the something was not initialized (I don't have the exact error anymore, I can reproduce it if you need me to).  So for now I'm using deviceService.loadAll() and iterating all devices that match the user's OID.  On a large public system i could see this being a issue. Does this type of error sound familiar? </p>
+
+<p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jan 22, 2014 03:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883211"></a>
+                                    <font class="smallfont"><p>Apologies but no. This is not just a 5 minute thing and I've just too many things to work on. I'll see what I can do.</p>
+
+<p>I've seen Hibernate errors on deviceAttrs IIRC, but never tracked them down.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 22, 2014 09:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

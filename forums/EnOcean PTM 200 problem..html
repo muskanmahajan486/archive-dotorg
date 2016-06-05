@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : EnOcean PTM 200 problem.</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : EnOcean PTM 200 problem.
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 23, 2013 by <font color="#0050B2">aktur</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm testing PTM 200 from the starter kit with OpenRemote. The problem which I have is that when I press one button twice or more times then the following presses are not propagating. This makes some applications impossible (for example, hotel light switch - switch light on/off from multiply places - where upper buttons always switch lights on and lower buttons switch lights off. Or another example, different action for single press and double press).</p>
+
+<p>For testing this I'm using the following rule:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">import</span> java.util.concurrent.*
+
+rule <span class="code-quote">"EnOcean Button Test"</span>
+when
+  $evt : Event(source==<span class="code-quote">"Button"</span>)
+then
+   execute.command(<span class="code-quote">"V_SEC ON"</span>,$evt.getValue().toString());
+   TimeUnit.MILLISECONDS.sleep(1000);
+   execute.command(<span class="code-quote">"V_SEC ON"</span>,<span class="code-quote">"----"</span>);
+end
+</pre>
+</div></div>
+<p>Which linked to in-memory command V_SEC STATUS shows which rocker was pressed and after 1s replaces it with "----". The only sequence I can produce is:</p>
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ROCKER_BO
+----
+ROCKER_BI
+----
+ROCKER_BO
+----
+etc.
+</pre>
+</div></div>
+<p>However, for my application I need sequences like this:</p>
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ROCKER_BO
+----
+ROCKER_BO
+----
+ROCKER_BI
+----
+ROCKER_BI
+etc.
+</pre>
+</div></div>
+<p>I clearly see in dev.log that commands are received but they are later suppressed in the controller. This gives yet another problem, as controller remembers last state it can become out of sync not only when other switch is used in parallel but also when controller reboots.</p>
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22414932"></a>
+                                    <font class="smallfont"><p>I've inspected the rule engine code (RuleEngine::push(EventContext ctx) and it seems that this behavior is intentionally - identical successive events are suppressed.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at May 25, 2013 10:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414947"></a>
+                                    <font class="smallfont"><p>Very strange. Does this mean that no 'hart beat' event can be used in rules? Like the one sent by STM 250.</p>
+
+<p>On the other hand, how comes that my temperature sensor event get through the rules for Fahrenheit conversion? Is this because temperature each time differs?</p>
+
+<p>Anyway, if this is a case adding button press and button release events as mentioned in the other thread would solve this problem too.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 25, 2013 14:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414957"></a>
+                                    <font class="smallfont">
+<p>That's correct. Only a single event with the same identity (where identity currently is defined by the event's Java object equality) exists in the current model as a fact in the rules knowledgebase.</p>
+
+<p>IIRC this is the best default model given the variety of ways events are generated: a polling protocol can generate large number of identical events &#8211; each event in this case does not represent a distinct state change, just a result of polling. In these cases it is most often not desirable to fire the rule each time (and it currently is not) &#8211; an exception here would be some sort of graph polling that would want to record the current value/state on a polling interval despite whether there's been a change or not. But these models can be accommodated by including alternative event processor implementations, or parameterizing current one (more on that later).</p>
+
+<p>A proper automation protocol (one that broadcasts/sends updates only on distinct state change events) usually doesn't run foul of this identity policy as most often a distinct state change is one that has a different event identity (which currently means different Java object equality &#8211; equality being defined by the combination of event's source and event's value).</p>
+
+<p>The second point to keep in mind is how the stateful knowledgebase behaves &#8211; when rules are evaluated and executed, each fact (in our case events) is evaluated. That means that previous event from the same source should be retracted first, before a new event (fact) from the same source is inserted. Otherwise a sequence of ON-OFF-ON with a rule set to trigger on 'ON' state will execute twice on the second 'ON' event, given that there are two matching facts (events) in the working memory. Another consequence is that without a retraction policy of some kind, eventually you'd fill up the working memory with facts and crash.</p>
+
+<p>Final point to keep in mind is that the current rule engine is just one possible kind of event processor. It is even only one kind of possible rule engine with the current identity policy. The RRD data logger is an example of a different event policy &#8211; it ignores the event identity and pushes a new value at most once a second. For a polling protocol at 500ms polling frequency it means every second polling value is logged (regardless of value change or not), for a broadcasting/bidirectional protocol it means events are logged when they are sent, although only at most once per second.</p>
+
+<p>Same applies to the current rule engine &#8211; a different event identity policy could be implemented. Either by creating (copy/pasting) the existing rule engine event processor to a new class (and configuring it in the event processing chain) or parameterizing the existing identity policy on the current implementation so it can be configured to behave differently:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    <span class="code-keyword">try</span>
+    {
+      <span class="code-keyword">if</span> (!knowledgeSession.getObjects().contains(evt))
+      {
+        <span class="code-keyword">if</span> (eventSources.keySet().contains(evt.getSourceID()))
+        {
+          knowledgeSession.retract(eventSources.get(evt.getSourceID()));
+
+          eventSources.remove(evt.getSourceID());
+        }
+
+        FactHandle handle = knowledgeSession.insert(evt);
+
+        eventSources.put(evt.getSourceID(), handle);
+      }
+
+      log.trace(<span class="code-quote">"Inserted event {0}"</span>, evt);
+      log.trace(<span class="code-quote">"Fact count: "</span> + knowledgeSession.getFactCount());
+      
+      knowledgeSession.fireAllRules();
+    }
+</pre>
+</div></div>
+
+<p>You could insert events as facts based on time policy (similar to RRD &#8211; same event source/value identity will be accepted and rules evaluated as long as it didn't occur within X seconds), or even object's system identity (not based on equals() implementation). But for both cases you'd need to deal with some kind of retraction policy (garbage collect on timed intervals?) and the fact that you'd have multiple facts in working memory that match the same condition such as 'source = "my switch", value = "on"' which will cause the rule to be evaluated on each event (fact).</p>
+
+<p>HTH!</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 25, 2013 16:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414962"></a>
+                                    <font class="smallfont"><p>In this code I see that the retraction is done for events with the same getSourceID() and there is no value comparison. This would mean that every event from already existing sourceID would be removed, but it does not make sense. Am I missing something?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 25, 2013 17:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414963"></a>
+                                    <font class="smallfont"><p>First check against working memory is based on event equality (contains), so if event is EVT(source=123, value=ON) it will proceed if working memory has no facts from that same source or working memory has EVT(source=123, value=OFF) in it. If it is the case of the latter, the 'OFF' fact is removed (based on the source ID lookup to retrieve a fact handle), otherwise new fact is inserted. There's never a case where both ON and OFF from the same source are in the working memory at the same time in this implementation, as in the normal case having both facts would be confusing (unless you're thinking in terms of not-yet-collapsed wave functions <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 25, 2013 18:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414964"></a>
+                                    <font class="smallfont"><p>The first trace statement however seems to be in the wrong place which can get confusing, should be a step above in the nested block I think.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 25, 2013 18:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415032"></a>
+                                    <font class="smallfont"><p>OK, I've got it. Indeed I've commented out the first if() and now series the same clicks are coming through. Nevertheless, I think that this piece of code need rethinking. For example, right now is it not quite possible to do what Eric told in the HDTV podcast, i.e. reuse old remote as universal remote. For example how would one select channel 111, which requires to press '1' three times in a row?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 26, 2013 15:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415077"></a>
+                                    <font class="smallfont"><p>This is going to be somewhat protocol dependent but one way to go about it would be to create sequential events. Right now IIRC the event API is not yet exposed to the protocol implementers. The plan is to do so however (there's a JIRA task about it somewhere).</p>
+
+<p>This means that the protocol implementation can decide which type of event it creates that's pushed towards the event processing chain. So you can extend the default event model and by subclassing changing the equality rules, for example.</p>
+
+<p>So in this case a sequential event could be one that contains the sensor source, the value and also a sequence identifier.</p>
+
+<p>How a sequence identifier is modified depends on the protocol implementation. In your example, how to determine between 11 and 111 for example. It is likely to be some protocol specific mechanism, for example a timeout on the incoming IR input.</p>
+
+<p>The second part of this is the fact retraction policy. If equality includes a sequence identifier, then in essence three facts (all three presses) are inserted in the rule working memory.</p>
+
+<p>Now then, a rule condition ('when') that is purely based on source or source + event value will get triggered as each fact is inserted (strictly this is not necessary but that's the policy we've implemented now &#8211; rules are evaluated on each fact (event) insert). That means once for first '1', again for first '1' and the second '1' (so now total three times) and once again for first '1', the second '1' and finally the third '1' as it is inserted (so now total of 6 times).</p>
+
+<p>However, a sequence event (in the style of Level or Range or Switch event you've seen) can expose the sequence value which allows:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+  when $evt : SequenceEvent( source == <span class="code-quote">"foo"</span> value == <span class="code-quote">"press"</span> sequence == <span class="code-quote">"3"</span> ) then <span class="code-comment">// <span class="code-keyword">do</span> something
+</span> 
+</pre>
+</div></div> 
+
+<p>And therefore a rule is triggered only on the third event (as the other two are not equal based on sequence identifier).</p>
+
+<p>The fact extraction policy is then that if a sequence event with value = 0 is inserted, all existing events (facts) are first retracted.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 27, 2013 11:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

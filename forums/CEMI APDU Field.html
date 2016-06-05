@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : CEMI APDU Field</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : CEMI APDU Field
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 03, 2010 by <font color="#0050B2">lipovac</font>.
+				    </div>
+
+				    <p>Hello everyone.<br/>
+Does anyone know how to create a "Data"(APDU) field within the cEMI. I've found that in addition to basic commands, there are 1 or 2 bytes (ie 4, 6 or 10 bits) for encoding communication services. I know what it looks like command light_on (0x0081), light_of (0x0080), light_dimm (0x0084 for example) but I do not know the other commands such commands that require 1 byte (absolute value) without those 1 or 2 bytes for encoding communication services. If anyone knows how to create APDU(with TPCI/APCI) field or already has a list of some commands formed like this examples at the beginning, I ask him to help me.<br/>
+Thanks in advance.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-12845989"></a>
+                                    <font class="smallfont"><p>Anything larger than 6 bits should be essentially the same, increase the data length byte value in the CEMI frame to the size of your data &#8211; for payloads larger than 6 bits the application control bits (APCI) is used as the first byte of the application protocol data unit (APDU) so CEMI data length should be greater than or equal to two. The rest of the bytes in the CEMI frame are your data payload.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+/**
+ * This class represents application protocol data unit (APDU) in KNX specification. &lt;p&gt;
+ *
+ * APDU is defined in KNX 1.1 Volume 3: <span class="code-object">System</span> Specifications, Part 3 Communication,
+ * Chapter 7, Application Layer. &lt;p&gt;
+ *
+ * In the Common EMI frame, the APDU payload is defined as follows:
+ *
+ * &lt;pre&gt;{@code
+ *
+ *  +--------+--------+--------+--------+--------+
+ *  | TPCI + | APCI + |  Data  |  Data  |  Data  |
+ *  |  APCI  |  Data  |        |        |        |
+ *  +--------+--------+--------+--------+--------+
+ *    <span class="code-object">byte</span> 1   <span class="code-object">byte</span> 2  <span class="code-object">byte</span> 3     ...     <span class="code-object">byte</span> 16
+ *
+ *}&lt;/pre&gt;
+ *
+ * For data that is 6 bits or less in length, only the first two bytes are used in a Common EMI
+ * frame. Common EMI frame also carries the information of the expected length of the Protocol
+ * Data Unit (PDU). Data payload can be at most 14 bytes <span class="code-object">long</span>.  &lt;p&gt;
+ *
+ * The first <span class="code-object">byte</span> is a combination of transport layer control information (TPCI) and application
+ * layer control information (APCI). First 6 bits are dedicated <span class="code-keyword">for</span> TPCI <span class="code-keyword">while</span> the two least
+ * significant bits of first <span class="code-object">byte</span> hold the two most significant bits of APCI field, as follows:
+ *
+ * &lt;pre&gt;{@code
+ *
+ *    Bit 1    Bit 2    Bit 3    Bit 4    Bit 5    Bit 6    Bit 7    Bit 8      Bit 1   Bit 2
+ *  +--------+--------+--------+--------+--------+--------+--------+--------++--------+----....
+ *  |        |        |        |        |        |        |        |        ||        |
+ *  |  TPCI  |  TPCI  |  TPCI  |  TPCI  |  TPCI  |  TPCI  | APCI   |  APCI  ||  APCI  |
+ *  |        |        |        |        |        |        |(bit 1) |(bit 2) ||(bit 3) |
+ *  +--------+--------+--------+--------+--------+--------+--------+--------++--------+----....
+ *  +                            B  Y  T  E    1                            ||       B Y T E  2
+ *  +-----------------------------------------------------------------------++-------------....
+ *
+ * }&lt;/pre&gt;
+ *
+ * Total number of APCI control bits can be either 4 or 10, depending on which
+ * {@link org.openremote.controller.protocol.knx.ApplicationLayer.Service
+ * application layer service} is being used. The second <span class="code-object">byte</span> bit structure is as follows:
+ *
+ * &lt;pre&gt;{@code
+ *
+ *    Bit 1    Bit 2    Bit 3    Bit 4    Bit 5    Bit 6    Bit 7    Bit 8      Bit 1   Bit 2
+ *  +--------+--------+--------+--------+--------+--------+--------+--------++--------+----....
+ *  |        |        |        |        |        |        |        |        ||        |
+ *  |  APCI  |  APCI  | APCI/  |  APCI/ |  APCI/ |  APCI/ | APCI/  |  APCI/ ||  Data  |  Data
+ *  |(bit 3) |(bit 4) | Data   |  Data  |  Data  |  Data  | Data   |  Data  ||        |
+ *  +--------+--------+--------+--------+--------+--------+--------+--------++--------+----....
+ *  +                            B  Y  T  E    2                            ||       B Y T E  3
+ *  +-----------------------------------------------------------------------++-------------....
+ *
+ * }&lt;/pre&gt;
+ *
+ * @see DataType
+ * 
+ * @author &lt;a href=<span class="code-quote">"mailto:juha@openremote.org"</span>&gt;Juha Lindfors&lt;/a&gt;
+ */
+</pre>
+</div></div>
+
+<p><a href="http://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/ApplicationProtocolDataUnit.java">http://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/ApplicationProtocolDataUnit.java</a> and <a href="http://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/ApplicationLayer.java">http://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/ApplicationLayer.java</a> might be helpful?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 03, 2010 15:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12845998"></a>
+                                    <font class="smallfont"><p>Thanks for your reply. I tried to connect to the Router as you have described, and I<br/>
+succeeded. After sending the Connect Request to the Router I got an answer with<br/>
+Communication Channel ID, but when I send Tunneling Request(Light_on) nothing happens(I<br/>
+do not get any response from the router).I don't know what is the problem. I tried<br/>
+to send Connection State Request before sending Tunneling Request to check errors in<br/>
+communication, I got an answer with no error, but again when I send Tunneling Request<br/>
+nothing happens. Do You know what could be a problem.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by lipovac at Oct 04, 2010 14:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12846046"></a>
+                                    <font class="smallfont"><p>Not sure. I've found IP gateways can be finicky in face of incorrect packets, so usually takes a while before you can connect again (if connections are not properly closed, and so on).</p>
+
+<p>Also the heart beat implementation must be there for any real use, otherwise your connection will just get dropped and rejected. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 06, 2010 13:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12846602"></a>
+                                    <font class="smallfont"><p>I want to ask is this form of cEMI frame (on forum) correct, and do I need to form on the end of cEMI frame a checksum before I send tunneling Request. I have implemented a hart beat monitoring, and everything works great except description Request(when I send description Request I receive Response with extremly incorrect information). Every time when I send tunneling Request I don't get any answer from Router, and Router don't forward that Request to KNX bus(this is example of my tunnelig Request 06 01 04 02 00 15 04 01 00 00 11 00 BC E0 00 00 01 02 01 00 81). I wonder if there are any security problems because which the Router does not process my tunneling Request, because I am trying to manage the KNX installation from my PC over the Internet(IP), or is my tunnelig Request incorrect. Do I need to do something else before sending tunnelig Request after establishing connection with connect Request.<br/>
+Thank You.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by lipovac at Oct 14, 2010 14:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12846606"></a>
+                                    <font class="smallfont">
+<p>Your KNX IP frame header should be:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>06h 10h 04h 20h 00h 15h
+</pre>
+</div></div>
+
+<p>Where:</p>
+
+<p>06h = KNX 1.0 header size (6 bytes) including this byte and the following 5 bytes<br/>
+10h = KNX IP protocol version 1.0 (= 0x10), NOT 0x01!<br/>
+04h = Tunneling request (high byte)<br/>
+20h =   &#8211; " &#8211;         (low byte) [Note: NOT 0x02&#33;]<br/>
+00h = Size of the entire KNX 1.0 IP frame (high byte)<br/>
+15h = Size of the entire KNX 1.0 IP frame (low byte = 6 bytes on frame header + 4 bytes on connection header + 11 bytes [assuming 6-bit payload] on CEMI frame == 21 bytes == 15h)</p>
+
+
+<p>Your connection header looks ok, although I have to assume you've put in the correct channel ID and sequence counter values.</p>
+
+<p>CEMI frame looks ok to, control bits obviously vary and I have to assume your destination group address is formatted correctly.</p>
+
+<p>Check the IP frame, there's something odd there.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 14, 2010 16:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12846634"></a>
+                                    <font class="smallfont"><p>I am sorry. That was a typing mistake. My request looks like this 06 10 04 20 00 15 04 channelID 00 00 11 00 BC E0 00 00 00 10 02 01 00 81. This is ofcourse when I send Request for the first time with sequence_counter=00 and with channelId that I got in tunneling Response. My destination address is group address 2/0/2 for Light_ON and 2/0/1 for Light_OFF. But this not work. I don't get any answer. Is there any security reason why it don't work. Do I need to put checksum at the end of cEMI frame.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by lipovac at Oct 15, 2010 16:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12846637"></a>
+                                    <font class="smallfont"><p>No I don't think it is security, I don't think there's much security in KNX to speak of. Something else.</p>
+
+<p>The frame looks about right, so not sure what would be the issue.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 15, 2010 17:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12846668"></a>
+                                    <font class="smallfont"><p>Thank You. Now I have a big problem. Do I need to put checksum at the end of cEMI frame in tunneling request?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by lipovac at Oct 16, 2010 13:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12846676"></a>
+                                    <font class="smallfont"><p>Don't recall seeing anything about checksums with CEMI in KNX spec, so don't think you do (checksums would usually be a concern of the physical layer in a network stack).</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 16, 2010 14:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12846824"></a>
+                                    <font class="smallfont"><p>Hallo.<br/>
+I figure out what might be a problem. I find example of tunneling Request in KNXnet/IP<br/>
+communication standard, and in that example common connection header has 6 bytes. Now<br/>
+I am woundering what values should I put in 5-th and 6-th byte. I think it should look<br/>
+&nbsp;like this:<br/>
+Common Connection Header<br/>
+06 - Structure Length<br/>
+xx - Communicatio Channel ID<br/>
+00 - Sequence Counter(when I send Request for the first time)<br/>
+00 - Reserved(Service Type Specific, Status of a communication channel when I receiving ACK)<br/>
+02 - Connection Type Specific Header(I think this byte should represent length of this structure<br/>
+&nbsp;&nbsp; &nbsp;2 bytes)<br/>
+02 - I don't know meaning of this byte, but it might be 02 - for Tunnel link Layer<br/>
+Do You know something about that.<br/>
+Thank You.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by lipovac at Oct 24, 2010 17:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:46</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

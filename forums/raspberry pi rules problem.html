@@ -1,0 +1,337 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : raspberry pi rules problem</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : raspberry pi rules problem
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 21, 2014 by <font color="#0050B2">nickbrookes76</font>.
+				    </div>
+
+				    <p>Hi,  I've been pulling my hair out trying to accomplish a task with OR. (Which is brilliant by the way).</p>
+
+<p>My set up is x10 switches with one tivo, and all of this works fabulously well.<br/>
+uen<br/>
+I want to now set up a switch on my android panel which writes a "fact" to a file which can then be used to trigger a whole series of events.</p>
+
+<p>The reason i want to write to a file is that i want to build in resiliency in case of power outage.</p>
+
+<p>I have worked out the shell scripts to write out "facts" each address such as a1 now has a text file in a folder called /facts/ which stores on or off. - this obviously doesn't necessarily hold true when a light switch can alter a state - but i'm ok with that.</p>
+
+<p>The shell script also then executes the x10 command, this way i can know the programmatic status of an x10 switch, because i can't poll x10 for statuses...</p>
+
+<p>I have another shell script which i can use to read the status of the x10 address, which i want to be able to use in a sensor.</p>
+
+<p>This is where i am having problems...</p>
+
+<p>I can't seem to get the sensor working, i've read and re-read the how-to guides and i'm still stumped.</p>
+
+<p>I want to set a "fact" such as holiday -"on" via a button -using the shell script.  this will allow me to turn on the occupancy simulator via rules.  I have set up a label linked to a sensor to show the state, but all it says is N/A.</p>
+
+<p>the sensor is set up as a switch, with the following:<br/>
+name : sim sensor<br/>
+protocol : shell execution protocol<br/>
+path: /opt/openremote/scripts/scr_read<br/>
+command parameter: sim<br/>
+polling interval : 5s<br/>
+regular expression: on|off<br/>
+sensor names : sim sensor</p>
+
+<p>the rule i have set up to cycle an x10 module to see if the fact switch works is as follows</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+...
+
+rule <span class="code-quote">"Test notin on"</span>
+when
+ Event( source==<span class="code-quote">"sim sensor"</span>, value == <span class="code-quote">"on"</span> )
+then
+ execute.command(<span class="code-quote">"p15 on"</span>);
+end
+
+rule <span class="code-quote">"Test notin off"</span>
+when
+  Event( source==<span class="code-quote">"sim sensor"</span>, value == <span class="code-quote">"off"</span> )
+then
+ execute.command(<span class="code-quote">"p15 off"</span>);
+end
+</pre>
+</div></div>
+
+
+<p>I've tried setting up custom sensors and using customstates instead of events, .......</p>
+
+
+<p>the label i've used on the panel is set up as follows:<br/>
+sensor : sim sensor<br/>
+sensor state<br/>
+on text : on<br/>
+off text : off<br/>
+but the panel on my phone shows N/A and the switch next to it never shows the on picture, despite the "fact" being "on".</p>
+
+
+<p>Can anyone understand me let alone help me????<br/>
+Please?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22884576"></a>
+                                    <font class="smallfont"><p>There is a holiday example in the Rules documentation.<br/>
+If your sensor says N/A, there is no value. You have to fix that first.</p>
+
+<p>PS: For better readability you could enclose your code within {code}..{code} tags <a href="http://www.openremote.org/display/website/Wiki+Markup+Quick+Start">(see markup instructions)</a>. Do not place a / inside the end tag. <br/>
+Formatting makes the code easier to read, which increases your chances to get an answer <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 21, 2014 08:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884592"></a>
+                                    <font class="smallfont"><p>Thanks Pieter, added code tags. also managed to get the switch working which sets a fact in my folder - now i guess i need to understand and fix why the rules are not firing.  i've adjusted the packages etc at the top of the code to no avail, and added events / switches writing out to the log, cron tasks to kick off the rule every minute etc, but nothing seems to work.  The rules are solely to check that the fact i insert has an effect when evaluated, but i can't get the rules to work???</p>
+
+<p>here is a snippet of my code...</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+global org.openremote.controller.statuscache.RangeFacade ranges;
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+
+rule <span class="code-quote">"heater on 5 mins before wakeup"</span>
+  timer (cron: 0 55 6 ? * 2-6)
+when
+  eval(<span class="code-keyword">true</span>)
+then
+  execute.command(<span class="code-quote">"h16_on"</span>);
+end
+
+
+rule <span class="code-quote">"heater off after 10 minutes"</span>
+  timer (cron: 0 5 7 ? * 2-6)
+when
+  eval(<span class="code-keyword">true</span>)
+then
+  execute.command(<span class="code-quote">"h16_off"</span>);
+end
+
+
+rule <span class="code-quote">"bedside light on at 7am"</span>
+  timer (cron: 0 0 7 ? * 2-6)
+when
+  eval(<span class="code-keyword">true</span>)
+then
+  execute.command(<span class="code-quote">"h1_on"</span>);
+end
+
+
+rule <span class="code-quote">"bedside light off at 10 past 7"</span>
+  timer (cron: 0 10 7 ? * 2-6)
+when
+  eval(<span class="code-keyword">true</span>)
+then
+  execute.command(<span class="code-quote">"h1_off"</span>);
+end
+
+
+rule <span class="code-quote">"thomas' light on at 7 am"</span>
+  timer (cron: 5 0 7 ? * 2-6)
+when
+  eval(<span class="code-keyword">true</span>)
+then
+  execute.command(<span class="code-quote">"f1_on"</span>);
+end
+
+rule <span class="code-quote">"thomas' light off at 7.10 am"</span>
+  timer (cron: 5 10 7 ? * 2-6)
+when
+  eval(<span class="code-keyword">true</span>)
+then
+  execute.command(<span class="code-quote">"f1_off"</span>);
+end
+
+
+
+rule <span class="code-quote">"thomas' light ofam"</span>
+  timer (cron: 5 10 20 ? * *)
+when
+  eval(<span class="code-keyword">true</span>)
+then
+  execute.command(<span class="code-quote">"a1_on"</span>);
+end
+
+
+
+
+rule <span class="code-quote">"Test simul on"</span>
+when
+ Event( source==<span class="code-quote">"vacation_sensor"</span> )
+ Switch( source==<span class="code-quote">"vacation_sensor"</span>, value ==<span class="code-quote">"on"</span> )
+then
+ <span class="code-object">System</span>.out.println (<span class="code-quote">"about to <span class="code-keyword">switch</span> on a1"</span>);
+ execute.command(<span class="code-quote">"a1 on"</span>);
+end
+
+rule <span class="code-quote">"Test simul off"</span>
+when
+  Event ( source==<span class="code-quote">"vacation_sensor"</span> )
+  Switch ( source==<span class="code-quote">"vacation_sensor"</span>, value == <span class="code-quote">"off"</span> )
+then
+<span class="code-object">System</span>.out.println (<span class="code-quote">"about to <span class="code-keyword">switch</span> off a1"</span>);
+ execute.command(<span class="code-quote">"a1 off"</span>);
+end
+
+</pre>
+</div></div>
+
+<p>nothing appears in the log and a1 does not cycle on or off...</p>
+
+<p>I've tried it without the event (.. lines but that doesn't work either.</p>
+
+<p>I know the vacation_sensor cycles on and off, as i can see that in the file which stores the info, and the label on my app.<br/>
+why does't the rule work ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nickbrookes76 at Feb 21, 2014 13:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884594"></a>
+                                    <font class="smallfont"><p>I  am not an expert in this! I can only share my experience.</p>
+
+<ul class="alternate" type="square">
+	<li>package org.openremote.controller.model.event <em>and</em><br/>
+import org.openremote.controller.model.event.*;<br/>
+in the header seem a bit superfluous to me. I would leave out the latter.</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>I have learned to add and test rules one by one. I have rules like your first 7 working, though I have written them more compact, which imho should not make a difference:
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">rule <span class="code-quote">"Blanket on"</span>
+  timer (cron: 0 0 22 * * ?) when eval (<span class="code-keyword">true</span>) then
+  execute.command(<span class="code-quote">"Switch4On"</span>); 
+end</pre>
+</div></div>
+<p>I try to avoid spaces and underscores in commands.</p></li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>I do not know if there is a fundamental difference between <b>State</b> or <b>Event</b>. Semantically I would say the latter is a change of state. That could be more easily missed? I don't know. I have asked this before, but no satisfying answer yet.</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 21, 2014 13:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884630"></a>
+                                    <font class="smallfont"><p>Thanks for your response,<br/>
+I've deleted all of the previous rules, and just have now one rule.</p>
+
+<p>It still won't fire.  Is there something else i need to do on the raspberry pi in order to 'clear out any cobwebs'.  for instance, i can not click the refresh stuff button on the local controller without getting an error message.</p>
+
+<p>My rules now look like this ...</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+global org.openremote.controller.statuscache.RangeFacade ranges;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+rule <span class="code-quote">"Test simul on"</span>
+when
+ Switch( source==<span class="code-quote">"vacation_sensor"</span>, value ==<span class="code-quote">"on"</span> )
+then
+ execute.command(<span class="code-quote">"a1 on"</span>);
+end
+
+rule <span class="code-quote">"Test simul off"</span>
+when
+  Switch ( source==<span class="code-quote">"vacation_sensor"</span>, value == <span class="code-quote">"off"</span> )
+then
+ execute.command(<span class="code-quote">"a1 off"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nickbrookes76 at Feb 22, 2014 11:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884690"></a>
+                                    <font class="smallfont"><p>What error are you getting on refresh ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Feb 24, 2014 08:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884728"></a>
+                                    <font class="smallfont"><p>i get Failed to reload configuration and clear cache!</p>
+
+<p>not sure why?</p>
+
+<p>BTW i got the rules working - i had missed an underscore in my command.  I feel suitably stupid.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nickbrookes76 at Feb 24, 2014 19:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

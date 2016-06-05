@@ -1,0 +1,339 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Reading CustomState value in rules not working</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Reading CustomState value in rules not working
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 25, 2014 by <font color="#0050B2">tjoek</font>.
+				    </div>
+
+				    <p>Hi all!</p>
+
+<p>After a long evening trying to get my rules to work I have to ask for some guidance.</p>
+
+<p>Situation:<br/>
+I´m using the ColorPicker to pick a color and send the color to my Philips TV which supports Ambilight.<br/>
+The ColorPicker is connected to a Custom sensor "VirtualColor" and an in-memory status command "StatusVirtualColor". For debugging I also created a label on my controller that will display the value of "VirtualColor".</p>
+
+<p>The communication with the jointspace API of my TV works perfect. I can set the Ambilight to whichever color I like.<br/>
+The label display the RGB Hex string picked by the ColorPicker so the virtual command stuff is working fine.</p>
+
+<p>Complication:<br/>
+But somehow my Drools rules don´t work whenever I try to read the value of "VirtualColor". Because the jointspace API works with seperate RGB channels, I created a function getRGBComponents() that will transform the hex color string into a JSON structure with the seperate color channels. This works perfectly well when I use the following command:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">execute.command(<span class="code-quote">"SetAmbilight"</span>, getRGBComponents(<span class="code-quote">"ffff00"</span>))</pre>
+</div></div>
+
+<p>However using the value from the CustomState doesn´t work. I tried different things like $hex or $hex.toString() or even $state.getValue(), but they all failed. It looks like $hex and $state are NULL for whatever reason. </p>
+
+<p>Question:<br/>
+Could anyone please double check what I´m missing and point me in the right direction? Thanks a lot!</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*;
+<span class="code-keyword">import</span> java.awt.Color
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+
+
+function <span class="code-object">String</span> getRGBComponents(<span class="code-object">String</span> rgb_hex)
+{
+  Color c = <span class="code-keyword">new</span> Color(<span class="code-object">Integer</span>.parseInt(rgb_hex, 16));
+  <span class="code-keyword">return</span> <span class="code-quote">"{\"</span>r\<span class="code-quote">":"</span> + c.getRed() + <span class="code-quote">",\"</span>g\<span class="code-quote">":"</span> + c.getGreen() + <span class="code-quote">",\"</span>b\<span class="code-quote">":"</span> + c.getBlue() + <span class="code-quote">"}"</span>;
+}
+
+
+rule <span class="code-quote">"Color Picker"</span>
+
+when
+
+  $state: CustomState ( source == <span class="code-quote">"VirtualColor"</span>, $hex: value )
+
+then
+
+<span class="code-comment">//  execute.command(<span class="code-quote">"SetAmbilight"</span>, getRGBComponents(<span class="code-quote">"ffff00"</span>));
+</span>  execute.command(<span class="code-quote">"SetAmbilight"</span>, getRGBComponents($hex));
+
+end
+</pre>
+</div></div>
+
+
+<p>BTW: I´m running OR on a RPi with the Java 8 JDK.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22883406/23789800.png">naamloos.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22883406/23789801.png">naamloos2.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22883423"></a>
+                                    <font class="smallfont"><blockquote>
+<p>BTW: I´m running OR on a RPi with the Java 8 JDK.</p></blockquote>
+<p>As far as I know OR &amp; Drools require Java 6.</p>
+
+<p>Anyway, $hex.toString() should do it. Have you tried to print $hex.toString() when rule triggers?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 26, 2014 10:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883425"></a>
+                                    <font class="smallfont"><p>What does your boot.log say. Are there any errors from the Drools compiler?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 26, 2014 11:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883426"></a>
+                                    <font class="smallfont"><p>Thanks for the quick replies!</p>
+
+<p>@Michal: I know that Java 6 is the preferred stable release, but people had success with the Java 8 beta release as well. But you make a valid point and I will revert back to Java 6 to see if it makes any difference.</p>
+
+<p>@Pieter: There are two errors in the boot.log. Do they make any sense to you?</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2014-01-26 11:52:19,854 : Error in rule definition 'modeler_rules.drl' : wrong class format
+java.lang.RuntimeException: wrong class format
+        at org.drools.commons.jci.compilers.EclipseJavaCompiler$2.findType(EclipseJavaCompiler.java:260)
+        at org.drools.commons.jci.compilers.EclipseJavaCompiler$2.findType(EclipseJavaCompiler.java:204)
+        at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.askForType(LookupEnvironment.java:102)
+        at org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding.resolve(UnresolvedReferenceBinding.java:49)
+        at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:122)
+        at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.getTypeFromTypeSignature(LookupEnvironment.java:1188)
+        at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.getTypeFromVariantTypeSignature(LookupEnvironment.java:1244)
+        at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.getTypeArgumentsFromSignature(LookupEnvironment.java:1031)
+        at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.getTypeFromTypeSignature(LookupEnvironment.java:1193)
+        at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.createFields(BinaryTypeBinding.java:355)
+        at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.cachePartsFrom(BinaryTypeBinding.java:326)
+        at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:640)
+        at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:619)
+        at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.accept(<span class="code-object">Compiler</span>.java:295)
+        at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.askForType(LookupEnvironment.java:107)
+        at org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding.resolve(UnresolvedReferenceBinding.java:49)
+        at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:122)
+        at org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding.resolve(ParameterizedTypeBinding.java:851)
+        at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:100)
+        at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveTypesFor(BinaryTypeBinding.java:1016)
+        at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.getExactMethod(BinaryTypeBinding.java:771)
+        at org.eclipse.jdt.internal.compiler.lookup.Scope.findExactMethod(Scope.java:893)
+        at org.eclipse.jdt.internal.compiler.lookup.Scope.getMethod(Scope.java:2234)
+        at org.eclipse.jdt.internal.compiler.ast.MessageSend.resolveType(MessageSend.java:401)
+        at org.eclipse.jdt.internal.compiler.ast.MessageSend.resolveType(MessageSend.java:314)
+        at org.eclipse.jdt.internal.compiler.ast.Expression.resolve(Expression.java:913)
+        at org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration.resolveStatements(AbstractMethodDeclaration.java:447)
+        at org.eclipse.jdt.internal.compiler.ast.MethodDeclaration.resolveStatements(MethodDeclaration.java:189)
+        at org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration.resolve(AbstractMethodDeclaration.java:406)
+        at org.eclipse.jdt.internal.compiler.ast.TypeDeclaration.resolve(TypeDeclaration.java:1131)
+        at org.eclipse.jdt.internal.compiler.ast.TypeDeclaration.resolve(TypeDeclaration.java:1219)
+        at org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration.resolve(CompilationUnitDeclaration.java:528)
+        at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.process(<span class="code-object">Compiler</span>.java:759)
+        at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.compile(<span class="code-object">Compiler</span>.java:464)
+        at org.drools.commons.jci.compilers.EclipseJavaCompiler.compile(EclipseJavaCompiler.java:351)
+        at org.drools.commons.jci.compilers.AbstractJavaCompiler.compile(AbstractJavaCompiler.java:51)
+        at org.drools.rule.builder.dialect.java.JavaDialect.compileAll(JavaDialect.java:389)
+        at org.drools.compiler.DialectCompiletimeRegistry.compileAll(DialectCompiletimeRegistry.java:56)
+        at org.drools.compiler.PackageRegistry.compileAll(PackageRegistry.java:74)
+        at org.drools.compiler.PackageBuilder.compileAll(PackageBuilder.java:677)
+        at org.drools.compiler.PackageBuilder.addPackage(PackageBuilder.java:640)
+        at org.drools.compiler.PackageBuilder.addPackageFromDrl(PackageBuilder.java:266)
+        at org.drools.compiler.PackageBuilder.addKnowledgeResource(PackageBuilder.java:458)
+        at org.drools.builder.impl.KnowledgeBuilderImpl.add(KnowledgeBuilderImpl.java:28)
+        at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:498)
+        at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+        at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+        at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:659)
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:858)
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)
+        at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:744)
+Caused by: org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException
+        at org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader.&lt;init&gt;(ClassFileReader.java:372)
+        at org.drools.commons.jci.compilers.EclipseJavaCompiler$2.findType(EclipseJavaCompiler.java:254)
+        ... 54 more
+ERROR 2014-01-26 11:52:19,889 : Cannot start event processor 'Drools Rule Engine' : java.lang.ClassNotFoundException: org/openremote/controller/protocol/Rule_Color_Picker_0DefaultConsequenceInvoker
+org.drools.RuntimeDroolsException: java.lang.ClassNotFoundException: org/openremote/controller/protocol/Rule_Color_Picker_0DefaultConsequenceInvoker
+        at org.drools.rule.JavaDialectRuntimeData.reload(JavaDialectRuntimeData.java:383)
+        at org.drools.rule.JavaDialectRuntimeData.onBeforeExecute(JavaDialectRuntimeData.java:139)
+        at org.drools.rule.DialectRuntimeRegistry.onBeforeExecute(DialectRuntimeRegistry.java:132)
+        at org.drools.compiler.PackageBuilder.getPackages(PackageBuilder.java:1212)
+        at org.drools.builder.impl.KnowledgeBuilderImpl.getKnowledgePackages(KnowledgeBuilderImpl.java:42)
+        at org.drools.builder.impl.KnowledgeBuilderImpl.newKnowledgeBase(KnowledgeBuilderImpl.java:61)
+        at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:532)
+        at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+        at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+        at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:659)
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:858)
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)
+        at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:744)
+Caused by: java.lang.ClassNotFoundException: org/openremote/controller/protocol/Rule_Color_Picker_0DefaultConsequenceInvoker
+        at java.lang.<span class="code-object">Class</span>.forName0(Native Method)
+        at java.lang.<span class="code-object">Class</span>.forName(<span class="code-object">Class</span>.java:340)
+        at org.drools.rule.DroolsCompositeClassLoader.loadClass(DroolsCompositeClassLoader.java:91)
+        at java.lang.<span class="code-object">ClassLoader</span>.loadClass(<span class="code-object">ClassLoader</span>.java:357)
+        at org.drools.rule.JavaDialectRuntimeData.wire(JavaDialectRuntimeData.java:312)
+        at org.drools.rule.JavaDialectRuntimeData.reload(JavaDialectRuntimeData.java:379)
+        ... 16 more
+INFO 2014-01-26 11:52:19,937 : Initialized event processor : RRD4J Data Logger
+INFO 2014-01-26 11:52:19,938 : Initialized event processor : EmonCMS Data Logger
+INFO 2014-01-26 11:52:19,970 : Registered sensor : Range Sensor (Name = 'Color', ID = '3696827', Min: 0, Max: 10)
+INFO 2014-01-26 11:52:19,972 : Registered sensor : Sensor (Name = 'Label', ID = '3698305', State Mappings: {})
+INFO 2014-01-26 11:52:19,976 : Registered sensor : Sensor (Name = 'VirtualColor', ID = '3698086', State Mappings: {})
+INFO 2014-01-26 11:52:19,985 : Startup complete.
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tjoek at Jan 26, 2014 12:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883427"></a>
+                                    <font class="smallfont"><p>The log shows that Drools event processor does not start.<br/>
+This:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2014-01-26 11:52:19,854 : Error in rule definition 'modeler_rules.drl' : wrong class format
+java.lang.RuntimeException: wrong class format
+</pre>
+</div></div>
+<p>shows that the class format is invalid. I would still assume that you need Java 6.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 26, 2014 15:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883430"></a>
+                                    <font class="smallfont"><blockquote><p>I would still assume that you need Java 6</p></blockquote>
+<p>The <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Install+Controller+on+Raspberry+Pi" title="OpenRemote 2.0 How To - Install Controller on Raspberry Pi">OpenRemote 2.0 How To &#45; Install Controller on Raspberry Pi</a> recommends Java 6</p>
+
+<p>If I understood discussions correctly, an upgrade even to the next Drools release would cure this Java version misery.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 26, 2014 15:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883442"></a>
+                                    <font class="smallfont"><p>Thanks for the help guys. It was the Java version that was causing the problem. I was running OpenRemote together with a NAS functionality that was already running on a Hard Float Raspbian image. That's why I opted to try the JAVA 8 JDK first.</p>
+
+<p>It took some time to find a Debian Soft Float image, but it is up and running. First I got the error that Object was not a String, but that was easily fixed by adding .toString().</p>
+
+<p>This proves that JDK 8 is not suitable for OpenRemote and we simply cannot run on Hard Float yet with the current out dated Drools version. I really hope someone can update this so we can leave the Soft Float behind. If there is anything I can do to help, please let me know.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tjoek at Jan 26, 2014 18:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883445"></a>
+                                    <font class="smallfont"><p>On 2013-04-22 Juha said a.o. "<a href="http://www.openremote.org/pages/viewpage.action?pageId=21860597&amp;focusedCommentId=21860611#comment-21860611">Drools library upgrade which is a relatively minor update</a>"</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 26, 2014 18:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596753"></a>
+                                    <font class="smallfont"><p>hello</p>
+
+<p>ive managed to get the wifi370 rgb controller working: <a href="https://github.com/pimatic/pimatic/issues/348">https://github.com/pimatic/pimatic/issues/348</a><br/>
+see picture below:<br/>
+<img src="attachments/22883406/23789800.png" align="absmiddle" border="0"/><br/>
+the controller needs to be connected via tcp to port 5577 and needs a start command and end command.<br/>
+like: 0x560000ffaa is the colour blue.<br/>
+0x56 is the start command followd by the RGB command "00 00 ff" and ending with "aa"</p>
+
+<p>but now i want to use the colourpicker to set the colour instead of fixed colours<br/>
+i can't get it to work. i tried the following:</p>
+
+<p><img src="attachments/22883406/23789801.png" align="absmiddle" border="0"/><br/>
+and with a rule, the virtualcolor is a virtual command: </p>
+
+<p>rule "Color Picker"<br/>
+when<br/>
+CustomState ( source == "VirtualColor", $hex: value )<br/>
+then<br/>
+execute.command("kleurenschijf", $hex);<br/>
+end</p>
+
+
+<p>a label attached to the colourpicker works so i can see the value i has to send, does someone know a solution to get it work? the value of the colourpicker has to be send between the begin and end command as $param (see picture)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Feb 24, 2015 11:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

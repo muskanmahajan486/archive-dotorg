@@ -1,0 +1,443 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : How To - HTTP Protocol does not work</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : How To - HTTP Protocol does not work
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 09, 2015 by <font color="#0050B2">laithsaid</font>.
+				    </div>
+
+				    <p>OpenRemote 2.0 How To - HTTP Protocol (<a href="http://openremote.org/display/docs/OpenRemote+2.0+How+To+-+HTTP+Protocol">http://openremote.org/display/docs/OpenRemote+2.0+How+To+-+HTTP+Protocol</a>) works fine on OpenRemote 2.1.0 installed on Windows PC, but the exact same design does not work on OpenRemote 2.0.1 installed on Synology DS213.</p>
+
+<p>Steps:</p>
+<ul class="alternate" type="square">
+	<li>Implemented the example according to the How To</li>
+	<li>Installed OpenRemote-2.1.0 on Windows computer. Logged in with my OpenRemote account and syncronized</li>
+	<li>Tested on Android mobile, the temperature is shown correctly</li>
+	<li>Installed OpenRemote-2.0.1 on DS213. It is working fine and I could start the designed and login my account</li>
+	<li>Started the controller from DS213 and logged in my account and syncronized ... All good</li>
+	<li>Selected OpenRemote controller on DS213 (instead the one on the PC), the frame is shown but the temperature is not parsed correctly, therefore not read is shown on the mobile</li>
+	<li>Changed the OpenRemote controoler to the PC, and I can see the temperature correctly.</li>
+</ul>
+
+
+<p>So it is very obvious that parsing the xml response is not working on Synology version.</p>
+
+<p>Can anyone please help. Is Synology supported or not?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23597502"></a>
+                                    <font class="smallfont"><p>Could you look at the logfiles on the synology and let us know if you see any errors?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 10, 2015 08:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597530"></a>
+                                    <font class="smallfont"><p>Thanks for your reply.</p>
+
+<p>Below is the log. I followed these steps to make the log as useful as possible.</p>
+<ul class="alternate" type="square">
+	<li>Synchronized the design again by starting OpenRemote Controller and login.</li>
+	<li>Started OpenRemote on my mobile and checked the readout. It stated N/A which is the default value of the readout fail</li>
+	<li>SSH to synology and dump the log.</li>
+</ul>
+
+
+<p>The log below starts around the time where I made the synchronization (first step above).<br/>
+I can see a NullPointerException and the error "Could not perform xpath evaluation" due to that exception.<br/>
+Please let me know if you need me to do any more debugging or test anything.</p>
+
+<p>dev.log:<br/>
+2015-04-10 22:00:02,544 INFO HTTP\-Thread\-30: Querying changed state from ChangedStatus table...<br/>
+2015-04-10 22:00:02,545 INFO HTTP\-Thread\-30: Found: [device =&gt; 357634058817920, sensorIDs =&gt; 106906218] in ChangedStatus table.<br/>
+2015-04-10 22:00:02,545 INFO HTTP\-Thread\-30: ChangedStatusRecord:357634058817920-106906218 sensorID:106906218 statusChangedSensorID:[]Waiting...<br/>
+2015-04-10 22:00:09,270 INFO HTTP\-Thread\-35: Querying changed state from ChangedStatus table...<br/>
+2015-04-10 22:00:09,270 INFO HTTP\-Thread\-35: Found: [device =&gt; 357634058817920, sensorIDs =&gt; 106906218] in ChangedStatus table.<br/>
+2015-04-10 22:00:09,270 INFO HTTP\-Thread\-35: ChangedStatusRecord:357634058817920-106906218 sensorID:106906218 statusChangedSensorID:[]Waiting...<br/>
+2015-04-10 22:00:26,738 ERROR HTTP\-Thread\-24: Unable to store user credentials. Background API requests will not be able to authenticate: java.io.IOException: Error initialising store of key store: java.security.InvalidKeyException: Illegal key size<br/>
+org.openremote.security.KeyManager$KeyManagerException: java.io.IOException: Error initialising store of key store: java.security.InvalidKeyException: Illegal key size<br/>
+        at org.openremote.security.PasswordManager.add(PasswordManager.java:373)<br/>
+        at org.openremote.security.PasswordManager.addPassword(PasswordManager.java:185)<br/>
+        at org.openremote.controller.service.Deployer$BeehiveConnection.storeCredentials(Deployer.java:1665)<br/>
+        at org.openremote.controller.service.Deployer$BeehiveConnection.downloadZip(Deployer.java:1573)<br/>
+        at org.openremote.controller.service.Deployer$BeehiveConnection.access$200(Deployer.java:1470)<br/>
+        at org.openremote.controller.service.Deployer.deployFromOnline(Deployer.java:550)<br/>
+        at org.openremote.controller.action.ConfigManageController.syncOnline(ConfigManageController.java:140)<br/>
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)<br/>
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)<br/>
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)<br/>
+        at java.lang.reflect.Method.invoke(Method.java:606)<br/>
+        at org.springframework.web.servlet.mvc.multiaction.MultiActionController.invokeNamedMethod(MultiActionController.java:434)<br/>
+        at org.springframework.web.servlet.mvc.multiaction.MultiActionController.handleRequestInternal(MultiActionController.java:372)<br/>
+        at org.springframework.web.servlet.mvc.AbstractController.handleRequest(AbstractController.java:153)<br/>
+        at org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter.handle(SimpleControllerHandlerAdapter.java:45)<br/>
+        at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:806)<br/>
+        at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:736)<br/>
+        at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:396)<br/>
+        at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:360)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+        at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)<br/>
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+Caused by: java.security.KeyStoreException: java.io.IOException: Error initialising store of key store: java.security.InvalidKeyException: Illegal key size<br/>
+        at org.bouncycastle.jcajce.provider.keystore.bc.BcKeyStoreSpi.engineSetKeyEntry(Unknown Source)<br/>
+        at java.security.KeyStoreSpi.engineSetEntry(KeyStoreSpi.java:549)<br/>
+        at java.security.KeyStore.setEntry(KeyStore.java:1326)<br/>
+        at org.openremote.security.PasswordManager.add(PasswordManager.java:368)<br/>
+        ... 41 more<br/>
+2015-04-10 22:00:27,557 INFO Controller Definition File Watcher for Default Deployer:</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  UNDEPLOYING CURRENT CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>2015-04-10 22:00:27,558 INFO Controller Definition File Watcher for Default Deployer: Stopped event processor : Drools Rule Engine<br/>
+2015-04-10 22:00:27,559 INFO Controller Definition File Watcher for Default Deployer: Stopped event processor : RRD4J Data Logger<br/>
+2015-04-10 22:00:27,559 INFO Controller Definition File Watcher for Default Deployer: Stopped event processor : EmonCMS Data Logger<br/>
+2015-04-10 22:00:27,560 INFO Controller Definition File Watcher for Default Deployer: Stopping sensor 'WeatherSensor' (ID = '106,906,218')...<br/>
+2015-04-10 22:00:27,560 INFO Controller Definition File Watcher for Default Deployer: Shutdown complete.<br/>
+2015-04-10 22:00:27,561 INFO Controller Definition File Watcher for Default Deployer:</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>2015-04-10 22:00:27,566 ERROR HTTP\-Thread\-35: CommandException occurs<br/>
+org.openremote.controller.config.ControllerXMLChangedException: The content of controller.xml had changed.<br/>
+        at org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(StatusPollingServiceImpl.java:113)<br/>
+        at org.openremote.controller.rest.StatusPollingRESTServlet.handleRequest(StatusPollingRESTServlet.java:76)<br/>
+        at org.openremote.controller.rest.RESTAPI.doPost(RESTAPI.java:159)<br/>
+        at org.openremote.controller.rest.RESTAPI.doGet(RESTAPI.java:112)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+        at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)<br/>
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+2015-04-10 22:00:27,572 ERROR HTTP\-Thread\-30: CommandException occurs<br/>
+org.openremote.controller.config.ControllerXMLChangedException: The content of controller.xml had changed.<br/>
+        at org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(StatusPollingServiceImpl.java:113)<br/>
+        at org.openremote.controller.rest.StatusPollingRESTServlet.handleRequest(StatusPollingRESTServlet.java:76)<br/>
+        at org.openremote.controller.rest.RESTAPI.doPost(RESTAPI.java:159)<br/>
+        at org.openremote.controller.rest.RESTAPI.doGet(RESTAPI.java:112)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+        at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)<br/>
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+2015-04-10 22:00:27,694 ERROR Controller Definition File Watcher for Default Deployer: Could not load commandBuilder class:<br/>
+java.lang.ClassNotFoundException:<br/>
+        at java.lang.Class.forName0(Native Method)<br/>
+        at java.lang.Class.forName(Class.java:191)<br/>
+        at org.openremote.controller.command.CommandFactory.updateCommandBuilders(CommandFactory.java:96)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:552)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:872)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:454)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1411)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+2015-04-10 22:00:27,956 ERROR Controller Definition File Watcher for Default Deployer: Cannot start event processor 'Drools Rule Engine' : Unable to load dialect 'org.drools.rule.builder.dialect.java.JavaDialectConfiguration:java:org.drools.rule.builder.dialect.java.JavaDialectConfiguration'<br/>
+org.drools.RuntimeDroolsException: Unable to load dialect 'org.drools.rule.builder.dialect.java.JavaDialectConfiguration:java:org.drools.rule.builder.dialect.java.JavaDialectConfiguration'<br/>
+        at org.drools.compiler.PackageBuilderConfiguration.addDialect(PackageBuilderConfiguration.java:283)<br/>
+        at org.drools.compiler.PackageBuilderConfiguration.buildDialectConfigurationMap(PackageBuilderConfiguration.java:268)<br/>
+        at org.drools.compiler.PackageBuilderConfiguration.init(PackageBuilderConfiguration.java:181)<br/>
+        at org.drools.compiler.PackageBuilderConfiguration.&lt;init&gt;(PackageBuilderConfiguration.java:159)<br/>
+        at org.drools.compiler.PackageBuilder.&lt;init&gt;(PackageBuilder.java:210)<br/>
+        at org.drools.compiler.PackageBuilder.&lt;init&gt;(PackageBuilder.java:143)<br/>
+        at org.drools.builder.impl.KnowledgeBuilderFactoryServiceImpl.newKnowledgeBuilder(KnowledgeBuilderFactoryServiceImpl.java:34)<br/>
+        at org.drools.builder.KnowledgeBuilderFactory.newKnowledgeBuilder(KnowledgeBuilderFactory.java:47)<br/>
+        at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:484)<br/>
+        at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)<br/>
+        at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)<br/>
+        at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:659)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:872)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:454)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1411)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+Caused by: org.drools.RuntimeDroolsException: value '1.7' is not a valid language level<br/>
+        at org.drools.rule.builder.dialect.java.JavaDialectConfiguration.getDefaultLanguageLevel(JavaDialectConfiguration.java:162)<br/>
+        at org.drools.rule.builder.dialect.java.JavaDialectConfiguration.init(JavaDialectConfiguration.java:57)<br/>
+        at org.drools.compiler.PackageBuilderConfiguration.addDialect(PackageBuilderConfiguration.java:279)<br/>
+        ... 18 more<br/>
+2015-04-10 22:00:28,024 INFO Controller Definition File Watcher for Default Deployer: Initialized event processor : RRD4J Data Logger<br/>
+2015-04-10 22:00:28,024 INFO Controller Definition File Watcher for Default Deployer: Initialized event processor : EmonCMS Data Logger<br/>
+2015-04-10 22:00:28,034 DEBUG Controller Definition File Watcher for Default Deployer: Building HttGetCommand<br/>
+2015-04-10 22:00:28,034 DEBUG Controller Definition File Watcher for Default Deployer: HttpGetCommand: pollingInterval = 10m<br/>
+2015-04-10 22:00:28,035 DEBUG Controller Definition File Watcher for Default Deployer: HttpGetCommand: method = POST<br/>
+2015-04-10 22:00:28,035 DEBUG Controller Definition File Watcher for Default Deployer: HttpGetCommand: url = <a href="http://api.wunderground.com/api/fbd0a7282dde96df/conditions/q/de/SILKEBORG.xml">http://api.wunderground.com/api/fbd0a7282dde96df/conditions/q/de/SILKEBORG.xml</a><br/>
+2015-04-10 22:00:28,035 DEBUG Controller Definition File Watcher for Default Deployer: HttpGetCommand: xpath = //response/current_observation/temp_c<br/>
+2015-04-10 22:00:28,036 INFO Controller Definition File Watcher for Default Deployer: Registered sensor : Sensor (Name = 'WeatherSensor', ID = '106906218', State Mappings: {})<br/>
+2015-04-10 22:00:28,036 DEBUG Controller Definition File Watcher for Default Deployer: *** setSensor called as part of EventListener init *** sensor is: Sensor (Name = 'WeatherSensor', ID = '106906218', State Mappings: {})<br/>
+2015-04-10 22:00:28,039 INFO Controller Definition File Watcher for Default Deployer: Startup complete.<br/>
+2015-04-10 22:00:28,040 DEBUG <span class="error">&#91;Polling thread for sensor: WeatherSensor&#93;</span>: Sensor thread started for sensor: Sensor (Name = 'WeatherSensor', ID = '106906218', State Mappings: {})<br/>
+2015-04-10 22:00:28,665 INFO <span class="error">&#91;Polling thread for sensor: WeatherSensor&#93;</span>: received message:<br/>
+&lt;response&gt;<br/>
+        &lt;version&gt;0.1&lt;/version&gt;<br/>
+        &lt;termsofService&gt;<a href="http://www.wunderground.com/weather/api/d/terms.html">http://www.wunderground.com/weather/api/d/terms.html</a>&lt;/termsofService&gt;<br/>
+        &lt;features&gt;<br/>
+                &lt;feature&gt;conditions&lt;/feature&gt;<br/>
+        &lt;/features&gt;<br/>
+  &lt;current_observation&gt;<br/>
+                &lt;image&gt;<br/>
+                &lt;url&gt;<a href="http://icons.wxug.com/graphics/wu2/logo_130x80.png">http://icons.wxug.com/graphics/wu2/logo_130x80.png</a>&lt;/url&gt;<br/>
+                &lt;title&gt;Weather Underground&lt;/title&gt;<br/>
+                &lt;link&gt;<a href="http://www.wunderground.com">http://www.wunderground.com</a>&lt;/link&gt;<br/>
+                &lt;/image&gt;<br/>
+                &lt;display_location&gt;<br/>
+                &lt;full&gt;Silkeborg, Denmark&lt;/full&gt;<br/>
+                &lt;city&gt;Silkeborg&lt;/city&gt;<br/>
+                &lt;state&gt;&lt;/state&gt;<br/>
+                &lt;state_name&gt;Denmark&lt;/state_name&gt;<br/>
+                &lt;country&gt;DN&lt;/country&gt;<br/>
+                &lt;country_iso3166&gt;DK&lt;/country_iso3166&gt;<br/>
+                &lt;zip&gt;00000&lt;/zip&gt;<br/>
+                &lt;magic&gt;8&lt;/magic&gt;<br/>
+                &lt;wmo&gt;06068&lt;/wmo&gt;<br/>
+                &lt;latitude&gt;56.16666794&lt;/latitude&gt;<br/>
+                &lt;longitude&gt;9.56666660&lt;/longitude&gt;<br/>
+                &lt;elevation&gt;48.00000000&lt;/elevation&gt;<br/>
+                &lt;/display_location&gt;<br/>
+                &lt;observation_location&gt;<br/>
+                &lt;full&gt;Buskelundtoften, Silkeborg, Silkeborg&lt;/full&gt;<br/>
+                &lt;city&gt;Buskelundtoften, Silkeborg&lt;/city&gt;<br/>
+                &lt;state&gt;Silkeborg&lt;/state&gt;<br/>
+                &lt;country&gt;Denmark&lt;/country&gt;<br/>
+                &lt;country_iso3166&gt;DK&lt;/country_iso3166&gt;<br/>
+                &lt;latitude&gt;56.182888&lt;/latitude&gt;<br/>
+                &lt;longitude&gt;9.507186&lt;/longitude&gt;<br/>
+                &lt;elevation&gt;225 ft&lt;/elevation&gt;<br/>
+                &lt;/observation_location&gt;<br/>
+                &lt;estimated&gt;<br/>
+                &lt;/estimated&gt;<br/>
+                &lt;station_id&gt;ISILKEBO2&lt;/station_id&gt;<br/>
+                &lt;observation_time&gt;Last Updated on April 10, 10:00 PM CEST&lt;/observation_time&gt;<br/>
+                &lt;observation_time_rfc822&gt;Fri, 10 Apr 2015 22:00:14 +0200&lt;/observation_time_rfc822&gt;<br/>
+                &lt;observation_epoch&gt;1428696014&lt;/observation_epoch&gt;<br/>
+                &lt;local_time_rfc822&gt;Fri, 10 Apr 2015 22:00:28 +0200&lt;/local_time_rfc822&gt;<br/>
+                &lt;local_epoch&gt;1428696028&lt;/local_epoch&gt;<br/>
+                &lt;local_tz_short&gt;CEST&lt;/local_tz_short&gt;<br/>
+                &lt;local_tz_long&gt;Europe/Copenhagen&lt;/local_tz_long&gt;<br/>
+                &lt;local_tz_offset&gt;+0200&lt;/local_tz_offset&gt;<br/>
+                &lt;weather&gt;Clear&lt;/weather&gt;<br/>
+                &lt;temperature_string&gt;47.8 F (8.8 C)&lt;/temperature_string&gt;<br/>
+                &lt;temp_f&gt;47.8&lt;/temp_f&gt;<br/>
+                &lt;temp_c&gt;8.8&lt;/temp_c&gt;<br/>
+                &lt;relative_humidity&gt;78%&lt;/relative_humidity&gt;<br/>
+                &lt;wind_string&gt;Calm&lt;/wind_string&gt;<br/>
+                &lt;wind_dir&gt;SSE&lt;/wind_dir&gt;<br/>
+                &lt;wind_degrees&gt;157&lt;/wind_degrees&gt;<br/>
+                &lt;wind_mph&gt;0.0&lt;/wind_mph&gt;<br/>
+                &lt;wind_gust_mph&gt;3.0&lt;/wind_gust_mph&gt;<br/>
+                &lt;wind_kph&gt;0.0&lt;/wind_kph&gt;<br/>
+                &lt;wind_gust_kph&gt;4.8&lt;/wind_gust_kph&gt;<br/>
+                &lt;pressure_mb&gt;1018&lt;/pressure_mb&gt;<br/>
+                &lt;pressure_in&gt;30.06&lt;/pressure_in&gt;<br/>
+                &lt;pressure_trend&gt;0&lt;/pressure_trend&gt;</p>
+
+<p>                &lt;dewpoint_string&gt;41 F (5 C)&lt;/dewpoint_string&gt;<br/>
+                &lt;dewpoint_f&gt;41&lt;/dewpoint_f&gt;<br/>
+                &lt;dewpoint_c&gt;5&lt;/dewpoint_c&gt;</p>
+
+
+<p>                &lt;heat_index_string&gt;NA&lt;/heat_index_string&gt;<br/>
+                &lt;heat_index_f&gt;NA&lt;/heat_index_f&gt;<br/>
+                &lt;heat_index_c&gt;NA&lt;/heat_index_c&gt;</p>
+
+
+<p>                &lt;windchill_string&gt;48 F (9 C)&lt;/windchill_string&gt;<br/>
+                &lt;windchill_f&gt;48&lt;/windchill_f&gt;<br/>
+                &lt;windchill_c&gt;9&lt;/windchill_c&gt;</p>
+
+<p>        &lt;feelslike_string&gt;48 F (9 C)&lt;/feelslike_string&gt;<br/>
+        &lt;feelslike_f&gt;48&lt;/feelslike_f&gt;<br/>
+        &lt;feelslike_c&gt;9&lt;/feelslike_c&gt;<br/>
+                &lt;visibility_mi&gt;6.2&lt;/visibility_mi&gt;<br/>
+                &lt;visibility_km&gt;10.0&lt;/visibility_km&gt;<br/>
+                &lt;solarradiation&gt;0&lt;/solarradiation&gt;<br/>
+                &lt;UV&gt;0.0&lt;/UV&gt;<br/>
+                &lt;precip_1hr_string&gt;0.00 in ( 0 mm)&lt;/precip_1hr_string&gt;<br/>
+                &lt;precip_1hr_in&gt;0.00&lt;/precip_1hr_in&gt;<br/>
+                &lt;precip_1hr_metric&gt; 0&lt;/precip_1hr_metric&gt;<br/>
+                &lt;precip_today_string&gt;0.00 in (0 mm)&lt;/precip_today_string&gt;<br/>
+                &lt;precip_today_in&gt;0.00&lt;/precip_today_in&gt;<br/>
+                &lt;precip_today_metric&gt;0&lt;/precip_today_metric&gt;</p>
+
+
+
+<p>                &lt;icon&gt;clear&lt;/icon&gt;<br/>
+                &lt;icon_url&gt;<a href="http://icons.wxug.com/i/c/k/nt_clear.gif">http://icons.wxug.com/i/c/k/nt_clear.gif</a>&lt;/icon_url&gt;<br/>
+                &lt;forecast_url&gt;<a href="http://www.wunderground.com/global/stations/06068.html">http://www.wunderground.com/global/stations/06068.html</a>&lt;/forecast_url&gt;</p>
+
+<p>        &lt;history_url&gt;<a href="http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=ISILKEBO2">http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=ISILKEBO2</a>&lt;/history_url&gt;</p>
+
+<p>                &lt;ob_url&gt;<a href="http://www.wunderground.com/cgi-bin/findweather/getForecast?query=56.182888,9.507186">http://www.wunderground.com/cgi-bin/findweather/getForecast?query=56.182888,9.507186</a>&lt;/ob_url&gt;<br/>
+        &lt;/current_observation&gt;</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<p>&lt;/response&gt;</p>
+
+
+<p>2015-04-10 22:00:28,712 INFO <span class="error">&#91;Polling thread for sensor: WeatherSensor&#93;</span>: result of xpath evaluation: 8.8<br/>
+2015-04-10 22:00:28,713 TRACE <span class="error">&#91;Polling thread for sensor: WeatherSensor&#93;</span>: Processed '8.8', received '8.8'<br/>
+2015-04-10 22:00:28,713 ERROR <span class="error">&#91;Polling thread for sensor: WeatherSensor&#93;</span>: Could not perform xpath evaluation<br/>
+java.lang.NullPointerException<br/>
+        at org.openremote.controller.statuscache.rules.RuleEngine.push(RuleEngine.java:145)<br/>
+        at org.openremote.controller.statuscache.EventProcessorChain.push(EventProcessorChain.java:188)<br/>
+        at org.openremote.controller.statuscache.StatusCache.update(StatusCache.java:260)<br/>
+        at org.openremote.controller.model.sensor.Sensor.update(Sensor.java:342)<br/>
+        at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:289)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+2015-04-10 22:00:28,715 TRACE <span class="error">&#91;Polling thread for sensor: WeatherSensor&#93;</span>: Processed 'N/A', received 'N/A'<br/>
+2015-04-10 22:01:02,765 INFO HTTP\-Thread\-30: Start RoundRobin group member REST service. at 2015-04-10 22:01:02<br/>
+2015-04-10 22:01:02,770 INFO Thread\-35: UDP Server : Received the controller multicast request from the same group floor20<br/>
+2015-04-10 22:01:02,771 INFO Cluster TCP: TCP Server : a new groupmember socket established...<br/>
+2015-04-10 22:01:02,776 INFO Thread\-36: TCP Server deal thread : Ready for receiving groupmember url ...<br/>
+2015-04-10 22:01:02,776 INFO Thread\-36: TCP Server deal thread : received a groupmember url : <a href="http://192.168.1.2:18581/controller">http://192.168.1.2:18581/controller</a><br/>
+2015-04-10 22:01:02,912 INFO HTTP\-Thread\-24: Querying changed state from ChangedStatus table...<br/>
+2015-04-10 22:01:02,913 INFO HTTP\-Thread\-24: Not Found: [device =&gt; 357634058817920, sensorIDs =&gt; 106906218] in ChangedStatus table.<br/>
+2015-04-10 22:01:02,913 INFO HTTP\-Thread\-24: ChangedStatusRecord:357634058817920-106906218 sensorID:106906218 statusChangedSensorID:[]Waiting...<br/>
+2015-04-10 22:01:03,276 INFO HTTP\-Thread\-30: Finished RoundRobin group member REST service.  at 2015-04-10 22:01:03</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by laithsaid at Apr 10, 2015 21:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597532"></a>
+                                    <font class="smallfont"><p>It's seems to be related to the rule engine not loading. It needs a Java 6 installation.<br/>
+There exist a lot of threads on the forum related to the rule engine and newer Java versions.<br/>
+Easiest would be to use Java 6.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 10, 2015 21:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

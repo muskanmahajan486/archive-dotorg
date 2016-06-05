@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNX & eibd not working</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNX & eibd not working
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 24, 2014 by <font color="#0050B2">alexeyand</font>.
+				    </div>
+
+				    <p>Tried setup OR to control KNX installation. Having OSX 10.9 and K-BUS Gateway <a href="http://shop.knxstoreonline.com/gb/gateways-and-interfaces/3-bnip-00001-gateway-ipknx.html">http://shop.knxstoreonline.com/gb/gateways-and-interfaces/3-bnip-00001-gateway-ipknx.html</a><br/>
+First added gateway IP address to config.properties file - have no result<br/>
+Then i installed eibd - works fine:</p>
+
+<p>$ eibd -d -D -S -T -i ipt:192.168.1.15</p>
+
+<p>$ groupsocketlisten ip:127.0.0.1<br/>
+Write from 0.0.0 to 1/0/0: 00<br/>
+Write from 1.1.13 to 1/0/2: 00<br/>
+Write from 0.0.0 to 1/0/0: 01<br/>
+Write from 1.1.13 to 1/0/2: 80<br/>
+Write from 0.0.0 to 1/0/0: 00</p>
+
+<p>But OR controller can't detect eibd correctly:<br/>
+sh-3.2# tail -F knx-debug.log<br/>
+DEBUG 2014-04-24 17:31:04,105 (KNX): Creating KNX bus with org.openremote.controller.protocol.port.DatagramSocketPort<br/>
+INFO 2014-04-24 17:31:04,106 (KNX): Found a KNX IP interface at /0.0.0.0:3671<br/>
+INFO 2014-04-24 17:31:04,106 (KNX): Connection created for KNX IP interface at /0.0.0.0:3671<br/>
+DEBUG 2014-04-24 17:31:04,106 (KNX): Creating KNX bus with org.openremote.controller.protocol.port.DatagramSocketPort<br/>
+INFO 2014-04-24 17:31:04,107 (KNX): Failed to get network interface for address '/25.81.44.131'. Skipping...<br/>
+DEBUG 2014-04-24 17:31:04,107 (KNX): Creating KNX bus with org.openremote.controller.protocol.port.DatagramSocketPort<br/>
+WARN 2014-04-24 17:31:04,108 (KNX): Could not connect<br/>
+org.openremote.controller.protocol.knx.ConnectionException: Connect failed<br/>
+at org.openremote.controller.protocol.knx.KNXIpConnectionManager$KNXConnectionImpl.connect(KNXIpConnectionManager.java:703)<br/>
+at org.openremote.controller.protocol.knx.KNXIpConnectionManager.getConnection(KNXIpConnectionManager.java:223)<br/>
+at org.openremote.controller.protocol.knx.KNXIpConnectionManager$ConnectionTask.run(KNXIpConnectionManager.java:989)<br/>
+at java.util.TimerThread.mainLoop(Timer.java:512)<br/>
+at java.util.TimerThread.run(Timer.java:462)<br/>
+Caused by: java.io.IOException: No route to host<br/>
+at java.net.PlainDatagramSocketImpl.send(Native Method)<br/>
+at java.net.DatagramSocket.send(DatagramSocket.java:625)<br/>
+at org.openremote.controller.protocol.port.DatagramSocketPort.send(DatagramSocketPort.java:64)<br/>
+at org.openremote.controller.protocol.knx.ip.IpProcessor.send(IpProcessor.java:195)<br/>
+at org.openremote.controller.protocol.knx.ip.IpProcessor.send(IpProcessor.java:188)<br/>
+at org.openremote.controller.protocol.knx.ip.IpProcessor.service(IpProcessor.java:175)<br/>
+at org.openremote.controller.protocol.knx.ip.IpTunnelClient.connect(IpTunnelClient.java:112)<br/>
+at org.openremote.controller.protocol.knx.KNXIpConnectionManager$KNXConnectionImpl.connect(KNXIpConnectionManager.java:697)<br/>
+... 4 more</p>
+
+
+<p>Here is a routing table:</p>
+
+<p>sh-3.2# netstat -r<br/>
+Routing tables</p>
+
+<p>Internet:<br/>
+Destination Gateway Flags Refs Use Netif Expire<br/>
+default 192.168.55.1 UGSc 39 0 en2<br/>
+default link#4 UCSI 1 0 en0<br/>
+25 link#9 UC 2 0 ham0<br/>
+25.255.255.255 ff:ff:ff:ff:ff:ff UHLWbI 0 7 ham0<br/>
+127 localhost UCS 0 0 lo0<br/>
+localhost localhost UH 6 163220 lo0<br/>
+169.254 link#4 UCS 0 0 en0<br/>
+192.168.1 link#4 UCS 5 0 en0<br/>
+knx.local 10:0:0:0:0:1 UHLWIi 2 234 en0 715<br/>
+192.168.1.23 localhost UHS 0 746 lo0<br/>
+192.168.1.100 link#4 UHLWIi 2 385 en0<br/>
+192.168.1.177 link#4 UHRLWIi 11 3272 en0<br/>
+192.168.1.209 link#4 UHLWIi 1 6 en0<br/>
+192.168.1.255 ff:ff:ff:ff:ff:ff UHLWbI 0 7 en0<br/>
+192.168.55 link#6 UCS 2 0 en2<br/>
+192.168.55.1 e0:46:9a:62:64:76 UHLWIir 40 550 en2 619<br/>
+192.168.55.100 localhost UHS 1 176 lo0<br/>
+192.168.55.255 ff:ff:ff:ff:ff:ff UHLWbI 0 7 en2<br/>
+224.0.23.12 1:0:5e:0:17:c UHmLS 0 0 en0<br/>
+224.0.23.12 1:0:5e:0:17:c UHmLWI 0 185 en0</p>
+
+<p>long time trying to configure it, without result. whats wrong?</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22886073"></a>
+                                    <font class="smallfont"><p>This is the actual error from the OS network layer to OpenRemote:</p>
+
+<p>Caused by: No route to host</p>
+
+<p>That it attempts to use address 0.0.0.0 also looks suspicious. There's something not right with the network configuration.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 25, 2014 00:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886096"></a>
+                                    <font class="smallfont"><p>will try on other Mac tonight. by the way, i think "0.0.0.0" mean all local ip addresses in this case<br/>
+like no problem with "0.0.0.0":<br/>
+sh-3.2# groupsocketlisten ip:0.0.0.0<br/>
+Write from 1.1.2 to 2/0/0: 01<br/>
+Write from 1.1.12 to 2/0/0: 01<br/>
+Write from 1.1.2 to 2/0/0: 00<br/>
+Write from 1.1.12 to 2/0/0: 00</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by alexeyand at Apr 25, 2014 13:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886105"></a>
+                                    <font class="smallfont"><p>keep trying<br/>
+launch eibd:<br/>
+$ eibd -D -S -T --listen-tcp=3671 -t65535 ipt:192.168.1.15</p>
+
+<p>works fine with ETS program</p>
+
+<p>next launch OR and push the button assigned to some knx command:</p>
+
+<ol>
+	<li>tail -F knx-debug.log<br/>
+INFO 2014-04-26 02:30:07,815 (KNX): KNX IP interface hostname set to '192.168.1.90'<br/>
+INFO 2014-04-26 02:30:07,815 (KNX): KNX IP interface port set to '3671'<br/>
+INFO 2014-04-26 02:30:07,815 (KNX): KNX PhysicalBus clazz set to 'org.openremote.controller.protocol.port.DatagramSocketPort'<br/>
+INFO 2014-04-26 02:30:07,817 (KNX): Scheduled reconnection task<br/>
+WARN 2014-04-26 02:30:07,817 (KNX): Unknown KNX property '&lt;property name = "name" value = "sw on"/&gt;'.<br/>
+INFO 2014-04-26 02:30:07,819 (KNX): Trying to create connection<br/>
+INFO 2014-04-26 02:30:07,819 (KNX): Removing connection<br/>
+INFO 2014-04-26 02:30:07,822 (KNX): KNX Connection manager resolving local host IP addresses...<br/>
+INFO 2014-04-26 02:30:07,830 (KNX): Found candidate NIC: name:vnic1 (vnic1)<br/>
+INFO 2014-04-26 02:30:07,831 (KNX): Added candidate IP address to set - /10.37.129.2<br/>
+INFO 2014-04-26 02:30:07,831 (KNX): Found candidate NIC: name:vnic0 (vnic0)<br/>
+INFO 2014-04-26 02:30:07,831 (KNX): Added candidate IP address to set - /10.211.55.2<br/>
+INFO 2014-04-26 02:30:07,832 (KNX): Found candidate NIC: name:ham0 (ham0)<br/>
+INFO 2014-04-26 02:30:07,832 (KNX): Skipped IPv6 address (not supported by KNX) /2620:9b:0:0:0:0:19a3:30c2<br/>
+INFO 2014-04-26 02:30:07,832 (KNX): Skipped IPv6 address (not supported by KNX) /fe80:0:0:0:7879:19ff:fea3:30c2%7<br/>
+INFO 2014-04-26 02:30:07,832 (KNX): Added candidate IP address to set - /25.163.48.194<br/>
+INFO 2014-04-26 02:30:07,832 (KNX): Found candidate NIC: name:en1 (en1)<br/>
+INFO 2014-04-26 02:30:07,832 (KNX): Skipped IPv6 address (not supported by KNX) /fe80:0:0:0:daa2:5eff:fe97:2220%5<br/>
+INFO 2014-04-26 02:30:07,832 (KNX): Added candidate IP address to set - /192.168.1.90<br/>
+INFO 2014-04-26 02:30:07,832 (KNX): Skipping loopback interface: name:lo0 (lo0)<br/>
+DEBUG 2014-04-26 02:30:07,850 (KNX): Creating KNX bus with org.openremote.controller.protocol.port.DatagramSocketPort<br/>
+INFO 2014-04-26 02:30:07,860 (KNX): Failed to get network interface for address '/10.211.55.2'. Skipping...<br/>
+DEBUG 2014-04-26 02:30:07,860 (KNX): Creating KNX bus with org.openremote.controller.protocol.port.DatagramSocketPort<br/>
+INFO 2014-04-26 02:30:07,862 (KNX): Failed to get network interface for address '/10.37.129.2'. Skipping...<br/>
+DEBUG 2014-04-26 02:30:07,863 (KNX): Creating KNX bus with org.openremote.controller.protocol.port.DatagramSocketPort<br/>
+INFO 2014-04-26 02:30:07,876 (KNX): Found a KNX IP interface at /0.0.0.0:3671<br/>
+DEBUG 2014-04-26 02:30:07,876 (KNX): Creating KNX bus with org.openremote.controller.protocol.port.DatagramSocketPort<br/>
+INFO 2014-04-26 02:30:07,889 (KNX): Failed to get network interface for address '/25.163.48.194'. Skipping...<br/>
+INFO 2014-04-26 02:30:07,986 (KNX): Created KNX Command FRAME L_Data.req 0.0.0 -&gt; 1/0/0 Data: 0x01 for group address '1/0/0'<br/>
+INFO 2014-04-26 02:30:07,990 (KNX): No KNX connection available, did not send FRAME L_Data.req 0.0.0 -&gt; 1/0/0 Data: 0x01<br/>
+WARN 2014-04-26 02:30:17,890 (KNX): Could not connect<br/>
+org.openremote.controller.protocol.knx.ConnectionException: KNX-IP interface not found<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager.waitForConnection(KNXIpConnectionManager.java:264)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager.getConnection(KNXIpConnectionManager.java:222)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager$ConnectionTask.run(KNXIpConnectionManager.java:989)<br/>
+        at java.util.TimerThread.mainLoop(Timer.java:512)<br/>
+        at java.util.TimerThread.run(Timer.java:462)<br/>
+INFO 2014-04-26 02:30:17,890 (KNX): Trying to create connection<br/>
+INFO 2014-04-26 02:30:17,890 (KNX): Removing connection<br/>
+INFO 2014-04-26 02:30:17,892 (KNX): KNX-IP socket listener IOException<br/>
+java.net.SocketException: Socket closed<br/>
+        at java.net.PlainDatagramSocketImpl.receive0(Native Method)<br/>
+        at java.net.PlainDatagramSocketImpl.receive(PlainDatagramSocketImpl.java:188)<br/>
+        at java.net.DatagramSocket.receive(DatagramSocket.java:725)<br/>
+        at org.openremote.controller.protocol.port.DatagramSocketPort.receive(DatagramSocketPort.java:78)<br/>
+        at org.openremote.controller.protocol.knx.ip.IpProcessor$PhysicalBusListener.run(IpProcessor.java:82)<br/>
+WARN 2014-04-26 02:30:17,892 (KNX): KNX-IP socket listener stopped<br/>
+INFO 2014-04-26 02:30:17,892 (KNX): KNX-IP socket listener IOException<br/>
+java.net.SocketException: Socket closed</li>
+</ol>
+
+
+<p>at this time see eibd output:</p>
+
+<p>Layer 8(D3500E10,535ADF64) SEARCH<br/>
+Layer 1(D3500F40,535ADF64) Send(068): 08 01 00 00 00 00 0E 57 36 01 02 00 00 00 00 00 00 00 00 00 00 00 E0 00 17 0C 00 00 00 00 00 00 65 69 62 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 02 02 01 04 01<br/>
+Layer 0(D3500F40,535ADF64) Send(074): 06 10 02 02 00 4A 08 01 00 00 00 00 0E 57 36 01 02 00 00 00 00 00 00 00 00 00 00 00 E0 00 17 0C 00 00 00 00 00 00 65 69 62 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 02 02 01 04 01</p>
+
+<p>that is, the controller tries to access eibd, but apparently does not recognize his answer. This is incompatible with the ip interface or with eibd?</p>
+
+<p>OR version 2.1.0_FM_ORCJAVA-400</p>
+
+<p>I think something is wrong in OR: I checked aycontrol with eibd and it works... but im really fan of OR software (quite a long time use it with arduino and vera) and would like to get it work with my knx part</p>
+
+<p>thanks in advance</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by alexeyand at Apr 25, 2014 23:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

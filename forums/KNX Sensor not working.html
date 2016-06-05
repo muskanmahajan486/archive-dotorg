@@ -1,0 +1,562 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNX Sensor not working</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNX Sensor not working
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 25, 2012 by <font color="#0050B2">sgschaeffer</font>.
+				    </div>
+
+				    <p>Hello, </p>
+
+<p>I'm trying to setup a KNX Switch with its required Sensor.</p>
+
+<p>It's just a light that I can switch on / off, which works fine using direct buttons "On" and "Off".</p>
+
+<p>But I can't get it to work using a Switch, my Switch just always tries to switch Off the light (as I can see in Bus Monitor from ETS).</p>
+
+<p>I believe this comes because my OpenRemote Controller thinks the light is ON, although it is OFF - so the Sensor is not working:</p>
+
+<p>In my controller log, I have these lines:</p>
+
+<p>Controller2012-04-25 15:56:15,305 DEBUG Thread\-6 org.openremote.controller.bootstrap.Startup$Log4jRedirect.publish(221) | Polling device status for FRAME L_Data.req 0.0.0 -&gt; 0/1/0 Data: 0x00<br/>
+Controller2012-04-25 15:56:15,807 DEBUG Thread\-6 org.openremote.controller.bootstrap.Startup$Log4jRedirect.publish(221) | Polling device status for FRAME L_Data.req 0.0.0 -&gt; 0/1/0 Data: 0x00<br/>
+Controller2012-04-25 15:56:16,307 DEBUG Thread\-6 org.openremote.controller.bootstrap.Startup$Log4jRedirect.publish(221) | Polling device status for FRAME L_Data.req 0.0.0 -&gt; 0/1/0 Data: 0x00<br/>
+Controller2012-04-25 15:56:16,658 INFO http\-8080\-11 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(103) | Had timeout for waiting status change.<br/>
+Controller2012-04-25 15:56:16,659 INFO http\-8080\-11 org.openremote.controller.rest.StatusPollingRESTServlet.doPost(116) | Finished polling at 2012-04-25 15:56:16</p>
+
+<p>Controller2012-04-25 15:56:16,680 INFO http\-8080\-10 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(103) | Had timeout for waiting status change.<br/>
+Controller2012-04-25 15:56:16,680 INFO http\-8080\-10 org.openremote.controller.rest.StatusPollingRESTServlet.doPost(116) | Finished polling at 2012-04-25 15:56:16</p>
+
+
+<p>If I have a look at the ETS Bus Monitor, I see, that a Read Command is initiated initially correctly, and according to my Bus Monitor, a Response is sent, but obviously this Response does not make it to my Controller.</p>
+
+
+<p>Anything sent by the Controller is using 15/15/255 as Source Addr, is this possibly an issue? Can I configure the Source Address used?<br/>
+15/15/255 is also used for the Write Commands to switch on / off the Light directly, but this works.</p>
+
+<p>Can anyone help?</p>
+
+<p>Sven</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19440391"></a>
+                                    <font class="smallfont"><p>Are you using the lastest version of the controller?<br/>
+You can also validate your sensor defintion outside of the switch component. Please assigned it to simple label object with On/Off value assigned to sensor state.<br/>
+Like this, using classical your On/off commands, this label text should change and that will isolate your problem at the sensor level instead of switch level.<br/>
+In your ETS definition, have you defined a specific group for the KNX feedback? Is this group different from the one you're using for on/off?</p>
+
+<p>Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 25, 2012 21:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440398"></a>
+                                    <font class="smallfont"><p>Yes, I'm using the "trunk" version, from yesterday, so it's up to date.</p>
+
+<p>I will have a shot at your tips with the label that should switch On / Off.</p>
+
+<p>By KNX feedback you mean a Read-&gt;Response Command?</p>
+
+<p>Because in general, there are 2 types of feedback:</p>
+
+<p>1) Classical Read-&gt;Response Command, which requires frequent polling, otherwise OpenRemote wouldn't know about a changed device state if the change is committed by another source then OpenRemote<br/>
+2) Write Command Feedback, which means that the Device just broadcasts its new state on the BUS in case of changes - making frequent Polling unnecessary.</p>
+
+<p>2nd method can be configured for some devices.</p>
+
+<p>I assume, that only the first method is supported by OpenRemote?</p>
+
+<p>And something else:<br/>
+I had a look at the source code org/openremote/controller/protocol/knx/KNXCommand.java</p>
+
+<p>I find the following lines there:<br/>
+    final int NO_ADDITIONAL_INFORMATION = 0x00;       // Additional info length = 0<br/>
+    final int SOURCE_ADDRESS_HIBYTE     = 0x00;       // Source address will be filled in by<br/>
+    final int SOURCE_ADDRESS_LOBYTE     = 0x00;       // KNX gateway/router</p>
+
+<p>The comment suggests that my KNX IP Router should replace its own Address in all Commands. This is not true for me, anything appears to be sent from 15.15.255.<br/>
+I changed the variables in source - and this works, anything (from OpenRemote) is sent from the statically configured Source Address.<br/>
+Can I configure this also somewhere outside the source code?</p>
+
+<p>My IP Router is Siemens N146/02.</p>
+
+<p>Thanks!<br/>
+Sven</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sgschaeffer at Apr 26, 2012 08:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440402"></a>
+                                    <font class="smallfont"><p>This is my config in Controller:</p>
+
+<p>Device: Light<br/>
+ Command: "ON" with Protocol KNX, Address "0/1/0", "On" as KNX Command, "1.001" as DPT<br/>
+ Command: "OFF" with Protocol KNX, Address "0/1/0", "Off" as KNX Command, "1.001" as DPT<br/>
+ Command: "ON/OFF" with Protocol KNX, Address "0/1/0", "Status" as KNX Command, "1.001" as DPT<br/>
+ Sensor: "ON/OFF" connected to "ON/OFF" Command with type "Switch"<br/>
+ Switch: "Change State" connected to Sensor "ON/OFF" and both Commands "ON" and "OFF" accordingly</p>
+
+<p>All with the same group address.</p>
+
+
+<p>In my UI Designer, I have:<br/>
+Two Buttons "ON" and "OFF" connected to their corresponding Commands<br/>
+One Label connected to the "ON/OFF" Sensor<br/>
+One Switch connected to "Change State".</p>
+
+<p>The Buttons work correctly and do what I'd expect them to do.</p>
+
+<p>The Label Text changes only if I switch the light from outside the OpenRemote WebConsole, e.g. directly from ETS or with a classical hardware light switch.</p>
+
+<p>So it seems that OpenRemote just does not know about it's own initiated device state changes.<br/>
+Respectively to that the Switch button works only 1 time in the Webconsole - because of this:<br/>
+Light is ON, Switch shows ON. Press the Switch in Webconsole. Light is OFF, Switch still shows ON. Pressing the button again has no function.</p>
+
+<p>What is wrong here? Is it an issue with the WebConsole? I'd appreciate any help.</p>
+
+<p>Regards.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sgschaeffer at Apr 26, 2012 09:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440405"></a>
+                                    <font class="smallfont"><p>Sorry for multiple posts, but here is the very short version:</p>
+
+<p>Sensor works only (detects a change) when the change is issued from another source than OpenRemote like directly from ETS or a classical hardware KNX light switch.</p>
+
+<p>If changed from the Android App with the Panel or the Webconsole, the device state changes, but it's not displayed in the Panel.</p>
+
+<p>Where could be the problem?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sgschaeffer at Apr 26, 2012 11:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440434"></a>
+                                    <font class="smallfont"><p>Is it not the parameter you can change on the designer, device screen, under the "config for controller" / advanced?<br/>
+Reviewing your config, I see that you're using the same group for command and status.<br/>
+Best practice recommend to use a separate group address for the status then the commands.<br/>
+So, please try with :<br/>
+Command: "ON" with Protocol KNX, Address "0/1/0", "On" as KNX Command, "1.001" as DPT<br/>
+Command: "OFF" with Protocol KNX, Address "0/1/0", "Off" as KNX Command, "1.001" as DPT<br/>
+Command: "ON/OFF" with Protocol KNX, Address "0/1/1", "Status" as KNX Command, "1.001" as DPT</p>
+
+<p>Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 27, 2012 00:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440436"></a>
+                                    <font class="smallfont"><p>Which parameter in "config for controller" / advanced? </p>
+
+<p>I see there multicast.address and multicast.port which has to do with iPhone auto discovery - and controller.appname.</p>
+
+<p>None of these 3 parameters seem to match the description of my problem, or am I missing a parameter?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sgschaeffer at Apr 27, 2012 01:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440437"></a>
+                                    <font class="smallfont"><p>I may be wrong, for I think MultiCast are for KNX </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 27, 2012 01:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440442"></a>
+                                    <font class="smallfont"><p>I've tried with a separate Group Address for ON/OFF in my Commands, it does not help.</p>
+
+<p>In this case, OpenRemote does not even notice if the device state changed from outside OpenRemote like my hardware light switch.</p>
+
+<p>I wouldn't be sure if it is a good idea to use 2 Addresses where one would be enough. In our environment where we have hundreds of devices (maybe over thousand) in a big building, it would require doubling all addresses.</p>
+
+<p>But anyhow, it is like this:</p>
+
+<p>OpenRemote Controller is able to notice device state changes that were issued from outside OpenRemote. It does NOT change the device state of the corresponding Sensor if OpenRemote issued the device state change with a KNX Command.</p>
+
+<p>Could someone give me a more depth insight in the behinds or further debugging possibilities? According to the controller.log any sensor is "polled" like every 500ms.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sgschaeffer at Apr 27, 2012 09:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440447"></a>
+                                    <font class="smallfont"><p>Your KNX setup has to reflect the new group address.<br/>
+If you use 0/1/1 for the status you have to tell your KNX actuator to send the status after a change.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 27, 2012 10:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877799"></a>
+                                    <font class="smallfont"><p>Hello,</p>
+
+<p>I made my first steps with OpenRemote and find this a very good initiative! <br/>
+Seemly, I have the same problem with the sensor as Sven Gaul describes above.</p>
+
+<p>How did Sven finally get it running correctly?</p>
+
+<p>I also agree that it is not really a good idea to have two different group addresses because this requires a complete change, is the default setting and I am not sure I can change this within KNX.   </p>
+
+<p>Could someone give me a hint how to go further?</p>
+
+<p>Many thanks for your feed-back...</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fysenb at Oct 08, 2013 17:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878654"></a>
+                                    <font class="smallfont"><p>Hello,</p>
+
+<p>I've got the same problem. I've found nothing in others forum to solve this problem. When I made a label text in the screen with a sensor , it doesn't work. I don't know why. I do the same that this video :
+<a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+KNX+Switches">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+KNX+Switches</a></p>
+
+<p>Thank you in advance,</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by louise35 at Oct 22, 2013 16:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878700"></a>
+                                    <font class="smallfont"><p>I suggest looking at the implementation of IpInterfaceMonitor.read() and GroupValueRead.read(). My suspicion is the value returned is not "on" or "off" as expected by switch sensor.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 23, 2013 07:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878703"></a>
+                                    <font class="smallfont"><p>I assume that this is related to an issue discussed here: <a href="http://www.openremote.org/display/forums/Status+scene+change%2C+telnet+status%2C+key+press+delay">http://www.openremote.org/display/forums/Status+scene+change%2C+telnet+status%2C+key+press+delay</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 23, 2013 08:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878704"></a>
+                                    <font class="smallfont"><p>Where can we find : IpInterfaceMonitor.read() and GroupValueRead.read()? I didn't find these. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by louise35 at Oct 23, 2013 08:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878716"></a>
+                                    <font class="smallfont"><p>Oops...I assumed you have programming knowledge. I was referring to java command implementation (should be deep inside src directory). I don't have a KNX setup - so can't help much.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 23, 2013 11:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878862"></a>
+                                    <font class="smallfont"><p>I've little bit programming knowledge, but hier I'm really lost... I don't know why it doesn't work and I don't know where I have to go in which file...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by louise35 at Oct 25, 2013 13:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879191"></a>
+                                    <font class="smallfont"><p>Hello Filip,</p>
+
+<p>The two different group addresses need to be there for a good reason. </p>
+
+<p>1. You need one group address to handle the ON and OFF commands send from various switches to an actuator in order to command it to turn ON and OFF. </p>
+
+<p>2.  Then you need a second group address for the actuator to give feedback to the bus( thus to openremote) the status that it is currently at. Note that when programming your knx installation via ETS, you need to set your actuators to be able to report their status. when you do this you will see that additional objects show up for each actuator channel usually called ''status switch''. This object needs to go into the second group address in order to give feedback as mentioned earlier.Then run a test from ETS, by requesting a READ VALUE of the second group address used for the feedback. If the actuator responds with its value(either ON -OFF or 1 - 0)then you shouldn't have a problem with openremote. </p>
+
+<p>I had very similar issues to the above when i first started and i was about to give up with openremote when i finally realized  that the problem was that i had not configured my ETS programming correctly and that the issue was not from openremote's side.</p>
+
+
+
+<p>To sum up : SWITCHING COMMANDS AND STATUS FEEDBACK COMMANDS NEED TO BE ON TWO DIFFERENT GROUP ADRESSES OTHERWISE IT DOESN'T WORK!!!</p>
+
+
+<p>I hope that this will help ,</p>
+
+<p>Kind Regards,</p>
+
+<p>Stavros</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Nov 01, 2013 15:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879521"></a>
+                                    <font class="smallfont"><p>Hello Stavros,</p>
+
+<p>Thank you very much for your help!</p>
+
+<p>Here is what I have done:<br/>
+1. My light is on group address 0/0/3. I configured a new group address 3/0/2 for sending the status of the actor.  I added the specific actor output to this group address (and only this one). So far, so good. <br/>
+2. When editing the object (Output C) actor side, as you recommended, you see the associated groups (0/0/3 and 3/0/2) and the checkbox 'communication', 'read', 'write', 'transmit' and 'update' and this for the complete group. All are active and I added the flag 'Set sending' to the new 3/0/2. On the actor itself (parameters) I can only select the switch behaviour(open/close), a logical link (no logic, AND, OR) and what happens if the power of the bus drops (unchanged, on, off).  There are no additional objects that show up where to send the status to.    <br/>
+3. Afterwards I downloaded the new software/parameters into the actor via ETS2 <br/>
+4. I added a sensor in Openremote using the new address 3/0/2, leaving the ON and OFF commands on 0/0/3. <br/>
+5. And ...  I have the following result <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> </p>
+<ul class="alternate" type="square">
+	<li>I am still able with a simple command to set my light ON or OFF</li>
+	<li>The status change is not detected (not even from outside Openremote)</li>
+</ul>
+
+
+<p>7. In files I found this:</p>
+<ul class="alternate" type="square">
+	<li>"dev.log":<br/>
+2013-11-06 19:34:22,217 DEBUG <span class="error">&#91;Polling Sensor Thread ID = 664, Name =&#39;Light  (ON/OFF)&#39;&#93;</span>: Polling device status for FRAME L_Data.req 0.0.0 -&gt; 3/0/2 Data: 0x00<br/>
+2013-11-06 19:34:25,235 WARN <span class="error">&#91;Polling Sensor Thread ID = 664, Name =&#39;Light (ON/OFF)&#39;&#93;</span>: Event producer bound to sensor (ID = 664) returned a value that is not consistent with sensor's datatype : ''  setting sensor value to 'N/A'</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>"sensors.log":<br/>
+WARN 2013-11-06 20:35:26,791 : Event producer bound to sensor (ID = 668) returned a value that is not consistent with sensor's datatype : ''  setting sensor value to 'N/A'</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>"xml-parser":<br/>
+DEBUG 2013-11-06 20:42:00,367 (XML): A switch sensor (Name = 'Light  (ON/OFF)', ID = 668) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = off/&gt;.</li>
+</ul>
+
+
+
+<p>Any suggestions ?</p>
+
+<p>Kind regards,<br/>
+Filip</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fysenb at Nov 06, 2013 20:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879522"></a>
+                                    <font class="smallfont"><p>You need 3 commands </p>
+<ul class="alternate" type="square">
+	<li>0/0/3 -&gt; on</li>
+	<li>0/0/3 -&gt; off</li>
+	<li>3/0/2 -&gt; status<br/>
+You need a switch sensor and use the status command for that.<br/>
+You need a switch and use the on, off and switch sensor for that.</li>
+</ul>
+
+
+<p>Your actor need 2 different communication objects. One is connected to O/0/3 for the action and is connected to 3/0/2 for the status.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 06, 2013 20:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879544"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>That is exactly what is configured.  I just don't understand why the sensor doesn't work when action (command) is performed from Openremote...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fysenb at Nov 07, 2013 06:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879555"></a>
+                                    <font class="smallfont"><p>Hi filip,</p>
+
+<p>What  KNX actuator are you using ??(make and model)?</p>
+
+<p>Regards,</p>
+
+<p>Stavros</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Nov 07, 2013 08:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879557"></a>
+                                    <font class="smallfont"><p>The actuator is a Busch-Jaeger 6195/11 6f-Schaltaktor, 6A, REG<br/>
+Product: 6195/11<br/>
+Program: Schalten Logik Vorzug/3<br/>
+Version: 4.2</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fysenb at Nov 07, 2013 08:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879621"></a>
+                                    <font class="smallfont"><p>Hi,<br/>
+When you said : "The status change is not detected (not even from outside Openremote)"</p>
+
+<p>Do you mean that the change of status is not seen by other KNX component on the bus ? Such as central function, or feedback LED on the physical switches ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by phil1348 at Nov 08, 2013 16:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879733"></a>
+                                    <font class="smallfont"><p>Exactly.  I tried about everything now and I am getting desperate <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>.</p>
+
+<p>Some actors have status objects which makes it easy to couple them to one or different groups.  Others, as I have, don't have status objects availeble.  You simply have to work with flags (look <a href="http://www.knx.org/fileadmin/template/documents/downloads_support_menu/KNX_tutor_seminar_page/Advanced_documentation/02_Flags_E1008a.pdf">here</a> for details).</p>
+
+<p>With ETS I don't have any problem to read/write or even get the status on the same group address (works always).  For OpenRemote purposes I reconfigured to have objects with on different group addresses (1 for actions ON/OFF another for the status), but still I am not able to detect the status change within Openremote.  However, the status change nicely detected by the LEDs on my switches.</p>
+
+<p>With the ETS bus monitor I tried to get more info, but as this is all hex data I am not capable to determine what is going wrong.  </p>
+
+<p>All idea's are welcome...</p>
+
+<p>Filip</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fysenb at Nov 11, 2013 20:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879749"></a>
+                                    <font class="smallfont"><p>Dear Filip,</p>
+
+<p>I tried to find the aplication program for your Busch-Jaeger 6195/11 device but i could only find it in german. I belive this i a very old device and it could be that it does not have a dedicated status object which you can use in the second group address for the status. When you try to read the "status" from the same group address as the one used for sending the on/off commands, what you are really getting back with ETS is the command state(if the last command received by the actuator was an ON or an OFF command-which theoretically it is also the status of the actuator) but it is not a STATUS (reply) command and it does't work with openremote. Your LED lights on your switches update their status by looking at the bus and change their status using the ON/OFF comands.<br/>
+I had similar cases and i also tryied to confiqure the flags to respond the ""command stauts"". And again i could read this value from ETS but not from openremote. </p>
+
+<p>Maybe the guys from openremote could look into this as there are older knx devices that don't respond their status.</p>
+
+<p>I solved this issue with a trick but it is not the best solution. In my knx system i have used 4way universal input/output modules for the basement switches and because i used 3gand conventional switches, i had spare inputs/outputs available, so i used these spares as outputs on the same group adresses and then used their status objects to get the status feedback.</p>
+
+<p>Regards,</p>
+
+<p>Stavros</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Nov 12, 2013 09:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879779"></a>
+                                    <font class="smallfont"><p>Thank you very much Stavros for your reaction!</p>
+
+<p>Is my conclusion correct saying that I have to buy new aktors (total about 1500€) or to stay away from Openremote?</p>
+
+<p>For sure I am not ready to invest that kind of money because it doesn't really provide any added value and other tools such as knxController or ayControl are able to manage it.<br/>
+Is there still hope? I have the impression I am coming back from an empty journey.</p>
+
+<p>Anyway, thank you all for helping me out here!!!</p>
+
+<p>Best regards,</p>
+
+<p>Filip</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fysenb at Nov 12, 2013 19:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

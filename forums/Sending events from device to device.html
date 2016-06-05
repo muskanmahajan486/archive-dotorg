@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Sending events from device to device</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Sending events from device to device
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 22, 2009 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>All,</p>
+
+<p>after finishing the first implementation of Russound support, I was wondering how to combine this with my KNX switches. So instead of using the Russound panels to turn on a zone or switch the source for a zone, I would like to use my KNX switches todo that.</p>
+
+<p>The idea is to have the KNX support within the controller listen to the KNX bus and when a particular group address is sent, I want the controller to trigger the Russound event to eg. turn on zone1.</p>
+
+<p>We could think that further and combine this we status and rules which are stored on the controller eg. when home is in "sleep" mode and "button light1" is pressed only dimm "light 1" to 20% instead of turning it on to 100%. These are rule connections which are supported eg by linknx or the Gira Homeserver.</p>
+
+<p>&#45;-Marcus</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-6258709"></a>
+                                    <font class="smallfont"><p>Very nice.... this way you can use your KNX panels to control your Russound system and it is all integrated. Nice.  How do you plan on adding this support? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marcf at Nov 22, 2009 21:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6258712"></a>
+                                    <font class="smallfont"><p>We went through the steps over Skype, here's the summary.</p>
+
+<p>Rule engine is going to bind these pieces together. </p>
+
+<ul class="alternate" type="square">
+	<li>We have an API for sending remote commands in Boss 1.0</li>
+	<li>We have an API for receiving device updates and server push to consoles in Boss 2.0</li>
+</ul>
+
+
+<p>In Boss 3.0 we will review these APIs with the rule engine binding in mind.</p>
+
+<p>The use case is:</p>
+
+<p>If state update (X) KNX then send command (Y) Russound</p>
+
+<p>The cycle here is the following:</p>
+
+<ol>
+	<li>listen to KNX status update in the Boss KNX protocol implementation (basic flow being put in place in Boss 2.0)</li>
+	<li>create command to change Russound on zone 1 (this is in place since Boss 1.0)</li>
+	<li>push KNX status update to consoles (implemented in Boss 2.0)</li>
+	<li>push Russound status update to consoles (implemented in Boss 2.0)</li>
+</ol>
+
+
+<p>The steps 1. and 2. are bound together by a rule engine. The last two steps of pushing status updates to consoles occur as normal event processing as its being implemented for Boss 2.0 (by year end)</p>
+
+<p>We should target the rule engine integration for Boss 3.0 (starting next year).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 22, 2009 22:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6258713"></a>
+                                    <font class="smallfont"><p>That sounds great.</p>
+
+<p>Combining this with internal states, which I mentioned above (eg. home in "sleep" mode), we are starting to catch up with "pro" solutions.</p>
+
+<p>I just looked into the listener support for KNX with Calimero NG and was already able to receive the messages from my KNX bus within Boss.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 22, 2009 22:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6258718"></a>
+                                    <font class="smallfont"><p>Boss 3.0? Shoot, did I miss a step?&nbsp; Are you trying to quickly rev to 3.1 to follow in the glorious steps of windows? (Neil should cue in about right here)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marcf at Nov 23, 2009 08:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6258719"></a>
+                                    <font class="smallfont"><p>Yes, I am trying to get up to 11.0 quickly so I can release Boss 2011.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 23, 2009 08:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

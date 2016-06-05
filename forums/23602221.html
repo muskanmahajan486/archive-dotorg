@@ -1,0 +1,419 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Help with IMVC and "rules"</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Help with IMVC and "rules"
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 18, 2015 by <font color="#0050B2">ptruman</font>.
+				    </div>
+
+				    <p>Hello <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>It's been a while, but I've just acquired a new Smart TV (WebOS) and am slowly wiring it up to OpenRemote.  Amusingly the TV can be shutdown via TCP/IP but not started, and some of the APIs are lacking, so I've got a split between IR and TCP controls.  This means I have to start the TV with IR, and don't have a discrete IR code (yet) so am using a sensor to track the power state.  Except it's not working.</p>
+
+<p>In logs/dev/dev/log I can see :</p>
+
+<p>2015-11-18 11:06:52,652 WARN HTTP\-Thread\-64: Unknown virtual protocol property '&lt;property name = "name" value = "TV_Power_Set_Off"/&gt;'.<br/>
+2015-11-18 11:06:59,616 WARN HTTP\-Thread\-62: Unknown virtual protocol property '&lt;property name = "name" value = "TV_Power_Set_On"/&gt;'.</p>
+
+<p>In controller.xml I have the following defined (from the designer) :</p>
+
+<p>The Sensor - which uses TV_Power_Get_State to find the 'status' of the IMVC 'tvpower' :</p>
+
+<p>    &lt;sensor id="107672269" name="Sensor_TV_Power" type="switch"&gt;<br/>
+      &lt;include type="command" ref="740" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;</p>
+
+<p>My IMVC is defined thus (on, off and status) :</p>
+
+<p>    &lt;command id="738" protocol="virtual"&gt;<br/>
+      &lt;property name="address" value="tvpower" /&gt;<br/>
+      &lt;property name="command" value="on" /&gt;<br/>
+      &lt;property name="name" value="TV_Power_Set_On" /&gt;<br/>
+    &lt;/command&gt;<br/>
+    &lt;command id="739" protocol="virtual"&gt;<br/>
+      &lt;property name="address" value="tvpower" /&gt;<br/>
+      &lt;property name="command" value="off" /&gt;<br/>
+      &lt;property name="name" value="TV_Power_Set_Off" /&gt;<br/>
+    &lt;/command&gt; <br/>
+    &lt;command id="740" protocol="virtual"&gt;<br/>
+      &lt;property name="address" value="tvpower" /&gt;<br/>
+      &lt;property name="command" value="status" /&gt;<br/>
+      &lt;property name="name" value="TV_Power_Get_State" /&gt;<br/>
+    &lt;/command&gt;</p>
+
+<p>A switch, to test it (which uses the IMVC commands to set on/off) :</p>
+
+<p>    &lt;sensor id="107672269" name="Sensor_TV_Power" type="switch"&gt;<br/>
+      &lt;include type="command" ref="740" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;</p>
+
+<p>And in the modeler_rules.drl I have:</p>
+
+<p>rule "Turn_TV_On"<br/>
+when<br/>
+    Switch( source == "Sensor_TV_Power", value == "on" )<br/>
+then<br/>
+  execute.command("TV_Power");<br/>
+end</p>
+
+<p>rule "Turn_TV_Off"<br/>
+when<br/>
+    Switch( source == "Sensor_TV_Power", value == "off" )<br/>
+then<br/>
+  execute.command("TV_Off");<br/>
+end</p>
+
+
+
+<p>My modeler rules match what I have for another device which works.</p>
+
+<p>What am I missing?!</p>
+
+<p>In other news - if anyone else wants to play with LG WebOS TVs - I'm using NPM with an NPM package called lgtv, and have wrapped some scripts to call some functions and it's working - although there are some npm permissions I need to sort out as it got installed with specific user permissions :\</p>
+
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23602230"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>Just a curve ball...</p>
+
+<p>Have you tried sending the TV a Wake On LAN signal?</p>
+
+<p>I've no idea how that could be fired from OpenRemote, but it might give you an option to 'Switch On' TV.</p>
+
+<p>Good luck</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Nov 18, 2015 20:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602231"></a>
+                                    <font class="smallfont"><p>Hi Stuart <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Doesnt work - The TV shuts down the NIC when in standby.  Stupid, but true.</p>
+
+<p>And either way, my code should be working <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Also re WOL, if you have a WOL executable, OR can run it, just set the device type appropriately <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Nov 18, 2015 21:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602240"></a>
+                                    <font class="smallfont"><p>Hi Peter,</p>
+
+<p>Have you tried HDMI CEC? There was some mention of it on the forum. Anyway, I have RP2 with Kodi and CEC. It is able to power on my Samsung TV.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 19, 2015 07:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602242"></a>
+                                    <font class="smallfont"><p>Hi Michal,</p>
+
+<p>Yes, I've tried HDMI CEC but my setup makes that a problem.</p>
+
+<p>My TV is connected to an Onkyo AMP, which has RHID (aka CEC) pass through enabled, and the TV can wake up when another downstream device (PS3, PS4 etc) wake up....the TV can also see all HDMI CEC compliant devices linked via the Onkyo (PS3, PS4 and a Chromecast).</p>
+
+<p>However:</p>
+
+<p>a) My cable box does not send HDMI CEC, so there is an issue there in waking up (without first turning on something else, switching inputs and switching the first device back off)</p>
+
+<p>b) For some reason, if I use the TV remote to change input to HDMI1 (which is connected to the Onkyo), the Onkyo seems to pass a signal to the Chromecast (or the Chromecast just listens to anything) and defaults the Onkyo input to the Chromecast (which is quite annoying)</p>
+
+<p>c) Due to the lack of cable box CEC, the TV will not shutdown if the cable box shutsdown (although I can work aound that)</p>
+
+<p>d) I'm tempted to hook my rPi back up, as that's got HDMI with CEC (via Kodi etc) so might be capable of a kludge</p>
+
+<p>But that still doesn't answer why my IMVC/rule isn't working <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Nov 19, 2015 09:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602245"></a>
+                                    <font class="smallfont"><p>You can also install libcec on RP2 standalone, without KODI. Then you can call it through command line interface.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 19, 2015 11:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602246"></a>
+                                    <font class="smallfont"><blockquote>
+<p>But that still doesn't answer why my IMVC/rule isn't working</p></blockquote>
+<p>Please show your whole rule file or at least header of the file including rules. Also take a look in logs/boot.log to see if there were no errors when parsing the drl.<br/>
+Also, I never have a reason to use other sensors than custom one and use 'when Event()' in rules. Linking the output of sensor to a label usually shows what it really is. For example <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-quote">"ON"</span>!=<span class="code-quote">"on"</span>!=<span class="code-quote">"On"</span>!=1</pre>
+</div></div> etc. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 19, 2015 11:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602249"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>Here are the last boot.log restart messages....<br/>
+I have put a &gt;&gt; at the start of the line referencing the relevant sensor...<br/>
+No parse errors shown.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+INFO 2015-11-18 01:46:55,756 : Initialized event processor : Drools Rule Engine
+INFO 2015-11-18 01:46:55,781 : Initialized event processor : RRD4J Data Logger
+INFO 2015-11-18 01:46:55,781 : Initialized event processor : EmonCMS Data Logger
+INFO 2015-11-18 01:46:55,838 : Registered sensor : Sensor (Name = 'Hue_2_Sensor_Power', ID = '103568792', State Mappings: {<span class="code-keyword">true</span>=on, <span class="code-keyword">false</span>=off})
+INFO 2015-11-18 01:46:55,839 : Registered sensor : Sensor (Name = 'Hue_2_Sensor_Reachable', ID = '103568793', State Mappings: {<span class="code-keyword">false</span>=Unavailable, <span class="code-keyword">true</span>=Available})
+INFO 2015-11-18 01:46:55,840 : Registered sensor : Range Sensor (Name = 'Hue_0_Sensor_Bri', ID = '103568694', Min: 0, Max: 255)
+INFO 2015-11-18 01:46:55,841 : Registered sensor : Range Sensor (Name = 'Hue_Side_Sensor_Bri', ID = '102962225', Min: 0, Max: 255)
+INFO 2015-11-18 01:46:55,842 : Registered sensor : Switch Sensor (Name = 'Sensor_Heating_State', ID = '103568764')
+INFO 2015-11-18 01:46:55,842 : Registered sensor : Sensor (Name = 'Hue_0_Sensor_Power_Custom', ID = '103568696', State Mappings: {<span class="code-keyword">true</span>=on, <span class="code-keyword">false</span>=off})
+INFO 2015-11-18 01:46:55,850 : Registered sensor : Level Sensor (Name = 'Fireplace_Dimmer_LevelSensor', ID = '106629083', Min: 0,Max: 100)
+INFO 2015-11-18 01:46:55,852 : Registered sensor : Sensor (Name = 'Hue_5_Sensor_Power', ID = '103568784', State Mappings: {<span class="code-keyword">true</span>=on, <span class="code-keyword">false</span>=off})
+INFO 2015-11-18 01:46:55,857 : Registered sensor : Sensor (Name = 'Hue_Side_Sensor_Reachable', ID = '102962743', State Mappings: {<span class="code-keyword">false</span>=Unavailable, <span class="code-keyword">true</span>=Available})
+INFO 2015-11-18 01:46:55,857 : Registered sensor : Sensor (Name = 'Hue_0_Sensor_Virtual_Colour', ID = '103568698', State Mappings: {})
+INFO 2015-11-18 01:46:55,858 : Registered sensor : Sensor (Name = 'Hue_Side_Sensor_Power_Custom', ID = '102962742', State Mappings: {<span class="code-keyword">true</span>=on, <span class="code-keyword">false</span>=off})
+&gt;&gt; INFO 2015-11-18 01:46:55,868 : Registered sensor : Switch Sensor (Name = 'Sensor_TV_Power', ID = '107672269')
+INFO 2015-11-18 01:46:55,868 : Registered sensor : Range Sensor (Name = 'Fireplace_Dimmer_SetDimmer', ID = '106629087', Min: 0, Max: 32)
+INFO 2015-11-18 01:46:56,216 : Registered sensor : Sensor (Name = 'Hue_5_Sensor_Reachable', ID = '103568783', State Mappings: {<span class="code-keyword">false</span>=Unavailable, <span class="code-keyword">true</span>=Available})
+INFO 2015-11-18 01:46:56,223 : Registered sensor : Sensor (Name = 'Hue_Side_Sensor_Virtual_Colour', ID = '102962221', State Mappings: {})
+INFO 2015-11-18 01:46:56,232 : Registered sensor : Switch Sensor (Name = 'Sensor_Fireplace_Lights_State', ID = '103568680')
+INFO 2015-11-18 01:46:56,239 : Registered sensor : Switch Sensor (Name = 'Sensor_Fire_State', ID = '103595148')
+INFO 2015-11-18 01:46:56,250 : Startup complete.
+</pre>
+</div></div>
+
+<p>Here is the header of the modeler_rules.drl file :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+<span class="code-keyword">import</span> java.awt.Color;
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+</pre>
+</div></div>
+<p>Full file is 103 lines - relevant sensor related event lines in the OP.<br/>
+I'm using other sensors for Lightwave and those work ok....</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Nov 19, 2015 14:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602250"></a>
+                                    <font class="smallfont"><p>It's an option - but given my boxes HDMI fighting, I'd prefer to sort that separately <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Currently I can't use TV ARC without CEC being on either - but need to find out why the Chromecast is a focus stealer when it's not in the signal instruction path.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Nov 19, 2015 14:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602264"></a>
+                                    <font class="smallfont"><p>Hmmm, even though it's not showing any parse errors, it's definitely looking like something in there.<br/>
+I recreated (entirely) my commands/switch/sensor with new names, and got the same error.</p>
+
+<p>I also noticed my lights (sensor based) were not working.</p>
+
+<p>I removed the new chunk in the rules, lights work.  I moved the chunk, lights work, but still get the original error.</p>
+
+<p>Here is the rules file WITHOUT the new TV bits as posted above.  The two/three line gap is where I removed it from.<br/>
+Any clues?  I can't find a drules parser, but setup Notepad++ for drules and it still looks ok to me....</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+<span class="code-keyword">import</span> java.awt.Color;
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+
+function <span class="code-object">int</span>[] rgb2hue(<span class="code-object">Object</span> param) {
+   <span class="code-object">String</span> value = (<span class="code-object">String</span>) param;
+    <span class="code-object">int</span> r = <span class="code-object">Integer</span>.parseInt(value.substring(0, 2), 16);
+    <span class="code-object">int</span> g = <span class="code-object">Integer</span>.parseInt(value.substring(2, 4), 16);
+    <span class="code-object">int</span> b = <span class="code-object">Integer</span>.parseInt(value.substring(4, 6), 16);
+    <span class="code-object">float</span> hsb[] = Color.RGBtoHSB(r, g, b, <span class="code-keyword">null</span>);
+    <span class="code-object">int</span>[] result = <span class="code-keyword">new</span> <span class="code-object">int</span>[3];
+
+    result[0] = (<span class="code-object">int</span>) (hsb[0] * 65535);
+    result[1] = (<span class="code-object">int</span>) (hsb[1] * 255);
+    result[2] = (<span class="code-object">int</span>) (hsb[2] * 255);
+    <span class="code-keyword">return</span> result;
+}
+
+rule <span class="code-quote">"Hue_0_Colour_Picker"</span>
+when
+  CustomState ( source == <span class="code-quote">"Hue_0_Sensor_Virtual_Colour"</span>, $rgb : value )
+then
+  execute.command(<span class="code-quote">"Hue_0_Set_Hue"</span>, rgb2hue($rgb)[0]);
+  execute.command(<span class="code-quote">"Hue_0_Set_Sat"</span>, rgb2hue($rgb)[1]);
+  execute.command(<span class="code-quote">"Hue_0_Set_Bri"</span>, rgb2hue($rgb)[2]);
+end
+
+rule <span class="code-quote">"Hue_Side_Colour_Picker"</span>
+when
+  CustomState ( source == <span class="code-quote">"Hue_Side_Sensor_Virtual_Colour"</span>, $rgb : value )
+then
+  execute.command(<span class="code-quote">"Hue_Side_Set_Hue"</span>, rgb2hue($rgb)[0]);
+  execute.command(<span class="code-quote">"Hue_Side_Set_Sat"</span>, rgb2hue($rgb)[1]);
+  execute.command(<span class="code-quote">"Hue_Side_Set_Bri"</span>, rgb2hue($rgb)[2]);
+end
+
+
+
+rule <span class="code-quote">"Turn_Fireplace_Lights_On"</span>
+when
+    Switch( source == <span class="code-quote">"Sensor_Fireplace_Lights_State"</span>, value == <span class="code-quote">"on"</span> )
+then
+  execute.command(<span class="code-quote">"Fireplace_Lights_On"</span>);
+end
+
+rule <span class="code-quote">"Turn_Fireplace_Lights_Off"</span>
+when
+    Switch( source == <span class="code-quote">"Sensor_Fireplace_Lights_State"</span>, value == <span class="code-quote">"off"</span> )
+then
+  execute.command(<span class="code-quote">"Fireplace_Lights_Off"</span>);
+end
+
+rule <span class="code-quote">"Turn_Heating_On"</span>
+when
+    Switch( source == <span class="code-quote">"Sensor_Heating_State"</span>, value == <span class="code-quote">"on"</span> )
+then
+  execute.command(<span class="code-quote">"Heating_On"</span>);
+end
+
+rule <span class="code-quote">"Turn_Heating_Off"</span>
+when
+    Switch( source == <span class="code-quote">"Sensor_Heating_State"</span>, value == <span class="code-quote">"off"</span> )
+then
+  execute.command(<span class="code-quote">"Heating_Off"</span>);
+end
+
+rule <span class="code-quote">"Turn_Fire_On"</span>
+when
+    Switch( source == <span class="code-quote">"Sensor_Fire_State"</span>, value == <span class="code-quote">"on"</span> )
+then
+  execute.command(<span class="code-quote">"Fire_On"</span>);
+end
+
+rule <span class="code-quote">"Turn_Fire_Off"</span>
+when
+    Switch( source == <span class="code-quote">"Sensor_Fire_State"</span>, value == <span class="code-quote">"off"</span> )
+then
+  execute.command(<span class="code-quote">"Fire_Off"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Nov 20, 2015 10:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602265"></a>
+                                    <font class="smallfont"><p>Please try replace 'when Switch()' with 'when Event()'. Personally, I never used 'when Switch()' so I cannot be sure that there is no bug there. Also remember, that in some older versions of the controller you must reboot the controller after design syncing. This is particularly true when using rules and command-line execution protocol. I would not be too much surprised if some other parts are broken too. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 20, 2015 10:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602271"></a>
+                                    <font class="smallfont"><p>Will try that later.<br/>
+I'm (still) using OpenRemote-Controller-2.1.0_FM_SNAPSHOT-2013-07-18 as I seem to recall I had problems with Hue in a later build.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Nov 20, 2015 12:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602272"></a>
+                                    <font class="smallfont"><p>I tried CEC again last night and realised I forgot to post something else.</p>
+
+<p>Not only does switching TV to HDMI1 bizarrely switch the Onkyo to the Chromecast input, it also sends a CEC power on to my PS4.  Both are on different Onkyo HDMI ports.  The PS4 then hijacks the input signal - so definitely more bother than required <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Nov 20, 2015 12:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

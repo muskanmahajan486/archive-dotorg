@@ -1,0 +1,354 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : TCP command lock up</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : TCP command lock up
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 07, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Not sure <b>what</b> has happened now.</p>
+
+<p>Had a problem with my network the other day, and restarted everything.<br/>
+Now my PS3 (which is controlled by OR, using TCP, to my A/V receiver using HDMI) now locks up after 5 buttons presses.  Or rather the amp does.</p>
+
+<p>If I send :</p>
+
+<p>0x495343500000001000000009010000002131434456504c41590D</p>
+
+<p>Which translates to "ISCP	!1CDVPLAY" five times, it will lock.<br/>
+If I use Vol+/- or mute in between presses, it is fine.</p>
+
+<p>This implies that randomly, something is not sending CR/LF that it was before.  I'm flummoxed.  Nothing else has changed.  If I power off/on the amp, it works again, for 5 more presses - so OR is still sending, but whatever it sends "now" isn't what it sent yesterday.</p>
+
+<p>No other changes.  Weird...(and no, no f/w upgrades on the amp)</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22880823"></a>
+                                    <font class="smallfont"><p>More curiously, if I use Hercules and send the exact same string AFTER it's stopped responding to OR, the amp responds.  It's like OR has started holding a session open and not releasing something....and the amp restarting kills the session.</p>
+
+<p>Ideas?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Dec 06, 2013 20:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880827"></a>
+                                    <font class="smallfont"><p>Only thing I can think of is I did a save/reload from the Preview designer (which I've always been using) and that's somehow changed the code when syncing?  (local OR server side code hasn't changed)</p>
+
+<p>If I sent a "left" code to my AV Amp (to control a connected via HDMI player) to go "left" using hex</p>
+
+<p>0x4953435000000010000000090100000021314344564c4546540D</p>
+
+<p>It will work for 4-5 pushes.  If I use the exact same string in Hercules (albeit without the 0x) it will respond, even after OR has stopped responding.  OR in "-run" mode shows no errors though.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Dec 06, 2013 22:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880828"></a>
+                                    <font class="smallfont"><p>Ok, it's clearly something sessional that's changed somehow.<br/>
+192.168.1.210 is my NAS/OR server<br/>
+192.168.1.205 is my Onkyo amp.</p>
+
+<p>See what happens via netstat below...</p>
+
+<p>Five Volume presses :</p>
+
+<p>tcp        0      0 192.168.1.210:60495     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60488     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60512     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60492     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60487     192.168.1.205:60128     TIME_WAIT</p>
+
+<p>(these all appear to 'close' a connection ok - hence no issues with volume)</p>
+
+<p>Seven Volume presses :</p>
+
+<p>tcp        0      0 192.168.1.210:60495     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60488     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60553     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60512     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60492     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60487     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60568     192.168.1.205:60128     TIME_WAIT</p>
+
+<p>Same again...but then we add one "left" press :</p>
+
+<p>tcp        0      0 192.168.1.210:60495     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60590     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60488     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60553     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60512     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60492     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60487     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60568     192.168.1.205:60128     TIME_WAIT</p>
+
+<p>Oh look, a stuck open connection!</p>
+
+<p>And another "left" press :</p>
+
+<p>tcp        0      0 192.168.1.210:60495     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60590     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60618     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60553     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60512     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60492     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60568     192.168.1.205:60128     TIME_WAIT</p>
+
+<p>That's two connections stuck.</p>
+
+<p>Then a volume press (this clears the established session) :</p>
+
+<p>tcp        0      0 192.168.1.210:60590     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60645     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60618     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60553     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60512     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60568     192.168.1.205:60128     TIME_WAIT</p>
+
+<p>Then lots of left presses (it jams on 4)</p>
+
+<p>tcp        0      0 192.168.1.210:60590     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60682     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60688     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60674     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60645     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60618     192.168.1.205:60128     TIME_WAIT<br/>
+tcp        0      0 192.168.1.210:60673     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60689     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60685     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60692     192.168.1.205:60128     ESTABLISHED<br/>
+tcp        0      0 192.168.1.210:60670     192.168.1.205:60128     ESTABLISHED</p>
+
+<p>They all get stuck.<br/>
+The reason Hercules keeps working is obviously the amp allows conns from multiple IPs (my laptop in this case) and Hercules shuts the session ok.</p>
+
+<p>So, can anyone see why THIS command doesn't upset it:</p>
+
+<p>0x4953435000000010000000090100000021314d564c55500D<br/>
+(Volume Up)</p>
+
+<p>But this one:</p>
+
+<p>0x4953435000000010000000090100000021314344564c4546540d0a0D<br/>
+(CD via HDMI, Left)</p>
+
+<p>kills it?<br/>
+It's literally just a TCP/IP connection to the Onkyo IP, with that string sent. Nothing else. :\</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Dec 06, 2013 23:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880845"></a>
+                                    <font class="smallfont"><p>Okay, more diags.<br/>
+I ran tcpdump to packet capture the keypresses from OR to A/V (and if you're interested, the Wireshark compatible dump file is at <a href="http://www.tainted.myby.co.uk/comm.pcap">http://www.tainted.myby.co.uk/comm.pcap</a> )</p>
+
+<p>What I'm seeing on Vol+/Vol- and Mute are the following TCP sequences:</p>
+
+<p>SYN (Setup)<br/>
+ACK (Acknowledge Syn)<br/>
+PSH (Send command)<br/>
+ACK (Acknowledge PSH)<br/>
+FIN (Close conn)<br/>
+ACK (Acknowledge FIN)</p>
+
+<p>When I send the following sequence (Vol+,Vol-,Mute,Setup,Setup,Setup,Vol+,Vol-,Mute) I would expect to see 9 iterations of the above. What I actually get is this :</p>
+
+<p>SYN (Setup)<br/>
+ACK (Acknowledge Syn)<br/>
+PSH (Send command)<br/>
+ACK (Acknowledge PSH)<br/>
+FIN (Close conn)<br/>
+ACK (Acknowledge FIN) (1st Set Ok)<br/>
+SYN (Setup)<br/>
+ACK (Acknowledge Syn)<br/>
+PSH (Send command)<br/>
+ACK (Acknowledge PSH)<br/>
+FIN (Close conn)<br/>
+ACK (Acknowledge FIN) (2nd Set Ok)<br/>
+SYN (Setup)<br/>
+ACK (Acknowledge Syn)<br/>
+PSH (Send command)<br/>
+ACK (Acknowledge PSH)<br/>
+FIN (Close conn)<br/>
+ACK (Acknowledge FIN) (3rd Set Ok)<br/>
+&#8211; At this point it all goes wobbly - here comes a SETUP key press &#8211;<br/>
+SYN<br/>
+ACK<br/>
+PSH (Sends setup)<br/>
+SYN (WHERE IS THE ACK?!)<br/>
+ACK (Here is one - but is it the ACK to the PSH, or the ACK to the new SYN?)<br/>
+PSH (Sends setup - but no FIN before it....)<br/>
+SYN (and so on)<br/>
+ACK<br/>
+PSH (Sends setup)<br/>
+SYN<br/>
+ACK<br/>
+PSH (Sends Vol+)<br/>
+SYN<br/>
+ACK<br/>
+PSH (Sends Vol-)<br/>
+ACK <br/>
+FIN (Ahah, a FIN, but no idea which SYN this relates to now!)<br/>
+ACK<br/>
+ACK (two ACKS now?!)<br/>
+FIN (but no idea which SYN this relates to now!)<br/>
+FIN (but no idea which SYN this relates to now!)<br/>
+ACK<br/>
+ACK<br/>
+ACK<br/>
+ACK<br/>
+FIN<br/>
+ACK<br/>
+FIN<br/>
+ACK<br/>
+ACK<br/>
+SYN<br/>
+ACK<br/>
+PSH (Send Mute)<br/>
+ACK<br/>
+FIN<br/>
+ACK</p>
+
+<p>No idea why it's broken.  The only thing I remember doing is loading my panel in Preview designer (which I do due to using ColorWheel) and rather stupidly, saving. I suspect that's changed something, so when I next synced, it's broken the commands.  I've grabbed the latest ORCJAVA-400 build (just in case) and that does the same.</p>
+
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Dec 07, 2013 11:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880846"></a>
+                                    <font class="smallfont"><p>Hi Peter,</p>
+
+<p>The only thing the save in the designer could/would impact is the XML file in your controller directory, and the TCP payload defined there (which you can see in the designer). It wouldn't change how the TCP packets are sent, that's the implementation of the controller. And even in the implementation at the JVM level there's no access to the network layer SYN/ACK behavior so those would never change.</p>
+
+<p>So if the payload itself is still the same, and you haven't changed the controller implementation, the network layer frame management wouldn't change on OR side. The answer to the mystery must be something else.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 07, 2013 11:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880849"></a>
+                                    <font class="smallfont"><p>I think I'm narrowing it down to the A/V receiver, but I'm not sure why.<br/>
+I've just switched modes (manually, with the hard buttons) and fired several Vol+/- at it, and it behaved.</p>
+
+<p>The only thing the "crashing" buttons are doing is sending commands to the A/V which it should send over HDMI, and <b>now</b> it's working again.  I've now got a PCAP with correctly ordered SYN/ACK/PSH/ACK/FIN/ACKs - so I'm rather perplexed to put it mildly....(and going to keep poking it)</p>
+
+<p>(At the very least there may be a note required for Onkyo/Integra amp owners that TCP commands may randomly break for inexplicable reasons...)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Dec 07, 2013 11:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883184"></a>
+                                    <font class="smallfont"><p>Peter, did you ever get this totally figured out? I am having the same problem when sending TCP commands to a Windows 7 PC.  It will lock up after 5 commands and then start working again a minute or two later.  Please let me know what you found as to how I can get my issue resolved...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bbaskety at Jan 21, 2014 17:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883187"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>My finger is pointed firmly at the A/V receiver.</p>
+
+<p>I don't know why, but changing through all the inputs, in sequence, seems to "cure" it.<br/>
+BD/DVD, VCR/DVR, CBL/SAT, GAME, PC, AUX, TUNER, TV/CD, PORT, NET, USB and back to BD/DVD</p>
+
+<p>I suspect changing on/off the NET input resets something.  Even after that it's not "immediate" on SYN/ACK'ing connections, but it stops holding them open.</p>
+
+<p>The amp has a 5 connection limit from any one IP, so if this happens it cripples OpenRemote's ability to control it nicely.</p>
+
+<p>Start/Stopping OpenRemote, disabling/enabling net support, or powering on/off the amp doesn't cure it - just cycling the inputs seems to kick it...</p>
+
+<p>Let me know if it works for you....</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Jan 21, 2014 19:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883195"></a>
+                                    <font class="smallfont"><p>Although saying that now my OR won't turn the PS3 on.  But does everything else in the macro, and will turn it off.  Nothing has changed (except my having left a PS Vita plugged into the PS3 and both being in standby).  Argh!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Jan 21, 2014 20:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883291"></a>
+                                    <font class="smallfont"><p>The above has now been cured.</p>
+
+<p>Seem even though the PS3 was set to allow HDMI control, it needed disabling, powering off, powering on and enabling.  Then it's all started working again.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Jan 24, 2014 09:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

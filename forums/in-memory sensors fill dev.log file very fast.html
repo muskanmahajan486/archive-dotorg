@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : in-memory sensors fill dev.log file very fast</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : in-memory sensors fill dev.log file very fast
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 23, 2013 by <font color="#0050B2">aktur</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I've noticed that adding in-memory sensor produces many entries in dev.log file. About 2 entries per second per sensor. This means that log files fill up very fast and other information is wiped up. Can these entries be suppressed?</p>
+
+<p>Here is example of these entries:</p>
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>2013-05-23 11:45:15,140 TRACE [Polling Sensor Thread ID = 2621626, Name ='V_SECONDS']: Processed ----, received ----
+2013-05-23 11:45:15,161 TRACE [Polling Sensor Thread ID = 2621612, Name ='V_DVD STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:15,269 TRACE [Polling Sensor Thread ID = 2621610, Name ='V_FM STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:15,319 TRACE [Polling Sensor Thread ID = 2621611, Name ='V_ATV STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:15,334 TRACE [Polling Sensor Thread ID = 2621608, Name ='V_TV STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:15,369 TRACE [Polling Sensor Thread ID = 2621589, Name ='VTEMP STATUS']: Processed 17.3 ? / 63.1 ?, received 17.3 ? / 63.1 ?
+2013-05-23 11:45:15,443 TRACE [Polling Sensor Thread ID = 2621609, Name ='V_SAT STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:15,628 TRACE [Polling Sensor Thread ID = 2621591, Name ='V1 STATUS']: Processed SAT, received SAT
+2013-05-23 11:45:15,642 TRACE [Polling Sensor Thread ID = 2621626, Name ='V_SECONDS']: Processed ----, received ----
+2013-05-23 11:45:15,663 TRACE [Polling Sensor Thread ID = 2621612, Name ='V_DVD STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:15,771 TRACE [Polling Sensor Thread ID = 2621610, Name ='V_FM STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:15,821 TRACE [Polling Sensor Thread ID = 2621611, Name ='V_ATV STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:15,836 TRACE [Polling Sensor Thread ID = 2621608, Name ='V_TV STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:15,871 TRACE [Polling Sensor Thread ID = 2621589, Name ='VTEMP STATUS']: Processed 17.3 ? / 63.1 ?, received 17.3 ? / 63.1 ?
+2013-05-23 11:45:15,945 TRACE [Polling Sensor Thread ID = 2621609, Name ='V_SAT STATUS']: Processed OFF, received OFF
+2013-05-23 11:45:16,130 TRACE [Polling Sensor Thread ID = 2621591, Name ='V1 STATUS']: Processed SAT, received SAT
+
+</pre>
+</div></div>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22414778"></a>
+                                    <font class="smallfont"><p>In log4j.properies, add a threshold and set it to DEBUG:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>log4j.appender.file.Threshold=DEBUG
+</pre>
+</div></div>
+
+<p>In the dev.log config section:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>log4j.appender.file = org.apache.log4j.RollingFileAppender
+log4j.appender.file.File = ../logs/dev/dev.log
+log4j.appender.file.MaxFileSize = 500KB
+log4j.appender.file.MaxBackupIndex = 10
+log4j.appender.file.layout = org.apache.log4j.PatternLayout
+log4j.appender.file.layout.ConversionPattern = %d %p [%t]: %m%n
+
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 23, 2013 12:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415053"></a>
+                                    <font class="smallfont"><p>It works till in-memory keeps its bashing low. However, sometimes it starts witch strange warnings:</p>
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>
+2013-05-26 17:44:24,157 WARN [Polling Sensor Thread ID = 2621610, Name ='V_FM STATUS']: Unknown virtual protocol property '&lt;property name = "name" value = "V1 ON"/&gt;'.
+2013-05-26 17:44:25,644 WARN [Polling Sensor Thread ID = 2621610, Name ='V_FM STATUS']: Unknown virtual protocol property '&lt;property name = "name" value = "V1 ON"/&gt;'.
+2013-05-26 17:44:25,646 WARN [Polling Sensor Thread ID = 2621610, Name ='V_FM STATUS']: Unknown virtual protocol property '&lt;property name = "name" value = "V_ATV OFF"/&gt;'.
+2013-05-26 17:44:25,648 WARN [Polling Sensor Thread ID = 2621610, Name ='V_FM STATUS']: Unknown virtual protocol property '&lt;property name = "name" value = "V_DVD OFF"/&gt;'.
+2013-05-26 17:44:25,650 WARN [Polling Sensor Thread ID = 2621610, Name ='V_FM STATUS']: Unknown virtual protocol property '&lt;property name = "name" value = "V_TV OFF"/&gt;'.
+</pre>
+</div></div>
+
+<p>By the way, where I can put in the source these properties that they are preserved during the build?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 26, 2013 16:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415057"></a>
+                                    <font class="smallfont"><p>Thanks, the warning can be ignored, will fix it later.</p>
+
+<p>I don't understand your second question?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 26, 2013 17:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415058"></a>
+                                    <font class="smallfont"><p>oh, you mean in config/log4j.properties?  that file is not overwritten</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 26, 2013 17:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

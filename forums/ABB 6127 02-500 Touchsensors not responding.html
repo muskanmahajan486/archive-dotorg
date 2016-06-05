@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : ABB 6127 02-500 Touchsensors not responding</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : ABB 6127 02-500 Touchsensors not responding
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 22, 2013 by <font color="#0050B2">garfield.arbuckle</font>.
+				    </div>
+
+				    <p>Hey everone,<br/>
+I am experiencing a very annoying issue.<br/>
+My house is full with ABB 6127/02-500 Touchsensors.<br/>
+However lately they have the habbit of going into some sort of sleep mode (they all have the same issue).<br/>
+So what happens is that the Touchsensor looks completely normal, the leds are on and everything looks fine.<br/>
+However when you push one of the buttons nothing happens. When you push the button again the function behind it is executed without any issues.<br/>
+You can now try 100 times more and every time the button will work fine. It just seems like the touchsensor goes into some sort of sleep mode and pushing a button wakes it up again.</p>
+
+<p>The Touchsensor is used together with the 6120/12-101 bus coupler.<br/>
+The Touchsensors have quite some functionality, like storing lightscenes etc. However when the Touchsensor is in this "sleep" mode these lightscenes are also not executed.<br/>
+For instance I have a light sensor which triggers a 0 bit on a group address which needs to be inverted to a 1. I use the inversion functionality in one of my Touchsensor to do this however when the Touchsensor is in "sleep" mode it doesn't execute the inversion.</p>
+
+<p>So I hear you think, what does OR have to do with this.<br/>
+Well, I'm trying to figure out if OR is in any way involved with this.<br/>
+Last week I took OR down for a whole week and I did not have the issue however the issue occurs purely random and not on a daily basis.<br/>
+This week I brought OR back up and I've been experiencing the issue again.<br/>
+If anyone has any idea what this could be please let me know.<br/>
+I honestly have no idea how to troubleshoot this one, so any tips in that department would be very helpful too.<br/>
+Thanks guys<br/>
+Stijn</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22878645/23036214.png">Screen Shot 2013-11-02 at 00.56.38.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22878648"></a>
+                                    <font class="smallfont"><p>But if you have no problems when OR is down then why putting it on at all? I think that I'm missing here something.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 22, 2013 16:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878692"></a>
+                                    <font class="smallfont"><p>Hey Michal,<br/>
+When OR is off I don't have any visualization.<br/>
+I use OR as the glue between all the interactive bits and pieces within my home.<br/>
+So turning off OR is not really an option.<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Oct 22, 2013 23:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878712"></a>
+                                    <font class="smallfont"><p>At OR startup we sent a host of group read requests to every device to fetch their initial state so we can display the correct values in the UI. This is the only thing I can imagine could somehow impact your actuators. But this is just a normal read request. After that we are not interested in communicating with your actuators unless you send a command to them. We are simply listening to the data indications your devices are sending to the KNX bus.</p>
+
+<p>Number of commands sent to KNX bus depends on your configuration. Press buttons on the panels but also your rules.</p>
+
+<p>The only slightly suspect part of the initial state fetch is that it's done in a burst immediately at start. The larger the install the bigger the burst.</p>
+
+<p>Do you still get the same behavior if your running OR without any of your own rules? To rule out the impact of rules.</p>
+
+<p>With regards to the burst behavior at startup, we could have some configuration options to throttle it. Anything that throttles it however increases the delay that your panel UI may be out of sync with the actuator state. This option is something we can try if nothing else seems to solve it but it requires code changes so it's not something you can try immediately right now, and I don't yet know when I will have a chance to investigate implementing such a patch.</p>
+
+<p>Also, what kind of datapoint type do your touch sensors use?</p>
+
+<p>Best regards,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 23, 2013 09:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878713"></a>
+                                    <font class="smallfont"><p>Hey Juha,<br/>
+It are not the actuators(dimmers or switchers) which are having the issue but the touchsensors, so the buttons on the wall.<br/>
+It's all brand new ABB equipment so it should be able to handle the read requests at startup.<br/>
+I also can't find any correlation between starting OR and the issue, so it's not like when I start OR that I will immediately see the problem.<br/>
+If OR generates a lot of traffic at the start of OR I would see the issue immediately.<br/>
+In addition to this OR would poll the actuators for their state and not the touchsensors. Having said this I have no foolproof evidence that the actuators are not involved however I'm quite sure they are because of the following reason:</p>
+
+<p>Lightsensor Detects Day/Night ---------&gt; Touchsensor with internal programming to trigger lightscene --------&gt; Lightscene triggers switch actuator and blind actuator.</p>
+
+<p>When the touchsensor goes into "sleep" mode the lightscene is not triggered so both the lights haven't turned on nor have the blinds moved. If the issue would for instance be in the switch actuator the lights would not have gone on but the blinds would have moved. So that's the reason why I believe the issue is in the touchsensors.</p>
+
+<p>I will try your suggestion of removing my rules from OR and let you know.</p>
+
+<p>The touchsensors can use several types of datapoints. Most of them are just 1 bit on and off or 1 byte dimming. Some of them use a 1 byte.</p>
+
+<p>Cheers and thanks<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Oct 23, 2013 10:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879197"></a>
+                                    <font class="smallfont"><p>Hello Stijz,</p>
+
+<p>Just two quick questions,</p>
+
+<p>1. how do you use your wall switches, is it let say Right for ON and Left for OFF so each 4 gang switch controls 4 light circuits or do you use them as toggle thus having 8 functions for a 4 gang switch??</p>
+
+<p>2. Do these switches have a separate object to update their led indicator status ??</p>
+
+<p>Kind Regards,</p>
+
+<p>Stavros</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Nov 01, 2013 16:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879211"></a>
+                                    <font class="smallfont"><p>Hey Stavros,</p>
+
+<p>1) Right ON, Left OFF so indeed 4 gang switch controls 4 light circuits.<br/>
+2) Yes they have.</p>
+
+<p>Cheers<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Nov 02, 2013 00:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879212"></a>
+                                    <font class="smallfont"><p>Hey everyone,<br/>
+I've had a bit of time today to do some more investigation and I found the following.<br/>
+When the touchsensor has crashed (is in sleep mode) and I push the button it does send out a frame on the bus when I push it. However it sends out a bad frame according to ETS.</p>
+
+<p><a class="confluence-thumbnail-link 1177x133" href='http://www.openremote.org/download/attachments/22878645/Screen Shot 2013-11-02 at 00.56.38.png'><img src="attachments/thumbnails/22878645/23036214" align="absmiddle" border="0"/></a></p>
+
+
+<p>When one button has been pushed and this bad frame has been sent, another push and all consecutive pushes will work just fine.<br/>
+Anyone any idea, anyone seen this before?<br/>
+Thanks<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Nov 02, 2013 00:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879375"></a>
+                                    <font class="smallfont"><p>Well, at 10 bytes those are partial frames for sure. It looks like it might be an end of a CEMI frame with some data bytes going out to seven separate group address destinations from source address 0/7/3 but that's a pretty much just a random guess, it could be anything really.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 04, 2013 15:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879616"></a>
+                                    <font class="smallfont"><p>Hey everyone,<br/>
+Ended up being a software bug.<br/>
+The good people of ABB came by to upgrade the buscouplers and it should be fixed now.<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Nov 08, 2013 14:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:40</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

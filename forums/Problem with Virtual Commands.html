@@ -1,0 +1,729 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Problem with Virtual Commands</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Problem with Virtual Commands
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 02, 2012 by <font color="#0050B2">mbarne36</font>.
+				    </div>
+
+				    <p>Hi all.</p>
+
+<p>Another impass for me i'm afraid.</p>
+
+<p>I have now set up a panel that listens to incoming UDP data from a Raspberry Pi and shows status of various conditions on switches and in Label text.</p>
+
+<p>I use Marcus's UDPListener to receive string of data, and various different sensors with different Regex filters to pick out the different command items (for a Security Alarm, so it picks "Zone1:&lt;on|off&gt;" and so on from the UDP packet.</p>
+
+<p>All works find for the first Switch, which is tied to a Sensor with Virtual Commands. The Virtual Command is set to be triggered by Rules.</p>
+
+<p>I have the first "zone" (switch) all working fine.</p>
+
+<p>When I extend my code to have a second zone, despite having all separate Sensors and Commands, and a separate Regex ("Zone2:&lt;on|off&gt;"), I see that both the Zone1 and the Zone2 switches toggle their state at the same time - always.</p>
+
+<p>After some (ok, lots) of digging around, I found it was because my Virtual COmmands were both using the same "Address" field as "Dummy". So I thought to myself, ok, change the Zone2 Virtual Command to use a different address and stop the two being tied together.</p>
+
+<p>But....</p>
+
+<p>When I change the Address to anything other than "Dummy", OR crashes spectacularly. There are no logs in catalina.out to explain why. It is 100% repeatable... if I change that single address back to "Dummy" then the two switches are tied together and no crash. If I change the Address to anything (and I mean anything) else, OR won't even start..</p>
+
+<p>So... what is the Address? and How can I have several of them as unique items?</p>
+
+<p>thanks in advance.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/21038013/21135423.png">ORPanel800.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21038025"></a>
+                                    <font class="smallfont"><p>You can use different "addresses" for virtual switches. That should not be a problem. I use those myself.<br/>
+There must be something else going wrong. Are there any other logs which might show a problem (dev/dev.log maybe?)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 03, 2012 08:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038054"></a>
+                                    <font class="smallfont"><p>Hi Marcus</p>
+
+<p>I investigated further tonight. There are definitely no logs being left behind after the spectacular crashing. However, it did get me thinking that perhaps the crash is on the Android Panel and not on the Controller (after all the failure mode is the Panel crashing out with a "Openremote has Stopped" error.</p>
+
+<p>So I ran CatLog on the Panel and the (Openremote filtered) output is as follows;</p>
+
+<p>(any ideas gratefully received - this definitely only occurs when I use two Virtual Commands with Different Addresses).</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">12-02 17:53:16.659 I/ActivityManager(146): START {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=org.openremote.android.console/.Main bnds=[34,148][130,244]} from pid 342
+12-02 17:53:16.989 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.Main: pid=942 uid=10040 gids={3003}
+12-02 17:53:19.329 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 942
+12-02 17:53:19.529 E/AndroidRuntime(942): 	at org.openremote.android.console.model.PollingStatusParser.parse(PollingStatusParser.java:64)
+12-02 17:53:19.529 E/AndroidRuntime(942): 	at org.openremote.android.console.model.PollingHelper.handleRequest(PollingHelper.java:168)
+12-02 17:53:19.529 E/AndroidRuntime(942): 	at org.openremote.android.console.model.PollingHelper.requestCurrentStatusAndStartPolling(PollingHelper.java:139)
+12-02 17:53:19.529 E/AndroidRuntime(942): 	at org.openremote.android.console.view.ScreenView$1.run(ScreenView.java:139)
+12-02 17:53:19.529 W/ActivityManager(146):   Force finishing activity org.openremote.android.console/.GroupActivity
+12-02 17:53:22.099 I/ActivityManager(146): <span class="code-object">Process</span> org.openremote.android.console (pid 942) has died.
+12-02 17:55:13.859 I/ActivityManager(146): START {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=org.openremote.android.console/.Main bnds=[34,148][130,244]} from pid 342
+12-02 17:55:14.079 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.Main: pid=969 uid=10040 gids={3003}
+12-02 17:55:15.779 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 969
+12-02 18:03:14.609 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 969
+12-02 18:03:17.789 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 969
+12-02 18:03:18.009 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 969
+12-02 18:03:19.789 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 969
+12-02 18:03:19.979 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 969
+12-02 18:03:21.259 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 969
+12-02 18:14:51.444 E/AndroidRuntime(969): 	at org.openremote.android.console.net.ORControllerServerSwitcher.detectGroupMembers(ORControllerServerSwitcher.java:130)
+12-02 18:14:51.444 E/AndroidRuntime(969): 	at org.openremote.android.console.net.ORControllerServerSwitcher.doSwitch(ORControllerServerSwitcher.java:288)
+12-02 18:14:51.444 E/AndroidRuntime(969): 	at org.openremote.android.console.model.PollingHelper$1.handleMessage(PollingHelper.java:104)
+12-02 18:14:51.444 W/ActivityManager(146):   Force finishing activity org.openremote.android.console/.GroupActivity
+12-02 18:14:52.174 W/ActivityManager(146): Activity pause timeout <span class="code-keyword">for</span> ActivityRecord{4137f3e0 org.openremote.android.console/.GroupActivity}
+12-02 18:14:53.844 I/ActivityManager(146): <span class="code-object">Process</span> org.openremote.android.console (pid 969) has died.
+12-02 18:14:53.854 I/WindowManager(146): WIN DEATH: Window{412b30a0 org.openremote.android.console/org.openremote.android.console.GroupActivity paused=<span class="code-keyword">false</span>}
+12-02 18:14:53.854 I/WindowManager(146): WINDOW DIED Window{412b30a0 org.openremote.android.console/org.openremote.android.console.GroupActivity paused=<span class="code-keyword">false</span>}
+12-02 18:14:56.104 I/ActivityManager(146): START {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=org.openremote.android.console/.Main bnds=[34,148][130,244]} from pid 342
+12-02 18:14:56.264 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.Main: pid=1094 uid=10040 gids={3003}
+12-02 18:14:57.194 I/ActivityManager(146): START {dat=Current panel identity isn't available. Please rechoose in Settings. cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:15:01.104 I/ActivityManager(146): START {cmp=org.openremote.android.console/.AppSettingsActivity} from pid 1094
+12-02 18:15:03.064 W/ActivityManager(146): Activity destroy timeout <span class="code-keyword">for</span> ActivityRecord{4137f3e0 org.openremote.android.console/.GroupActivity}
+12-02 18:15:06.014 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:15:07.284 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:16:40.144 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:16:42.314 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:16:43.624 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:16:46.764 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:16:46.944 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:16:48.514 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:23:08.274 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:23:10.234 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:23:10.494 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:23:12.584 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:23:13.054 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:23:15.394 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:24:18.154 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:24:21.394 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:24:21.614 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:24:23.814 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:24:24.114 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:24:25.484 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:29:40.224 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:29:43.514 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:29:43.744 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:29:46.314 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:29:46.524 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:29:47.894 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:32:49.834 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:32:53.564 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:32:53.784 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:32:55.984 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:36:15.364 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:36:19.434 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:36:19.654 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:36:21.834 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:37:30.094 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:37:32.634 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:37:32.874 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:37:35.204 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:37:35.494 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1094
+12-02 18:37:37.864 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1094
+12-02 18:37:38.124 E/AndroidRuntime(1094): 	at org.openremote.android.console.model.PollingStatusParser.parse(PollingStatusParser.java:64)
+12-02 18:37:38.124 E/AndroidRuntime(1094): 	at org.openremote.android.console.model.PollingHelper.handleRequest(PollingHelper.java:168)
+12-02 18:37:38.124 E/AndroidRuntime(1094): 	at org.openremote.android.console.model.PollingHelper.requestCurrentStatusAndStartPolling(PollingHelper.java:139)
+12-02 18:37:38.124 E/AndroidRuntime(1094): 	at org.openremote.android.console.view.ScreenView$1.run(ScreenView.java:139)
+12-02 18:37:38.154 W/ActivityManager(146):   Force finishing activity org.openremote.android.console/.GroupActivity
+12-02 18:38:16.584 I/ActivityManager(146): <span class="code-object">Process</span> org.openremote.android.console (pid 1094) has died.
+12-02 18:38:18.574 I/ActivityManager(146): START {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=org.openremote.android.console/.Main bnds=[34,148][130,244]} from pid 342
+12-02 18:38:18.704 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.Main: pid=1231 uid=10040 gids={3003}
+12-02 18:38:20.674 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1231
+12-02 18:39:12.113 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1231
+12-02 18:39:15.613 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1231
+12-02 18:39:15.813 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1231
+12-02 18:39:18.023 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1231
+12-02 18:39:18.393 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1231
+12-02 18:39:19.843 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1231
+12-02 18:39:20.033 E/AndroidRuntime(1231): 	at org.openremote.android.console.model.PollingStatusParser.parse(PollingStatusParser.java:64)
+12-02 18:39:20.033 E/AndroidRuntime(1231): 	at org.openremote.android.console.model.PollingHelper.handleRequest(PollingHelper.java:168)
+12-02 18:39:20.033 E/AndroidRuntime(1231): 	at org.openremote.android.console.model.PollingHelper.requestCurrentStatusAndStartPolling(PollingHelper.java:139)
+12-02 18:39:20.033 E/AndroidRuntime(1231): 	at org.openremote.android.console.view.ScreenView$1.run(ScreenView.java:139)
+12-02 18:39:20.043 W/ActivityManager(146):   Force finishing activity org.openremote.android.console/.GroupActivity
+12-02 18:39:23.193 I/ActivityManager(146): <span class="code-object">Process</span> org.openremote.android.console (pid 1231) has died.
+12-02 18:40:20.833 I/ActivityManager(146): START {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=org.openremote.android.console/.Main bnds=[34,148][130,244]} from pid 342
+12-02 18:40:20.923 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.Main: pid=1265 uid=10040 gids={3003}
+12-02 18:40:22.943 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1265
+12-02 18:50:49.133 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1265
+12-02 18:50:51.443 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1265
+12-02 18:50:51.803 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1265
+12-02 18:50:54.513 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1265
+12-02 18:50:54.833 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1265
+12-02 18:50:56.883 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1265
+12-02 18:50:57.333 E/AndroidRuntime(1265): 	at org.openremote.android.console.model.PollingStatusParser.parse(PollingStatusParser.java:64)
+12-02 18:50:57.333 E/AndroidRuntime(1265): 	at org.openremote.android.console.model.PollingHelper.handleRequest(PollingHelper.java:168)
+12-02 18:50:57.333 E/AndroidRuntime(1265): 	at org.openremote.android.console.model.PollingHelper.requestCurrentStatusAndStartPolling(PollingHelper.java:139)
+12-02 18:50:57.333 E/AndroidRuntime(1265): 	at org.openremote.android.console.view.ScreenView$1.run(ScreenView.java:139)
+12-02 18:50:57.383 W/ActivityManager(146):   Force finishing activity org.openremote.android.console/.GroupActivity
+12-02 18:52:04.243 I/ActivityManager(146): <span class="code-object">Process</span> org.openremote.android.console (pid 1265) has died.
+12-02 18:52:22.683 I/ActivityManager(146): START {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=org.openremote.android.console/.Main bnds=[34,148][130,244]} from pid 342
+12-02 18:52:22.783 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.Main: pid=1331 uid=10040 gids={3003}
+12-02 18:52:24.813 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1331
+12-02 18:59:47.953 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1331
+12-02 18:59:52.803 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1331
+12-02 18:59:53.093 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1331
+12-02 18:59:54.493 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1331
+12-02 18:59:54.753 E/AndroidRuntime(1331): 	at org.openremote.android.console.model.PollingStatusParser.parse(PollingStatusParser.java:64)
+12-02 18:59:54.753 E/AndroidRuntime(1331): 	at org.openremote.android.console.model.PollingHelper.handleRequest(PollingHelper.java:168)
+12-02 18:59:54.753 E/AndroidRuntime(1331): 	at org.openremote.android.console.model.PollingHelper.requestCurrentStatusAndStartPolling(PollingHelper.java:139)
+12-02 18:59:54.753 E/AndroidRuntime(1331): 	at org.openremote.android.console.view.ScreenView$1.run(ScreenView.java:139)
+12-02 18:59:54.763 W/ActivityManager(146):   Force finishing activity org.openremote.android.console/.GroupActivity
+12-02 19:00:35.013 I/ActivityManager(146): <span class="code-object">Process</span> org.openremote.android.console (pid 1331) has died.
+12-02 19:00:38.893 I/ActivityManager(146): START {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=org.openremote.android.console/.Main bnds=[34,148][130,244]} from pid 342
+12-02 19:00:39.093 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.Main: pid=1365 uid=10040 gids={3003}
+12-02 19:00:41.083 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1365
+12-02 19:14:18.312 I/ActivityManager(146): START {cmp=org.openremote.android.console/.AppSettingsActivity} from pid 1365
+12-02 19:14:29.602 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1365
+12-02 19:14:41.062 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1365
+12-03 19:47:53.936 W/ActivityManager(146): Activity pause timeout <span class="code-keyword">for</span> ActivityRecord{41396ab8 org.openremote.android.console/.GroupActivity}
+12-03 20:22:30.236 I/ActivityManager(146): START {cmp=org.openremote.android.console/.AppSettingsActivity} from pid 1365
+12-03 20:22:30.696 I/OpenRemote-AUTO DISCOVER(1365): auto discovery on 224.0.1.100:3333
+12-03 20:22:30.826 I/OpenRemote/IPAutoDiscoveryServer(1365): auto discovery result: [http:<span class="code-comment">//192.168.1.150:8080/controller]
+</span>12-03 20:22:30.846 I/OpenRemote/IPAutoDiscoveryServer(1365): auto discovery result: [http:<span class="code-comment">//192.168.1.150:8080/controller, http://192.168.1.77:8080/controller]
+</span>12-03 20:22:30.856 I/ActivityManager(146): Displayed org.openremote.android.console/.AppSettingsActivity: +541ms
+12-03 20:22:30.986 I/OpenRemote/AsyncPanelListReader(1365): received the following panel names from the controller: [panel1]
+12-03 20:22:31.846 I/OpenRemote/IPAutoDiscoveryServer(1365): SocketTimeoutException in doInBackground()
+12-03 20:22:32.376 I/OpenRemote/AsyncPanelListReader(1365): received the following panel names from the controller: [MyXoom, MyIPhone, Tabtronics]
+12-03 20:22:37.176 I/OpenRemote/AsyncPanelListReader(1365): received the following panel names from the controller: [panel1]
+12-03 20:22:39.736 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 1365
+12-03 20:22:39.906 I/OpenRemote-toSetting(1365): http:<span class="code-comment">//192.168.1.77:8080/controller,panel1
+</span>12-03 20:22:39.906 I/OpenRemote/DOWNLOAD(1365): Getting panel: panel1
+12-03 20:22:39.906 D/OpenRemote/Settings(1365): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:22:39.916 D/OpenRemote/WiFi(1365): controllerURL: http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:22:39.916 D/OpenRemote/Settings(1365): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:22:40.006 I/ActivityManager(146): Displayed org.openremote.android.console/.Main: +231ms
+12-03 20:22:40.056 D/OpenRemote/WiFi(1365): HTTP Response: org.apache.http.message.BasicHttpResponse@429b1f90
+12-03 20:22:40.056 D/OpenRemote/Settings(1365): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:22:40.056 I/OpenRemote/WiFi(1365): Getting panel URL http:<span class="code-comment">//192.168.1.77:8080/controller/<span class="code-keyword">rest</span>/panel/panel1
+</span>12-03 20:22:41.346 I/OpenRemote/DOWNLOAD(1365): Download file panel.xml successfully.
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): VolumeButtonsUp50x501321806808923.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): X10Active1333995034047.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): maylandmicros150x401326803340958.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourceradio1320699088547.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): VolumeButtonsUp50x501321099674277.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): navcolorgreena1321812059174.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): Button050x501325086545875.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): X10Inactive1320864941151.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourceskya1333696945051.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): arrowright75x1651321107161083.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): HomeActive.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): LanguageOn1321811454863.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): Button950x501325087065565.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcedvda1333696881392.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcedvda1320698968236.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): BottomButtonExit1333974943472.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): Lightbulbicon100x100.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): vbar1320865526005.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): vbar1320865346064.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): CentreButtonOn75x75inactive1321106774272.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): Lounge.jpeg is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcesky1320871995890.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): LanguageOn1321813249583.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcedvd1320698985183.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): okround100x1001321107187762.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): pause.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): navcolorbluea1321811903055.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): DVDFFwd50x50inactive1321106826792.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): arrowupa165x751321096827754.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): VolumeButtonsMute50x501321806616783.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): MicLevelIndicatorFull1321806704523.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): X10Inactive1336326973170.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): Kitchen.1.jpeg is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): DVDRew50x50inactive1321106760187.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): DVDStop75x751321099160638.png is already in cache
+12-03 20:22:41.376 I/OpenRemote-SKIP IMAGE(1365): arrowdowna1319647859148.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): DVDNext50x501321100698304.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): LanguageOn1321806130135.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): Button850x501325087052231.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcetv1320871924780.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): diningroom.jpg is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): okrounda100x1001321097156369.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): VolumeButtonsMute50x501321100409955.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): CentreButtonOn75x751321100024568.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): DVDPlay75x75inactive1321106815829.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcedvd1321110556757.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): DVDPrevious50x50inactive1321106746842.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcetv1321731787308.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): BottomButtonSettings1326803082083.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): Button250x501325086958763.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): full75x75inactive1321106636629.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): VolumeButtonsDown50x501321806873056.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): DVDNext50x50inactive1321106839085.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): DVDFFwd50x501321100681234.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourceradio1320872030058.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): MicLevelIndicatorFull1321104625887.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourceipoda1321785736426.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): DVDRew50x501321100714508.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourceipod1321786966127.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): DVDPause75x75inactive1321106788995.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): arrowleft75x1651321107134653.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): arrowupa1319647842791.png is already in cache
+12-03 20:22:41.386 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcedvd1333994917987.png is already in cache
+12-03 20:22:41.416 I/OpenRemote-SKIP IMAGE(1365): Lightbulbicon50x50.png is already in cache
+12-03 20:22:41.426 I/OpenRemote-SKIP IMAGE(1365): LanguageOn1321813112882.png is already in cache
+12-03 20:22:41.426 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourceradio1321785719615.png is already in cache
+12-03 20:22:41.426 I/OpenRemote-SKIP IMAGE(1365): DVDPause75x751321099175642.png is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): Button650x501325087016492.png is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): X10Inactive1320872077056.png is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): Study.jpeg is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): Conservatory.jpeg is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): LanguageOn1321806189395.png is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): conservatory.jpg is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): arrowup165x751321107148903.png is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): Button750x501325087030187.png is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): X10Active1333975333793.png is already in cache
+12-03 20:22:41.436 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcetva.1.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): bulb100x100.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): DVDPlay75x751321099135189.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): back21320872262415.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): index.jpg is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): Button450x501325086984836.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): LanguageOn1321806343355.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcesky1336399032689.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): VolumeButtonsDown50x501321099694776.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): arrowrighta75x1651321096657329.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): arrowdown165x751321107174274.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): infrared.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): Bedroom.jpeg is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): Button550x501325087002041.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): VolumeButtonsMute50x501336838118844.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourceradioa1321110612202.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): Kitchen2.jpeg is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): HomeCinema.jpeg is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): Button150x501325086943182.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): DVDPrevious50x501321100728990.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): Mediaportal150x1501321109356725.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): navcoloryellowa1321812173950.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): DiningRoom.jpeg is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): Study.jpg is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): arrowdowna165x751321096843988.png is already in cache
+12-03 20:22:41.446 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourceipod1321785751878.png is already in cache
+12-03 20:22:41.466 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcetv1333990541109.png is already in cache
+12-03 20:22:41.466 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcetv1320694602390.png is already in cache
+12-03 20:22:41.466 I/OpenRemote-SKIP IMAGE(1365): back1321812807051.png is already in cache
+12-03 20:22:41.466 I/OpenRemote-SKIP IMAGE(1365): bulb50x50.png is already in cache
+12-03 20:22:41.466 I/OpenRemote-SKIP IMAGE(1365): harmony110082X110TVGuide1321791070255.jpg is already in cache
+12-03 20:22:41.466 I/OpenRemote-SKIP IMAGE(1365): arrowlefta75x1651321096856688.png is already in cache
+12-03 20:22:41.466 I/OpenRemote-SKIP IMAGE(1365): squeezebox250x1801323786965108.png is already in cache
+12-03 20:22:41.466 I/OpenRemote-SKIP IMAGE(1365): Button350x501325086972374.png is already in cache
+12-03 20:22:41.476 I/OpenRemote-SKIP IMAGE(1365): MicLevelIndicatorFull1321104484705.png is already in cache
+12-03 20:22:41.476 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcetva.2.png is already in cache
+12-03 20:22:41.476 I/OpenRemote-SKIP IMAGE(1365): navcolorreda1321811846581.png is already in cache
+12-03 20:22:41.476 I/OpenRemote-SKIP IMAGE(1365): VolumeButtonsDown50x501321100352589.png is already in cache
+12-03 20:22:41.476 I/OpenRemote-SKIP IMAGE(1365): DVDStop75x75inactive1321106802163.png is already in cache
+12-03 20:22:41.476 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcesky.png is already in cache
+12-03 20:22:41.476 I/OpenRemote-SKIP IMAGE(1365): VolumeButtonsUp50x501321100328784.png is already in cache
+12-03 20:22:41.476 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourceipod1321786984399.png is already in cache
+12-03 20:22:41.476 I/OpenRemote-SKIP IMAGE(1365): tn100tn7575sourcesky1320694709762.png is already in cache
+12-03 20:22:41.486 I/OpenRemote/Failover(1365): Detecting group members with current controller server URL http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:22:41.486 D/OpenRemote/Settings(1365): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:22:41.496 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 1365
+12-03 20:22:41.706 I/OpenRemote-ORIENTATION(1365): onCreate:0
+12-03 20:22:41.736 D/OpenRemote/Settings(1365): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:22:41.746 I/OpenRemote/POLLING(1365): http:<span class="code-comment">//192.168.1.77:8080/controller/<span class="code-keyword">rest</span>/status/1120193,1120190,1120194,1119589,1120195,1120196
+</span>12-03 20:22:41.776 I/OpenRemote/POLLING(1365): set 1120193 to <span class="code-keyword">new</span> status: N/A
+12-03 20:22:41.776 I/OpenRemote/POLLING(1365): set 1120194 to <span class="code-keyword">new</span> status: N/A
+12-03 20:22:41.776 E/AndroidRuntime(1365): 	at org.openremote.android.console.model.PollingStatusParser.parse(PollingStatusParser.java:64)
+12-03 20:22:41.776 E/AndroidRuntime(1365): 	at org.openremote.android.console.model.PollingHelper.handleRequest(PollingHelper.java:168)
+12-03 20:22:41.776 E/AndroidRuntime(1365): 	at org.openremote.android.console.model.PollingHelper.requestCurrentStatusAndStartPolling(PollingHelper.java:139)
+12-03 20:22:41.776 E/AndroidRuntime(1365): 	at org.openremote.android.console.view.ScreenView$1.run(ScreenView.java:139)
+12-03 20:22:41.776 W/ActivityManager(146):   Force finishing activity org.openremote.android.console/.GroupActivity
+12-03 20:22:41.926 I/ActivityManager(146): Displayed org.openremote.android.console/.GroupActivity: +275ms
+12-03 20:22:41.936 I/OpenRemote/POLLING(1365): polling [1120193,1120190,1120194,1119589,1120195,1120196] canceled
+12-03 20:22:42.076 I/OpenRemote-ORIENTATION(1365): onCreate:0
+12-03 20:22:42.126 D/OpenRemote/Settings(1365): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:22:42.146 I/OpenRemote/POLLING(1365): http:<span class="code-comment">//192.168.1.77:8080/controller/<span class="code-keyword">rest</span>/status/1120193,1120190,1120194,1119589,1120195,1120196
+</span>12-03 20:22:42.146 I/OpenRemote/Failover(1365): Detected group members. Group members are [http:<span class="code-comment">//192.168.1.77:8080/controller, http://192.168.1.150:8080/controller]
+</span>12-03 20:22:42.176 I/OpenRemote/POLLING(1365): set 1120193 to <span class="code-keyword">new</span> status: N/A
+12-03 20:22:42.176 I/OpenRemote/POLLING(1365): set 1120194 to <span class="code-keyword">new</span> status: N/A
+12-03 20:22:42.206 I/WindowManager(146): WIN DEATH: Window{41329210 org.openremote.android.console/org.openremote.android.console.GroupActivity paused=<span class="code-keyword">false</span>}
+12-03 20:22:42.206 I/ActivityManager(146): <span class="code-object">Process</span> org.openremote.android.console (pid 1365) has died.
+12-03 20:22:42.216 W/ActivityManager(146): Force removing ActivityRecord{41396ab8 org.openremote.android.console/.GroupActivity}: app died, no saved state
+12-03 20:22:42.216 I/WindowManager(146): WIN DEATH: Window{41378f30 org.openremote.android.console/org.openremote.android.console.Main paused=<span class="code-keyword">false</span>}
+12-03 20:22:42.226 I/WindowManager(146): WIN DEATH: Window{4137df10 org.openremote.android.console/org.openremote.android.console.GroupActivity paused=<span class="code-keyword">false</span>}
+12-03 20:22:42.306 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.GroupActivity: pid=2323 uid=10040 gids={3003}
+12-03 20:22:42.416 I/OpenRemote-ORIENTATION(2323): onCreate:0
+12-03 20:22:42.526 I/ActivityManager(146): Displayed org.openremote.android.console/.GroupActivity: +310ms (total +590ms)
+12-03 20:28:25.976 I/ActivityManager(146): No longer want org.openremote.android.console (pid 2323): hidden #16
+12-03 20:30:00.026 I/ActivityManager(146): START {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=org.openremote.android.console/.Main bnds=[34,148][130,244]} from pid 342
+12-03 20:30:00.166 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.GroupActivity: pid=2971 uid=10040 gids={3003}
+12-03 20:30:00.426 I/OpenRemote-ORIENTATION(2971): onCreate:0
+12-03 20:30:00.746 I/ActivityManager(146): Displayed org.openremote.android.console/.GroupActivity: +651ms
+12-03 20:30:18.316 I/ActivityManager(146): START {cmp=org.openremote.android.console/.AppSettingsActivity} from pid 2971
+12-03 20:30:18.636 I/OpenRemote-AUTO DISCOVER(2971): auto discovery on 10.0.2.2:3333
+12-03 20:30:18.816 I/ActivityManager(146): Displayed org.openremote.android.console/.AppSettingsActivity: +467ms
+12-03 20:30:18.936 I/OpenRemote/AsyncPanelListReader(2971): received the following panel names from the controller: [panel1]
+12-03 20:30:19.636 I/OpenRemote/IPAutoDiscoveryServer(2971): SocketTimeoutException in doInBackground()
+12-03 20:30:19.826 I/OpenRemote/AsyncPanelListReader(2971): received the following panel names from the controller: [panel1]
+12-03 20:30:33.816 I/OpenRemote/AsyncPanelListReader(2971): received the following panel names from the controller: [panel1]
+12-03 20:30:35.316 I/ActivityManager(146): START {cmp=org.openremote.android.console/.Main} from pid 2971
+12-03 20:30:35.546 I/OpenRemote-toSetting(2971): http:<span class="code-comment">//192.168.1.77:8080/controller,panel1
+</span>12-03 20:30:35.556 I/OpenRemote/DOWNLOAD(2971): Getting panel: panel1
+12-03 20:30:35.556 D/OpenRemote/Settings(2971): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:30:35.556 D/OpenRemote/WiFi(2971): controllerURL: http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:30:35.556 D/OpenRemote/Settings(2971): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:30:35.636 I/ActivityManager(146): Displayed org.openremote.android.console/.Main: +286ms
+12-03 20:30:35.696 D/OpenRemote/WiFi(2971): HTTP Response: org.apache.http.message.BasicHttpResponse@410c0d38
+12-03 20:30:35.696 D/OpenRemote/Settings(2971): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:30:35.696 I/OpenRemote/WiFi(2971): Getting panel URL http:<span class="code-comment">//192.168.1.77:8080/controller/<span class="code-keyword">rest</span>/panel/panel1
+</span>12-03 20:30:37.206 I/OpenRemote/DOWNLOAD(2971): Download file panel.xml successfully.
+12-03 20:30:37.356 I/OpenRemote-SKIP IMAGE(2971): pause.png is already in cache
+12-03 20:30:37.366 I/OpenRemote-SKIP IMAGE(2971): infrared.png is already in cache
+12-03 20:30:37.366 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 2971
+12-03 20:30:37.376 I/OpenRemote/Failover(2971): Detecting group members with current controller server URL http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:30:37.396 D/OpenRemote/Settings(2971): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:30:37.416 I/OpenRemote-ORIENTATION(2971): onCreate:0
+12-03 20:30:37.606 D/OpenRemote/Settings(2971): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:30:37.626 I/OpenRemote/POLLING(2971): http:<span class="code-comment">//192.168.1.77:8080/controller/<span class="code-keyword">rest</span>/status/1120193,1120190,1120194,1119589,1120195,1120196
+</span>12-03 20:30:37.706 I/ActivityManager(146): Displayed org.openremote.android.console/.GroupActivity: +304ms
+12-03 20:30:37.726 I/OpenRemote/POLLING(2971): set 1120193 to <span class="code-keyword">new</span> status: N/A
+12-03 20:30:37.736 I/OpenRemote/POLLING(2971): set 1120194 to <span class="code-keyword">new</span> status: N/A
+12-03 20:30:37.736 E/AndroidRuntime(2971): 	at org.openremote.android.console.model.PollingStatusParser.parse(PollingStatusParser.java:64)
+12-03 20:30:37.736 E/AndroidRuntime(2971): 	at org.openremote.android.console.model.PollingHelper.handleRequest(PollingHelper.java:168)
+12-03 20:30:37.736 E/AndroidRuntime(2971): 	at org.openremote.android.console.model.PollingHelper.requestCurrentStatusAndStartPolling(PollingHelper.java:139)
+12-03 20:30:37.736 E/AndroidRuntime(2971): 	at org.openremote.android.console.view.ScreenView$1.run(ScreenView.java:139)
+12-03 20:30:37.756 W/ActivityManager(146):   Force finishing activity org.openremote.android.console/.GroupActivity
+12-03 20:30:37.786 I/OpenRemote/POLLING(2971): polling [1120193,1120190,1120194,1119589,1120195,1120196] canceled
+12-03 20:30:37.916 I/OpenRemote-ORIENTATION(2971): onCreate:0
+12-03 20:30:37.986 I/OpenRemote/Failover(2971): Detected group members. Group members are [http:<span class="code-comment">//192.168.1.77:8080/controller, http://192.168.1.150:8080/controller]
+</span>12-03 20:30:38.086 D/OpenRemote/Settings(2971): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:30:38.116 I/OpenRemote/POLLING(2971): http:<span class="code-comment">//192.168.1.77:8080/controller/<span class="code-keyword">rest</span>/status/1120193,1120190,1120194,1119589,1120195,1120196
+</span>12-03 20:30:38.166 I/OpenRemote/POLLING(2971): set 1120193 to <span class="code-keyword">new</span> status: N/A
+12-03 20:30:38.166 I/OpenRemote/POLLING(2971): set 1120194 to <span class="code-keyword">new</span> status: N/A
+12-03 20:30:38.746 I/WindowManager(146): WIN DEATH: Window{412df548 org.openremote.android.console/org.openremote.android.console.Main paused=<span class="code-keyword">false</span>}
+12-03 20:30:38.746 I/WindowManager(146): WIN DEATH: Window{414e1ab8 org.openremote.android.console/org.openremote.android.console.GroupActivity paused=<span class="code-keyword">false</span>}
+12-03 20:30:38.756 W/InputDispatcher(146): channel '41370ac0 org.openremote.android.console/org.openremote.android.console.GroupActivity (server)' ~ Consumer closed input channel or an error occurred.  events=0x8
+12-03 20:30:38.756 E/InputDispatcher(146): channel '41370ac0 org.openremote.android.console/org.openremote.android.console.GroupActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+12-03 20:30:38.756 I/ActivityManager(146): <span class="code-object">Process</span> org.openremote.android.console (pid 2971) has died.
+12-03 20:30:38.756 W/ActivityManager(146): Force removing ActivityRecord{413595d8 org.openremote.android.console/.GroupActivity}: app died, no saved state
+12-03 20:30:38.766 W/InputDispatcher(146): Attempted to unregister already unregistered input channel '41370ac0 org.openremote.android.console/org.openremote.android.console.GroupActivity (server)'
+12-03 20:30:38.766 I/WindowManager(146): WIN DEATH: Window{41370ac0 org.openremote.android.console/org.openremote.android.console.GroupActivity paused=<span class="code-keyword">false</span>}
+12-03 20:30:38.776 I/WindowManager(146): WINDOW DIED Window{41370ac0 org.openremote.android.console/org.openremote.android.console.GroupActivity paused=<span class="code-keyword">false</span>}
+12-03 20:30:48.176 W/ActivityManager(146): Activity destroy timeout <span class="code-keyword">for</span> ActivityRecord{411a4a58 org.openremote.android.console/.Main}
+12-03 20:30:48.176 W/ActivityManager(146): Activity destroy timeout <span class="code-keyword">for</span> ActivityRecord{411f5a98 org.openremote.android.console/.GroupActivity}
+12-03 20:36:04.176 I/ActivityManager(146): START {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=org.openremote.android.console/.Main bnds=[34,148][130,244]} from pid 342
+12-03 20:36:04.306 I/ActivityManager(146): Start proc org.openremote.android.console <span class="code-keyword">for</span> activity org.openremote.android.console/.Main: pid=3661 uid=10040 gids={3003}
+12-03 20:36:04.666 I/OpenRemote-toSetting(3661): http:<span class="code-comment">//192.168.1.77:8080/controller,panel1
+</span>12-03 20:36:04.676 I/OpenRemote/DOWNLOAD(3661): Getting panel: panel1
+12-03 20:36:04.676 D/OpenRemote/Settings(3661): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:36:04.676 D/OpenRemote/WiFi(3661): controllerURL: http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:36:04.676 D/OpenRemote/Settings(3661): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:36:04.856 I/ActivityManager(146): Displayed org.openremote.android.console/.Main: +585ms
+12-03 20:36:05.086 D/OpenRemote/WiFi(3661): HTTP Response: org.apache.http.message.BasicHttpResponse@4114c770
+12-03 20:36:05.086 D/OpenRemote/Settings(3661): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:36:05.086 I/OpenRemote/WiFi(3661): Getting panel URL http:<span class="code-comment">//192.168.1.77:8080/controller/<span class="code-keyword">rest</span>/panel/panel1
+</span>12-03 20:36:06.316 I/OpenRemote/DOWNLOAD(3661): Download file panel.xml successfully.
+12-03 20:36:06.406 I/OpenRemote-SKIP IMAGE(3661): pause.png is already in cache
+12-03 20:36:06.426 I/OpenRemote-SKIP IMAGE(3661): infrared.png is already in cache
+12-03 20:36:06.446 I/OpenRemote/Failover(3661): Detecting group members with current controller server URL http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:36:06.446 D/OpenRemote/Settings(3661): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:36:06.456 I/ActivityManager(146): START {cmp=org.openremote.android.console/.GroupActivity} from pid 3661
+12-03 20:36:06.516 I/OpenRemote-ORIENTATION(3661): onCreate:0
+12-03 20:36:06.596 D/OpenRemote/Settings(3661): http:<span class="code-comment">//192.168.1.77:8080/controller
+</span>12-03 20:36:06.606 I/OpenRemote/POLLING(3661): http:<span class="code-comment">//192.168.1.77:8080/controller/<span class="code-keyword">rest</span>/status/1120193,1120190,1120194,1119589,1120195,1120196
+</span>12-03 20:36:06.676 I/ActivityManager(146): Displayed org.openremote.android.console/.GroupActivity: +179ms
+12-03 20:36:06.696 I/OpenRemote/POLLING(3661): set 1120193 to <span class="code-keyword">new</span> status: N/A
+12-03 20:36:06.706 I/OpenRemote/POLLING(3661): set 1120194 to <span class="code-keyword">new</span> status: N/A
+12-03 20:36:06.706 E/AndroidRuntime(3661): 	at org.openremote.android.console.model.PollingStatusParser.parse(PollingStatusParser.java:64)
+12-03 20:36:06.706 E/AndroidRuntime(3661): 	at org.openremote.android.console.model.PollingHelper.handleRequest(PollingHelper.java:168)
+12-03 20:36:06.706 E/AndroidRuntime(3661): 	at org.openremote.android.console.model.PollingHelper.requestCurrentStatusAndStartPolling(PollingHelper.java:139)
+12-03 20:36:06.706 E/AndroidRuntime(3661): 	at org.openremote.android.console.view.ScreenView$1.run(ScreenView.java:139)
+12-03 20:36:06.706 W/ActivityManager(146):   Force finishing activity org.openremote.android.console/.GroupActivity
+12-03 20:36:06.756 I/OpenRemote/POLLING(3661): polling [1120193,1120190,1120194,1119589,1120195,1120196] canceled
+12-03 20:36:07.086 I/OpenRemote/Failover(3661): Detected group members. Group members are [http:<span class="code-comment">//192.168.1.77:8080/controller, http://192.168.1.150:8080/controller]
+</span>12-03 20:36:07.696 I/OpenRemote/POLLING(3661): polling [1120193,1120190,1120194,1119589,1120195,1120196] canceled
+12-03 20:36:07.696 I/OpenRemote/POLLING(3661): polling [1120193,1120190,1120194,1119589,1120195,1120196] canceled
+12-03 20:36:10.006 I/ActivityManager(146): <span class="code-object">Process</span> org.openremote.android.console (pid 3661) has died.
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Dec 03, 2012 21:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038056"></a>
+                                    <font class="smallfont"><p>You have to put the log in a {code} tag or else the website is printing strange.<br/>
+It's really hard to read this way. <br/>
+Please edit your post.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 03, 2012 22:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038071"></a>
+                                    <font class="smallfont"><p>sorry Marcus, I'm being thick... how do I do that?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Dec 04, 2012 10:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038072"></a>
+                                    <font class="smallfont"><p>{code}<br/>
+&lt;here goes your stuff&gt;<br/>
+{code}</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 04, 2012 11:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038074"></a>
+                                    <font class="smallfont"><p>doh... easy really <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>thanks Marcus... now done.</p>
+
+<p>Thanks in advance for looking at this.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Dec 04, 2012 11:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038150"></a>
+                                    <font class="smallfont"><p>Hi Martyn,</p>
+
+<p>The problem is this: -</p>
+
+<p>12-02 17:53:19.529 E/AndroidRuntime(942): 	at org.openremote.android.console.model.PollingStatusParser.parse(PollingStatusParser.java:64)</p>
+
+<p>It causes a NullPointerException which causes the App to close; only happens when a sensor status value is empty.</p>
+
+<p>I fixed this the other day: -</p>
+
+<p><a href="https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/andrewball/Android_Console_2_0_0_Betas_ANDROID_85_failover">https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/andrewball/Android_Console_2_0_0_Betas_ANDROID_85_failover</a></p>
+
+<p>The HEAD revision looks a little different to what's available for download on sourceforge. There are still major rendering issues (for me on Galaxy S3 running 4.0.4). If you can't compile then let me know and I can put an APK on my server for you to download.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Dec 05, 2012 17:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038152"></a>
+                                    <font class="smallfont"><p>Oh, yes please Rich.</p>
+
+<p>I cannot compile.... that's been on my todo list for a while, but I never got deep enough in yet.... maybe some day.</p>
+
+<p>If you could APK me I would be eternally grateful.</p>
+
+<p>Many thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Dec 05, 2012 18:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038231"></a>
+                                    <font class="smallfont"><p>Hi Martyn,</p>
+
+<p>Please find a compiled APK with the fix included: -</p>
+
+<p><a href="http://multimation.co.uk:8080/controller/Android_Console_2_0_0_Beta_3_Fixed.apk">http://multimation.co.uk:8080/controller/Android_Console_2_0_0_Beta_3_Fixed.apk</a></p>
+
+<p>Please let us know how this performs.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Dec 07, 2012 16:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038244"></a>
+                                    <font class="smallfont"><p>Hi Rich</p>
+
+<p>I'm happy to say that this new version works absolutely perfectly <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Many thanks.</p>
+
+<p>Just one thing if I may: the new Android version that you've clearly been improving looks good, and the autodetection of controllers is much much much better than the old Android one (now seems as good as the iOS one ).... but there are also other differences that i'm mot so sure about - for example: the controller page now seems to have an "OpenRemote" title bar on the Andoid Panel... is this intentional?</p>
+
+<p>thanks once again Rich.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Dec 08, 2012 10:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038245"></a>
+                                    <font class="smallfont"><p>I just tested this on my android. Two first remarks:</p>
+<ul class="alternate" type="square">
+	<li>I also see the openremote bar at the top. I do not particularly like that, because it reduces my real estate on the screen. Also it is different in style from my main screen. I adapted the public OR.Tablet screens for my 800*480 resolution. It looks kind of silly to have the openremote bar, and the logo in different style beneath it</li>
+	<li>The layout of OR.Tablet screens have a button bar at the left hand side. On the Webconsole and the previous Android screen those screens were replaced with only the active button changing. In this new version every screen comes in from the right. I do not like that behaviour. (can I change that somehow in DEsigner?</li>
+	<li>On my Android, I cannot get back to a choice of all available panels after pressing the screen for more than 2 seconds</li>
+</ul>
+
+
+<p>Pieter  </p>
+
+<p>&lt;removed link to screendump&gt;</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 08, 2012 15:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038268"></a>
+                                    <font class="smallfont"><p>Hi Martyn/Pieter,</p>
+
+<p>I cannot take credit for any changes to the look of this version of the Android Console (so far I have only fixed the bug which I'm glad to hear has sorted your issue). The previous person that workedo n the Android Console made some code changes that weren't included in the Beta3 version on Sourceforge and I don't know exactly what there changes are.</p>
+
+<p>I will bear in mind your comments as I start to work on the code base (agreed the OpenRemote title bar shouldn't be there).</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Dec 09, 2012 17:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038271"></a>
+                                    <font class="smallfont"><p>Hi Martyn/Pieter,</p>
+
+<p>I cannot take credit for any changes to the look of this version of the Android Console (so far I have only fixed the bug which I'm glad to hear has sorted your issue). The previous person that worked on the Android Console made some code changes that weren't included in the Beta3 version on Sourceforge and I don't know exactly what these changes are.</p>
+
+<p>I will bear in mind your comments as I start to work on the code base (agreed the OpenRemote title bar shouldn't be there).</p>
+
+<p>Pieter - It doesn't seem like there is a fail safe way of getting back to the controller list on the Android Console (I know on iOS the fail safe is to shake the device but that isn't the case on Android). I couldn't detect shaking in the Web Console plus it wouldn't be much use on Desktops. For the time being you will have to make sure you put a button or tab bar item on your screens to navigate back to the controller list/settings.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Dec 09, 2012 19:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038430"></a>
+                                    <font class="smallfont"><p>thanks Richard</p>
+
+<p>Sadly the TitleBar is causing me a problem with my existing layouts because of the reduced real-estate.<br/>
+It would be great for a Beta update that got rid of this.....</p>
+
+<p>Many thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Dec 13, 2012 15:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038433"></a>
+                                    <font class="smallfont"><blockquote><p>Pieter - It doesn't seem like there is a fail safe way of getting back to the controller list on the Android Console</p></blockquote>
+<p>Well I could get back in the previous version by just pressing the screen for &gt;2seconds</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 13, 2012 16:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038446"></a>
+                                    <font class="smallfont"><p>The pressing the screen for &gt;2 seconds was something I added to the Web Console and hence it's also in the Android Web Console App but I don't think it exists in the normal Android App.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Dec 13, 2012 16:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038450"></a>
+                                    <font class="smallfont"><p>Martyn,</p>
+
+<p>I will try and sort this out tomorrow for you.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Dec 13, 2012 21:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038952"></a>
+                                    <font class="smallfont"><p>You're right. I was mixing up the webconsole and the 'native Android console'</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 21, 2012 14:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Correcting sensor value.</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Correcting sensor value.
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 19, 2013 by <font color="#0050B2">aktur</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I would like to correct value of a sensor, for example when sensor shows 20.0 I would like to subtract 2.5 from it so it becomes 17.5. What would be the best approach of doing this in OpenRemote. Quick and dirty solution would be to call 'bc' via the Shell execution protocol but this is not portable and not in spirit of OR. Can you give me some hints how to do it properly?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22414524"></a>
+                                    <font class="smallfont"><p>Depends on what kind of command drives the sensor. If it is XML you can use XPATH for the calculation</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at May 19, 2013 14:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414530"></a>
+                                    <font class="smallfont"><p>Unfortunately it is EnOcean sensor. But in fact I'm looking for a generic method of doing this. Perhaps it will be somewhere in rules. I know how to make a rule sensitive to sensor and modify a value. What I miss is how to send the rule's result back to UI.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 19, 2013 15:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414575"></a>
+                                    <font class="smallfont"><p>If the rule updates the sensor value the UI should reflect the latest value automatically.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 20, 2013 18:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414592"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>but what is the syntax for updating the sensor value? The code below has no effect:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>rule "Correct Temperature"
+when
+   Event(source=="Temperature Correction", $temp:value)
+then
+   $temp = $temp - 2.5;
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 20, 2013 20:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414593"></a>
+                                    <font class="smallfont"><p>You have to assign the new value back to the sensor.<br/>
+This is just an educated guess: </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Correct Temperature"</span>
+when
+   $evt:Event(source==<span class="code-quote">"Temperature Correction"</span>)
+then
+   $evt.setValue(eval($evt.getValue -2.5));
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 20, 2013 20:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414599"></a>
+                                    <font class="smallfont"><p>I've changed this to get it through the compiler:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>rule "Correct Temperature"
+when
+   $evt : Event(source=="TempC")
+then
+   $evt.setValue(Double.parseDouble($evt.getValue().toString()) - 2.5);
+end
+</pre>
+</div></div>
+
+<p>But still the label attached to TempC sensor shows uncorrected value.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 20, 2013 21:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414600"></a>
+                                    <font class="smallfont"><p>Ok, I just checked the code and this only updates the event but not the sensor.<br/>
+I have to check if it is possible to access the sensor or the status cache from within the rules.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 20, 2013 22:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414606"></a>
+                                    <font class="smallfont"><p>I remember having seen one or two posts in the past that said parameter passing was not possible in Drools 5.1, but might be available in version 5.2. I do not remember the context in which it was said.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at May 21, 2013 07:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414630"></a>
+                                    <font class="smallfont"><p>One "trick / ugly hack" you might use is as follow:</p>
+<ul class="alternate" type="square">
+	<li>have 2 sensors, the actual that's read from the device and a virtual that is linked to your UI</li>
+	<li>for the virtual sensor, you would have 2 "in-memory" commands: a read (command: STATUS) and a write (command : ON)</li>
+	<li>have a rule on the actual value, do your computation, then call the write command</li>
+</ul>
+
+
+<p>So something like (haven't checked in rules engine, so might need to fix syntax errors)</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Correct Temperature"</span>
+when
+   $evt : Event(source==<span class="code-quote">"TempC"</span>)
+then
+   <span class="code-object">double</span> correctedValue = <span class="code-object">Double</span>.parseDouble($evt.getValue().toString()) - 2.5;
+   execute.command(<span class="code-quote">"VirtualWrite"</span>, <span class="code-object">Double</span>.toString(correctedValue));
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 21, 2013 12:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414640"></a>
+                                    <font class="smallfont"><p>Hi Eric, yes it works nicely <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>. I was not aware that one can write arbitrary string to the in-memory command. Now the calibration can be moved from hardware (expensive) to software (cheap). Yet another advantage of OpenRemote <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> (YAAoOR)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 21, 2013 13:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414736"></a>
+                                    <font class="smallfont"><p>I've summarized the whole story on my web <a href="http://mqlservice.net/openremote/2013/05/22/temperature-sensors-calibration/">http://mqlservice.net/openremote/2013/05/22/temperature-sensors-calibration/</a><br/>
+as this example is very useful for me. This mechanism is much more powerful than solely correcting a sensor value. Like in my example it is converting Celsius into Fahrenheit &#8211; useful for Americans who buy overseas sensors.</p>
+
+<p>By the way, is it possible to put an arbitrary string into "in-memory" beside rules?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 22, 2013 20:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414762"></a>
+                                    <font class="smallfont"><p>There currently is a validation rule in the designer that limits the input to ON, OFF and STATUS.<br/>
+I don't know the history behind that, so maybe we could remove that limit and everything should work just fine (I believe this should be the case).</p>
+
+<p>I'll discuss this with the team when I get the chance.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 23, 2013 10:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414773"></a>
+                                    <font class="smallfont"><p>Limited it to ON/OFF/STATUS because people were confused as to how to use the in-memory commands, entering arbitrary values and wondering how it should work.</p>
+
+<p>You can remove the validation under the condition that you produce wiki documentation on how to correctly use the commands that we can refer users to <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 23, 2013 12:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:40</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Protocol implementation for panStamps (lagarto)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Protocol implementation for panStamps (lagarto)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 13, 2012 by <font color="#0050B2">dberenguer</font>.
+				    </div>
+
+				    <p>Hello team!</p>
+
+<p>We've been playing with OR for some time now. I have to congratulate you again for your work guys. IMO OR fills a gap not filled before, where lots of applications (like lagarto) provide data management and programming services but actually lack nice GUI front-ends.</p>
+
+<p>OR have been working well with some panStamp wireless networks via HTTP GET requests through lagarto-swap. However, we don't specially like the idea of having to poll the lagarto server periodically. Instead, I've thought in developing a protocol extension for OR in order to make the thing really event-driven. Thus I've downloaded the sources from Controller_2_0_0_Alpha11 and I'm now taking the http protocol as an initial reference. I know that I have to override "read" and "send" from StatusCommand and ExecutableCommand respectively. This should be quite straightforward since lagarto already provides a HTTP interface for polling values and controlling outputs. However, our lagarto server also provides a way to send statuses without prior demand via ZeroMQ (TCP/IP) but I don't know how to interface this from OR. I understand that I'll have to manage this from an independent thread or process but then I'd like to know how to tell OR that a new value is waiting to be read.</p>
+
+<p>Sorry for the basic question. There is surely a documentation page talking about this but I've been unable to find it.</p>
+
+<p>Thanks!</p>
+
+<p>Daniel.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/20450534/20742251.png">Capture.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/20450534/20742252.png">Capture2.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/20450534/20742250.png">Capture3.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/20450534/20742248.png">Capture.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/20450534/20742249.png">Capture2.PNG</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20450536"></a>
+                                    <font class="smallfont"><p>Please use tag <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/tags/project/Controller/Controller_2_0_0/">https://openremote.svn.sourceforge.net/svnroot/openremote/tags/project/Controller/Controller_2_0_0/</a> for reference for current most up to date stable code.</p>
+
+<p>For event-driven integration you will want to implement <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/tags/project/Controller/Controller_2_0_0/src/org/openremote/controller/protocol/EventListener.java">EventListener API</a> instead. The Javadoc explains the code level details, if you have further questions, just ask here on the forums.</p>
+
+<p>There's an example of UDP packet listener here: <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/mredeker/Controller_2_0_0_UDPListener/src/org/openremote/controller/protocol/socket/UDPListenerCommand.java">https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/mredeker/Controller_2_0_0_UDPListener/src/org/openremote/controller/protocol/socket/UDPListenerCommand.java</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 13, 2012 11:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450537"></a>
+                                    <font class="smallfont"><p>Thanks Juha.</p>
+
+<p>OK, so the idea would be to implement ExecutableCommand for the commands and EventListener for the status reception. Am I right?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Sep 13, 2012 11:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450538"></a>
+                                    <font class="smallfont"><p>Correct.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 13, 2012 12:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450591"></a>
+                                    <font class="smallfont"><p>OK, I've created the following classes:<br/>
+LagartoCommand, which implements ExecutableCommand<br/>
+LagartoCommandBuilder, which implements CommandBuilder<br/>
+LagartoListenerCommand, which implememnts EventListener<br/>
+and LagartoListenerCommandBuilder, which implements CommandBuilder</p>
+
+<p>So far so good. Now I want to test the code so I have to add my customs commands to controller.xml. Where is this XML file supposed to be? I've found some occurrences under controller/test/org but nothing under Controller_2_0_0/config or Controller_2_0_0/runtime/apache-tomcat-6.0.18/conf.</p>
+
+<p>Besides, is there any way to test the code before submitting the xml definitions for Designer? Let's say from console or adding some instructions into the controller code.</p>
+
+<p>thanks again!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Sep 14, 2012 11:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450613"></a>
+                                    <font class="smallfont"><p>New question.</p>
+
+<p>Now I want to add my protocol to applicationContext.xml. My protocol implementation contains two command builders (LagartoCommandBuilder and LagartoListenerCommandBuilder). I understand that I have to create two different beans under "commandFactory" but how do I associate both command builders to the same protocol? I guess using the same entry key (tagName?) won't work.</p>
+
+<p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Sep 15, 2012 00:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450624"></a>
+                                    <font class="smallfont"><p>I got a better idea about the picture after reviewing the HttpGetCommand implementation. It's now clear that both ExecutableCommand and EventListener have to be implemented by the same class. So just one command class and one command builder.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Sep 15, 2012 15:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450637"></a>
+                                    <font class="smallfont"><p>Juha, I need to poll the network before the creation of sensors and commands at startup. Which is the best way to do this?</p>
+
+<p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Sep 16, 2012 00:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450640"></a>
+                                    <font class="smallfont"><p>Maybe your CommandBuilder constructor?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 16, 2012 00:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450652"></a>
+                                    <font class="smallfont"><p>You don't necessary have todo it that way. You need one CommandBuilder but you can have 2 classes which implement ExecutableCommand and EventListener. The CommandBuilder will just habe to choose (based on an attribute) which class to instantiate.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 16, 2012 22:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450660"></a>
+                                    <font class="smallfont"><p>Thanks Marcus.</p>
+
+<p>I'm now working on the xml file for designer. I have two mandatory fields:</p>
+
+<p>Server name: _______<br/>
+Endpoint ID: _______</p>
+
+<p>And a third optional field:</p>
+
+<p>New value:   _______</p>
+
+<p>which will have to be filled only for control (write) actions. For sensors (read) Server name and Endpoint ID will be sufficient. Which is the best/most elegant approach for this?</p>
+
+<p>Thanks again!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Sep 17, 2012 11:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450679"></a>
+                                    <font class="smallfont"><p>New protocols are configured in the designer using a xml file.<br/>
+Here you can see the example for HTPP: <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/tags/project/Designer/Designer_2_13_4_Rosemary_20120729/protocols/protocols/http.xml?revision=6745&amp;view=markup">http://openremote.svn.sourceforge.net/viewvc/openremote/tags/project/Designer/Designer_2_13_4_Rosemary_20120729/protocols/protocols/http.xml?revision=6745&amp;view=markup</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 17, 2012 19:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450681"></a>
+                                    <font class="smallfont"><p>Thanks Marcus. I've already submitted the xml file to Juha. Looking forward to start my tests <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Sep 17, 2012 22:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451340"></a>
+                                    <font class="smallfont"><p>Hello!</p>
+
+<p>Nice to see implementation for panStamp in the Designer. Good work Deniel. I have a question regarding the configuration in the designer.</p>
+
+
+<p>Let's say I have two http requests:</p>
+
+<p><a href="http://localhost:8001/values/SWAP/Temperature/?">http://localhost:8001/values/SWAP/Temperature/?</a></p>
+
+<p><a href="http://localhost:8001/values/SWAP/Binary_1/?value=off">http://localhost:8001/values/SWAP/Binary_1/?value=off</a></p>
+
+<p>If I understand correctly should configuration in the Designer look like:</p>
+
+<p><div align="center"><img src="attachments/20450534/20742248.png" border="0"/></div><br/>
+<div align="center"><img src="attachments/20450534/20742249.png" border="0"/></div><br/>
+<div align="center"><img src="attachments/20450534/20742250.png" border="0"/></div></p>
+
+
+<p>Am I right? Do I need to upgrade the controller? I used latest 2.1.0 (2012-09-21).Thanks.</p>
+
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 04, 2012 10:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451343"></a>
+                                    <font class="smallfont"><p>Hi Nejc!</p>
+
+<p>Even if Designer already supports panStamp's lagarto protocol, OpenRemote Controller still doesn't so we'll have to wait a bit before playing with the new protocol extension. Everything is being tested at this moment and I must say that the overall sensation is much better than before having the protocol implemented into OpenRemote, I mean, using simple HTTP commands. Some of the advantages:</p>
+
+<p>1. Only a command needs to be defined for each endpoint (vs 2 or 3 commands per endpoint using HTTP)<br/>
+2. Lagarto servers don't need to be periodically polled. Instead, they publish network events via ZeroMQ</p>
+
+<p>This said, if you really want to use OpenRemote with your lagarto server I suggest you to use HTTP commands, as explained here:
+<a href="http://www.panstamp.com/announcements/openremotecontrolspanstamps">http://www.panstamp.com/announcements/openremotecontrolspanstamps</a></p>
+
+<p>More news next week <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Daniel.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Oct 04, 2012 10:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451344"></a>
+                                    <font class="smallfont"><p>Thanks Daniel.<br/>
+I already use HTTP commands to manage Lagarto server and it works great. I just want to play with this new feature, but it seems I'll have to wait some time.</p>
+
+<p>I look forward to new news.</p>
+
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 04, 2012 10:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038017"></a>
+                                    <font class="smallfont"><p>Hi daniel Berenguer</p>
+
+<p>are you planned to use the panstamps directly without to use the lagarto platform? </p>
+
+<p>i'm think that some people are waiting for arduino wireless solution that work with openremote</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sanfe at Dec 02, 2012 22:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038018"></a>
+                                    <font class="smallfont"><p>Hi David,</p>
+
+<p>The OpenRemote team is already adding the new panStamp protocol extension into the official release so we'll soon be able to integrate panStamps with OR without having to rely on pure HTTP mechanisms or development sources. However, we need lagarto-swap to be running on the same network in order to get access to the panStamp wireless network (OpenRemote - lagarto-swap - panStamps).</p>
+
+<p>lagarto-swap is a compact application and you'll realize that running it on your OR computer adds almost zero overhead. The only drawback is that lagarto is Python whilst OR is Java so you'll need to install Python and some secondary modules on your computer. On the other hand, this adds further flexibility to the architecture since multiple processes can reach the wireless network via IP. Finally, multiple wireless networks can be reached from a single OR instance.</p>
+
+<p>Best regards,</p>
+
+<p>Daniel.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Dec 02, 2012 22:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038019"></a>
+                                    <font class="smallfont"><p>Okey. thanks for your fast respond. i will take a look at your forum for having more information about your solution and make a installation. i think in installing in a fedora or ubuntu machine. thanks for your work <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sanfe at Dec 02, 2012 23:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528919"></a>
+                                    <font class="smallfont"><p>Wow, this is great. How is it coming along? Any ETA for full implementation of the Panstamp protocol? BTW, thanks to everyone here for all the hard work on OR.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jan 11, 2013 23:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21529007"></a>
+                                    <font class="smallfont"><p>Panstamps is currently available in the paid Pro version and is scheduled for the next 2.1 OSS release.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jan 13, 2013 02:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857428"></a>
+                                    <font class="smallfont"><p>Is there any word on when the next OSS release will be out? I did some looking through the forums for any hints, but didn't find much.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kerber at Feb 10, 2013 17:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857429"></a>
+                                    <font class="smallfont"><p>Will be making snapshot of current 2.1 available with panstamps included as soon as I get some DSC review out of the way and finish writing a requirements doc needed for another task.</p>
+
+<p>So maybe tomorrow (it's getting late)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 10, 2013 17:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857430"></a>
+                                    <font class="smallfont"><p>Excellent! I've been working with some panstamps and this would be great!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kerber at Feb 10, 2013 17:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857481"></a>
+                                    <font class="smallfont"><p>Hey Juha,<br/>
+Any update on this? I don't want to get everything set up with http if I'm just going to switch over, so I'm waiting for the release. I really appreciate it.</p>
+
+<p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kerber at Feb 12, 2013 17:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857486"></a>
+                                    <font class="smallfont"><p>Didn't get to it yet, I was too optimistic with my schedule. Will have to push it to tomorrow.</p>
+
+<p>If you can manage to build from source yourself, you can just build the branch at <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/juha/Controller_2_1_0_FeatureMergeBranch/">https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/juha/Controller_2_1_0_FeatureMergeBranch/</a></p>
+
+<p>You should be good to go with that, no changes needed.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 12, 2013 19:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857487"></a>
+                                    <font class="smallfont"><p>Nevermind, managed to sneak it in anyway. Uploading now...</p>
+
+<p><a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_FM_SNAPSHOT-20130212-Lagarto.zip/download">OpenRemote-Controller-2.1.0_FM_SNAPSHOT-20130212-Lagarto.zip</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 12, 2013 19:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857488"></a>
+                                    <font class="smallfont"><p>Thanks Juha!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kerber at Feb 12, 2013 19:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857530"></a>
+                                    <font class="smallfont"><p>For anyone happening across this thread, you'll need to set up the zeromq java bindings if you don't already have them.
+<a href="http://www.zeromq.org/bindings:java">http://www.zeromq.org/bindings:java</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kerber at Feb 14, 2013 06:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857533"></a>
+                                    <font class="smallfont"><p>Thanks for posting the update.</p>
+
+<p>Would you be interested in writing a more complete step-by-step how-to for the website?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 14, 2013 08:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857534"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>I'm currently writing a guide to be posted on both openremote.org and panstamp.com. I'll let you know when it's ready.</p>
+
+<p>Thanks Dustin for the tip!.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Feb 14, 2013 08:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857563"></a>
+                                    <font class="smallfont"><p>A new tutorial has been posted here: <a href="http://www.panstamp.com/announcements/openremotejoinsthepanstampecosystem">http://www.panstamp.com/announcements/openremotejoinsthepanstampecosystem</a></p>
+
+<p>&#8211; EDITED &#8211;<br/>
+And here is the new OR wiki page:
+<a href="http://www.openremote.org/display/docs/Openremote+2.1+How+To+-+PanStamps">http://www.openremote.org/display/docs/Openremote+2.1+How+To+-+PanStamps</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at Feb 14, 2013 15:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

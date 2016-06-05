@@ -1,0 +1,693 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : How to configure Z-Wave support in Synology DS212+</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : How to configure Z-Wave support in Synology DS212+
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 30, 2012 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <p>I finally managed to get the Professional version running on DS212+ with Z-Wave support. You can find the preliminary description here:
+<a href="https://www.dropbox.com/s/erto02u7jruhgb7/Zwave%20on%20DS212%2B.pdf">https://www.dropbox.com/s/erto02u7jruhgb7/Zwave%20on%20DS212%2B.pdf</a> or via clicking on my avatar.</p>
+<ol>
+	<li>I have not yet been able to install and run the drivers I compiled, so as a trick I did install the package SynoZwave</li>
+	<li>I can not yet start the Professional Designer from the Synology 'console'. THe changes I made to achieve that are marked yellow.</li>
+	<li>I have enumerated all Synology models on which I think this recipe will work.</li>
+	<li>Credits to joefm1218 on the Synology forum, who did the essential work.</li>
+</ol>
+
+
+<ul class="alternate" type="square">
+	<li>Critical comments are most welcome.</li>
+	<li>Please also report back if this works for any of the other Synology models I mentioned in the document</li>
+</ul>
+
+
+<p>Pieter</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21037955"></a>
+                                    <font class="smallfont"><p>I get this recurring (every 30 seconds or so) error:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">2012-11-30 15:59:12,820 ERROR [ConntrollerAnnouncement]: !!! Unable to announce controller MAC address to Beehive
+java.lang.NullPointerException
+	at java.io.StringReader.&lt;init&gt;(StringReader.java:33)
+	at flexjson.JSONTokener.&lt;init&gt;(JSONTokener.java:70)
+	at flexjson.JSONDeserializer.deserialize(JSONDeserializer.java:158)
+	at org.openremote.controller.service.Deployer$ControllerAnnouncement.run(Unknown Source)
+</pre>
+</div></div>
+<p>I did not get this on the PC installation.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 30, 2012 16:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037964"></a>
+                                    <font class="smallfont"><p>The error relates to the controller version which is available for download from within the Pro account.<br/>
+This will be fixed with a new Pro release in the next days.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 01, 2012 09:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037989"></a>
+                                    <font class="smallfont"><p>Here is a complete checklist of items I needed to perform to enable ZWave on my Synology 212+ ARM processor. Hopefully, this might save some people some time:</p>
+
+<p>1) Ensure that bootstrap/ipkg is available on Synology
+<a href="http://forum.synology.com/wiki/index.php/Overview_on_modifying_the_Synology_Server,_bootstrap,_ipkg_etc">http://forum.synology.com/wiki/index.php/Overview_on_modifying_the_Synology_Server,_bootstrap,_ipkg_etc</a></p>
+
+<p>2) Using a ZWave to Serial USB stick (very easy to program ZWave devices): Aeon Z-Stick Series 2 
+<a href="http://www.amazon.com/Aeon-Labs-Z-Wave-Z-Stick-Series/dp/B003MWQ30E">http://www.amazon.com/Aeon-Labs-Z-Wave-Z-Stick-Series/dp/B003MWQ30E</a></p>
+
+<p>3) If you want to test your Aeon Stick on windows to ensure it works correctly, use:
+<a href="http://en.z-wave.me/">http://en.z-wave.me/</a></p>
+
+<p>4) Must install USB/Serial drivers for Aeon ZWave stick on the Synology. For this, you have 2 options. Either build the required kernel modules under linux, or use the drivers installed with SynoZWave. I tried the building kernel drivers in linux and was successful, but it requires much more effort than needed. The simpler choice is to simply install the SynoZWave package (but do not enable/run it).
+<a href="http://wiki.synozwave.com/index.php?title=Installation/en&amp;setlang=en">http://wiki.synozwave.com/index.php?title=Installation/en&amp;setlang=en</a></p>
+
+<p>This install will create the following files on the Synology:<br/>
+/lib/modules/usbserial.ko<br/>
+/lib/modules/pl2303.ko<br/>
+/lib/modules/ftdi_sio.ko<br/>
+/lib/modules/cp210x.ko<br/>
+/usr/syno/etc.defaults/rc.d/S99Modules.sh</p>
+
+<p>5) Must modify the load order of the drivers by modifying the 4 line in the /usr/syno/etc.defaults/rc.d/S99Modules.sh file to:</p>
+
+<p>MODULES="usbserial.ko ftdi_sio.ko pl2303.ko cp210x.ko"</p>
+
+<p>(usbserial.ko driver must load first)</p>
+
+<p>6) Plug your Aeon USB dongle into the Synology</p>
+
+<p>7) Reboot the Synology. You should now see the driver loaded and the Aeon registered. To verify, use the "dmesg" command:</p>
+
+<p>example output:</p>
+
+<p>[   69.890000] usbcore: registered new interface driver usbserial<br/>
+[   69.890000] usbserial: USB Serial Driver core<br/>
+[   69.940000] USB Serial support registered for FTDI USB Serial Device<br/>
+[   69.970000] usbcore: registered new interface driver ftdi_sio<br/>
+[   69.970000] ftdi_sio: v1.5.0:USB FTDI Serial Converters Driver<br/>
+[   70.020000] USB Serial support registered for pl2303<br/>
+[   70.020000] usbcore: registered new interface driver pl2303<br/>
+[   70.030000] pl2303: Prolific PL2303 USB to serial adaptor driver<br/>
+[   70.070000] USB Serial support registered for cp210x<br/>
+[   70.070000] cp210x 1-1.3:1.0: cp210x converter detected<br/>
+[   70.080000] usb 1-1.3: lock for hub EH<br/>
+[   70.170000] usb 1-1.3: reset full speed USB device using orion-ehci and address 3<br/>
+[   70.280000] usb 1-1.3: unlock for hub EH<br/>
+[   70.290000] usb 1-1.3: cp210x converter now attached to ttyUSB0<br/>
+[   70.290000] usbcore: registered new interface driver cp210x<br/>
+[   70.300000] cp210x: v0.09:Silicon Labs CP210x RS232 serial adaptor driver</p>
+
+<p>Please note: port that Aeon adapter is binded to. In the above, cp210x is attached to /dev/ttyUSB0</p>
+
+
+<p>For further verification, you can look at your usb devices loaded in file /proc/bus/usb/devices. The following output shows Silicon Labs USB/UART controller with the cp210x driver loaded:</p>
+
+<p>T:  Bus=01 Lev=02 Prnt=02 Port=99 Cnt=01 Dev#=  3 Spd=12   MxCh= 0<br/>
+D:  Ver= 1.10 Cls=00(&gt;ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1<br/>
+P:  Vendor=10c4 ProdID=ea60 Rev= 1.00<br/>
+S:  Manufacturer=Silicon Labs<br/>
+S:  Product=CP2102 USB to UART Bridge Controller<br/>
+S:  SerialNumber=0001<br/>
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=100mA<br/>
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=00 Prot=00 Driver=cp210x<br/>
+E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms<br/>
+E:  Ad=01(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms</p>
+
+
+<p>8) Install Synology package for Open Remote:
+<a href="http://pcloadletter.co.uk/2011/10/25/openremote-package-for-synology/">http://pcloadletter.co.uk/2011/10/25/openremote-package-for-synology/</a></p>
+
+<p>9) Follow the instructions under the "Instructions" section in:
+<a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-Wave">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-Wave</a></p>
+
+
+<p>Since you already installed the OpenRemote package in item (8), you just need to:<br/>
+a) Ensure you can get snapshot OpenRemote distro onto the Synology (easiest way is to copy from windows to Synology share. Then you can access under /volume1 folder)<br/>
+b) unzip the snapshot Openremote distro using the "unzip" command on the Synology (ie. unzip /volume1/download/OpenRemote-Controller-2.1.0_Developer-Snapshot-20120920.zip)<br/>
+c) Remove the webapps folder under the OpenRemote package install (ie. rm -fr /volume1/@appstore/OpenRemote/webapps)<br/>
+d) Copy snapshot distro webapps directory into package folder (ie. cp /volume1/download/OpenRemote/webapps /volume1/@appstore/OpenRemote)<br/>
+e) Change DEBUG setting as instructed<br/>
+f) copy zwave.jar as instructed<br/>
+g) ensure permissions are set correctly (ie. chown -R openremote.users /volume1/@appstore/OpenRemote/webapps)</p>
+
+
+<p>10) OpenRemote uses a java library to communicate via serial port to your Aeon device. For this, it uses the native libraries stored in: </p>
+
+<p>/volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/native. Unfortunately, the distro for OpenRemote assumes it's running on an Intel processor. For Synology, this will not work as it's using a RISC processor. So, you have retrieve the ARM compiled native serial libraries. For this:</p>
+
+<p>a) Use ipkg to install receive/transmit library:<br/>
+&gt; ipkg list | grep rxtx                (this command should show you a Java serial/parallel communication library)<br/>
+&gt; ipkg add rxtx                        (install library)<br/>
+&gt; ipkg files rxtx<br/>
+Package rxtx (2.1.7r2-1) is installed on root and has the following files:<br/>
+/opt/lib/librxtxI2C-2.1-7.so<br/>
+/opt/lib/librxtxRaw.so<br/>
+/opt/lib/librxtxRS485.so<br/>
+/opt/lib/librxtxRaw.la<br/>
+/opt/lib/librxtxSerial.la<br/>
+/opt/lib/librxtxParallel-2.1-7.so<br/>
+/opt/lib/librxtxRS485.la<br/>
+/opt/lib/librxtxRS485-2.1-7.so<br/>
+/opt/lib/librxtxSerial-2.1-7.so<br/>
+/opt/lib/librxtxParallel.la<br/>
+/opt/lib/librxtxParallel.so<br/>
+/opt/lib/librxtxRaw-2.1-7.so<br/>
+/opt/lib/librxtxI2C.so<br/>
+/opt/lib/java/RXTXcomm.jar<br/>
+/opt/lib/librxtxI2C.la<br/>
+/opt/lib/librxtxSerial.so</p>
+
+<p>b) Now that you have ARM based rxtx library installed, you need to link to this library from the OpenRemote native directory:<br/>
+&gt; cd /volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/native<br/>
+&gt; rm -fr librxtxSerial.so<br/>
+&gt; ln -s /opt/lib/librxtxSerial-2.1-7.so librxtxSerial.so</p>
+
+
+<p>11) Permission OpenRemote service account to allow the creation of OS locks. This will be needed to ensure a resource lock is created when communicating the serial port of the USB device. For this, you must </p>
+
+<p>a) add a new group using the standard add group admin screen in synology (ie. section 3 of <a href="http://www.synology.com/support/tutorials_show.php?q_id=451">http://www.synology.com/support/tutorials_show.php?q_id=451</a>). Add a group called: uucp<br/>
+b) add the openremote user to the newly created dialout group<br/>
+c) verify that the group is setup correctly in a shell session (ie. more /etc/group. You should something like: uucp:x:65548:openremote)<br/>
+d) Ensure new group can access write to /var/lock folder (ie. chown -R root.uucp /var/lock)</p>
+
+
+<p>12) Permission openremote to the USB port device.<br/>
+a) add a new group using the standard add group admin screen in synology (ie. section 3 of <a href="http://www.synology.com/support/tutorials_show.php?q_id=451">http://www.synology.com/support/tutorials_show.php?q_id=451</a>). Add a group called: dialout<br/>
+b) add the openremote user to the newly created dialout group<br/>
+c) verify that the group is setup correctly in a shell session (ie. more /etc/group. You should something like: dialout:x:65549:openremote)<br/>
+d) Ensure new group can access write to /dev/ttyUSB0 device (ie. chown -R root.dialout /dev/ttyUSB0). The example here uses ttyUSB0, but the device assigned is what you'll observe in item (7) above.</p>
+
+<p>13) Follow the instructions under the "Activate Z-Wave protocol" section in:
+<a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-Wave">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-Wave</a></p>
+
+<p>Please note: The zwave.comPort will not be /dev/tty.SLAB_USBtoUART. It will be what you obtain from item (7). Most likely, it will be /dev/ttyUSB0</p>
+
+<p>14) Follow the instructions under the "OpenRemote Online Designer - Building Modeler" section in:
+<a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-Wave">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-Wave</a></p>
+
+<p>15) Reboot your Synology, start up the OpenRemote controller and sync your designer/settings config to your controller. You can confirm the config is correct </p>
+
+<p>by looking in: /volume1/@appstore/OpenRemote/webapps/controller/controller.xml. All settings should now be in this XML config file (ie. zwave.comPort setting must be here now)</p>
+
+<p>16) Observe OpenRemote log files:</p>
+
+<p>/volume1/@appstore/OpenRemote/logs/boot.log</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>INFO 2012-11-24 23:52:54,849 : No rule definitions found in '/volume1/@appstore/OpenRemote/webapps/controller/rules'.<br/>
+INFO 2012-11-24 23:52:54,850 : Initialized event processor : Drools Rule Engine<br/>
+INFO 2012-11-24 23:52:54,969 : Initialized event processor : RRD4J Data Logger<br/>
+INFO 2012-11-24 23:52:55,333 : Registered sensor : Switch Sensor (Name = 'dimmer_sensor_switch', ID = '46')<br/>
+INFO 2012-11-24 23:52:55,846 : Registered sensor : Range Sensor (Name = 'dimmer_sensor_range', ID = '47', Min: 0, Max: 99)<br/>
+INFO 2012-11-24 23:52:56,361 : Startup complete.<br/>
+INFO 2012-11-25 11:50:58,184 :</p>
+
+
+
+
+<p>/volume1/@appstore/OpenRemote/logs/catalina.out</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>INFO 2012-11-24 23:52:54,849 : No rule definitions found in '/volume1/@appstore/OpenRemote/webapps/controller/rules'.<br/>
+INFO 2012-11-24 23:52:54,850 : Initialized event processor : Drools Rule Engine<br/>
+INFO 2012-11-24 23:52:54,969 : Initialized event processor : RRD4J Data Logger<br/>
+INFO 2012-11-24 23:52:55,333 : Registered sensor : Switch Sensor (Name = 'dimmer_sensor_switch', ID = '46')<br/>
+INFO 2012-11-24 23:52:55,846 : Registered sensor : Range Sensor (Name = 'dimmer_sensor_range', ID = '47', Min: 0, Max: 99)<br/>
+INFO 2012-11-24 23:52:56,361 : Startup complete.</p>
+
+
+<p>/volume1/@appstore/OpenRemote/logs/zwave/zwave.log</p>
+
+
+<p>INFO 2012-11-24 22:03:41,509 (1-WIRE): Reader thread asked to start<br/>
+INFO 2012-11-24 22:03:41,515 (1-WIRE): Writer thread asked to start<br/>
+INFO 2012-11-24 22:03:41,516 (1-WIRE): Writer thread starting<br/>
+DEBUG 2012-11-24 22:03:41,519 (1-WIRE): sending: 01 08 00 54 00 01 01 01 01 a3<br/>
+DEBUG 2012-11-24 22:03:41,520 (1-WIRE): Message lock exists. Frame waiting: 01 03 00 02 fe<br/>
+DEBUG 2012-11-24 22:03:41,538 (1-WIRE): received: 06 01 04 01 54 00 ae<br/>
+DEBUG 2012-11-24 22:03:41,543 (1-WIRE): Controller registered as SUC/SIS<br/>
+DEBUG 2012-11-24 22:03:41,578 (1-WIRE): sending: 06<br/>
+DEBUG 2012-11-24 22:03:41,579 (1-WIRE): sending: 01 03 00 02 fe<br/>
+DEBUG 2012-11-24 22:03:41,598 (1-WIRE): received: 06<br/>
+DEBUG 2012-11-24 22:03:41,639 (1-WIRE): received: 01 25 01 02 05 08 1d 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 </p>
+
+<p>03 01 cc<br/>
+DEBUG 2012-11-24 22:03:41,639 (1-WIRE): Node id: 1 discovered<br/>
+DEBUG 2012-11-24 22:03:41,640 (1-WIRE): Node id: 2 discovered<br/>
+DEBUG 2012-11-24 22:03:41,640 (1-WIRE): Node id: 3 discovered<br/>
+DEBUG 2012-11-24 22:03:41,642 (1-WIRE): sending: 06<br/>
+DEBUG 2012-11-24 22:03:41,643 (1-WIRE): sending: 01 04 00 41 01 bb<br/>
+DEBUG 2012-11-24 22:03:41,644 (1-WIRE): Message lock exists. Frame waiting: 01 04 00 41 02 b8<br/>
+DEBUG 2012-11-24 22:03:41,658 (1-WIRE): received: 06 01 09 01 41 92 16 00 02 02 01 33<br/>
+DEBUG 2012-11-24 22:03:41,698 (1-WIRE): sending: 06<br/>
+DEBUG 2012-11-24 22:03:41,699 (1-WIRE): sending: 01 04 00 41 02 b8<br/>
+DEBUG 2012-11-24 22:03:41,699 (1-WIRE): Message lock exists. Frame waiting: 01 04 00 41 03 b9<br/>
+DEBUG 2012-11-24 22:03:41,718 (1-WIRE): received: 06 01 09 01 41 d2 9c 00 04 11 01 ec<br/>
+DEBUG 2012-11-24 22:03:41,766 (1-WIRE): Node: 2 created, Type: Dimmer, Listening: true<br/>
+DEBUG 2012-11-24 22:03:41,758 (1-WIRE): Message lock exists. Frame waiting: 01 04 00 41 03 b9<br/>
+DEBUG 2012-11-24 22:03:41,818 (1-WIRE): sending: 06<br/>
+DEBUG 2012-11-24 22:03:41,819 (1-WIRE): sending: 01 04 00 41 03 b9<br/>
+DEBUG 2012-11-24 22:03:41,838 (1-WIRE): received: 06 01 09 01 41 d2 9c 00 04 11 01 ec<br/>
+DEBUG 2012-11-24 22:03:41,839 (1-WIRE): Node: 3 created, Type: Dimmer, Listening: true</p>
+
+
+<p>If you have any questions, comments or see something that looks incorrect with the above, please let me know <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Regards,<br/>
+Joe</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joefm1218 at Dec 02, 2012 05:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037993"></a>
+                                    <font class="smallfont"><p>Joe<br/>
+Thank you very much for describing this in so much detail here.<br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 02, 2012 08:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037995"></a>
+                                    <font class="smallfont"><p>Would it be a sensible idea to make an installable Synology package (.spk) for these drivers including the RXTX? <br/>
+Most people coming here do not have the courage to go through all the steps you describe. I remember how frightened I was the first time I touched IPKG.</p>
+
+<p>We now know this works on the Synology DS212+. But looking at the list of Marvell Kirkwood mv628x ARM5 based devices, the following Synology boxes might qualify:</p>
+
+<p>DS213air, DS213, DS413j, DS112+, DS112j, DS112, DS212j, DS212, DS212+, DS111, DS211j, DS211, DS211+, DS411, DS411j, DS411slim, DS110J, DS210j, DS410j, DS109, DS209, DS409, DS409Slim</p>
+
+<p>Pieter</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 02, 2012 09:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037998"></a>
+                                    <font class="smallfont"><p>Maybe Patters can include the kernel drivers for the stick and the rxtx lib into his packages.<br/>
+Just drop him a line on his forum.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 02, 2012 11:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037999"></a>
+                                    <font class="smallfont"><p>Marcus,<br/>
+My understanding of Patters' package was that it suited all Synology models not only ARM5. If that were the case, a separate driver package for Z-Wave seems more justified. <br/>
+However if you can confirm his package is ARM5 only, I'll contact him as you suggested.<br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 02, 2012 11:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038006"></a>
+                                    <font class="smallfont"><p>You are right. Since OpenRemote only depends on Java which he does not include, his packages is processor independet.<br/>
+Would not make sense to integrate unless he includes the native libs for all different architectures which is quite some work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 02, 2012 17:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038043"></a>
+                                    <font class="smallfont"><p>Hi, great HowTo!</p>
+
+<p>Do you think this will work on a QNAP TS-412 (ARM) in a similar way?<br/>
+There seems to be no package for z-wave on the QNAP, but maybe it works by compiling the drivers directly on the NAS?</p>
+
+<p>Thanks for your thoughts,<br/>
+Sven</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by silverdew at Dec 03, 2012 12:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038066"></a>
+                                    <font class="smallfont"><p>From Joe Miller's post it does not become clear if he compiled the drivers directly on the NAS. I tried it at the time under IPKG on the DS212+, but was not successfull.<br/>
+Later I cross-compiled on Ubuntu 10.4 in the Virtualbox emulator. That worked, but I never tested, as I had found the SynoZwave in the meantime. That served my purpose for the time being....</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 04, 2012 08:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038077"></a>
+                                    <font class="smallfont"><p>For the serial/usb drivers, I used VirtualBox running OpenSuSe to compile the kernel libraries. Even though this worked, I ended up using the SynoZWave Synology package.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joefm1218 at Dec 04, 2012 13:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038117"></a>
+                                    <font class="smallfont"><p>Thanks, I'll try it that way; hoping to get some more time for this home-project in the near future <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by silverdew at Dec 04, 2012 20:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038344"></a>
+                                    <font class="smallfont"><blockquote><p>1) Ensure that bootstrap/ipkg is available on Synology</p></blockquote>
+
+<p>FWIW: I just noticed that Synology warns against the use of IPKG on their systems ( <a href="http://forum.synology.com/enu/viewtopic.php?p=232455#p232455">http://forum.synology.com/enu/viewtopic.php?p=232455#p232455</a> ) They blame it as a potential cause of problems that occur after an upgrade</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 11, 2012 09:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039004"></a>
+                                    <font class="smallfont"><p>Today I downloaded the version for PRO. The files are dated 14-12-2012. The problem still exists.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 23, 2012 13:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039020"></a>
+                                    <font class="smallfont"><p>Pieter,</p>
+
+<p>The only way to have unlimited ZWave devices and commands is to use Professional, correct? I'm trying to keep the cost down on my home automation <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>I'm going to reach my 10 device limit soon.</p>
+
+<p>Regards,<br/>
+Joe</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joefm1218 at Dec 24, 2012 04:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039021"></a>
+                                    <font class="smallfont"><p>On which port is the new controller version running?<br/>
+On the latest Pro distribution, it's supposed to run on 8688 by default.</p>
+
+<p>Also, links on Controller home page are fixed (going to Pro site as they should).</p>
+
+<p>I'm just checking to make sure it's indeed the latest version, because I thought I fixed the above exception.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 24, 2012 08:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039022"></a>
+                                    <font class="smallfont"><blockquote><p>On the latest Pro distribution, it's supposed to run on 8688 by default.</p></blockquote>
+<p>There are a lot of 'latest' versions around.</p>
+<ul class="alternate" type="square">
+	<li>can you specify build number</li>
+	<li>can you tell me where I can find the latest build number in my own installation</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 24, 2012 08:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039024"></a>
+                                    <font class="smallfont"><p>We've been doing a bad job on version reporting on the controller so far (working on it), that's why I asked questions on the "behaviour" of the controller instead, as there is no version number at all displayed on the controller home page.</p>
+
+<p>The latest Pro distribution is the controller you can download when logged in to the Pro Designer v 1.0.5.<br/>
+The OpenRemote-Controller.zip file will expand to OpenRemote-Controller-2.1.0 folder.</p>
+
+<p>I checked the expanded files, and indeed they're dated 14-Dec, so you might have the correct version.<br/>
+I'll take another look at the issue you reported.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 24, 2012 08:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039025"></a>
+                                    <font class="smallfont"><ul class="alternate" type="square">
+	<li>Did I mis the change in port number somewhere?</li>
+	<li>I suppose we do need to change to that port number on the Synology boxes as well?</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 24, 2012 09:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039026"></a>
+                                    <font class="smallfont"><p>Hi Joe,</p>
+
+<p>Yes that's correct. It takes you 150$ one-time, with additional features, see <a href="http://www.openremote.com/solutions/specifications/">http://www.openremote.com/solutions/specifications/</a> We think it is worth it...<img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre kil at Dec 24, 2012 09:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039039"></a>
+                                    <font class="smallfont"><p>Hi Joe, just drop me an e-mail: pierre@openremote.org</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre kil at Dec 24, 2012 19:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039066"></a>
+                                    <font class="smallfont"><p>@Eric<br/>
+Well, it seems that my Zwave devices don't work anymore either. I removed them, and tried to re-include them without success. I've sent the logs, panel.xml, and controller.xml in one zip to your email account.<br/>
+Hope you find some clues.<br/>
+Pieter<br/>
+PS: Is it correct that this version does not produce a catalina out file?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 25, 2012 17:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039084"></a>
+                                    <font class="smallfont"><p>You did not miss it, we did not do it yet. It's in the quick start guide that comes with the Pro box but it was not yet documented for the controller downloaded from the Pro designer site.</p>
+
+<p>The port number is not really important, as long as it does not conflict with anything else running on the box. We chose 8688 and registered it with IANA as to avoid conflicts.<br/>
+From my understanding, the port on the Synology package is already different than the standard 8080 tomcat port.</p>
+
+<p>So if you're replacing the controller on the Synology with the Pro controller and the new 8688 port does not conflict with anything already running on the Synology (which hopefully is the case), then there is no reason to change it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 26, 2012 13:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039105"></a>
+                                    <font class="smallfont"><p>Sorry, my fault. I forgot to change the Z-Wave COM port setting in Designer to the proper value for my PC</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 27, 2012 10:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039182"></a>
+                                    <font class="smallfont"><p>Joe,</p>
+
+<p>I have been toying around with home automation on and off for a while now but had been leaning toward a Windows solution till I read your post. After reading your post I thought I'd try OpenRemote on my DS212+. I followed your insructions and everything looked good except that I was getting the following error in the catalina.out log file:</p>
+
+
+<p>java.lang.UnsatisfiedLinkError: gnu.io.RXTXCommDriver.nativeGetVersion()Ljava/lang/String; thrown while loading gnu.io.RXTXCommDriver<br/>
+java.lang.NoClassDefFoundError: Could not initialize class gnu.io.RXTXCommDriver thrown while loading gnu.io.RXTXCommDriver<br/>
+gnu.io.NoSuchPortException<br/>
+	at gnu.io.CommPortIdentifier.getPortIdentifier</p>
+
+<p>It looks like there was a problem with the librxtxSerial-2.1-7.so library from the ipkg rxtx install from step 10a of your instructions. After some digging around I found the following Oracle blog entry:</p>
+
+<p><a href="https://blogs.oracle.com/jtc/entry/serial_port_communication_for_java">https://blogs.oracle.com/jtc/entry/serial_port_communication_for_java</a></p>
+
+<p>I downloaded the "librxtxSerial-2.1-7.so for ARMv5 based Plug Computers" library build from a link in that blog entry and copied it into the /volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/native directory and linked to librxtxSerial.so as you mention in step 10b.</p>
+
+<p>The ipkg install (10a) may not be needed at all if the above library is used.</p>
+
+<p>After a quick stop/start of the OpenRemote package I'm in business!</p>
+
+<p>Thanks so much for the very detailed instructions, it's great to be able to squeeze one more use out of the NAS since it's always on anyway.</p>
+
+<p>Best Regards,<br/>
+Dave</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dgiovi at Dec 30, 2012 07:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039212"></a>
+                                    <font class="smallfont"><p>Dave,</p>
+
+<p>Thanks for correcting point 10a. Yes, I too could not use the IPKG version of the RXTX library. Apologies for mis-documenting that step (I tried many things to get the serial library operational). The oracle blog RXTX library for ARMv5 is what I used as well. So, IPKG is not necessary then.</p>
+
+<p>I'm glad to see someone else successfully used the steps to setup OpenRemote on a Synology.</p>
+
+<p>Regards,<br/>
+Joe</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joefm1218 at Dec 31, 2012 00:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858224"></a>
+                                    <font class="smallfont"><p>Just an FYI... I updated my Synology to the latest DSM 4.2 3202 version today. In case anyone else is considering the upgrade and are concerned about OpenRemote running currently...</p>
+
+<p>The only step that I had to redo, are steps (4) and (5) above. i.e. The SynoZWave package was wiped post upgrade. I simply reinstalled and change the device driver loading order in SS99Modules.sh. All worked correctly afterwords.</p>
+
+<p>Regards,<br/>
+Joe</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joefm1218 at Mar 04, 2013 21:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858228"></a>
+                                    <font class="smallfont"><p>Joe, thanks for the update and for documenting the installation steps in this thread earlier.</p>
+
+<p>Would you be interested in moving the content and maintaining it on a dedicated wiki page?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Mar 05, 2013 06:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858253"></a>
+                                    <font class="smallfont"><p>Sure. Just send me instructions and guidelines (documentation templates, link management, etc) and I'll create and manage the wiki page related to Synology setup.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joefm1218 at Mar 06, 2013 04:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858278"></a>
+                                    <font class="smallfont"><p>It is set up here : <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Synology+with+Z-Wave" title="OpenRemote 2.0 How To - Synology with Z-Wave">OpenRemote 2.0 How To &#45; Synology with Z&#45;Wave</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 07, 2013 14:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

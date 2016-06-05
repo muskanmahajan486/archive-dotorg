@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Tomcat Cache behaviour</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Tomcat Cache behaviour
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 04, 2013 by <font color="#0050B2">orjo</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>i`m manipulating a xml-file with a shell script on a linux machine executed by a lirc-command.<br/>
+The xml-file is read out by OR und used for a sensor-status.</p>
+
+<p>That is how it works</p>
+
+<p>Button-Press (IR-RC) -&gt; create temp.xml with changed value -&gt; move temp.xml to webapps/status/status.xml (overwrite!)</p>
+
+<p>When changing a value in the xml via the script(lirc) it`s availible within about 500ms in the webapps/status/status.xml<br/>
+But refreshing the browser (without cache, STRG+F5) it takes about 3 to 5 seconds to get the new xml-file from tomcat.</p>
+
+<p>So i think tomcat has a cache which delivers the old version to the browser.<br/>
+Is there any possibility to work around this behaviour or disable tomcat "delivery-cache" completely.</p>
+
+<p>Together with the polling interval of the OR-Sensor it takes sometimes about 10 seconds to refresh a label linked to the sensor (webconsole).<br/>
+More "in-time" would be great.</p>
+
+<p>Thank you</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22874364"></a>
+                                    <font class="smallfont"><p>I'm not aware there's any such cache in Tomcat.</p>
+
+<p>I tried by creating a status webapp context and a status.xml in it. As far as I can tell the change is "immediate" (or as fast as I'm able to save file, switch to browser and reload the page, so maybe within one second). I used the regular browser reload which works fine as long as Tomcat default settings haven't been changed (dev mode checks the timestamps for changed files and serves them immediately, no caching)</p>
+
+<p>The only difference I could think of is processing speed, what kind of system are you running on? Or if you've changed any of the Tomcat default configs?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 04, 2013 09:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874366"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>i didn`t do any changes to the tomcat standard config.<br/>
+Openremote is running on a via <a href="http://www.viaembedded.com/en/products/boards/1510/1/EPIA-M860.html">Via Epia M860</a>.</p>
+
+<p>I tried to run a cat on the xml file in console window refreshing every second while refreshing the browser. (watch -n 1 cat /opt/openremote../status.xml)<br/>
+In the xml file it is changed instant but the browser takes about 3 seconds to recognize the change.</p>
+
+<p>CPU-Usage is never over 15% when sending massive IR-Requests and refreshing the browser very often.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Aug 04, 2013 09:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874367"></a>
+                                    <font class="smallfont"><p>Ok, can see the difference with watch. Thanks for that.</p>
+
+<p>Looking at cache options in Tomcat default contexts. Will try if can make a difference. Learning something new today <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 04, 2013 09:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874369"></a>
+                                    <font class="smallfont"><p>This seems to make a difference to me:</p>
+
+<p>In controller's /conf/context.xml, modify the default &lt;Context&gt; with cache time-to-live attribute. Change:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>&lt;Context&gt;
+</pre>
+</div></div>
+
+<p>To:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>&lt;Context cacheTTL="500"&gt;
+</pre>
+</div></div>
+
+<p>This value defaults to 5000 milliseconds if not modified.</p>
+
+<p>Note that changing this in the /conf/context.xml impacts <b>every</b> web application you deploy, as it is the default template if no other webapp specific context.xml is deployed.</p>
+
+<p>For more information and reference, see : <a href="http://tomcat.apache.org/tomcat-6.0-doc/config/context.html">http://tomcat.apache.org/tomcat-6.0-doc/config/context.html</a></p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 04, 2013 09:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874370"></a>
+                                    <font class="smallfont"><p>That`s it.</p>
+
+<p>Thank you, now it`s "in time"</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Aug 04, 2013 10:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874375"></a>
+                                    <font class="smallfont"><p>Little bit off topic but is there an oversight of which tags can be used in this forum?<br/>
+I`m writing a how to and it would be great to use something like b.</p>
+
+<p>Only found the <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"></pre>
+</div></div> tag somewehere in the forum.</p>
+
+<p>Thank you</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Aug 04, 2013 11:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874376"></a>
+                                    <font class="smallfont"><p>This should help you get started: <a href="http://www.openremote.org/display/website/Wiki+Markup+Quick+Start" title="Wiki Markup Quick Start">Wiki Markup Quick Start</a></p>
+
+<p>Let us know if anything relevant is missing.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 04, 2013 11:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

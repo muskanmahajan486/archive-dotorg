@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : How to send a temperature with a button instead of using a slider (KNX)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : How to send a temperature with a button instead of using a slider (KNX)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 03, 2014 by <font color="#0050B2">hennemarc</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>can somebody give me a hint how I can create a custom command for setting a temperature in a KNX command instead of using a slider.</p>
+
+<p>Actually I have created a command with the KNX Command "TEMP" and type 9.001. By using a slider everything works fine. But how can I create my own command? For example I want to create a button which sets the temperature to 16 deg. I tried a KNX command "TEMP 16" but this does not work.</p>
+
+<p>Further on does somebody has a rule example how to use a slider with decimal values instead of integer only?</p>
+
+<p>Marc</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22882081/23036366.png">buttonslider.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22882082"></a>
+                                    <font class="smallfont"><p><a class="confluence-thumbnail-link 272x260" href='http://www.openremote.org/download/attachments/22882081/buttonslider.png'><img src="attachments/thumbnails/22882081/23036366" align="right" border="0"/></a> You can keep the slider. If you only define the Max and Min images as arrows, you end up with increase/decrease buttons. Click on the image to get a larger picture.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 03, 2014 18:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882089"></a>
+                                    <font class="smallfont"><p>Hi Pieter,</p>
+
+<p>thanks for that, but this does not solve my problem. I want to send a value like "TEMP 16.5" to the KNX Bus but I have no clue how the syntax for this looks like.</p>
+
+<p>Marc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by hennemarc at Jan 03, 2014 20:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882204"></a>
+                                    <font class="smallfont"><p>Looking at the code, I see that what you're trying to do has not been implemented for the TEMP command.<br/>
+This is some syntax I added in the past for DIM/SCALE (<a href="http://jira.openremote.org/browse/ORCJAVA-71">ORCJAVA-71</a>) but it seems it did not make it when other commands were added.</p>
+
+<p>Created <a href="http://jira.openremote.org/browse/ORCJAVA-419">ORCJAVA-419</a> to track this.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 06, 2014 08:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882209"></a>
+                                    <font class="smallfont"><p>Eric, sorry for OffTopic, but you definately know the answer. Please help.<br/>
+Want to convert time value from seconds to minutes by dividing 60.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Button pressed"</span>
+no-loop <span class="code-comment">// Button will be pressed all the time without <span class="code-keyword">this</span> structure
+</span>when
+  Event (source == <span class="code-quote">"SensButtonsOnOff"</span>) <span class="code-comment">// Check <span class="code-keyword">if</span> Water button was pressed
+</span>then
+  <span class="code-object">double</span> dMinBoLeft = $VolData.getVolume() * 1.0; <span class="code-comment">// Funny conversion from <span class="code-object">Integer</span> to <span class="code-object">Double</span> by * 0.1
+</span>  dMinBoLeft = dMinBoLeft / 60;
+  <span class="code-object">Integer</span> iTimeBoLeft = dMinBoLeft.intValue(); <span class="code-comment">// &lt;= Error here: look to bottom
+</span>end
+</pre>
+</div></div>
+
+<p>Error is the following:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2014-01-06 10:47:02,636 : Rule Compilation error Cannot invoke intValue() on the primitive type <span class="code-object">double</span>
+</pre>
+</div></div>
+
+<p>I don't see any kind of error in such string: Integer iTimeBoLeft = dMinBoLeft.intValue();</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Jan 06, 2014 08:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882212"></a>
+                                    <font class="smallfont"><p>Don't assume I know the answer to all questions posted on the forums!</p>
+
+<p>But yet, in this case I guess it's a Java issue, where you're trying to call a method on a primitive type (as indicated by compiler).</p>
+
+<p>Try</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-object">Integer</span> iTimeBoLeft = (<span class="code-object">int</span>)dMinBoLeft;</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 06, 2014 09:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882214"></a>
+                                    <font class="smallfont"><p>Thank you. It helped!</p>
+
+<p>Don't assume I know the answer to all questions posted on the forums!<br/>
+//<br/>
+Sorry, I don't assume. Didn't want to make you mad.<br/>
+Just decided if it is an error in one simple string then you may know for sure the problem.<br/>
+Possibly it may help others.</p>
+
+<p>Thank you again, Eric.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Jan 06, 2014 09:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882215"></a>
+                                    <font class="smallfont"><p>Glad it helped and no worries, not mad at all.<br/>
+Just to point out that even if I know my way around OR quite a bit, there are plenty of knowledgeable users on the forums that can be of better help than me when it comes to certain topics like rules, Z-Wave, ...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 06, 2014 09:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882216"></a>
+                                    <font class="smallfont"><p>Hello Eric,</p>
+
+<p>coming back to the original question. Is this something which can be implemented in the next release?</p>
+
+<p>BTW, any idea when the next official release will be published. Are there any "nightly builds" available?</p>
+
+<p>Marc</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by hennemarc at Jan 06, 2014 09:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882355"></a>
+                                    <font class="smallfont"><p>I don't know when any of the core team members will have time to look at this, not in the coming weeks I would say. Maybe someone in the community can have a go at it before that.</p>
+
+<p>There are no nightly builds, sometimes specific binaries are posted in forum threads that do implement a fix or new feature, otherwise you'll have to build from the sources.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 08, 2014 10:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883083"></a>
+                                    <font class="smallfont"><p>Hello Eric,</p>
+
+<p>and where do I find the sources?</p>
+
+<p>Marc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by hennemarc at Jan 19, 2014 17:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883106"></a>
+                                    <font class="smallfont"><p>It's in subversion. You can use this branch : <a href="http://svn.code.sf.net/p/openremote/code/tags/project/Controller/Controller_2_0_2">Controller_2_0_2</a>.</p>
+
+<p>Look at the GroupValueWrite.java class and see how parsing is done for e.g. DIM</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 20, 2014 08:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:36</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

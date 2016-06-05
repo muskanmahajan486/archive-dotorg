@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Execute makros  on X10 using rules?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Execute makros  on X10 using rules?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 04, 2012 by <font color="#0050B2">doogie</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>just wondering if it's possible to execute makros according to specific rules?<br/>
+What I want to achieve is simply turn off all lights in the house when the switch in the bedroom is pressed three times in quick succession </p>
+
+<p>is this possible somehow? Maybe using rules?<br/>
+regards<br/>
+Martin</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20448592"></a>
+                                    <font class="smallfont"><p>any ideas?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by doogie at Jul 11, 2012 09:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448594"></a>
+                                    <font class="smallfont"><p>Hmm, there might be a way but I haven't had time to think/build examples that involve timing.</p>
+
+<p>The rule engine itself does support temporal rules (trigger if certain events occur within some timeframe) but I'd need to spend some time on it to see what changes we need to make in our rule handling to support these.</p>
+
+<p>In the meantime, there may be a way to do some simple counters by inserting facts into the knowledgebase but haven't created examples with it. A rule can insert new "facts" which are regular Java objects, and the idea is demonstrated in the vacation example here: <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/tags/project/Controller/Controller_2_0_0/test/org/openremote/controller/fixture/statuscache/rules/holiday-example/rules/Holidays.drl">Vacation Example</a></p>
+
+<p>Java functions can also be called from within rules, for example System.currentTimeMillis() to retrieve current system time, there's an example of function definition here: <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/juha/Controller_EP_Integration/test/org/openremote/controller/fixture/statuscache/rules/function/rules/Arithmetic.drl">Function Example</a></p>
+
+<p>Combining those ideas or similar should make it possible to create simple timing and counters, at least until temporal rules are introduced. In the meanwhile the rule engine documentation is a useful source: <a href="http://docs.jboss.org/drools/release/5.2.0.Final/drools-expert-docs/html_single/">http://docs.jboss.org/drools/release/5.2.0.Final/drools-expert-docs/html_single/</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 11, 2012 11:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448596"></a>
+                                    <font class="smallfont"><p>I think I might understand what you are saying, but I'm far from fit in "drools" programming. But I will give it a try...</p>
+
+
+<p>basically, what the rule should do is, count how often the status of the button CHANGES, but when the time between two presses exceeds 2 second the counter gets reset to 0</p>
+
+<p>just roughly drafted as I don't know any of the drools syntax:</p>
+
+<p>Rule Button_pressed<br/>
+when button1.status = ON and button_was_not_pressed then <br/>
+press_count = press_count +1<br/>
+button_was_pressed = true<br/>
+  if System.currentTimeMillis() - time_last_pressed &gt; 2 seconds then<br/>
+        time_last_pressed = System.currentTimeMillis()<br/>
+        press_count= 1<br/>
+    else <br/>
+          if press_count = 3 then <br/>
+              issue "ALL_OFF_COMMAND"<br/>
+          end if <br/>
+    end if <br/>
+end</p>
+
+
+<p>Rule Button_not_pressed<br/>
+whenn Button1.Status = OFF and button_was_pressed then<br/>
+button_was_not_pressed = true</p>
+
+
+
+<p>If this is correct, I "just" have to translate it to native DROOL... <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by doogie at Jul 11, 2012 12:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448597"></a>
+                                    <font class="smallfont"><p>sorry for the bad formatting, I swear I used proper indents when writing it... seems like the Wiki swallows blanks...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by doogie at Jul 11, 2012 12:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448598"></a>
+                                    <font class="smallfont"><p>NP, the blanks must be preserved by wrapping code in {code} ... {code} segments.</p>
+
+<p>Roughly you have the idea, the mind warp is going to be that you're thinking about it imperatively, where as rules are declarative (depending on your background those terms might or might not make sense).</p>
+
+<p>Another idea might be to provide an alternative "Event Processor" (which is what the rule engine is as well) and instead of rules, execute an imperative script on the event instead. If you have Java background, customizing the controller to do this might be a nice little project &#8211; something on my todo list as well but I'm unlikely to get there anywhere soon.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 11, 2012 12:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448599"></a>
+                                    <font class="smallfont"><p>Only thing I remember about declarative programming is that I hated it even back then when I knew how it was done <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Implementing a new event processor sound like a lot of "fun"<img class="emoticon" src="images/icons/emoticons/help_16.gif" height="16" width="16" align="absmiddle" alt="" border="0"/>, but the amount of ideas in my head exceed the available time by factor 5 to 10 <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>So, back to square one then... will take a break and dig into the drool examples to re-learn the long forgotten...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by doogie at Jul 11, 2012 12:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

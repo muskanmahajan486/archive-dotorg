@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Adjusting temperature with buttons via rules?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Adjusting temperature with buttons via rules?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 05, 2015 by <font color="#0050B2">nokk3r1</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>I've been trying to figure out how to easily and correctly adjust my house room temperatures with OR GUI buttons. Why I am doing this, is because in recent controller developer releases the certain DPTs stopped working in range sensors and therefore my sliders doesn't work either. <a href="http://www.openremote.org/pages/viewpage.action?pageId=22888961">http://www.openremote.org/pages/viewpage.action?pageId=22888961</a> That will probably be fixed in future. The other reason is that I'd like to adjust temperature with 0,5 degrees increments which is same as my physical room thermostats and that is only possible via rules when using KNX.</p>
+
+<p>So what I have done:</p>
+<ul class="alternate" type="square">
+	<li>I have created three in memory virtual commands: RoomHeatUp ( on ), RoomHeatDown( off ), RoomHeatStatus( status )</li>
+	<li>Created sensor for status command: RoomHeatStatusSensor</li>
+	<li>Created 2 buttons to GUI and linked on and off commands to them</li>
+	<li>Wrote following rule:</li>
+</ul>
+
+
+<p>rule "RuleRoomHeatUp"<br/>
+when eval (true) <br/>
+   Event( source == "RoomHeatStatusSensor", value == "on" )<br/>
+   $rh1 : CustomState( source=="RoomKNXSetpointSensor")<br/>
+then<br/>
+   double Roomheatingtup = Double.parseDouble($rh1.getValue().toString()) + 0.5;<br/>
+   execute.command("WriteRoomKNXSetpoint", Double.toString(Roomheatingup));<br/>
+end</p>
+
+<p>rule "RuleRoomHeatDown"<br/>
+when eval (true) <br/>
+   Event( source == "RoomHeatStatusSensor", value == "off" )<br/>
+   $rh2 : CustomState( source=="RoomKNXSetpointSensor")<br/>
+then<br/>
+   double Roomheatingtdown = Double.parseDouble($rh2.getValue().toString()) - 0.5;<br/>
+   execute.command("WriteRoomKNXSetpoint", Double.toString(Roomheatingdown));<br/>
+end</p>
+
+<p>When monitoring bus I have made following notes:<br/>
+When using that rule with 0.5 increments and "temp1d" knx-command it calculates it correctly but when sending new setpoint it is divided by ten. For example when original value is 22.0 and increment it with 0.5, the value of 2.25 is sent.<br/>
+When using 1.0 increments and normal "temp" knx-command the new values are calculated and sent correctly bus, but sometimes the button press doesn't do anything and sometimes the rule is triggered 2 times. Also the OR updates very slowly the new value to GUI although when rule is triggered twice, the increment is mostly done twice. when using physical room thermostats the setpoint is updated to GUI instantly. </p>
+
+<p>I've been trying to figure out what is wrong for couple days now and I cannot get it to run smoothly. Is there something fundamentally wrong in my setup? Should I make virtual commands for both heat up and heat down? Is there some required corrections to get rule working as intended? Is there easier way to do this? Can I use same $rh1 for both rules as they store same value?</p>
+
+<p>Any help or advice is greatly appreciated.. </p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23595182"></a>
+                                    <font class="smallfont"><p>The fundamental problem is that you are creating continuous loops. When for example you set "RoomHeatStatusSensor" "on" then the temperature will increase with every "RoomKNXSetpointSensor" update.<br/>
+The correct logic for setting temperature is a part of my <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+retrofit+bedroom+air-conditioning+system">IoT challenge design</a>. Look on these rules:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"ARC: VACSetPoint.inc"</span>
+  timer(<span class="code-object">int</span>:300ms)
+when
+  Event(source == <span class="code-quote">"GVACSetPoint"</span>, $v: value, eval(_GetTemp(value) &lt;30))
+  Event($s:source == <span class="code-quote">"VACSetPoint.inc"</span>, value == <span class="code-quote">"ON"</span>)
+then
+  execute.command($s,<span class="code-quote">"OFF"</span>);
+  execute.command(<span class="code-quote">"GVACSetPoint"</span>, _ShiftTemp($v.toString(), 0.5));
+end
+
+rule <span class="code-quote">"ARC: VACSetPoint.dec"</span>
+  timer(<span class="code-object">int</span>:300ms)
+when
+  Event(source == <span class="code-quote">"GVACSetPoint"</span>, $v: value, eval(_GetTemp(value) &gt;15))
+  Event($s:source == <span class="code-quote">"VACSetPoint.dec"</span>, value == <span class="code-quote">"ON"</span>)
+then
+  execute.command($s,<span class="code-quote">"OFF"</span>);
+  execute.command(<span class="code-quote">"GVACSetPoint"</span>, _ShiftTemp($v.toString(), -0.5));
+end
+
+</pre>
+</div></div> </font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 06, 2015 12:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595183"></a>
+                                    <font class="smallfont"><p>Thank you very much. I'm still not that good with drools rules. </p>
+
+<p>With KNX, ut is possible to listen when commands are sent to bus and then trigger actions. In that situation same commands can be sent to bus multiple times and you don't have to poll for status. That is what I tried to achieve my rules above.</p>
+
+<p>Is there difference if I use Event or Switch parameter for reading sensor value?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nokk3r1 at Jan 06, 2015 13:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595189"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Is there difference if I use Event or Switch parameter for reading sensor value?</p></blockquote>
+<p>I don't know. I always use Event() and never had any problems with it. Perhaps someone from the core team can put some light on it?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 06, 2015 16:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

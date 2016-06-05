@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Zwave sensor status not updated when switched externally</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Zwave sensor status not updated when switched externally
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 28, 2013 by <font color="#0050B2">jda</font>.
+				    </div>
+
+				    <p>I have a zwave controlled electrical outlet that powers a small recirc pump.  I'd like the pump to always turn off after 5 minutes no matter how it's turned on.  I was successful in creating a rule to turn off the pump when activated via OpenRemote Web Console but not when the pump is activated by pressing the button on the outlet.  I assume this is because the outlet does not send status without being asked for it.  Is there a way to do what I want?  I'm very new to Home Automation and OpenRemote so let me know if I'm missing something.</p>
+
+<p>Outlet:
+<a href="http://www.smarthome.com/21667DS/Cooper-Wiring-Devices-RF9505-TDS-ASPIRE-RF-15A-Split-Control-Duplex-Receptacle-Desert-Sand/p.aspx">http://www.smarthome.com/21667DS/Cooper-Wiring-Devices-RF9505-TDS-ASPIRE-RF-15A-Split-Control-Duplex-Receptacle-Desert-Sand/p.aspx</a></p>
+
+<p>Rule that works when pump is turned on via OR:<br/>
+//******************************************************<br/>
+package org.openremote.controller.protocol</p>
+
+<p>global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+global org.openremote.controller.statuscache.SwitchFacade switches;</p>
+
+<p>rule "Recirc off after 5 sec" </p>
+
+<p>  timer(int: 5s)</p>
+
+<p>when</p>
+
+<p>  Event( source == "Recirc Sensor", value == "on" )</p>
+
+<p>then</p>
+
+<p>  execute.command("Recirc Off"); </p>
+
+<p>end <br/>
+//******************************************************</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22878999"></a>
+                                    <font class="smallfont"><p>It seems that Z-Wave actuators do not send an update ('Report' command) automatically if the device is locally controlled. A temporary solution, until a workaround is implemented in the Z-Wave stack, would be to poll the device status. Create a rule and execute the 'STATUS' command periodically. Note that this solution is not verified - so let us know if it works for you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Oct 29, 2013 07:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879042"></a>
+                                    <font class="smallfont"><p>Good call - polling does work.  The code below will poll the status every 5 minutes.  Once the status is updated, the 'off' rule will be triggered so in this case the device may be on up to 5 minutes longer than desired but polling frequency can be altered to suit your needs.</p>
+
+<p>IMPORTANT - You must time your poll and your action so they don't get sent at the same time!  For example, if I poll every 5 minutes, I can't have a rule that turns the device off 5 minutes after it's detected as on.  4 minutes and 59 seconds should be OK though.</p>
+
+<p>//*******************************************************<br/>
+rule "Poll Recirc status every 5 minutes" </p>
+
+<p>  timer (cron: 0 0/5 * * * ?)</p>
+
+<p>when</p>
+
+<p>  eval (true)</p>
+
+<p>then</p>
+
+<p>  execute.command("Recirc Status"); </p>
+
+<p>end <br/>
+//*******************************************************</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jda at Oct 29, 2013 16:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879067"></a>
+                                    <font class="smallfont"><p>Jack, thanks for posting the solution. Nice work troubleshooting too, Rainer.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 30, 2013 01:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880283"></a>
+                                    <font class="smallfont"><p>Hi. I have a problem - created a rule for polling dimmer (FGD 211) on Controller-2.2.0:</p>
+
+<p>//*******************************************************<br/>
+rule "rule1"<br/>
+  timer (int: 0s 1s)<br/>
+when<br/>
+  eval(true)<br/>
+then<br/>
+  execute.command( "dimmer status");<br/>
+end<br/>
+//*******************************************************</p>
+
+<p>At the same twitches slider and value in the user interface is constantly changing.</p>
+
+<p>If the rule to add the lines:</p>
+
+<p>$dimVal:Range( source == "dimmer range")<br/>
+System.out.println($dimVal.getValue());</p>
+
+<p>//*******************************************************<br/>
+rule "rule1"<br/>
+  timer (int: 0s 1s)<br/>
+when<br/>
+  eval(true)<br/>
+ $dimVal:Range( source == "dimmer range")<br/>
+then<br/>
+  execute.command( "dimmer status");<br/>
+  System.out.println($dimVal.getValue());<br/>
+end<br/>
+//*******************************************************</p>
+
+<p>Then the output: 48 48 48 48 0 48 48 48 48 0 48 48 48 48 0 48 0<br/>
+At the same time I do not do any physical switching.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by preston at Nov 25, 2013 13:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

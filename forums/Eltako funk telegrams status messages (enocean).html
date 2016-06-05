@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Eltako funk telegrams status messages (enocean)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Eltako funk telegrams status messages (enocean)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 17, 2014 by <font color="#0050B2">schaaf75</font>.
+				    </div>
+
+				    <p>Hello</p>
+
+<p>I discovered the openremote project a few weeks ago, its very interesting.  <br/>
+I have some eltako modules working with the funk telegrams.</p>
+
+<p>Question 1:<br/>
+I can turn on my lights but i don't know how i can read back the status diagram.<br/>
+Which enocean command and enocean EEP do i need</p>
+
+<p>Question 2:<br/>
+How can I read back the dim value the FUD module (on status change)<br/>
+Which enocean command and enocean EEP do i need</p>
+
+<p>Question 3:<br/>
+To change my light value of the FUD I need to send a command on the push event of the button (in the openremote designer program) and <br/>
+on release the button i have to send an other command, can I do this in the openremote designer program.</p>
+
+<p>I monitored  (Enocean receiver on my USB PC port) the funk telegrams from my wireless switches and the status telegram from the FAM.<br/>
+This FAM module is programmed to send a status diagram only if there is a status change in the system</p>
+
+<p>Send command on push button (wireless button)<br/>
+Send command 0x00 on release button in software, this is importand for the FUD and other modules.<br/>
+Dimmer (FUD) is working on timer base, depends on settings in FUD module. If button is pushed longer than 500ms (programmable in FUD) dimmer is increasing or decreasing. Release the button will stop increasing or decreasing.<br/>
+Short push on button (within 500ms) FUD will be switched on or off.</p>
+
+<p>See attachment for more details.<br/>
+Is this functionality already implemented in the software?</p>
+
+<p>Kind regards<br/>
+Arjen</p>
+
+<p><a class="confluence-thumbnail-link 1754x1239" href='http://www.openremote.org/download/attachments/22885323/Hex eltako.jpg'><img src="attachments/thumbnails/22885323/23036511" align="left" border="0"/></a></p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22885323/23036511.jpg">Hex eltako.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22885323/23036532.png">iPadView.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22885323/23036533.jpg">iPadView.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22885323/23036536.png">Eltako_Dim_Slider.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22885323/23036537.png">Eltako_Dim.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22885328"></a>
+                                    <font class="smallfont"><p>Hi Arjen,</p>
+
+<p>I've done some Eltako's device integration <a href="http://mqlservice.net/openremote/tag/eltako/">http://mqlservice.net/openremote/tag/eltako/</a><br/>
+There is example of socket switching sensor state. I think that your device uses the same EEP for status.<br/>
+The dim value EEP is probably different. I usually use the Dolphin tool to find out the EEP.<br/>
+Can you list what modules do you use?</p>
+
+<p>Kind regards,<br/>
+Michal   </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 18, 2014 09:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885334"></a>
+                                    <font class="smallfont"><p>Hi Arjen,</p>
+
+<p>EnOcean actors typically support the EnOcean equipment profile (EEP) F6-02-01. This profile is unidirectional and as a result it's not possible to request the actor status.</p>
+
+<p>Eltako dimmers are kind of bidirectional because they support the "Central Command" EEP A5-38-08. The status of these dimmers cannot be requested but they send a status update telegram each time after the status has been changed. In addition, as opposed to the F6-02-01 profile, an absolute dimmer value is set. All this information can be found in an Eltako document with the title "Contents of Eltako Wireless Telegrams". </p>
+
+<p>I'm currently working on the EEP A5-38-08 dimmer support and I'll let you know when I'm done with it.</p>
+
+<p>What kind of Eltako devices do you have ? Eltako series 14 (FAM14, FUD14,...) ?</p>
+
+<p>Kind regards,<br/>
+Rainer</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Mar 18, 2014 21:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885337"></a>
+                                    <font class="smallfont"><blockquote>
+<p>EnOcean actors typically support the EnOcean equipment profile (EEP) F6-02-01. This profile is unidirectional and as a result it's not possible to request the actor status.</p></blockquote>
+<p>At least the Eltako's socket which I've tested sends F6-02-01 back with its status when it is switched (either wirelessly or manually with the button). So this EEP is in fact used bidirectionally.<br/>
+Therefore, I can always detect if the switching was successful or not. Moreover, as it sends power measurements periodically I am able to sense its state based on it too. At least be sure that the switch is ON when power is &gt; 0. I'm using all this to do very reliable switching with minimum number of telegrams in a quite noisy environment.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 18, 2014 21:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885343"></a>
+                                    <font class="smallfont"><p>Hi Michal and Rainer,</p>
+
+<p>Thanks for the info, yesterday i get the F6-02-01 command working for the FMS14, my problem was I typed a space after the F6-02-01, and I uses the wrong enocean command. <br/>
+In which file (directory) can I find these definitions? (more than 10 years ago i did some programming work, i have to refresh my skills...)</p>
+
+<p>The devices I have (Eltako):<br/>
+FAM14<br/>
+FTS14EM<br/>
+2x FMS14 (2 relais)<br/>
+2x FUD14 (dimmer)<br/>
+3x FT55 (tasters)</p>
+
+<p>The FUD14 will send 2 commands after a change: one F6-02-01, Dimmer ON or OFF. And the command A5-38-08 with the Eltako module settings (incl dim value). <br/>
+If i can test the EEP A5-38-08 command for you, let me know.</p>
+
+<p>Then one question is open: how can I send a command on releasing a button (on my ipad), release event. Is this topic discussed already in the forum or discribed in a document? <br/>
+I like this stuff....</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by schaaf75 at Mar 19, 2014 08:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885344"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Then one question is open: how can I send a command on releasing a button (on my ipad), release event. Is this topic discussed already in the forum or discribed in a document? <br/>
+I like this stuff....</p></blockquote>
+<p>You can't with the standard EnOcean implementation in openremote (I've reported this a time ago). I've made a custom version which is able to decode button release event (I use this for detecting multiply button press and long press), but I haven't version which can send these. Moreover, openremote is unable to create long press event, therefore you cannot implement appleremote with openremote.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 19, 2014 10:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885346"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Thanks for the info, yesterday i get the F6-02-01 command working for the FMS14, my problem was I typed a space after the F6-02-01, and I uses the wrong enocean command. <br/>
+In which file (directory) can I find these definitions?</p></blockquote>
+<p>I don't know if they are documented anywhere. I indeed read the source code to find enocean commands as their names are not so obvious.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 19, 2014 10:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885374"></a>
+                                    <font class="smallfont"><p>A first running version of the A5-38-08 implementation is available for testing. You'll find the version at <a href="http://sourceforge.net/p/openremote/code/HEAD/tree/workspace/rhitz/Controller_2_1_0_ORCJAVA-427/">http://sourceforge.net/p/openremote/code/HEAD/tree/workspace/rhitz/Controller_2_1_0_ORCJAVA-427/</a></p>
+
+<p>Use the subversion checkout command or download a snapshot. In order to build the controller go to the controller root directory and execute the ant command (maybe you have to install ant beforehand). After that you'll find the controller in the output directory.</p>
+
+<p>The commands for sending and receiving the dim values are currently DIM_ELTAKO and STATUS_ELTAKO in case of ELTAKO dimmers like the FUD14. I think that the final version does not need the ELTAKO command suffix but this will require a new command configuration parameter (device type or something like that).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Mar 20, 2014 19:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885375"></a>
+                                    <font class="smallfont"><p>Hi Rainer,<br/>
+Thanks for the update, can you help me a little (step by step) to make this update working on my Mac.<br/>
+I tried to download the snapshot it doesn't work (or I didn't do the right thing) I have to wait for a long time...<br/>
+subversion checkout command? It's al new for me. (I can work with some terminal commands on my mac).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by schaaf75 at Mar 20, 2014 20:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885458"></a>
+                                    <font class="smallfont"><p>Hi Rainer,<br/>
+I have tested your new A5-38-08 implementation. See results below:</p>
+
+<p>Command A5-38-08, DIM_ELTAKO<br/>
+This command doen't work and generates a error code in the terminal every time the status of the FUD14 is changed.<br/>
+(ERROR HTTP\-Thread\-1: Requested sensor id '4.272.240' was not found. Defaulting to 'N/A'.)</p>
+
+<p>Command A5-38-08, STATUS_ELTAKO<br/>
+This command works but returned the DIM value of the FUD14 (It works great)</p>
+
+<p>Command F6-02-01, STATUS_ROCKER_A<br/>
+This command returns the ON / OFF status of the FUD14</p>
+
+<p>The FUD14 returns 2 commands after change (I monitored this "low level" on the usb port)<br/>
+(See document first post, last 2 lines)<br/>
+The first returned command contains the status info and can be read by the Command F6-02-01, STATUS_ROCKER_A<br/>
+The second returned command contains the following info (information Eltako) <br/>
+Data_byte3 = 0x02<br/>
+Data_byte2 = Dim value<br/>
+Data_byte1 = Dim speed (this can be programed with the eltako software PCT14)<br/>
+Data_byte0 = DB0_bit3 Learn button (0= learn telegram, 1= data telegram), DB0_Bit0 (1= dimmer on, 0= dimmer off), DB0_Bit2 (1 = Dim value blocked, 0 = Dim value not blocked)<br/>
+If Data_byte0 = 0x08 the dimmer is off  <br/>
+If Data_byte0 = 0x09 the dimmer is on<br/>
+So the on off status can be read from both commands i think.</p>
+
+<p>Conclusion of my test: the commands DIM_ELTAKO, STATUS_ELTAKO are switched and the dim value can be read and the status command generates an error by the A5-38-08 test implementation. </p>
+
+<p>Thanks for now, I am happy with the dim value!!!!</p>
+
+<p><a class="confluence-thumbnail-link 768x1024" href='http://www.openremote.org/download/attachments/22885323/iPadView.jpg'><img src="attachments/thumbnails/22885323/23036533" align="absmiddle" border="0"/></a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by schaaf75 at Mar 23, 2014 20:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885468"></a>
+                                    <font class="smallfont"><p>Hi Arjen,</p>
+
+<p>thanks for the feedback.</p>
+
+<p>The DIM_ELTAKO command can be used in two different ways:</p>
+
+<ol>
+	<li>Slider 'Set Value' configuration
+<br clear="all" /> <br clear="all" />
+<img src="attachments/22885323/23036537.png" align="absmiddle" border="0"/>
+<br clear="all" /> <br clear="all" /></li>
+	<li>Fixed dim value
+<br clear="all" /> <br clear="all" />
+<img src="attachments/22885323/23036536.png" align="absmiddle" border="0"/></li>
+</ol>
+
+
+
+<p>The easiest way to test the DIM_ELTAKO command is to create a slider on your panel. Also note that the 'Device ID' command parameter contains a relative address (in this example 5) which is based on the absolute EnOcean ID of your EnOcean USB stick.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Mar 24, 2014 06:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885493"></a>
+                                    <font class="smallfont"><p>Hi Rainer,</p>
+
+<p>IT WORKS !!!!!<br/>
+It was getting late last night.... </p>
+
+<p>In the Eltako FUD14 module i have configurate (with the PCT14 eltako configuration software) an adres with the following function setting: "Dimming value of FVS".<br/>
+After programming the slider it works perfect. I had only programmed adresses with the function "universal switch On left upper button".</p>
+
+<p>A little thing in the slider with the FUD14, if the dimmer is on (value 15-100) and i set in one move the slider to 0, the dimmer is not responding, it look likes no command is send to the FUD, i don't see lights blinking on the FUD module. It is only when i go from the ON value directly to 0. The dimmer is switched of under value 15. The slider and dimmer are responding ok from 1 to 100.</p>
+
+<p>Thanks for your time and programming work.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by schaaf75 at Mar 25, 2014 07:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:35</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

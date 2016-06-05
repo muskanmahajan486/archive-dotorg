@@ -1,0 +1,224 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : UDP issue with 2.1.0 controller</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : UDP issue with 2.1.0 controller
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 21, 2015 by <font color="#0050B2">galbip</font>.
+				    </div>
+
+				    <p>I've just downloaded the new 2.1.0 and have issues with UDP.</p>
+
+<p>I'm trasferring Arduino I/O status sending a string over UDP (using 8801 and 8802 ports).<br/>
+I have one command (UDPlistener) per each UDP port with RegEx (.*) to capture the whole string.<br/>
+Finally, two custom sensors report string on two labels.</p>
+
+<p>At OR startup, I get this error message, and the two labels show N/A </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR [UDPListener Port: 8801]: Error in UDPListenerThread
+java.lang.IllegalStateException: No match found
+        at java.util.regex.Matcher.group(Matcher.java:536)
+        at org.openremote.controller.protocol.socket.UDPListenerCommand$UDPListenerThread.run(UDPListenerCommand.java:122)
+ERROR [UDPListener Port: 8802]: Error in UDPListenerThread
+java.lang.IllegalStateException: No match found
+        at java.util.regex.Matcher.group(Matcher.java:536)
+        at org.openremote.controller.protocol.socket.UDPListenerCommand$UDPListenerThread.run(UDPListenerCommand.java:122)
+</pre>
+</div></div>
+
+
+<p>Thanks</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23595832"></a>
+                                    <font class="smallfont"><p>Did the same configuration work with a pre 2.1.0 controller?<br/>
+Do you use a different Java version then before?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 24, 2015 17:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595833"></a>
+                                    <font class="smallfont"><p>Hi, </p>
+
+<p>I did not change java version.</p>
+
+<p>Setup was (and is) Windows 7 - Java 1.8.0_25 - OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17. This OR release was the only one I managed to make almost working with UDPListener. I said "almost" because often OR was not reporting content of the received UDP strings and I had to just restar OR controller to restore the correct behaviour.</p>
+
+<p>Looking at the Release Note of the latest OR controller, I noticed some fix un UDP, that's why I tried the new one.</p>
+
+<p>I'm ready to make tests if useful, but I need some guidance.</p>
+
+<p>Thanks</p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by galbip at Jan 24, 2015 18:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595842"></a>
+                                    <font class="smallfont"><p>The change mentioned in the 2.1 changes should be the already in the 2013-06-17 snapshot.<br/>
+The error occurs when the groupCount is &gt; 0 and we try to access the first group.<br/>
+I don't know why this causes an issue now and not before.<br/>
+Do you see in the log what string is received and the regex is used on?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 24, 2015 22:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595853"></a>
+                                    <font class="smallfont"><p>understood. Thanks.</p>
+
+<p>In this case I prefer to redo my tests with 2013-06-17 snapshot and then with the new one in a "structured way". <br/>
+I would hate to pass wrong info....</p>
+
+<p>Will come back in the next days.</p>
+
+
+<p>Paolo</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by galbip at Jan 25, 2015 10:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595858"></a>
+                                    <font class="smallfont"><p>I have tested the two versions simplifying a bit the environment to remove possible variables:</p>
+
+<p>I have an Arduino sending every 2 seconds a string over UDP on port 8801. I alternate two strings as follow to simulate a change in I/O state:</p>
+
+<p>:AR88_10:off:AR88_11:on:AR88_12:off<br/>
+:AR88_10:on:AR88_11:on:AR88_12:off    </p>
+
+
+<p>I added this rule just to print out the received string:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+rule <span class="code-quote">"UDPListener"</span>
+when
+  Event(source==<span class="code-quote">"UDP_rx_str_8801"</span>, $v: value!="")
+then
+
+
+end
+</pre>
+</div></div>
+
+
+<p>This is what I get with OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17 every 2 seconds:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+DEBUG 2015-01-25 16:17:58,475 : Rule Activation Imminent:
+        rule <span class="code-quote">"UDPListener"</span> <span class="code-comment">// (<span class="code-keyword">package</span> org.openremote.controller.protocol)
+</span>        Declarations
+                Declaration: <span class="code-quote">"$v"</span>
+                Value:
+                        Custom declarative value
+        LHS objects(antecedents)
+                <span class="code-object">Class</span>: <span class="code-quote">"CustomState"</span>
+                Fields:
+                        Event Name:     <span class="code-quote">"UDP_rx_str_8801"</span>
+                        Event Value:    <span class="code-quote">":AR88_10:off:AR88_11:on:AR88_12:off"</span>
+
+DEBUG 2015-01-25 16:18:00,458 : Rule Activation Imminent:
+        rule <span class="code-quote">"UDPListener"</span> <span class="code-comment">// (<span class="code-keyword">package</span> org.openremote.controller.protocol)
+</span>        Declarations
+                Declaration: <span class="code-quote">"$v"</span>
+                Value:
+                        Custom declarative value
+        LHS objects(antecedents)
+                <span class="code-object">Class</span>: <span class="code-quote">"CustomState"</span>
+                Fields:
+                        Event Name:     <span class="code-quote">"UDP_rx_str_8801"</span>
+                        Event Value:    <span class="code-quote">":AR88_10:on:AR88_11:on:AR88_12:off"</span>
+
+</pre>
+</div></div>
+
+<p>while, this is the output when I run the latest 2.1.0 controller:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+ERROR [UDPListener Port: 8801]: Error in UDPListenerThread
+java.lang.IllegalStateException: No match found
+        at java.util.regex.Matcher.group(Matcher.java:536)
+        at org.openremote.controller.protocol.socket.UDPListenerCommand$UDPListenerThread.run(UDPListenerCommand.java:122)
+
+</pre>
+</div></div>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by galbip at Jan 25, 2015 15:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595903"></a>
+                                    <font class="smallfont"><p>It looks like something was merged into the 2.1 branch but something else was missed.<br/>
+I can't say when a fixed 2.1 version will come out.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 26, 2015 21:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

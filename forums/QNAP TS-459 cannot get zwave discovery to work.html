@@ -1,0 +1,273 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : QNAP TS-459 cannot get zwave discovery to work</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : QNAP TS-459 cannot get zwave discovery to work
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 27, 2015 by <font color="#0050B2">stevemichels</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>Looking for some support on integrating zwave on OpenRemote running on QNAP NAS TS-459 (intel based). Im am trying to extend my KNX installation with zwave.</p>
+
+<p>I have an Aeotec S2 zwave USB stick and I have 2 zwave components in my network (door sensor + smoke alarm of FIBARO).</p>
+
+<p>Whatever I do/tried the zwave.log remains empty and zwave/java related errors are shown in the boot.log. The latter errors are probably a consequene of not having node&lt;nodeid&gt;.xml file present in OpenRemote/webapps/controller/zwave due to failing/not started discovery of elements.</p>
+
+<p>BTW i had already included the 2 sensor devices manually using the USB stick.</p>
+
+<p>Plugging the USB zwave controller device it gets discovered:<br/>
+dmesg:<br/>
+250372.213055 usb 6-2: new full-speed USB device number 2 using uhci_hcd<br/>
+250372.378435 cp210x 6-2:1.0: cp210x converter detected<br/>
+250372.485085 usb 6-2: reset full-speed USB device number 2 using uhci_hcd<br/>
+250372.628976 usb 6-2: cp210x converter now attached to ttyUSB0</p>
+
+
+<p><span class="error">&#91;/dev&#93;</span> # lsusb<br/>
+Bus 002 Device 002: ID 1005:b155 Apacer Technology, Inc.<br/>
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub<br/>
+Bus 006 Device 002: ID 10c4:ea60 Cygnal Integrated Products, Inc. CP210x Composite Device<br/>
+Bus 006 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub<br/>
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub<br/>
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub<br/>
+Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub<br/>
+Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub<br/>
+Bus 007 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub<br/>
+Bus 008 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub</p>
+
+
+<p>1) boot.log:<br/>
+============</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>DEBUG 2015-05-27 21:50:11,915 : Created object model for Command( ID = 375, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=INCLUSION_MODE_OFF, nodeId=1, command=INCLUSION_MODE_OFF}</span> </div>).<br/>
+DEBUG 2015-05-27 21:50:11,915 : Created object model for Command( ID = 376, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=INCLUSION_MODE_ON, nodeId=1, command=INCLUSION_MODE_ON}</span> </div>).<br/>
+DEBUG 2015-05-27 21:50:11,915 : Created object model for Command( ID = 377, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=FIB Deur Sensor Status, nodeId=4, command=status}</span> </div>).<br/>
+DEBUG 2015-05-27 21:50:11,916 : Created object model for Command( ID = 378, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=INCLUSION_MODE_STATUS, nodeId=1, command=INCLUSION_MODE_STATUS}</span> </div>).<br/>
+DEBUG 2015-05-27 21:50:11,916 : Created object model for Command( ID = 379, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=EXCLUSION_MODE_STATUS, nodeId=1, command=EXCLUSION_MODE_STATUS}</span> </div>).<br/>
+DEBUG 2015-05-27 21:50:11,916 : Created object model for Command( ID = 380, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=EXCLUSION_MODE_ON, nodeId=1, command=EXCLUSION_MODE_ON}</span> </div>).<br/>
+DEBUG 2015-05-27 21:50:11,916 : Created object model for Command( ID = 381, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=EXCLUSION_MODE_OFF, nodeId=1, command=EXCLUSION_MODE_OFF}</span> </div>).</p>
+
+<p>...</p>
+
+<p>ERROR 2015-05-27 21:50:12,066 : Creating sensor failed. Error : org/openremote/controller/ZWaveConfiguration<br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="7076530" name="EXCLUSION ON/OFF" type="switch"&gt;<br/>
+      &lt;include type="command" ref="379" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+java.lang.NoClassDefFoundError: org/openremote/controller/ZWaveConfiguration<br/>
+        at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.createZWavePortConfiguration(DefaultZWaveConfigurationManager.java:74)<br/>
+        at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.getPortConfiguration(DefaultZWaveConfigurationManager.java:47)<br/>
+        at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.initZWaveController(ZWaveCommandBuilder.java:245)<br/>
+        at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.build(ZWaveCommandBuilder.java:145)<br/>
+        at org.openremote.controller.command.CommandFactory.getCommand(CommandFactory.java:164)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:420)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:858)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+ERROR 2015-05-27 21:50:12,074 : Creating sensor failed. Error : org/openremote/controller/ZWaveConfiguration<br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="7076529" name="INCLUSION ON/OFF" type="switch"&gt;<br/>
+      &lt;include type="command" ref="378" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+java.lang.NoClassDefFoundError: org/openremote/controller/ZWaveConfiguration<br/>
+        at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.createZWavePortConfiguration(DefaultZWaveConfigurationManager.java:74)<br/>
+        at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.getPortConfiguration(DefaultZWaveConfigurationManager.java:47)<br/>
+        at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.initZWaveController(ZWaveCommandBuilder.java:245)<br/>
+        at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.build(ZWaveCommandBuilder.java:145)<br/>
+        at org.openremote.controller.command.CommandFactory.getCommand(CommandFactory.java:164)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:420)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:858)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+DEBUG 2015-05-27 21:50:12,083 : Created object model for sensor 'Salon-Centraal-Sense' (ID = '7,004,854').<br/>
+ERROR 2015-05-27 21:50:12,090 : Creating sensor failed. Error : org/openremote/controller/ZWaveConfiguration<br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="7076528" name="voordeur-sensor" type="switch"&gt;<br/>
+      &lt;include type="command" ref="377" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+java.lang.NoClassDefFoundError: org/openremote/controller/ZWaveConfiguration<br/>
+        at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.createZWavePortConfiguration(DefaultZWaveConfigurationManager.java:74)<br/>
+        at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.getPortConfiguration(DefaultZWaveConfigurationManager.java:47)<br/>
+        at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.initZWaveController(ZWaveCommandBuilder.java:245)<br/>
+        at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.build(ZWaveCommandBuilder.java:145)<br/>
+        at org.openremote.controller.command.CommandFactory.getCommand(CommandFactory.java:164)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:420)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:858)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)<br/>
+        at java.lang.Thread.run(Thread.java:745)</p>
+
+
+<p>2) ZWAVE LOG:<br/>
+=============</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>INFO 2015-05-27 21:33:22,356 (Z-Wave):</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  OpenRemote Z-Wave protocol version : '2.0.0'</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>INFO 2015-05-27 21:49:08,657 (Z-Wave):</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  OpenRemote Z-Wave protocol version : '2.0.0'</p>
+
+<p>--------------------------------------------------------------------</p>
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23599414"></a>
+                                    <font class="smallfont"><p>So I have read on the forum somewhere that version 2.1.0 is not OK and that version 2.1.1 should be installed instead.</p>
+
+<p>So I just downloaded that version and performed a replace of all files with the 2.1.1 version.
+<a href="http://sourceforge.net/projects/openremote/files/latest/download?source=typ_redirect">http://sourceforge.net/projects/openremote/files/latest/download?source=typ_redirect</a></p>
+
+<p>But still the zwave log is empty, but the zwave related errors in the boot.log are slightly different:</p>
+
+<p>=&gt; complaining that the identifiers are not integers, but who sets these values???</p>
+
+<p>DEBUG 2015-06-01 20:57:26,534 : Created object model for Command( ID = 393, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=INCLUSION_MODE_OFF, nodeId=1, command=INCLUSION_MODE_OFF}</span> </div>).<br/>
+DEBUG 2015-06-01 20:57:26,534 : Created object model for Command( ID = 394, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=INCLUSION_MODE_ON, nodeId=1, command=INCLUSION_MODE_ON}</span> </div>).<br/>
+DEBUG 2015-06-01 20:57:26,534 : Created object model for Command( ID = 395, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=FIB Deur Sensor Status, nodeId=4, command=status}</span> </div>).<br/>
+DEBUG 2015-06-01 20:57:26,535 : Created object model for Command( ID = 396, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=INCLUSION_MODE_STATUS, nodeId=1, command=INCLUSION_MODE_STATUS}</span> </div>).<br/>
+DEBUG 2015-06-01 20:57:26,535 : Created object model for Command( ID = 397, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=EXCLUSION_MODE_STATUS, nodeId=1, command=EXCLUSION_MODE_STATUS}</span> </div>).<br/>
+DEBUG 2015-06-01 20:57:26,535 : Created object model for Command( ID = 398, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=EXCLUSION_MODE_ON, nodeId=1, command=EXCLUSION_MODE_ON}</span> </div>).<br/>
+DEBUG 2015-06-01 20:57:26,536 : Created object model for Command( ID = 399, Type = zwave, Properties : <div class="error"><span class="error">Unknown macro: {name=EXCLUSION_MODE_OFF, nodeId=1, command=EXCLUSION_MODE_OFF}</span> </div>).</p>
+
+
+<p>DEBUG 2015-06-01 20:57:26,549 : Initializing event processor: Drools Rule Engine<br/>
+DEBUG 2015-06-01 20:57:26,551 : Adding Rule 'modeler_rules.drl'...<br/>
+DEBUG 2015-06-01 20:57:26,580 : Adding rule definitions from 'modeler_rules.drl'...<br/>
+INFO 2015-06-01 20:57:26,587 : Initialized event processor : Drools Rule Engine<br/>
+DEBUG 2015-06-01 20:57:26,587 : Initializing event processor: RRD4J Data Logger<br/>
+INFO 2015-06-01 20:57:26,609 : Initialized event processor : RRD4J Data Logger<br/>
+DEBUG 2015-06-01 20:57:26,609 : Initializing event processor: EmonCMS Data Logger<br/>
+INFO 2015-06-01 20:57:26,610 : Initialized event processor : EmonCMS Data Logger</p>
+
+
+<p>ERROR 2015-06-01 20:57:26,680 : Creating sensor failed. Error : The &lt;include&gt; element in sensor (ID = 7076530) contains an invalid reference identifier. The value is not a valid integer : 397<br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="7076530" name="EXCLUSION ON/OFF" type="switch"&gt;<br/>
+      &lt;include type="command" ref="397" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+org.openremote.controller.exception.XMLParsingException: The &lt;include&gt; element in sensor (ID = 7076530) contains an invalid reference identifier. The value is not a valid integer : 397<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:442)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:872)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:454)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1411)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+ERROR 2015-06-01 20:57:26,692 : Creating sensor failed. Error : The &lt;include&gt; element in sensor (ID = 7076529) contains an invalid reference identifier. The value is not a valid integer : 396<br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="7076529" name="INCLUSION ON/OFF" type="switch"&gt;<br/>
+      &lt;include type="command" ref="396" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+org.openremote.controller.exception.XMLParsingException: The &lt;include&gt; element in sensor (ID = 7076529) contains an invalid reference identifier. The value is not a valid integer : 396<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:442)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:872)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:454)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1411)<br/>
+        at java.lang.Thread.run(Thread.java:745)<br/>
+DEBUG 2015-06-01 20:57:26,701 : Created object model for sensor 'Salon-Centraal-Sense' (ID = '7,004,854').<br/>
+ERROR 2015-06-01 20:57:26,715 : Creating sensor failed. Error : The &lt;include&gt; element in sensor (ID = 7076528) contains an invalid reference identifier. The value is not a valid integer : 395<br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="7076528" name="voordeur-sensor" type="switch"&gt;<br/>
+      &lt;include type="command" ref="395" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+org.openremote.controller.exception.XMLParsingException: The &lt;include&gt; element in sensor (ID = 7076528) contains an invalid reference identifier. The value is not a valid integer : 395<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:442)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:872)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:454)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1411)<br/>
+        at java.lang.Thread.run(Thread.java:745)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stevemichels at Jun 01, 2015 22:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

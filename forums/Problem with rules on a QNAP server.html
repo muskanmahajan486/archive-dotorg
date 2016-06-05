@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Problem with rules on a QNAP server</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Problem with rules on a QNAP server
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 02, 2015 by <font color="#0050B2">berndl</font>.
+				    </div>
+
+				    <p>I have made some timer rules for my KNX Installation.<br/>
+This works only from time to time, if any. <br/>
+There is an information on the openeremote webpage that one should re-boot the controller after every change of rules.<br/>
+But what does this mean - rebooting?<br/>
+I have tried to close the controller and restart it - no result<br/>
+Then I have reboot my QNAP Server - the same result.<br/>
+So my question is. What does it mean to re-boot the controller and how is it done?</p>
+
+<p>Thank you in advance<br/>
+Bernd</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23596913"></a>
+                                    <font class="smallfont"><p>For a NAS rebooting of the controller is equivalent to restart the package, i.e. stop Openremote -&gt; start Openremote.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 03, 2015 11:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596918"></a>
+                                    <font class="smallfont"><p>Thank you for your answer, but it did not work.<br/>
+Then I have reinstalled the controller and restart ist and reboot it some times - it did not work, although the devices and command I can control from my Iphone.<br/>
+May be there is something wrong in the rule?<br/>
+Here is the simple rule:</p>
+
+<p>package org.openremote.controller.protocol</p>
+
+<p>global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+global org.openremote.controller.statuscache.SwitchFacade switches;</p>
+
+<p>rule "AZ Lampe an 17:00 Uhr"</p>
+
+<p>  timer (cron: 0 0 17 * * ?) when eval (true) then</p>
+
+<p>  execute.command("Lampe AZ (ON)"); </p>
+
+<p>end</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by berndl at Mar 03, 2015 16:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596927"></a>
+                                    <font class="smallfont"><p>1. Check if the rule file is compiled without any errors by inspecting boot.log;<br/>
+2. In case 1 is OK, check if the rule is executed, either by adding print statement to the rule and examine the console output or adding log function and inspecting for example dev.log.</p>
+<ul class="alternate" type="square">
+	<li>adding print statement - include following line in rule body (between then and end)
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"Drools rule:\"</span><span class="code-quote">"+drools.getRule().getName()+"</span>\"");
+</pre>
+</div></div></li>
+	<li>adding log fuction
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">import</span> org.openremote.controller.utils.Logger;
+<span class="code-keyword">import</span> org.openremote.controller.Constants;
+
+function void log(<span class="code-object">String</span> msg)
+{
+  Logger.getLogger(Constants.RUNTIME_EVENTPROCESSOR_LOG_CATEGORY + <span class="code-quote">".drools"</span>).debug(msg);
+}
+
+<span class="code-comment">// and use it in the rule:
+</span>rule <span class="code-quote">"foo"</span>
+  timer (cron: 0 0 17 * * ?)
+then
+  log(<span class="code-quote">"bar"</span>);
+end
+</pre>
+</div></div>
+<p>3. In case the rule is executed OK then inspect the command: execute.command("Lampe AZ (ON)");</p></li>
+	<li>check the spelling of the command name if it indeed matches the command which is executed - spelling errors here would be invisible;</li>
+	<li>if the spelling is OK and command is executed unreliably, for example the switch is operated by some radio protocol and you are in a noisy environment, then perhaps you need to take a special treatements of sending a radio command reliably as described in the <a href="http://mqlservice.net/openremote/2014/06/10/switch-wireless-devices-reliable-through-drools-in-openremote/">blog</a>.</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 04, 2015 05:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596940"></a>
+                                    <font class="smallfont"><p>Thank you again.<br/>
+I tried but nothing happens.<br/>
+I think that the problem is the synchronization.<br/>
+Whereas all the switches and commands are synchronized this is not valid for the rules.</p>
+
+<p>So I search on my QNAP System for the file modeler_rules.drl<br/>
+I found it by:<br/>
+/share/50014EE208740008_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules/modeler_rules.drl</p>
+
+<p>When I open it with vi modeler_rules.drl<br/>
+it is empty only ∾ 's and the text: modeler-rules.drl 100% 0,00-01<br/>
+What can I do?<br/>
+Is it possible to edit the drl file directly without synchronization via the designer?</p>
+
+<p>Thank you again</p>
+
+<p>Bernd</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by berndl at Mar 05, 2015 14:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596945"></a>
+                                    <font class="smallfont"><p>Which version Java you use on your Qnap? At the forum wrote that the rules are working with version Java6 only.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Mar 05, 2015 18:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596952"></a>
+                                    <font class="smallfont"><p>Thank you for help. I have Java 6.<br/>
+But I have found a workaround<br/>
+I edit the modeler_rules.drl directly on the NAS with vi<br/>
+Then I restart the controller (off - on)</p>
+
+<p>Then I found out that there was a time delay between the real time and the "cron" time of 1 hour <br/>
+When I programmed 17:00 it starts at 18:00<br/>
+(Whatever is the reason?). As I was too impatient I found out this very late.</p>
+
+<p>Kind regards<br/>
+Bernd</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by berndl at Mar 05, 2015 19:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596953"></a>
+                                    <font class="smallfont"><p>This has probably to do with file permissions. Openremote is unable to overwrite the modeler_rules.drl. You can fix it witch chown or/and with chmod command. Anyway, locally editing the modeler_rules.drl will work too, unless it is overwritten with the next design syncing.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 05, 2015 20:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

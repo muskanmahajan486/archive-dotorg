@@ -1,0 +1,324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Implementing client side protocols</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Implementing client side protocols
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 26, 2012 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>The basic need for this came from supporting VoIP/SIP on the iOS console (See this <a href="http://www.openremote.org/display/forums/Implementation+of+VoIP+functionality+in+OR">thread</a> for more details).<br/>
+But it can have many other uses as shown below.</p>
+
+<p>The idea is that UI elements can be "linked to protocols" that are taken care of entirely by the console and that do not get back to the controller.<br/>
+This means command executions that button, switches, sliders, ... trigger and sensor values bound to labels, images, switches, ...</p>
+
+<p>This can be implemented in a totally transparent fashion at the modeler level.</p>
+
+<p>A new client side protocol can be defined in the modeler as a current controller side protocol is.<br/>
+The same "protocol.xml" configuration file is used to defined the protocol name and its properties.<br/>
+If is however important that protocol names are unique (so a client and server side protocol do not share the same name), so that the protocol name alone is enough information to determine if it's client or server side.</p>
+
+<p>So the modeler and the files it generates do not change.</p>
+
+
+<p>The controller must however be able to make the distinction between the 2.</p>
+
+<p>1. It must ignore the configuration of client side sensors, as it should not start any polling / listening thread for them.<br/>
+2. Although there should never be any rest call to the controller to execute a write command from a client protocol, we should build in some safeguard in case a console that do not understand the concept of client protocol connects to it.<br/>
+3. The controller must generate and return the appropriate information to the console so it can execute the local protocols locally</p>
+
+<p>This is performed during the call to /rest/panel/&lt;panel id&gt; (or more specifically /rest/&lt;version&gt;/panel/&lt;panel id&gt; , where version is &gt; 2.0).<br/>
+In the 2.1 API, we can define the XML returned by that call as</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;openremote xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> 
+</span>            xmlns:xsi=<span class="code-quote">"http:<span class="code-comment">//www.w3.org/2001/XMLSchema-instance"</span> 
+</span>            xmlns:schemaLocation=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org/panel.xsd"</span>&gt;
+</span>  &lt;tabbar&gt;...&lt;/tabbar&gt;
+  &lt;screens&gt;
+    &lt;screen id=<span class="code-quote">"211"</span> name=<span class="code-quote">"Light"</span> inverseScreenId=<span class="code-quote">"218"</span>&gt;
+      ...
+    &lt;/screen&gt;
+  &lt;/screens&gt;
+  &lt;groups&gt;
+    &lt;group id=<span class="code-quote">"142"</span> name=<span class="code-quote">"Livingroom"</span>&gt;
+      ...
+    &lt;/group&gt;
+  &lt;/groups&gt;
+  &lt;local&gt;
+    &lt;components&gt;
+      &lt;<span class="code-keyword">switch</span> id=<span class="code-quote">"38"</span>&gt;
+        &lt;on&gt;
+          &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"46"</span> /&gt;
+        &lt;/on&gt;
+        &lt;off&gt;
+          &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"47"</span> /&gt;
+        &lt;/off&gt;
+        &lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"44"</span> /&gt;
+      &lt;/<span class="code-keyword">switch</span>&gt;
+      &lt;button id=<span class="code-quote">"16"</span>&gt;
+        &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"48"</span> /&gt;
+      &lt;/button&gt;
+    &lt;components&gt;
+    &lt;sensors&gt;
+      &lt;sensor id=<span class="code-quote">"43"</span> name=<span class="code-quote">"Shade1_Level"</span> type=<span class="code-quote">"level"</span> /&gt;
+      &lt;sensor id=<span class="code-quote">"44"</span> name=<span class="code-quote">"Light1"</span> type=<span class="code-quote">"<span class="code-keyword">switch</span>"</span>&gt;
+        &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"54"</span> /&gt;
+        &lt;state name=<span class="code-quote">"on"</span> /&gt;
+        &lt;state name=<span class="code-quote">"off"</span> /&gt;
+      &lt;/sensor&gt;
+    &lt;/sensors&gt;
+    &lt;commands&gt;
+      &lt;command id=<span class="code-quote">"46"</span> protocol=<span class="code-quote">"SIP"</span>&gt;
+        &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"MUTE_ON"</span> /&gt;
+      &lt;/command&gt;
+    &lt;/commands&gt;
+  &lt;/local&gt;
+&lt;/openremote&gt;
+</pre>
+</div></div>
+
+<p>This last &lt;local&gt; section, is generated by the controller as it knows the commands and sensors that are linked to a client side protocol.<br/>
+It has the same schema as the elements that are present in the controller.xml file.</p>
+
+<p>Note that the XML returned by that call, although only being a subset of the full panel.xml file, still uses the same schema.<br/>
+It means that the panel.xsd needs to be updated to support that optional &lt;local&gt; element at the end.</p>
+
+<p>The console now has that extra information in &lt;local&gt; and can use to to "intercept" calls to commands, sensor read and poll and execute them locally.</p>
+
+<p>It does mean that the console will need to map the client side protocols to some specific implementation, just as the controller does for server side ones.<br/>
+Whether or not the exact same CommandBuilder mechanism is implemented should still be decided.</p>
+
+
+<p>This can be used in different situation:</p>
+<ul class="alternate" type="square">
+	<li>for very specific client side protocols such as SIP/VoIP mentioned above</li>
+	<li>to interface with the OR console : status of connection with controller, status of polling but maybe also login, logout, back, next, settings, ... replacing the very specific navigation commands that are currently in place (to be seen if generic commands add value here)</li>
+	<li>to interface with the device : WiFi status, battery level, ...</li>
+	<li>to have some server less control : it can be possible to have some basic control through TCP or HTTP, directly from the console (e.g. iPhone) to the device.</li>
+</ul>
+
+
+<p>Those client side protocols should still be limited to very specific cases, as they are heavy to support, requiring most likely a specific implementation for each console (so currently iOS, Android and Web).</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19440422"></a>
+                                    <font class="smallfont"><p>So if the Designer generates additional optional elements (&lt;local&gt;) for panel.xml then the controller requires no changes at all, since it has no interest in what goes on inside the panel.xml definitions, no?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 26, 2012 15:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440423"></a>
+                                    <font class="smallfont"><p>Also, if controller requires knowledge of how to handle these changes that go into the panel.xml, it complicates the usefulness of this feature for serverless mode, I think?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 26, 2012 15:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440429"></a>
+                                    <font class="smallfont"><p>Indeed, changing the modeler does make more sense.<br/>
+In that situation, the controller.xml would never contain any client specific protocol definitions, so in my controller changes above<br/>
+1. is solved and no changes are required<br/>
+2. is handled by the normal error handling and no changes are required<br/>
+3. will still require a small modification but that should be straight forward. This XML generation is currently handled by ProfileServiceImpl.getProfileDocumentByPanelName method, which is very aware of the XML format. So this code should be updated to copy over the local section.</p>
+
+<p>The modeler now needs to be aware of client side protocols, so</p>
+
+<p>in the protocol.xml definitions, add a flag to indicate the protocol is client side</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;protocol displayName=<span class="code-quote">"SIP Client"</span> tagName=<span class="code-quote">"sip"</span> client=<span class="code-quote">"<span class="code-keyword">true</span>"</span>&gt;
+</pre>
+</div></div>
+
+<p>There should be no impact on the user interface of the modeler, client and server side protocol are handled the same way.<br/>
+But when the panel.xml / controller.xml files are generated, the flag is taken into account so that:</p>
+<ul class="alternate" type="square">
+	<li>only elements linked to server side protocols are used to generate controller.xml</li>
+	<li>elements linked to client side protocols are used to generate the additional local section in panel.xml</li>
+</ul>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Apr 26, 2012 16:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440430"></a>
+                                    <font class="smallfont"><p>Well doh!</p>
+
+<p>I haven't really thought about how the console could get its configuration in an environment where there is no controller at all but indeed having the controller do this job would make things more complicated (or duplicate functionality).</p>
+
+<p>I don't wont to tackle implementation of this right now but indeed, the idea would be that then a console could connect directly to beehive to get the information it needs. So when the URL in the console is that of Beehive, ask a user name/password and then beehive can serve the list of panels and the panel descriptions directly to the console and the controller is fully out of the loop.<br/>
+We should have some validation in this case that only client side protocols can be used.</p>
+
+<p>This is compatible with the changes outlined above, as when I describe the fact that the panel.xml/controller.xml generation is changed, I mention the modeler but really it is/should be beehive doing that generation (and the one serving that up to the controller).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Apr 26, 2012 16:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440432"></a>
+                                    <font class="smallfont"><p>Agree.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 26, 2012 19:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440433"></a>
+                                    <font class="smallfont"><p>Indeed, there is a lot of crap the designer is doing right now which belongs to the backend (Beehive) and downloading and exporting the artifacts (zip) is one of them, currently implemented in the ResourceServiceImpl.java (and related classes). The current implementation generates all other sorts of issues as well, some of which the new cache implementation attempts to cover but the correct long term solution is another REST service on Beehive backend. Modularize the backend and lighten the crud on Designer. Helps with high availability deployments too, plus will be used by many other services that require the same data access &#8211; one of which is the serverless mode.<br/>
+(</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 26, 2012 20:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440440"></a>
+                                    <font class="smallfont"><p>I think modifying the designer to generate a panel.xml with additional &lt;local&gt; tags is more logic then using the current model and have the controller perform a translation from controller.xml into panel.xml.</p>
+
+<p>Regarding controller-less setups this should also be much easier.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 27, 2012 08:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988528"></a>
+                                    <font class="smallfont"><p>I went ahead and had a first go at the implementation and noticed that same tags in the &lt;local&gt; section would conflict with identically named tags in the &lt;screens&gt; section.<br/>
+For instance, button is defined both in the panel and controller XML schema. They are however different.</p>
+
+<p>One way to handle this is to not re-use the controller schema for the &lt;local&gt; tag elements but create specific tags.</p>
+
+<p>Another way would be to use appropriate namespaces on the elements.<br/>
+I noticed however that both schemas were using the same <a href="http://www.openremote.org">http://www.openremote.org</a> as their namespace.</p>
+
+<p>So I changed both of them to use their specific namespace, <a href="http://www.openremote.org/panel">http://www.openremote.org/panel</a> and <a href="http://www.openremote.org/controller">http://www.openremote.org/controller</a> respectively.<br/>
+I can now have the panel schema include the controller schema and have the &lt;local&gt; tag reference tags from the controller schema, as in:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;xsd:element name=<span class="code-quote">"local"</span>&gt;
+   &lt;xsd:complexType&gt;
+      &lt;xsd:sequence&gt;
+        &lt;xsd:element ref=<span class="code-quote">"ctrl:components"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"1"</span>/&gt;
+        &lt;xsd:element ref=<span class="code-quote">"ctrl:sensors"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"1"</span>/&gt;
+        &lt;xsd:element ref=<span class="code-quote">"ctrl:commands"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"1"</span>/&gt;
+      &lt;/xsd:sequence&gt;
+    &lt;/xsd:complexType&gt;
+&lt;/xsd:element&gt;
+</pre>
+</div></div>
+
+<p>And in the generated panel.xml, the &lt;local&gt; tag looks something like</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;local&gt;
+  &lt;ctrl:components&gt;
+    &lt;ctrl:<span class="code-keyword">switch</span> id=<span class="code-quote">"14"</span>&gt;
+      &lt;ctrl:on/&gt;
+      &lt;ctrl:off/&gt;
+    &lt;/ctrl:<span class="code-keyword">switch</span>&gt;
+    &lt;ctrl:button id=<span class="code-quote">"50"</span>&gt;
+      &lt;ctrl:include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"2"</span>/&gt;
+    &lt;/ctrl:button&gt;
+    ...
+  &lt;/ctrl:components&gt;
+  ...
+&lt;/local&gt;
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 07, 2012 12:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988529"></a>
+                                    <font class="smallfont"><p>This namespace change appear to be the correct, but will not break the old controllers ?</p>
+
+<p>If current controllers will be fine, no problem, but if current controllers break probably will be better to use  <a href="http://www.openremote.org/panel">http://www.openremote.org/panel</a> for new elements, and prepare the controllers to be able to accept the changes and make the namespace change for old elements later.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ivanfm at May 07, 2012 13:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988534"></a>
+                                    <font class="smallfont"><p>Changing the namespace on the controller side does indeed require a code change in the controller.</p>
+
+<p>Looking at the number of places where the <a href="http://www.openremote.org">http://www.openremote.org</a> namespace identifier is used currently makes this look like a non-trivial change.</p>
+
+<p>Changing the namespace for panel-side only would limit the impact of this change.</p>
+
+<p>Particularly given that ultimately we do want to work our way back to a single namespace and schema definition for all elements so that the controller can control the client's view in a dynamic way.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 07, 2012 23:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

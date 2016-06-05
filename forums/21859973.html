@@ -1,0 +1,297 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : HTTP POST command is doing a HTTP GET?!</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : HTTP POST command is doing a HTTP GET?!
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 09, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I am using Domotiga and am not happy with the clients available so I am looking into Openremote for controlling my lights, alarm, heating and home theatre.</p>
+
+<p>I have three commands; On, Off and Status. I am using the Domotiga XML-RPC interface. </p>
+
+<p>This is how these look in controller.xml:</p>
+
+<div style="max-width: 800px;">
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    &lt;command id=<span class="code-quote">"391"</span> protocol=<span class="code-quote">"http"</span>&gt;
+      &lt;property name=<span class="code-quote">"workload"</span> value=<span class="code-quote">"&amp;lt;methodCall&amp;gt;&amp;lt;methodName&amp;gt;device.getstate&amp;lt;/methodName&amp;gt;&amp;lt;params&amp;gt;&amp;lt;param&amp;gt;&amp;lt;value&amp;gt;Serre Spots&amp;lt;/value&amp;gt;&amp;lt;/param&amp;gt;&amp;lt;/params&amp;gt;&amp;lt;/methodCall&amp;gt;"</span> /&gt;
+      &lt;property name=<span class="code-quote">"pollingInterval"</span> value=<span class="code-quote">"1s"</span> /&gt;
+      &lt;property name=<span class="code-quote">"method"</span> value=<span class="code-quote">"POST"</span> /&gt;
+      &lt;property name=<span class="code-quote">"url"</span> value=<span class="code-quote">"http:<span class="code-comment">//192.168.1.109:9009"</span> /&gt;
+</span>      &lt;property name=<span class="code-quote">"xpath"</span> value=<span class="code-quote">"<span class="code-comment">//string"</span> /&gt;
+</span>      &lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Serre Spots Status"</span> /&gt;
+    &lt;/command&gt;
+    &lt;command id=<span class="code-quote">"392"</span> protocol=<span class="code-quote">"http"</span>&gt;
+      &lt;property name=<span class="code-quote">"workload"</span> value=<span class="code-quote">"&amp;lt;methodCall&amp;gt;&amp;lt;methodName&amp;gt;device.setdevice&amp;lt;/methodName&amp;gt;&amp;lt;params&amp;gt;&amp;lt;param&amp;gt;&amp;lt;value&amp;gt;Serre Spots&amp;lt;/value&amp;gt;&amp;lt;/param&amp;gt;&amp;lt;param&amp;gt;&amp;lt;value&amp;gt;Off&amp;lt;/value&amp;gt;&amp;lt;/param&amp;gt;&amp;lt;/params&amp;gt;&amp;lt;/methodCall&amp;gt;"</span> /&gt;
+      &lt;property name=<span class="code-quote">"method"</span> value=<span class="code-quote">"POST"</span> /&gt;
+      &lt;property name=<span class="code-quote">"url"</span> value=<span class="code-quote">"http:<span class="code-comment">//192.168.1.109:9009/"</span> /&gt;
+</span>      &lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Serre Spots (OFF)"</span> /&gt;
+    &lt;/command&gt;
+    &lt;command id=<span class="code-quote">"393"</span> protocol=<span class="code-quote">"http"</span>&gt;
+      &lt;property name=<span class="code-quote">"workload"</span> value=<span class="code-quote">"&amp;lt;methodCall&amp;gt;&amp;lt;methodName&amp;gt;device.setdevice&amp;lt;/methodName&amp;gt;&amp;lt;params&amp;gt;&amp;lt;param&amp;gt;&amp;lt;value&amp;gt;Serre Spots&amp;lt;/value&amp;gt;&amp;lt;/param&amp;gt;&amp;lt;param&amp;gt;&amp;lt;value&amp;gt;On&amp;lt;/value&amp;gt;&amp;lt;/param&amp;gt;&amp;lt;/params&amp;gt;&amp;lt;/methodCall&amp;gt;"</span> /&gt;
+      &lt;property name=<span class="code-quote">"method"</span> value=<span class="code-quote">"POST"</span> /&gt;
+      &lt;property name=<span class="code-quote">"url"</span> value=<span class="code-quote">"http:<span class="code-comment">//192.168.1.109:9009/"</span> /&gt;
+</span>      &lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Serre Spots (ON)"</span> /&gt;
+    &lt;/command&gt;
+
+</pre>
+</div></div>
+
+<p>When I look at the log I see this for the status command:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR [Polling thread <span class="code-keyword">for</span> sensor: Serre Spots]: HttpGetCommand could not execute
+org.apache.http.client.HttpResponseException: Method Not Allowed
+    at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+    at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+    at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:735)
+    at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:709)
+    at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:700)
+    at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:176)
+    at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:190)
+    at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:722)
+[Fatal Error] :1:1: Premature end of file.
+ERROR [Polling thread <span class="code-keyword">for</span> sensor: Serre Spots]: Could not perform xpath evaluation
+org.xml.sax.SAXParseException; lineNumber: 1; columnNumber: 1; Premature end of file.
+    at com.sun.org.apache.xerces.internal.parsers.DOMParser.parse(DOMParser.java:251)
+    at com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderImpl.parse(DocumentBuilderImpl.java:300)
+    at javax.xml.parsers.DocumentBuilder.parse(DocumentBuilder.java:121)
+    at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:210)
+    at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:722)
+</pre>
+</div></div>
+
+<p>The fatal error makes sense as there is no data returned. </p>
+
+<p>And this when pushing the switch:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR [HTTP-<span class="code-object">Thread</span>-2]: HttpGetCommand could not execute
+org.apache.http.client.HttpResponseException: Method Not Allowed
+    at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+    at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+    at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:735)
+    at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:709)
+    at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:700)
+    at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:176)
+    at org.openremote.controller.protocol.http.HttpGetCommand.send(HttpGetCommand.java:136)
+    at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+    at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+    at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:125)
+    at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+    at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+    at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+    at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+    at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+    at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+    at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+    at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+    at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+    at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+    at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+    at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+    at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+    at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+    at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+    at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+    at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+    at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+    at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+    at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+    at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:722)
+</pre>
+</div></div>
+</div>
+
+<p>Am I missing something here? Can someone point me in the right direction?</p>
+
+<p>I am using the latest OpenRemote controller: 2.0.2.</p>
+
+<p>Thanks,<br/>
+Sander</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21859984"></a>
+                                    <font class="smallfont"><p>Can you try the <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_Alpha-SNAPSHOT-2013-04-09.zip/download">OpenRemote-Controller-2.1.0_Alpha-SNAPSHOT-2013-04-09.zip</a>? There's some code that looks suspicious in the HTTP implementation of 2.0.2 and this seems to have been modified in the 2.1.0 alpha.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 09, 2013 19:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860001"></a>
+                                    <font class="smallfont"><p>Thanks, that solved it!<br/>
+Now I am looking at the Unsupported Media Type exception ..... HTTP 100 is not understood by Domotiga. </p>
+
+<p>Hmm, guess I have to write something myself to give back the status to Openremote. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sandervp at Apr 09, 2013 21:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860020"></a>
+                                    <font class="smallfont"><p>For the Unsupported Media Type a fix is available. Checke here: <a href="http://www.openremote.org/display/forums/Controlling+XBMC+with+json-rpc">http://www.openremote.org/display/forums/Controlling+XBMC+with+json-rpc</a><br/>
+The 2.1_Alpha might already include this fix but the designer does not have a field to enter the attribute for the command.<br/>
+You can edit the controller.xml manually and add this line to your http commands:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> &lt;property name=<span class="code-quote">"contentType"</span> value=<span class="code-quote">"application/json"</span> /&gt;</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 10, 2013 08:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860067"></a>
+                                    <font class="smallfont"><p>Ok, I copied the class files and added </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;property name=<span class="code-quote">"contentType"</span> value=<span class="code-quote">"application/json"</span> /&gt;
+</pre>
+</div></div>
+
+<p>With this as the result:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR [Polling thread <span class="code-keyword">for</span> sensor: Serre Spots]: ClientProtocolException when executing HTTP method
+org.apache.http.client.HttpResponseException: Unsupported Media Type
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:735)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:709)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:700)
+	at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:231)
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:245)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:722)
+[Fatal Error] :1:1: Premature end of file.
+ERROR [Polling thread <span class="code-keyword">for</span> sensor: Serre Spots]: Could not perform xpath evaluation
+org.xml.sax.SAXParseException; lineNumber: 1; columnNumber: 1; Premature end of file.
+	at com.sun.org.apache.xerces.internal.parsers.DOMParser.parse(DOMParser.java:251)
+	at com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderImpl.parse(DocumentBuilderImpl.java:300)
+	at javax.xml.parsers.DocumentBuilder.parse(DocumentBuilder.java:121)
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:267)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:722)
+</pre>
+</div></div>
+
+<p>As I am using XMLRPC this it should use</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;property name=<span class="code-quote">"contentType"</span> value=<span class="code-quote">"text/xml"</span> /&gt;
+</pre>
+</div></div>
+
+<p>The result of that is:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR [Polling thread <span class="code-keyword">for</span> sensor: Serre Spots]: ClientProtocolException when executing HTTP method
+org.apache.http.client.HttpResponseException: Bad Request
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:735)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:709)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:700)
+	at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:231)
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:245)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:722)
+[Fatal Error] :1:1: Premature end of file.
+ERROR [Polling thread <span class="code-keyword">for</span> sensor: Serre Spots]: Could not perform xpath evaluation
+org.xml.sax.SAXParseException; lineNumber: 1; columnNumber: 1; Premature end of file.
+	at com.sun.org.apache.xerces.internal.parsers.DOMParser.parse(DOMParser.java:251)
+	at com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderImpl.parse(DocumentBuilderImpl.java:300)
+	at javax.xml.parsers.DocumentBuilder.parse(DocumentBuilder.java:121)
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:267)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:722)
+</pre>
+</div></div>
+
+<p>Did I miss something? </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sandervp at Apr 10, 2013 19:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860071"></a>
+                                    <font class="smallfont"><p>This was talked about here: <a href="http://www.openremote.org/display/forums/Controlling+XBMC+with+json-rpc?focusedCommentId=20452698#comment-20452698">http://www.openremote.org/display/forums/Controlling+XBMC+with+json-rpc?focusedCommentId=20452698#comment-20452698</a><br/>
+It's a Domotiga issue not following the HTTP specs.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 10, 2013 20:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860076"></a>
+                                    <font class="smallfont"><p>I was aware of that .... but was hoping something had changed on the Gambas side.<br/>
+Submitted a bug for this: <a href="https://code.google.com/p/gambas/issues/detail?id=419">https://code.google.com/p/gambas/issues/detail?id=419</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sandervp at Apr 10, 2013 21:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860202"></a>
+                                    <font class="smallfont"><p>I realized the easiest way to get rid of the Expect: 100-continue header was to put a proxy in between and strip the header .... works like a charm <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sandervp at Apr 12, 2013 19:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:41</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

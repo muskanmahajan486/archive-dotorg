@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Dropdown commands in Designer</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Dropdown commands in Designer
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 18, 2014 by <font color="#0050B2">tomas.morton</font>.
+				    </div>
+
+				    <p>Good evening,</p>
+
+<p>I have recently started developing a new protocol to integrate with Open Remote.  I went to create the Designer protocol XML file and could not find any options for specifying drop-down values.  Is this feature available?  If not, my team would not mind taking a look at implementing it.  I am a strong believer in simplicity for users, and asking them to enter a value that is REGEX checked will very quickly frustrate my clients.</p>
+
+<p>Edit:<br/>
+Furthermore, are there any validation options available based on values entered in other boxes on the New Command screen?<br/>
+For example, a snippet of an enum (modified for visibility):<br/>
+    DOOR_LOCK(), DOOR_UNLOCK(), DOOR_UNLOCK_LATCHED(),<br/>
+    AREA_DISARM_AREA(), AREA_DISARM_24HR(), AREA_DISARM_ALL(), AREA_ARM(), AREA_ARM_FORCE(), AREA_ARM_STAY(), AREA_ARM_INSTANT(),<br/>
+    OUTPUT_OFF(), OUTPUT_ON(), OUTPUT_TIMED(),<br/>
+    INPUT_BYPASS_REMOVE(), INPUT_BYPASS_TEMPORARY(), INPUT_BYPASS_PERMANENT(),<br/>
+    VARIABLE_SET(),<br/>
+    REQUEST_STATUS();</p>
+
+<p>As you can see, there are a lot of options but only a few apply to each category.  <br/>
+It would not be reasonable to expect the user to remember each of these options; nor even to select from a list showing all of these values (though that would be an improvement).</p>
+
+
+<p>Any thoughts or assistance would be much appreciated.</p>
+
+
+<p>Regards,</p>
+
+<p>Tomas.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22886573"></a>
+                                    <font class="smallfont"><p>A dropdown list is supported when specifying 'options' in the protocol definition, such as</p>
+<blockquote>
+<p>&lt;attr name="command" label="AMX Command" options="ON,OFF,PULSE,CHANNEL_STATUS,SEND_LEVEL,LEVEL_STATUS,SEND_COMMAND,COMMAND_READ,SEND_STRING,STRING_READ"&gt;<br/>
+...</p></blockquote>
+
+<p>Dependency between fields is not yet supported but would indeed be something of value to simplify UI for end-users.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 19, 2014 08:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886574"></a>
+                                    <font class="smallfont"><p>Thank you Eric, that's excellent.</p>
+
+<p>Do you have any tips for where to go to look at implementing conditional fields?  I haven't looked at the designer code very much at this stage so any assistance would be appreciated.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tomas.morton at May 19, 2014 09:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886593"></a>
+                                    <font class="smallfont"><p>I'll take a look at the source code and point you to where this is implemented.</p>
+
+<p>In the meantime, I believe it would be interesting to discuss here already what you would like to implement to enhanced the command creation dialog and how that would translate in the protocol.xml definitions.<br/>
+This can also be interesting for others to jump in at the purely functional level and indicate what, as end users, they would think would be useful in that dialog.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 20, 2014 09:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886625"></a>
+                                    <font class="smallfont"><p>Sorry for the delayed reply - spending a lot of time getting everything running.</p>
+
+<p>Without thinking about the technology currently implemented, I would imagine an optimal interface would allow a user to select an option from a box (such as Area, Door) and then have further fields become available to the user in a similar style to a JavaScript form. This is similar behaviour to the current Protocol selection when you are creating a command in the designer.</p>
+
+<p>Another possibility, which is more complicated and will probably require a lot of new functionality, would be displaying a list view of all options at each screen. When an option is chosen, a typical hierarchy is displayed at the top of the screen (Door -&gt; Unlock -&gt; 3) and a list of options under that heading would be displayed.  This means a smoother interface for the user to work with and not having to worry about what happens if a field value previously set is changed after.</p>
+
+
+<p>Heres a couple of ideas for the XML:</p>
+
+<p>&lt;attr name="record-type" label="Record Type"&gt;<br/>
+	&lt;option name="Door" id="recTypeDoor"&gt;<br/>
+	&lt;option name="Area" id="recTypeArea"&gt;<br/>
+	&lt;option name="Output" id="recTypeOutput"&gt;<br/>
+	&lt;validations /&gt;<br/>
+&lt;/attr&gt;</p>
+
+<p>&lt;attr name="record-command" label="Record Command"&gt;<br/>
+	&lt;!-- Door commands --&gt;<br/>
+	&lt;option name="Unlock" dependency="recTypeDoor"&gt;<br/>
+	&lt;option name="Lock" dependency="recTypeDoor"&gt;<br/>
+	&lt;option name="Latch" dependency="recTypeDoor"&gt;<br/>
+	&lt;!-- Area commands --&gt;<br/>
+	&lt;option name="Arm" dependency="recTypeArea"&gt;<br/>
+	&lt;option name="Disarm" dependency="recTypeArea"&gt;<br/>
+	&lt;validations /&gt;<br/>
+&lt;/attr&gt;</p>
+
+<p>You could possibly also group the options into a list, and assign them all the same dependency:</p>
+
+<p>&lt;options names="Unlock,Lock,Latch" dependency="recTypeDoor"&gt;</p>
+
+<p>Edit: the dependency should probably link through the attribute name, makes it more robust but means more xml attributes.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tomas.morton at May 22, 2014 02:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

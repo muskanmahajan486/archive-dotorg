@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Micasaverde Vera - PHP script to get sensors status</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Micasaverde Vera - PHP script to get sensors status
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 04, 2013 by <font color="#0050B2">milimilo</font>.
+				    </div>
+
+				    <p>Hello guys</p>
+
+<p>I am working on the Micasaverde's Vera integration to OpenRemote.</p>
+
+<p>The solution we have to get all the sensors status is to poll Vera through a http request that returns a xml.<br/>
+To avoid overflowing the Vera because of each sensor's http request, we wrote a php script which copies the xml of the Vera to a server (NAS or anything where OR is installed and has a web server).</p>
+
+<p>Here is the script :</p>
+
+<p>--------------------<br/>
+&lt;?php</p>
+
+<p>// function to erase<br/>
+$fp = fopen("vera.xml", "w");<br/>
+ftruncate($fp, 0);<br/>
+fclose($fp);</p>
+
+<p>// function to copy xml<br/>
+$veraip = 'IPVERA:3480';<br/>
+$source=file_get_contents("http://$veraip/data_request?id=sdata&amp;output_format=xml");<br/>
+if ($source == false) <div class="error"><span class="error">Unknown macro: { 
+    echo &quot;No Vera, check IP.&quot;;                    
+    exit;}</span> </div><br/>
+if ($source == true) <div class="error"><span class="error">Unknown macro: { 
+        echo &quot;Vera found&quot;;
+        }</span> </div><br/>
+$destination = 'vera.xml';<br/>
+if (is_writable($destination)) {<br/>
+if (!$handle = fopen($destination, 'r+')) <div class="error"><span class="error">Unknown macro: {
+echo &quot;Impossible d&#39;ouvrir le fichier ($destination).&quot;;
+exit;
+}</span> </div><br/>
+if (fwrite($handle, $source) === FALSE) <div class="error"><span class="error">Unknown macro: {
+echo &quot;Impossible d&#39;ecrire dans le fichier ($destination). Vous n&#39;avez pas les permissions.&quot;;
+exit;
+}</span> </div><br/>
+echo "Le fichier vera.xml a ete mis a jour avec succes.";<br/>
+fclose($handle);<br/>
+} else <div class="error"><span class="error">Unknown macro: {
+echo &quot;Le fichier que vous essayez de modifier n&#39;est pas inscriptible.&quot;;
+}</span> </div><br/>
+?&gt;</p>
+
+<p>---------------------</p>
+
+<p>A sensor in OR calls this php file each second. Then each sensor polls this file to get its status.</p>
+
+<p>The problem i have is that this script copies the whole xml file each second.<br/>
+But there is a way to write ONLY the changes, which should be less traffic loading...<br/>
+Unfortunately i'm really unable to write some php. Plus it seems that these documentation (below) is not php but C or something else.</p>
+
+<p>Is there anybody, some php master developper who could help me?</p>
+
+<p>Here is the code with timeout requests that Micasaverde provides to copy only the changes:</p>
+
+<p>---------------------<br/>
+int LoadTime=0;<br/>
+int DataVersion=0;<br/>
+int DefaultTimeout=60;<br/>
+int DefaultMinimumDelay=2000;<br/>
+int CurrentMinimumDelay=0;<br/>
+int CurrentSleep=2000;<br/>
+int EngineState=-2; // Meaning we are not connected<br/>
+string IpAddress; // Will be: "http://76.168.224.30:3480/" or maybe "https://fwd2.mios.com/john/tokyo/10266/"<br/>
+int NumFailures=0;</p>
+
+<p>while( Quit==false )<br/>
+{<br/>
+	URL = IpAddress + "data_request?id=lu_sdata&amp;loadtime=" + LoadTime + "&amp;dataversion=" + DataVersion + "&amp;timeout=" + DefaultTimeout + <br/>
+"&amp;minimumdelay=" + CurrentMinimumDelay;<br/>
+	string Data = FetchURL(URL);</p>
+
+<p>	// If the request was successful, there will be something in Data<br/>
+	if( Data.IsEmpty() )<br/>
+	{<br/>
+		// Be sure the user knows we're not connected<br/>
+		EngineState=-2;</p>
+
+<p>		NumFailures = NumFailures + 1;<br/>
+		if( NumFailures &gt; MAX_FAILURES )</p>
+		<div class="error"><span class="error">Unknown macro: {
+			CheckConnection();
+			continue;
+		}</span> </div>
+
+<p>		// The request failed, so sleep a couple seconds before trying again<br/>
+		Sleep(CurrentSleep);</p>
+
+<p>		// No need to introduce a minimum delay since this will be the first request<br/>
+		CurrentMinimumDelay=0; </p>
+
+<p>		// Try again<br/>
+		continue;<br/>
+	}</p>
+
+<p>	// So we have data.  Parse it and update our variables, like the EngineState, LoadTime, DataVersion, and all the scenes, devices, etc.<br/>
+	ParseResponse(Data);</p>
+
+<p>	// We got valid data, so introduce the minimumdelay in case there's a flood of changes<br/>
+	CurrentMinimumDelay=DefaultMinimumDelay;<br/>
+}</p>
+
+<p>---------------------</p>
+
+<p>And here is the link of Micasaverde's documentation about it:<br/>
+<a href="http://wiki.micasaverde.com/index.php/UI_Simple">http://wiki.micasaverde.com/index.php/UI_Simple</a></p>
+
+<p>Thank you very much to people who could help me.</p>
+
+<p>Kind regards from France...</p>
+
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

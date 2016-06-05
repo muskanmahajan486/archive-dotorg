@@ -1,0 +1,397 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : No log of zwave stick</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : No log of zwave stick
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 20, 2013 by <font color="#0050B2">richardrobert</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm trying to get my Aeon Labs Z-wave stick on Ubuntu 13.04 to run. My struggle is with the Zwave stick and the serial communication. </p>
+
+
+
+<p>WARNING:  RXTX Version mismatch<br/>
+	Jar version = RXTX-2.2pre1<br/>
+	native lib Version = RXTX-2.2-20081207 Cloudhopper Build rxtx.cloudhopper.net<br/>
+gnu.io.NoSuchPortException<br/>
+	at gnu.io.CommPortIdentifier.getPortIdentifier(CommPortIdentifier.java:269)</p>
+
+<p>I think it has to do with running 64 bits, since I've been getting this error before replacing the librxtxserial.so with the 64-bit version as was hinted in this thread </p>
+
+<p><a href="http://www.openremote.org/display/forums/Zwave+rxtxSerial+dll+Can%27t+load+IA+32bit" title="32 bit / 64 bit">Zwave rxtxserial</a></p>
+
+<p>But then the error was </p>
+
+<p>java.lang.UnsatisfiedLinkError: /home/richard/Downloads/OpenRemote-Controller/webapps/controller/WEB-INF/lib/native/librxtxSerial.so: /home/richard/Downloads/OpenRemote-Controller/webapps/controller/WEB-INF/lib/native/librxtxSerial.so: wrong ELF class: ELFCLASS32 (Possible cause: architecture word width mismatch) thrown while loading gnu.io.RXTXCommDriver<br/>
+Exception in thread "Thread-3" java.lang.UnsatisfiedLinkError: /home/richard/Downloads/OpenRemote-Controller/webapps/controller/WEB-INF/lib/native/librxtxSerial.so: /home/richard/Downloads/OpenRemote-Controller/webapps/controller/WEB-INF/lib/native/librxtxSerial.so: wrong ELF class: ELFCLASS32 (Possible cause: architecture word width mismatch)</p>
+
+<p>I'm a newbie on Linux, so that doesn't help.</p>
+
+<p>So far I have set the log level of the zwave.log and zwave-debug.log both at DEBUG, but I only get messages like:</p>
+
+<p>DEBUG 2013-10-20 20:05:00,282 (Z-Wave): Building Z-Wave command<br/>
+DEBUG 2013-10-20 20:05:00,306 (Z-Wave): Z-Wave command: nodeId = 4<br/>
+DEBUG 2013-10-20 20:05:00,306 (Z-Wave): Z-Wave command: command = off</p>
+
+<p>When I activate a switch on the panel - so that seems to work <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>The zwave.comPort in the zwave config part is set /dev/tty.USB0 and the zwave.commLayer to RXTX and synced.</p>
+
+<p>So far without success, can you help me on my way?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22878527"></a>
+                                    <font class="smallfont"><p>There should be no dot between tty and USB. You can verify the following:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> ls  /dev/ttyUSB0 </pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 21, 2013 04:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878592"></a>
+                                    <font class="smallfont"><p>Hi Anand,</p>
+
+<p>Thanks!</p>
+
+<p>More result than in the past days <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>. In terminal it echoed the same and with a . in between an error message occurred. So I entered this in the config part on openremote and synced, so far without success - still no log. Same error messages about NoSuchPort...</p>
+
+<p>ps...Can't seem to figure out why it should be USB0. Is that always the case?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richardrobert at Oct 21, 2013 20:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878604"></a>
+                                    <font class="smallfont"><p>Based on the error ("wrong ELF class: ELFCLASS32") I would suspect that it is still trying to use 32-bit libraries instead of the 64-bit libs.</p>
+
+<p>The thread you linked to talks about using the 64-bit libraries on Windows (.dll) but on Linux you'd need to replace the corresponding .so libraries to 64-bit versions, have you done that?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 22, 2013 01:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878611"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>Thanks, I did. The link in the thread is to a wiki page with a linux 64 bit library, too. So i did that - wrongclass errors have dissappeared. the  now the remaining error is gnu.io.NoSuchPortException</p>
+
+<p>Where to look?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richardrobert at Oct 22, 2013 07:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878612"></a>
+                                    <font class="smallfont"><p>Plug out the module and plug it in again. Then use dmesg command to find out what is the exact device name. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 22, 2013 08:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878614"></a>
+                                    <font class="smallfont"><p>Hi Anand, i will try, thanks. dmesg gives a lot of info , anything in particular to look for, and do i put the name instead of the '0'?</p>
+
+<p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richardrobert at Oct 22, 2013 08:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878637"></a>
+                                    <font class="smallfont"><p>You are looking for last couple of lines in dmesg output. Another way to test if you are using the right file path, try writing the zwave command directly to the file and you should see some action.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> echo <span class="code-quote">"&lt;zwave command&gt;"</span> &gt; /dev/ttyUSB0</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 22, 2013 15:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878667"></a>
+                                    <font class="smallfont"><p>Thanks for the reply. I've tried the dmesg | grep -i usb command and the result was a.o. </p>
+
+<p>[ 1202.673788] usb 4-1: cp210x converter now attached to ttyUSB0</p>
+
+<p>That was the last line.</p>
+
+<p>The  echo "&lt;zwave command&gt;" /dev/ttyUSB0 gave back &lt;zwave command&gt; (I guess the '&gt;'  should not be there?) </p>
+
+<p>The following error remains.</p>
+
+<p>gnu.io.NoSuchPortException at gnu.io.CommPortIdentifier.getPortIdentifier(CommPortIdentifier.java:269)<br/>
+at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveConnectionThread.run(ZWaveGatewayRxtx.java:108)</p>
+
+
+
+<p>ps. not sure if it means anything, but when stopping the openremote process the following message appears; I think it has to do with interrupting the process?:</p>
+
+<p>FINER [OpenRemote.Controller.startup.deployer]: Converted controller definition file location from URI '../webapps/controller.xml'<br/>
+Unhandled Log Messages (may occur due to undefined or incorrect shutdown order):<br/>
+--------------------------------------------------------------------------------</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richardrobert at Oct 22, 2013 19:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878695"></a>
+                                    <font class="smallfont"><p>I've a suspicion that the device you are using doesn't support serial protocol - hence the exception. The echo command was to verify if the drivers are loaded properly. The "&gt;" in the syntax writes the output of echo command to /dev/ttyUSB0. e.g.if PWRON is a valid zwave command, following should power on a device.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> echo <span class="code-quote">"PWRON"</span> &gt; /dev/ttyUSB0</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 23, 2013 04:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878701"></a>
+                                    <font class="smallfont"><p>In order to test if the proper serial port is selected and eliminate permission problems try the following command:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+screen /dev/ttyUSB0 115200
+</pre>
+</div></div>
+<p>If the command fails with the error message 'Permissin denied ....' you have to adjust file permissions (/dev/ttyS0).<br/>
+Activate your Z-Wave devices (door sensor, switch...) and you should see some data output. Make sure that the Z-Wave devices are already included to the Z-Wave network by means of Aeon Labs Z-Stick.    </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Oct 23, 2013 07:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878711"></a>
+                                    <font class="smallfont"><p>Hi Rainer,</p>
+
+<p>Also, can we add to the list to do to handle this particular error (configuration error in serial port) better? Showing an obscure gnu.io.NoSuchPortException at gnu.io.CommPortIdentifier.getPortIdentifier(CommPortIdentifier.java:269) to the user looks horrible. No need to jump on it if you got something else going, and identifying a permission issue if it gets thrown as no such port exception may still be difficult, but let's at least <b>try</b> to handle errors properly.</p>
+
+<p>Something for JIRA right now. Feel free to assign to me if you don't feel like addressing it yourself.</p>
+
+<p>Best regards,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 23, 2013 09:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878819"></a>
+                                    <font class="smallfont"><p>Keep rolling into errors...</p>
+
+<p>The hints from Rainer and Anand did not give any result - maybe I did the enrollment the wrong way, but I'm not sure about it. There were no error messages anyway, until suddenly this happened after restarting the openremote controller</p>
+
+<p>#</p>
+<ol>
+	<li>A fatal error has been detected by the Java Runtime Environment:<br/>
+#</li>
+	<li>SIGSEGV (0xb) at pc=0x00007f65ad12dd9d, pid=3491, tid=140074671036160<br/>
+#</li>
+	<li>JRE version: 6.0_27-b27</li>
+	<li>Java VM: OpenJDK 64-Bit Server VM (20.0-b12 mixed mode linux-amd64 compressed oops)</li>
+	<li>Derivative: IcedTea6 1.12.6</li>
+	<li>Distribution: Ubuntu 12.04 LTS, package 6b27-1.12.6-1ubuntu0.12.04.2</li>
+	<li>Problematic frame:</li>
+	<li>C  [librxtxSerial.so+0x6d9d]  read_byte_array+0x3d<br/>
+#</li>
+	<li>If you would like to submit a bug report, please include</li>
+	<li>instructions how to reproduce the bug and visit:</li>
+	<li><a href="https://bugs.launchpad.net/ubuntu/+source/openjdk-6/">https://bugs.launchpad.net/ubuntu/+source/openjdk-6/</a></li>
+	<li>The crash happened outside the Java Virtual Machine in native code.</li>
+	<li>See problematic frame for where to report the bug.<br/>
+#</li>
+</ol>
+
+
+<p>It happens as long as the Zwave stick is in the USB port. If it isn't openremote starts ok. I can include the error log upon request. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richardrobert at Oct 24, 2013 22:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878821"></a>
+                                    <font class="smallfont"><p>Mmm, that is the Java virtual machine itself crashing. Which is caused by the RXTX serial library (there's a workaround to this in running the serial communication as a separate process but it hasn't been productized yet).</p>
+
+<p>Is it a consistent crash? There's not a whole lot we can do about the serial lib itself causing crashes until/unless the above mentioned workaround is used.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 24, 2013 22:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878844"></a>
+                                    <font class="smallfont"><p>Looks like rxtx has it's quirks running on 64-bit linux. Try the suggestions on this thread <a href="http://forums.opensuse.org/english/get-technical-help-here/applications/438586-rxtxserial-help-needed-2.html">http://forums.opensuse.org/english/get-technical-help-here/applications/438586-rxtxserial-help-needed-2.html</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 25, 2013 06:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878864"></a>
+                                    <font class="smallfont"><p>I've tried to reproduce the error with your system configuration (Ubuntu 64 bit ...) and encountered the same error with the RXTX Linux 64 bit library from <a href="http://www.cloudhopper.com/opensource/rxtx">http://www.cloudhopper.com/opensource/rxtx</a>. </p>
+
+<p>I've installed the RXTX library with the following commands and the problem disappeared.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+$ sudo apt-get install librxtx-java
+$ cp /usr/lib/jni/librxtxSerial.so &lt;OpenRemote&gt;/webapps/controller/WEB-INF/lib/<span class="code-keyword">native</span>/librxtxSerial.so
+$ cp /usr/lib/jni/librxtxParallel.so &lt;OpenRemote&gt;/webapps/controller/WEB-INF/lib/<span class="code-keyword">native</span>/librxtxParallel.so
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Oct 25, 2013 15:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878869"></a>
+                                    <font class="smallfont"><p>Briliant! Thanks Rainer. </p>
+
+<p>I got a proper log now. At startup I do receive a warning, but it is not preventing the log to show. </p>
+
+<p>WARNING:  RXTX Version mismatch<br/>
+	Jar version = RXTX-2.2-20081207 Cloudhopper Build rxtx.cloudhopper.net<br/>
+	native lib Version = RXTX-2.2pre2</p>
+
+<p>I'm not sure what is causing this error. I assume I've put a wrong .jar file in a library.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richardrobert at Oct 25, 2013 20:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878875"></a>
+                                    <font class="smallfont"><p>The version mismatch is a "thing" with RXTX, can be ignored under normal circumstances.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 25, 2013 22:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879239"></a>
+                                    <font class="smallfont"><p>This one is 'solved' !</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richardrobert at Nov 02, 2013 15:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602451"></a>
+                                    <font class="smallfont"><p>Hi </p>
+
+<p>I have the same problem but in ubuntu 14.02  64 bits and jdk 64</p>
+
+<p>In my case the cloudhopper link is not working</p>
+
+<p>any idea where i can find a 64 bits version librxtxserial to replace the existing in the openremote distribution?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by edito at Dec 01, 2015 20:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602553"></a>
+                                    <font class="smallfont"><p>I googled rxtxSerial.dll 64bit and found the following link:</p>
+
+<p><a href="http://www.java2s.com/Code/Jar/r/Downloadrxtxnativewindowsjar.htm">http://www.java2s.com/Code/Jar/r/Downloadrxtxnativewindowsjar.htm</a></p>
+
+<p>Original post:</p>
+
+<p><a href="http://www.openremote.org/display/forums/Trouble+with+Z+Wave+addition+Aeon+Labs+Zstick+2E?focusedCommentId=22889243#comment-22889243">http://www.openremote.org/display/forums/Trouble+with+Z+Wave+addition+Aeon+Labs+Zstick+2E?focusedCommentId=22889243#comment-22889243</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niedejb at Dec 07, 2015 20:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : vs MisterHouse?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : vs MisterHouse?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 02, 2009 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>I am currently running the latest version of MisterHouse on a Server 2003 box to control all of my X10 devices.</p>
+
+<p>I use a W800 for RF input and CM11 (both serial) for the powerline interface.</p>
+
+<p>My primary use of this is radio control and scheduled On/Off events, though I'm looking at moving into the HVAC controls.</p>
+
+<p>Is X10 (the interfaces above) fully supported by OpenRemote?</p>
+
+<p>What about the cron/scheduling side of things?</p>
+
+<p>I'm just looking to make a move to a system with better support and dev ability, is this it?</p>
+
+<p>Thanks for the info&#33;&#33;</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-6259112"></a>
+                                    <font class="smallfont">
+<blockquote>
+<p>My primary use of this is radio control and scheduled On/Off events, though I'm looking at moving into the HVAC controls.</p>
+
+<p>Is X10 (the interfaces above) fully supported by OpenRemote?</p></blockquote>
+
+<p>ON/OFF via CM11A is supported.</p>
+
+<p>I'm not familiar with W800, how are you using it? Are you expecting the OR controller to do something based on an incoming command, or are you using it in other ways?</p>
+
+
+<blockquote>
+<p>What about the cron/scheduling side of things?</p></blockquote>
+
+<p>Command execution can be done via cron &#8211; we expose a <a href="http://www.openremote.org/display/orb/Controller+1.0+API+Documentation" title="Controller 1.0 API Documentation">HTTP REST interface</a> for that purpose.</p>
+
+<p>At the moment it means you need to hack things together yourself (the HTTP request triggered by cron). We'll be looking at integrating scheduling and rules once the current 2.0 codebase is out in beta (should be around end of the year).</p>
+
+<blockquote>
+<p>I'm just looking to make a move to a system with better support and dev ability, is this it?</p>
+</blockquote>
+
+<p>Hopefully yes... at any rate would like to hear more about your requirements so we get an idea where the gaps are.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 02, 2009 01:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6259124"></a>
+                                    <font class="smallfont"><p><blockquote>
+<p>I'm not familiar with W800, how are you using it? Are you expecting the OR controller to do something based on an incoming command, or are you using it in other ways?</p></blockquote>The W800 is just simply an RF receiver connected via serial that picks up my RF remote commands and relays them to the appropriate X10 devices or groups of devices.</p>
+
+<p>For example, all of the lights downstairs are on the "D" house code, sending the RF signal "D1 ON" turns on the porch light (which is D1). But I've also written some custom PERL so that the RF signal "B1 ON" turns on my porch, foyer and living room lights (so I don't come home to a dark house).</p>
+
+<p>My use of MisterHouse is scheduling devices (usually lights) to be turned on or off at scheduled intervals during the day.</p>
+
+<p>And to relay my RF signals through the W800 to the CM11 to turn on/off lights or groups of lights.</p>
+
+<p>Sometimes I also use my iPod or laptop for remote control but that's fairly rare for me.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jgreeno at Dec 02, 2009 14:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6259133"></a>
+                                    <font class="smallfont"><p>Ok I see.</p>
+
+<p>At the moment the only control interface we offer for OpenRemote controller is HTTP REST &#8211; Therefore W800 by itself directly cannot be used (the incoming commands would have to be translated to HTTP first). I've experimented with some code that would allow alternative input methods such as W800 but it's not in the current codebase. Would be happy to evaluate contributions in this area though.</p>
+
+<p>So the choice today is to use the existing iPod Touch as your remote. There's some initial work around pure web-based (GWT) client as well as an Android client (essentially generating those same HTTP requests). Or some custom code to create the same HTTP requests would do too.</p>
+
+<p>I'll keep your use case in mind. However at the moment the fastest way to get this in is probably via contribution. If there are more requirements for non-HTTP control inputs then will look into creating a plugin mechanism for control input front-ends as well as command event back-ends (basically the architecture is clear, have been down this road before but just not in the current codebase as it hasn't been very high up in priorities).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 02, 2009 18:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 11:02</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

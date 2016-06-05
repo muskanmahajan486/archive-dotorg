@@ -1,0 +1,414 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Controling Yamaha RX V2065 over TCPIP</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Controling Yamaha RX V2065 over TCPIP
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 01, 2010 by <font color="#0050B2">pjmm</font>.
+				    </div>
+
+				    <p>I am looking at controlling a Yamaha RX-V2065 using Openremote. The commands are almost identical to RX-V3900 which is well documented.</p>
+
+<p>There is an Iphone application  for controlling this Amp but it is very limited.</p>
+
+<p>There is also a program named YARC written by Christiaan Welvaart which is open source and he has kindly supplied me with the following example commands for testing.</p>
+
+<p>The commands are simply sent to port 80 (using a TCP connection). They're<br/>
+http requests so I guess Host: is supposed to be the computer you're<br/>
+sending from, but it is probably ignored by the receiver.<br/>
+vol up:<br/>
+POST /YamahaRemoteControl/ctrl<br/>
+Content-Type: text/plain<br/>
+Content-length: 126<br/>
+Host: 10.0.0.1<br/>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;YAMAHA_AV cmd="PUT"&gt;&lt;Main_Zone&gt;&lt;Vol&gt;&lt;Up_Down&gt;Up&lt;/Up_Down&gt;&lt;/Vol&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;<br/>
+vol to &#45;30.0:<br/>
+POST /YamahaRemoteControl/ctrl<br/>
+Content-Type: text/plain<br/>
+Content-length: 158<br/>
+Host: 10.0.0.1<br/>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;YAMAHA_AV cmd="PUT"&gt;&lt;Main_Zone&gt;&lt;Vol&gt;&lt;Lvl&gt;&lt;Val&gt;-300&lt;/Val&gt;&lt;Exp&gt;1&lt;/Exp&gt;&lt;Unit&gt;dB&lt;/Unit&gt;&lt;/Lvl&gt;&lt;/Vol&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;<br/>
+main zone get basic status:<br/>
+POST /YamahaRemoteControl/ctrl<br/>
+Content-Type: text/plain<br/>
+Content-length: 131<br/>
+Host: 10.0.0.1<br/>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;YAMAHA_AV cmd="GET"&gt;&lt;Main_Zone&gt;&lt;Basic_Status&gt;GetParam&lt;/Basic_Status&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;</p>
+
+<p>By entering<a href="http://192.168.1.25/YamahaRemoteControl/UnitDesc.xml">http://192.168.1.25/YamahaRemoteControl/UnitDesc.xml</a> in to the a web browser it returns UnitDesc file which is in XML.</p>
+
+<p>I have also received  help from Juha suggesting how to go about creating device protocols for these AMPs.</p>
+
+<p>I have read this documentation but it looks way above my skill level.</p>
+
+<p>There are a lot of Amps made by Yamaha which have very similar control protocols.</p>
+
+<p>Is the any one with one of the amps who would be able to setup a new protocol  with some basic command examples which I could then enter all the relevant commands into</p>
+
+<p>Any Help would be greatly appriciated</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/12845978/19398802.jpg">Yamaha.jpg</a> (image/jpeg)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-12846994"></a>
+                                    <font class="smallfont"><p>Hi Pierce,<br/>
+Stumbled on your post whilst looking for a way of accessing my z7 with php.<br/>
+I'm not using OpenRemote but rather using iWeb to leverage the server on my HTPC to issue commands to my amp.<br/>
+Here is php code that will mute the main zone when called via web server.</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>&lt;?php
+function send_to_host($host,$method,$path='/',$data=''){
+    $method = strtoupper($method);
+    $fp = fsockopen($host, 80) or die("Unable to open socket");
+
+/* Header is 	POST /YamahaRemoteControl/ctrl HTTP/1.1
+		Content-Type: text/plain
+		Content-length: 152 (for this command)
+		HOST: 192.168.1.25 (where your amp is)
+*/
+    fputs($fp, "$method $path HTTP/1.1\r\n");
+    fputs($fp, "Host: $host\r\n");
+    fputs($fp, "Content-type: text/plain\r\n");
+    if ($method == 'POST') fputs($fp, "Content-length: " . strlen($data) . "\r\n");
+    fputs($fp, "Connection: close\r\n\r\n");
+
+/* Body(XML) is	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+		&lt;YAMAHA_AV cmd="PUT"&gt;
+		&lt;Main_Zone&gt;
+		&lt;Vol&gt;
+		&lt;Mute&gt;On&lt;/Mute&gt;
+		&lt;/Vol&gt;
+		&lt;/Main_Zone&gt;
+		&lt;/YAMAHA_AV&gt;
+*/
+    if ($method == 'POST') fputs($fp, $data);
+
+    while (!feof($fp))
+		$buf .= fgets($fp,128);
+	
+    fclose($fp);
+    return $buf;
+}
+$command = '&lt;?xml version="1.0" encoding="UTF-8"?&gt;\r\n&lt;YAMAHA_AV cmd="PUT"&gt;\r\n&lt;Main_Zone&gt;\r\n&lt;Vol&gt;\r\n&lt;Mute&gt;On&lt;/Mute&gt;\r\n&lt;/Vol&gt;\r\n&lt;/Main_Zone&gt;\r\n&lt;/YAMAHA_AV&gt;\r\n';
+$yamip = '192.168.1.25'; //your amp
+$test = send_to_host($yamip.':80/YamahaRemoteControl/ctrl','POST','/YamahaRemoteControl/ctrl',$command);
+echo $test;
+?&gt;
+</pre>
+</div></div>
+
+<p>Cheers<br/>
+Steve</p>
+
+
+<p>ps I have previously used Applescript and socat to send commands to the receiver with success.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by idoc at Oct 29, 2010 16:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12847039"></a>
+                                    <font class="smallfont"><p>Hi Steve</p>
+
+<p>many thanks for your input. I have sucesfully sent commands direct to the Amp. What I was looking for</p>
+
+<p>is assistance in setting up the commands in OpenRemote.</p>
+
+<p>I believe if I had the bare bones of how this should be set up it could be the framework</p>
+
+<p>for controling a lot of new equipment which is controled over TCPIP</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Nov 02, 2010 20:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12847045"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>I had a quick look at the openremote info - not a lot there on the inner workings that I can see.</p>
+
+<p>Sorry the above example I tried to upload seems to have been displayed incorrectly.</p>
+
+<p>I would think you have to wrap your commands in php files that sit on the server to allow control over TCPIP</p>
+
+<p>but it may also be possible via java on the client (ipad/iphone etc).</p>
+
+<p>Maybe if you could point me to the appropriate documentation.</p>
+
+<p>I am using the Apache web server on my mac HTPC and accessing it via safari on my ipad and that allows me</p>
+
+<p>to fire of command to several GC100, eyetv and the Z7 fairly easily (only started last week&#33;). I've used iweb to build the interface but it is pretty slow in rendering the pages so openremote sounds promising. Is there an ipad app yet?</p>
+
+<p>cheers</p>
+
+<p>Steve</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by idoc at Nov 03, 2010 05:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12847046"></a>
+                                    <font class="smallfont"><p>ipad app is coming soon yeah.  There is also android which will be promising for panels. </p>
+
+<p>Anyway, the integration with the yamaha device is what is needed here.  Pierce you may want to ask Christiaan Welvaart to get in contact with us.  Integrating a protocol is usually fairly straightforward if you are a developer.  What this would bring christiaan is interface and panel generation to interact with his devices.  If Christiaan is interested we may be able to support you quite easiy. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marcf at Nov 03, 2010 05:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439895"></a>
+                                    <font class="smallfont"><p>Hi Steve,</p>
+
+<p>do you see any chance sending me the full PHP script without the rendering error?<br/>
+I have issues understanding it with the errors.</p>
+
+<p>thank you!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jtolksdo at Mar 24, 2012 00:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439906"></a>
+                                    <font class="smallfont"><p>I've removed the formatting errors to display the original PHP snippet correctly.</p>
+
+<p>Hopefully nothing was lost in translation.</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 25, 2012 09:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439909"></a>
+                                    <font class="smallfont"><p>Hi Juergen</p>
+
+<p>If you are trying to controll the Yamaha Amp's I can sucessfully do this <br/>
+in OpenRemote.<br/>
+There is just one small bug where some controll codes do not come across <br/>
+correctly from designer but if you edit the file all works well.</p>
+
+
+<p>I can send you on detailes just let me know</p>
+
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 25, 2012 12:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439910"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>I'm not trying to control it with Openremote, but with a HomeMatic solution. I would like to trigger a PHP site on my Server whih again calls the Yamaha Amplifier including HTTP Post commands.</p>
+
+<p>regards<br/>
+Juergen</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jtolksdo at Mar 25, 2012 12:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439911"></a>
+                                    <font class="smallfont"><p>This is what the commands look like in OpenRemote</p>
+
+<p>    &lt;command id="212" protocol="socket"&gt;<br/>
+      &lt;property name="port" value="80" /&gt;<br/>
+      &lt;property name="command" value="POST /YamahaRemoteControl/ctrl&#xD;&#xA;Content-Type: text/plain&#xD;&#xA;Content-length: 126&#xD;&#xA;Host: 10.0.0.1&#xD;&#xA;&#xD;&#xA;&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&lt;YAMAHA_AV cmd=&quot;PUT&quot;&gt;&lt;Main_Zone&gt;&lt;Vol&gt;&lt;Up_Down&gt;Up&lt;/Up_Down&gt;&lt;/Vol&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;" /&gt;<br/>
+      &lt;property name="ipAddress" value="192.168.1.25" /&gt;<br/>
+    &lt;/command&gt;<br/>
+    &lt;command id="213" protocol="socket"&gt;<br/>
+      &lt;property name="port" value="80" /&gt;<br/>
+      &lt;property name="command" value="POST /YamahaRemoteControl/ctrl&#xD;&#xA;Content-Type: text/plain&#xD;&#xA;Content-length: 120&#xD;&#xA;Host: 10.0.0.1&#xD;&#xA;&#xD;&#xA;&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&lt;YAMAHA_AV cmd=&quot;PUT&quot;&gt;&lt;Main_Zone&gt;&lt;Vol&gt;&lt;Mute&gt;On&lt;/Mute&gt;&lt;/Vol&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;" /&gt;<br/>
+      &lt;property name="ipAddress" value="192.168.1.25" /&gt;</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 25, 2012 13:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439912"></a>
+                                    <font class="smallfont"><p><img src="attachments/12845978/19398802.jpg" align="absmiddle" border="0"/></p>
+
+
+<p>The CR/LF commands were stripped out of my last post</p>
+
+
+<p>Please see image</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 25, 2012 13:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439916"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>it looks like the declaration for $host is missing, isn't it?<br/>
+Is something else missing?</p>
+
+<p>regards<br/>
+Juergen</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jtolksdo at Mar 25, 2012 14:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439918"></a>
+                                    <font class="smallfont"><p>Forget about it. It works!!!<br/>
+Whoohoo!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jtolksdo at Mar 25, 2012 14:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439919"></a>
+                                    <font class="smallfont"><p>One more question: Is there any full list of available commands, or do I have to re-engineer it?<br/>
+I would like to turn on MAIN_ZONE and I would like to switch to CBL/SAT.<br/>
+Any suggestions are welcome!<br/>
+Thank you guys!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jtolksdo at Mar 25, 2012 14:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439920"></a>
+                                    <font class="smallfont"><p>Hi Juergen,<br/>
+It's been a while since I looked at this.<br/>
+The resources you are looking for are <br/>
+RX-Z11_ETHERNET_IF_Spec_e_1.24.xls and RX-Z11_Function_Tree_e_3.00.xls.<br/>
+Download<br/>
+www.awe-europe.com/documents/RX-Z11_ETHERNET_IF_Spec_e_1.24.xls<br/>
+www.awe-europe.com/documents/RX-Z11_Function_Tree_e_3.00.xls<br/>
+Cheers<br/>
+Steve</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by idoc at Mar 25, 2012 15:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439924"></a>
+                                    <font class="smallfont"><p>Hi Jurgen</p>
+
+<p>I have most of the commands in a text file if you ask Juha<br/>
+to send me on your emile address I will send o the file</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 25, 2012 19:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439935"></a>
+                                    <font class="smallfont"><p>That's great!<br/>
+Juha, can you forward my e-mail address?<br/>
+Alternatively you can mail to jtolksdo <ins>litte_special_char</ins> hotmail <ins>DOT</ins> com</p>
+
+<p>Thank you!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jtolksdo at Mar 26, 2012 11:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439939"></a>
+                                    <font class="smallfont"><p>So I guess Pierce will be able to parse the secret message and send it to your hotmail account.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 26, 2012 13:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

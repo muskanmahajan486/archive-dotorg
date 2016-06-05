@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : X10 "All lights on" command not used - why?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : X10 "All lights on" command not used - why?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 12, 2011 by <font color="#0050B2">fekete kamosh</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>I want to ask what was the reason not to include also "All lights on" command for X10 devices among other X10 commands.</p>
+
+<p>Do you have any clue why implementation com.jpeterson.x10.event.AllLightsOffEvent resp. AllLightsOffEvent is not functional? I tried to make use it within X10ControllerManager, added new X10CommandType and tuned X10CommandBuilder but my lights (within the same house code) are not willing to switch on<img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>For switching multiple lights off there is "ALL UNITS OFF" but I would like the oposite command.</p>
+
+
+<p>Fekete</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-15532451"></a>
+                                    <font class="smallfont"><p>I haven't played with X10 much so can't say really. If you find a solution, let us know. Modifying the X10 codebase would be fine (there are some rather dubious I/O use there that I would like to see eventually fixed anyway).</p>
+
+<p>One workaround might be to create a macro with all individual X10 addresses being turned off. However, this might give you a somewhat of a sequential effect rather than immediate due to the nature of X10 and the fact it is not very fast.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 13, 2011 06:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532461"></a>
+                                    <font class="smallfont"><p>Exactly as you said, using macro is not fast enough (I am using it instead of All lights on). If I succeed with X10 code I will let you now. Now I am fighting little bit with local installation of modeller as it is written in GWT that I am not familiar with especially from debugging point of view.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fekete kamosh at Feb 13, 2011 13:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532487"></a>
+                                    <font class="smallfont"><p>I got further with investigation.</p>
+
+
+<p>I realized that AllLightsOffEvent is understood by standard receivers LW10 (<a href="http://www.powerhouse.eu/wallmounted-dimmer-p-39.html?language=en">http://www.powerhouse.eu/wallmounted-dimmer-p-39.html?language=en</a>). But I have only 2 of these and for the rest of my home installation I am using TAYITO's (<a href="http://www.taiyito.com/english/ProductView.asp?ID=94&amp;SortID=58">http://www.taiyito.com/english/ProductView.asp?ID=94&amp;SortID=58</a>) TDXE4404. Seems that TDXE4404 do not accept All lights on/All lights off commands (luckily they accept All units off).</p>
+
+<p>Anyway could be X10 command events extended for other possibilities that X10 protocol provides (eg. DIM, BRIGHT, All lights on) within X10CommandBuilder and the other stuff around? Implementation in com.jpeterson.x10 seems to be OK.</p>
+
+<p>Fekete</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fekete kamosh at Feb 13, 2011 19:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532491"></a>
+                                    <font class="smallfont"><p>Sure,</p>
+
+<p>would you be able to provide patches for these yourself? (would help a lot at this point)</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 13, 2011 20:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532586"></a>
+                                    <font class="smallfont"><p>Two questions:</p>
+<ul>
+	<li>must be DIM and BRIGHT commands connected somehow to slider or implementation to create command with magic constants such as <em>new BrightEvent(this, houseCodeChar, 5, 22);</em> is sufficient for now?</li>
+	<li>might be users allowed to specify only House code and no device code in case of ALL UNITS OFF or ALL LIGHTS ON commands?</li>
+</ul>
+
+
+<p>Fekete</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fekete kamosh at Feb 15, 2011 21:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532588"></a>
+                                    <font class="smallfont">
+<blockquote>
+<p>must be DIM and BRIGHT commands connected somehow to slider or implementation to create command with magic constants such as new BrightEvent(this, houseCodeChar, 5, 22); is sufficient for now?</p></blockquote>
+
+
+<p>If you want to connect the commands to a slider, you can retrieve the slider value in the X10 command builder implementation with:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">public</span> XXX <span class="code-keyword">implements</span> CommandBuilder {
+
+  <span class="code-keyword">public</span> Command build(Element element) {
+    <span class="code-object">String</span> paramValue = element.getAttributeValue(Command.DYNAMIC_VALUE_ATTR_NAME);
+
+    ...
+  }
+</pre>
+</div></div>
+
+<p>If you want static buttons for specific dim value commands, you could allow for example DIM-nn as command format (e.g. DIM-20 to set a DIM to a fixed value on a press button).</p>
+
+
+<blockquote>
+<p>might be users allowed to specify only House code and no device code in case of ALL UNITS OFF or ALL LIGHTS ON commands?</p></blockquote>
+
+<p>Makes sense, the validation rules for X10 address should be different for these commands.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 16, 2011 00:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532601"></a>
+                                    <font class="smallfont"><p>Could it be a safety feature ?  Maybe the X10 founding fathers did not want you to blow the fuses by switching everything on at the same time.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by filipc at Feb 16, 2011 21:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532608"></a>
+                                    <font class="smallfont">
+<p>Hi Philippe,</p>
+
+<p>For the 'ALL LIGHTS ON' command, it is part of the X10 protocol and as such it makes sense that only the house code is used, and no device code.</p>
+
+<p>If turning all lights on is an issue, you can always create multiple zones within a building by using multiple house codes per installation.</p>
+
+<p>See <a href="http://en.wikipedia.org/wiki/X10_%28industry_standard%29">http://en.wikipedia.org/wiki/X10_%28industry_standard%29</a> for more information.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 17, 2011 15:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

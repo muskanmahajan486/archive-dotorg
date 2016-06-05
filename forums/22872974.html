@@ -1,0 +1,837 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : How do I send mail?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : How do I send mail?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jun 18, 2013 by <font color="#0050B2">ali</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I need to send mail?</p>
+
+<p>Regards,</p>
+
+<p>Ali Haydar</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22872974/23035948.jpg">mailsensor.JPG</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22872974/23035949.jpg">mailon.JPG</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22872974/23035950.jpg">mailoff.JPG</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22872974/23035951.jpg">mailstatus.JPG</a> (image/jpeg)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22872983"></a>
+                                    <font class="smallfont"><p>If you're running on Linux system, it should be quite easy with the 'mail' command and hooking that to a script in the <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Execute+Shell+commands" title="OpenRemote 2.0 How To - Execute Shell commands">shell execution protocol</a>.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 18, 2013 10:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873061"></a>
+                                    <font class="smallfont"><p>I have solved it with a rule that can send mail through a Gmail account.</p>
+
+<p>To trigger the rule, I use a virtual sensor ("Send mail sensor") and three virtual commands ("Send mail ON", "Send mail OFF" and "Send mail status").</p>
+
+<p>Other rules can send mail through the command, "execute.command ("Send mail ON");"<br/>
+Or you can test it with a button connected to the "Send mail ON" command.</p>
+
+<p>You also need to add the file "javax.mail-1.5.0.jar" in your<br/>
+...\webapps\controller\WEB-INF\lib folder.<br/>
+It can be downloaded here: <a href="http://www.oracle.com/technetwork/java/javamail/index.html">http://www.oracle.com/technetwork/java/javamail/index.html</a></p>
+
+<p>The rule looks like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.LevelFacade levels;
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+
+<span class="code-keyword">import</span> java.util.Properties;
+<span class="code-keyword">import</span> javax.mail.Message;
+<span class="code-keyword">import</span> javax.mail.MessagingException;
+<span class="code-keyword">import</span> javax.mail.PasswordAuthentication;
+<span class="code-keyword">import</span> javax.mail.Session;
+<span class="code-keyword">import</span> javax.mail.Transport;
+<span class="code-keyword">import</span> javax.mail.internet.InternetAddress;
+<span class="code-keyword">import</span> javax.mail.internet.MimeMessage;
+
+rule <span class="code-quote">"Send mail"</span>
+
+when
+  
+Switch ( source == <span class="code-quote">"Send mail sensor"</span>, value == <span class="code-quote">"on"</span>)
+
+then
+
+execute.command (<span class="code-quote">"Send mail OFF"</span>);
+ 
+        <span class="code-keyword">final</span> <span class="code-object">String</span> username = <span class="code-quote">"your gmail address"</span>;
+	<span class="code-keyword">final</span> <span class="code-object">String</span> password = <span class="code-quote">"your gmail password"</span>;
+	Properties props = <span class="code-keyword">new</span> Properties();
+	props.put(<span class="code-quote">"mail.smtp.host"</span>, <span class="code-quote">"smtp.gmail.com"</span>); 
+	props.put(<span class="code-quote">"mail.smtp.socketFactory.port"</span>, <span class="code-quote">"465"</span>);
+	props.put(<span class="code-quote">"mail.smtp.socketFactory.class"</span>,<span class="code-quote">"javax.net.ssl.SSLSocketFactory"</span>);
+	props.put(<span class="code-quote">"mail.smtp.auth"</span>, <span class="code-quote">"<span class="code-keyword">true</span>"</span>);
+	props.put(<span class="code-quote">"mail.smtp.port"</span>, <span class="code-quote">"465"</span>);
+
+	Session session = Session.getInstance(props,
+	  <span class="code-keyword">new</span> javax.mail.Authenticator() {
+		<span class="code-keyword">protected</span> PasswordAuthentication getPasswordAuthentication() {
+			<span class="code-keyword">return</span> <span class="code-keyword">new</span> PasswordAuthentication(username, password);
+		}
+	  });
+
+	<span class="code-keyword">try</span> {
+		Message message = <span class="code-keyword">new</span> MimeMessage(session);
+		message.setFrom(<span class="code-keyword">new</span> InternetAddress(<span class="code-quote">"the from mail address"</span>));
+		message.setRecipients(Message.RecipientType.TO,
+			InternetAddress.parse(<span class="code-quote">"the to mail address"</span>));
+		message.setSubject(<span class="code-quote">"subject"</span>);
+		message.setText(<span class="code-quote">"the message"</span>);
+
+		Transport.send(message);
+
+		<span class="code-object">System</span>.out.println(<span class="code-quote">"Mail sent"</span>);
+
+	} <span class="code-keyword">catch</span> (MessagingException e) {
+		<span class="code-keyword">throw</span> <span class="code-keyword">new</span> RuntimeException(e);
+	}
+
+
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Jun 19, 2013 08:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873063"></a>
+                                    <font class="smallfont"><p>Nice. Looks like you're picking up on your Java skills. What you've written is basically the implementation for the email facade discussed here: <a href="Emails and texts from rules.html" title="Emails and texts from rules">Emails and texts from rules</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 19, 2013 10:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873211"></a>
+                                    <font class="smallfont"><p>Thanks to everyone,</p>
+
+<p>Which command will create virtual sensors? I "Send mail OFF" command created the knx off, "Send mail sensor" command created as a sensor. But it did not work and gives this error.</p>
+
+
+<div style="max-width: 800px;"></div>
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ERROR 2013-06-21 01:39:51,865 : Rule definition 'modeler_rules.drl' could not be deployed. See errors below.
+ERROR 2013-06-21 01:39:51,867 : [ERR 103] Line 23:0 rule 'rule_key' failed predicate: {(validateIdentifierKey(DroolsSoftKeywords.RULE))}? in rule
+ERROR 2013-06-21 01:39:51,869 : [ERR 101] Line 23:8 no viable alternative at input 'org' in rule package
+ERROR 2013-06-21 01:39:51,870 : [ERR 101] Line 24:0 no viable alternative at input 'global' in rule package in rule event
+ERROR 2013-06-21 01:39:51,875 : There was an error parsing the rule definition 'modeler_rules.drl' : Could not parse knowledge.
+java.lang.IllegalArgumentException: Could not parse knowledge.
+	at org.drools.builder.impl.KnowledgeBuilderImpl.newKnowledgeBase(KnowledgeBuilderImpl.java:58)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:532)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:641)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:539)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:148)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:785)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:393)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1249)
+	at java.lang.Thread.run(Thread.java:619)
+INFO 2013-06-21 01:39:51,881 : Initialized event processor : Drools Rule Engine
+INFO 2013-06-21 01:39:51,890 : Registered sensor : Switch Sensor (Name = '1.1.2/ Status H/', ID = '2589729')
+INFO 2013-06-21 01:39:51,890 : Registered sensor : Switch Sensor (Name = '1.1.2/ Status G/', ID = '2589728')
+INFO 2013-06-21 01:39:51,892 : Registered sensor : Switch Sensor (Name = 'Send mail sensor', ID = '2641902')
+INFO 2013-06-21 01:39:51,893 : Registered sensor : Level Sensor (Name = '1.1.3/ Value A/ Status', ID = '2589737', Min: 0, Max: 100)
+INFO 2013-06-21 01:39:51,894 : Registered sensor : Switch Sensor (Name = '1.1.2/ Status A/', ID = '2589725')
+INFO 2013-06-21 01:39:51,895 : Registered sensor : Switch Sensor (Name = '1.1.2/ Status B/', ID = '2589726')
+INFO 2013-06-21 01:39:51,897 : Registered sensor : Switch Sensor (Name = '1.1.2/ Status C/', ID = '2589727')
+INFO 2013-06-21 01:39:51,899 : Startup complete.
+</pre>
+</div></div>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ali at Jun 21, 2013 07:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873306"></a>
+                                    <font class="smallfont"><p>First you create three "In-memory Virtual Commands".<br/>
+For example, like this:<br/>
+<img src="attachments/22872974/23035949.jpg" align="absmiddle" border="0"/></p>
+
+<p><img src="attachments/22872974/23035950.jpg" align="absmiddle" border="0"/></p>
+
+<p><img src="attachments/22872974/23035951.jpg" align="absmiddle" border="0"/></p>
+
+<p>Then, you bind a switch sensor to the status command.<br/>
+Like this:<br/>
+<img src="attachments/22872974/23035948.jpg" align="absmiddle" border="0"/></p>
+
+<p>Good luck</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Jun 24, 2013 11:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873316"></a>
+                                    <font class="smallfont"><p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Jun 24, 2013 12:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873395"></a>
+                                    <font class="smallfont"><p>Thank very much. It's working.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ali at Jun 27, 2013 06:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876043"></a>
+                                    <font class="smallfont"><p>works for me as well!! I would like to ask for some help on how to send different emails for different events with different text contents.</p>
+
+<p> Thanks Kenneth.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Sep 06, 2013 20:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876163"></a>
+                                    <font class="smallfont"><p>Glad it works for you too.<br/>
+I haven't tried it myself (with different text content for various events).</p>
+
+<p>But, the easiest way is probably to have different "email rules" for different events.<br/>
+If you have little knowledge of java you can replace "the message" with a string variable, which you set to different texts for different events.</p>
+
+<p>A more elegant alternative is to use the new Email feature that Lawrie has written. There you can use a parameter in the message field.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Sep 09, 2013 08:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876248"></a>
+                                    <font class="smallfont"><p>Hi Kenneth </p>
+
+<p>I am trying it out with the string variable as you said but i am not there yet. As for the email feature Lawrie has written i dont seem to find it in the profesional version of openremote.Do i need to do something to enable it or is it just not available yet to the pro version??</p>
+
+<p>Kind regards,</p>
+
+<p>Stavros</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Sep 13, 2013 08:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876318"></a>
+                                    <font class="smallfont"><p>Sorry I don't know anything about if/when the Email feature is/will be implemented in the pro version.</p>
+
+<p>I am a total newbie myself on Java, but I can try to give you some help.<br/>
+What kind of parameter/event do you have to trigger the rule and set the different text contents?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Sep 14, 2013 07:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876322"></a>
+                                    <font class="smallfont"><p>Hi Stavros,</p>
+
+<p>The email feature from Lawrie is not yet available in Pro. It's being made available to the community to test and give feedback.</p>
+
+<p>For the time being, sending email from Pro needs to be accomplished with the code snippet Kenneth offered in the thread above.</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 14, 2013 10:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876483"></a>
+                                    <font class="smallfont"><p>Hi Kenneth,</p>
+
+<p>I am using openremote to control my KNX home automation. The need is to be able to send diferent email messages when various knx sensors are trigered (openremote sensors connected to knx status objects) that will act as alarms. </p>
+
+<p>I have declared a string variable to hold the text message of the email as follows:</p>
+
+<p>final String  textmesage = "alarm boiler";</p>
+
+<p>and then modified the part where the email text message is specified to use the string variable as follows:</p>
+
+<p>message.setText(textmesage);</p>
+
+<p>When the string variable is assigned within the rule, then it works ok, but when i try to assign it outside the rule then it doesnt work.</p>
+
+
+
+<p>The idea is to have diferent rules cheking diferent status sensor and when a sensor is activated, then set the text message variable to the required text mesage, and then execute the command, "execute.command ("Send mail ON");"</p>
+
+<p>Any help would be greatly appreciated</p>
+
+<p>Regards,</p>
+
+<p>Stavros</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Sep 17, 2013 11:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876520"></a>
+                                    <font class="smallfont"><p>Hi Stavros</p>
+
+<p>You can try this (it works for me).</p>
+
+<p>Declare the variable outside the rules, like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare Email_Text_Message
+    email_text: <span class="code-object">String</span>
+end
+</pre>
+</div></div>
+
+<p>In your different cheking rules, insert this line to set the various text messages.<br/>
+insert (new Email_Text_Message (" The text message '));<br/>
+instead of<br/>
+execute.command ("Send mail ON");</p>
+
+<p>Let the Email rule look like this:<br/>
+The rule will trigger when the text message is set.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Send Email"</span>
+
+when
+$em_message : Email_Text_Message()
+then
+        <span class="code-keyword">final</span> <span class="code-object">String</span> username = <span class="code-quote">"your gmail address"</span>;
+	<span class="code-keyword">final</span> <span class="code-object">String</span> password = <span class="code-quote">"your gmail password"</span>;
+	Properties props = <span class="code-keyword">new</span> Properties();
+	props.put(<span class="code-quote">"mail.smtp.host"</span>, <span class="code-quote">"smtp.gmail.com"</span>); 
+	props.put(<span class="code-quote">"mail.smtp.socketFactory.port"</span>, <span class="code-quote">"465"</span>);
+	props.put(<span class="code-quote">"mail.smtp.socketFactory.class"</span>,<span class="code-quote">"javax.net.ssl.SSLSocketFactory"</span>);
+	props.put(<span class="code-quote">"mail.smtp.auth"</span>, <span class="code-quote">"<span class="code-keyword">true</span>"</span>);
+	props.put(<span class="code-quote">"mail.smtp.port"</span>, <span class="code-quote">"465"</span>);
+
+	Session session = Session.getInstance(props,
+	  <span class="code-keyword">new</span> javax.mail.Authenticator() {
+		<span class="code-keyword">protected</span> PasswordAuthentication getPasswordAuthentication() {
+			<span class="code-keyword">return</span> <span class="code-keyword">new</span> PasswordAuthentication(username, password);
+		}
+	  });
+
+	<span class="code-keyword">try</span> {
+		Message message = <span class="code-keyword">new</span> MimeMessage(session);
+		message.setFrom(<span class="code-keyword">new</span> InternetAddress(<span class="code-quote">"the from mail address"</span>));
+		message.setRecipients(Message.RecipientType.TO,
+			InternetAddress.parse(<span class="code-quote">"the to mail address"</span>));
+		message.setSubject(<span class="code-quote">"subject"</span>);
+                message.setText($em_message.getEmail_text());
+
+		Transport.send(message);
+
+		<span class="code-object">System</span>.out.println(<span class="code-quote">"Mail sent"</span>);
+
+	} <span class="code-keyword">catch</span> (MessagingException e) {
+		<span class="code-keyword">throw</span> <span class="code-keyword">new</span> RuntimeException(e);
+	}
+end
+</pre>
+</div></div>
+
+<p>Good luck</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Sep 18, 2013 10:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876528"></a>
+                                    <font class="smallfont"><p>Hi Kenneth,</p>
+
+<p>I works perfectly!!! Great work !! Thank you very much for your help with this. kindly appreciated!!!</p>
+
+<p>Regards,</p>
+
+<p>Stavros</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Sep 18, 2013 15:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876561"></a>
+                                    <font class="smallfont"><p>Glad to be able to help you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Sep 19, 2013 11:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876584"></a>
+                                    <font class="smallfont"><p>Hi Kenneth, hi Juha,</p>
+
+<p>As i received your help many times i feel like giving something back <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>       (I am not sure if something like this was posted in the past)</p>
+
+<p>With Kenneth's valuable help i have managed to use the code for sending emails, to send mobile SMS mesages which i find it a nice feature for openremote users. It is not something special, just subscribed to an internet based company which provides email to SMS services with relativly good prices  (5 Euros for about 400 sms mesages for Cyprus). Kenneth's email code generates the emails send to this company along with the telephone number and the text content and the SMS is send to your mobile phone. There are many email to SMS providers available but if anyone is interested i can provide you with more info on the one i used. It is like having a GSM interface without any expensive hardware.</p>
+
+<p>Kind Regards,</p>
+
+<p>Stavros</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Sep 20, 2013 06:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876585"></a>
+                                    <font class="smallfont"><p>Hi Kenneth, hi Juha,</p>
+
+<p>As i received your help many times i feel like giving something back <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>       (I am not sure if something like this was posted in the past)</p>
+
+<p>With Kenneth's valuable help i have managed to use the code for sending emails, to send mobile SMS mesages which i find it a nice feature for openremote users. It is not something special, just subscribed to an internet based company which provides email to SMS services with relativly good prices  (5 Euros for about 400 sms mesages for Cyprus). Kenneth's email code generates the emails send to this company along with the telephone number and the text content and the SMS is send to your mobile phone. There are many email to SMS providers available but if anyone is interested i can provide you with more info on the one i used. It is like having a GSM interface without any expensive hardware.</p>
+
+<p>Kind Regards,</p>
+
+<p>Stavros</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Sep 20, 2013 06:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877086"></a>
+                                    <font class="smallfont"><p>Hi Stavros.</p>
+
+<p>Excuse the late reply.</p>
+
+<p>I'm definitely interested in getting more information about how you have solved your SMS service and I am convinced that I am not alone.</p>
+
+<p>I think it is great when users share their different ways of using OR.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Sep 28, 2013 07:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877197"></a>
+                                    <font class="smallfont"><p>Hi Kenneth,</p>
+
+<p>The idea is very simple,</p>
+
+<p>I setup an acount with the following email to sms service provider: </p>
+
+<p><a href="http://www.liveall.eu/en">http://www.liveall.eu/en</a></p>
+
+<p>( There are many similar providers, i just chose this randomly)</p>
+
+<p>You will be given a username and password.</p>
+
+<p>Then you will need to buy some gredits (the good thing about this provider is that there are no time limits as to when you need to use your gredits.(at least for now)</p>
+
+<p>Then the way to send sms messages from any email acound is described here:</p>
+
+<p><a href="http://www.liveall.eu/en/node/67">http://www.liveall.eu/en/node/67</a></p>
+
+<p>So i did some minor modifications to your main code as follows:</p>
+
+<p>message.setRecipients(Message.RecipientType.TO,<br/>
+InternetAddress.parse("mail2sms@liveall.eu"));         &lt;--------add the providers email adress<br/>
+message.setSubject("sms");                             &lt;--------the subject needs to be set to "sms"</p>
+
+
+<p>And then the rule which modifies the email mesage for each event is modified as follows:</p>
+
+
+<p>rule "FIRE ALARM" when</p>
+
+<p>Event( source == "FIRE", value == "on") </p>
+
+<p>then</p>
+
+<p>   insert (new Email_Text_Message ("username: your liveall username\n"+       &lt;--------your username from liveall.eu acount<br/>
+        "password: your liveall password\n"+                                  &lt;--------your password from liveall.eu acount<br/>
+        "sender: knx smart home\n"+                                           &lt;--------the name you want to show up as the sender when you receive your sms mesage<br/>
+         "To: 35799111111\n"+                                                 &lt;--------the telephone number that the sms will be delivered to including the country code without the double zeros<br/>
+         "Message: FIRE ALARM"));                                             &lt;--------the contents of your sms mesage</p>
+
+<p>end</p>
+
+<p>Note : the \n"+ is needed to change lines otherwise it will not work.</p>
+
+
+<p>I hope someone may find this usefull and once again i would like to thank you Kenneth for your help in this.</p>
+
+<p>Kind regards,</p>
+
+<p>Stavros</p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stavroschar at Sep 30, 2013 13:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877198"></a>
+                                    <font class="smallfont"><p>Hi Stavros,</p>
+
+<p>Thanks for sharing. Sending SMS is indeed a fairly common request. We've been looking at this for some of the commercial offerings with another service providers but it is quite useful to know about the alternatives that are out there and your experiences with them.</p>
+
+<p>&#8211; Juha</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 30, 2013 13:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596758"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>I try this code to implement mail sending but I have following errors :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+ERROR 2015-02-24 20:13:17,316 : Error in rule definition 'modeler_rules.drl' : wrong class format
+java.lang.RuntimeException: wrong class format
+	at org.drools.commons.jci.compilers.EclipseJavaCompiler$2.findType(EclipseJavaCompiler.java:260)
+	at org.drools.commons.jci.compilers.EclipseJavaCompiler$2.findType(EclipseJavaCompiler.java:204)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.askForType(LookupEnvironment.java:102)
+	at org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding.resolve(UnresolvedReferenceBinding.java:49)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:122)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.getTypeFromTypeSignature(LookupEnvironment.java:1188)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.cachePartsFrom(BinaryTypeBinding.java:317)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:640)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:619)
+	at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.accept(<span class="code-object">Compiler</span>.java:295)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.askForType(LookupEnvironment.java:107)
+	at org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding.resolve(UnresolvedReferenceBinding.java:49)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:122)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.getTypeFromTypeSignature(LookupEnvironment.java:1188)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.createFields(BinaryTypeBinding.java:355)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.cachePartsFrom(BinaryTypeBinding.java:326)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:640)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:619)
+	at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.accept(<span class="code-object">Compiler</span>.java:295)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.askForType(LookupEnvironment.java:107)
+	at org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding.resolve(UnresolvedReferenceBinding.java:49)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:122)
+	at org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding.resolve(ParameterizedTypeBinding.java:851)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:100)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.superclass(BinaryTypeBinding.java:1062)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.getExactMethod(BinaryTypeBinding.java:787)
+	at org.eclipse.jdt.internal.compiler.lookup.Scope.findExactMethod(Scope.java:893)
+	at org.eclipse.jdt.internal.compiler.lookup.Scope.getMethod(Scope.java:2234)
+	at org.eclipse.jdt.internal.compiler.ast.MessageSend.resolveType(MessageSend.java:401)
+	at org.eclipse.jdt.internal.compiler.ast.Expression.resolve(Expression.java:913)
+	at org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration.resolveStatements(AbstractMethodDeclaration.java:447)
+	at org.eclipse.jdt.internal.compiler.ast.MethodDeclaration.resolveStatements(MethodDeclaration.java:189)
+	at org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration.resolve(AbstractMethodDeclaration.java:406)
+	at org.eclipse.jdt.internal.compiler.ast.TypeDeclaration.resolve(TypeDeclaration.java:1131)
+	at org.eclipse.jdt.internal.compiler.ast.TypeDeclaration.resolve(TypeDeclaration.java:1219)
+	at org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration.resolve(CompilationUnitDeclaration.java:528)
+	at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.process(<span class="code-object">Compiler</span>.java:759)
+	at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.compile(<span class="code-object">Compiler</span>.java:464)
+	at org.drools.commons.jci.compilers.EclipseJavaCompiler.compile(EclipseJavaCompiler.java:351)
+	at org.drools.commons.jci.compilers.AbstractJavaCompiler.compile(AbstractJavaCompiler.java:51)
+	at org.drools.rule.builder.dialect.java.JavaDialect.compileAll(JavaDialect.java:389)
+	at org.drools.compiler.DialectCompiletimeRegistry.compileAll(DialectCompiletimeRegistry.java:56)
+	at org.drools.compiler.PackageRegistry.compileAll(PackageRegistry.java:74)
+	at org.drools.compiler.PackageBuilder.compileAll(PackageBuilder.java:677)
+	at org.drools.compiler.PackageBuilder.addPackage(PackageBuilder.java:640)
+	at org.drools.compiler.PackageBuilder.addPackageFromDrl(PackageBuilder.java:266)
+	at org.drools.compiler.PackageBuilder.addKnowledgeResource(PackageBuilder.java:458)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.add(KnowledgeBuilderImpl.java:28)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:498)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:659)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:872)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:454)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1411)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)
+Caused by: org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException
+	at org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader.&lt;init&gt;(ClassFileReader.java:372)
+	at org.drools.commons.jci.compilers.EclipseJavaCompiler$2.findType(EclipseJavaCompiler.java:254)
+	... 58 more
+ERROR [Controller Definition File Watcher <span class="code-keyword">for</span> Default Deployer]: Error in rule definition 'modeler_rules.drl' : wrong class format
+java.lang.RuntimeException: wrong class format
+	at org.drools.commons.jci.compilers.EclipseJavaCompiler$2.findType(EclipseJavaCompiler.java:260)
+	at org.drools.commons.jci.compilers.EclipseJavaCompiler$2.findType(EclipseJavaCompiler.java:204)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.askForType(LookupEnvironment.java:102)
+	at org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding.resolve(UnresolvedReferenceBinding.java:49)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:122)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.getTypeFromTypeSignature(LookupEnvironment.java:1188)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.cachePartsFrom(BinaryTypeBinding.java:317)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:640)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:619)
+	at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.accept(<span class="code-object">Compiler</span>.java:295)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.askForType(LookupEnvironment.java:107)
+	at org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding.resolve(UnresolvedReferenceBinding.java:49)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:122)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.getTypeFromTypeSignature(LookupEnvironment.java:1188)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.createFields(BinaryTypeBinding.java:355)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.cachePartsFrom(BinaryTypeBinding.java:326)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:640)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.createBinaryTypeFrom(LookupEnvironment.java:619)
+	at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.accept(<span class="code-object">Compiler</span>.java:295)
+	at org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment.askForType(LookupEnvironment.java:107)
+	at org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding.resolve(UnresolvedReferenceBinding.java:49)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:122)
+	at org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding.resolve(ParameterizedTypeBinding.java:851)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.resolveType(BinaryTypeBinding.java:100)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.superclass(BinaryTypeBinding.java:1062)
+	at org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding.getExactMethod(BinaryTypeBinding.java:787)
+	at org.eclipse.jdt.internal.compiler.lookup.Scope.findExactMethod(Scope.java:893)
+	at org.eclipse.jdt.internal.compiler.lookup.Scope.getMethod(Scope.java:2234)
+	at org.eclipse.jdt.internal.compiler.ast.MessageSend.resolveType(MessageSend.java:401)
+	at org.eclipse.jdt.internal.compiler.ast.Expression.resolve(Expression.java:913)
+	at org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration.resolveStatements(AbstractMethodDeclaration.java:447)
+	at org.eclipse.jdt.internal.compiler.ast.MethodDeclaration.resolveStatements(MethodDeclaration.java:189)
+	at org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration.resolve(AbstractMethodDeclaration.java:406)
+	at org.eclipse.jdt.internal.compiler.ast.TypeDeclaration.resolve(TypeDeclaration.java:1131)
+	at org.eclipse.jdt.internal.compiler.ast.TypeDeclaration.resolve(TypeDeclaration.java:1219)
+	at org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration.resolve(CompilationUnitDeclaration.java:528)
+	at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.process(<span class="code-object">Compiler</span>.java:759)
+	at org.eclipse.jdt.internal.compiler.<span class="code-object">Compiler</span>.compile(<span class="code-object">Compiler</span>.java:464)
+	at org.drools.commons.jci.compilers.EclipseJavaCompiler.compile(EclipseJavaCompiler.java:351)
+	at org.drools.commons.jci.compilers.AbstractJavaCompiler.compile(AbstractJavaCompiler.java:51)
+	at org.drools.rule.builder.dialect.java.JavaDialect.compileAll(JavaDialect.java:389)
+	at org.drools.compiler.DialectCompiletimeRegistry.compileAll(DialectCompiletimeRegistry.java:56)
+	at org.drools.compiler.PackageRegistry.compileAll(PackageRegistry.java:74)
+	at org.drools.compiler.PackageBuilder.compileAll(PackageBuilder.java:677)
+	at org.drools.compiler.PackageBuilder.addPackage(PackageBuilder.java:640)
+	at org.drools.compiler.PackageBuilder.addPackageFromDrl(PackageBuilder.java:266)
+	at org.drools.compiler.PackageBuilder.addKnowledgeResource(PackageBuilder.java:458)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.add(KnowledgeBuilderImpl.java:28)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:498)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:659)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:872)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:454)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1411)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)
+Caused by: org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException
+	at org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader.&lt;init&gt;(ClassFileReader.java:372)
+	at org.drools.commons.jci.compilers.EclipseJavaCompiler$2.findType(EclipseJavaCompiler.java:254)
+	... 58 more
+INFO 2015-02-24 20:13:17,347 : Initialized event processor : Drools Rule Engine
+INFO 2015-02-24 20:13:17,375 : Initialized event processor : RRD4J Data Logger
+INFO 2015-02-24 20:13:17,375 : Initialized event processor : EmonCMS Data Logger
+....
+</pre>
+</div></div>
+
+<p>The environment is : NAS Synology with Java SE Embedded 1.8.0_33 and JavaMail 1.5.2</p>
+
+<p>It seems that the error appear with the command : "props.put("mail.smtp.host", "smtp.gmail.com"); "</p>
+
+<p>an idea ?</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gman0105 at Feb 24, 2015 19:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596766"></a>
+                                    <font class="smallfont"><p>Our drools version does not support java8.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 25, 2015 08:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596768"></a>
+                                    <font class="smallfont"><blockquote><p>Our drools version does not support java8</p></blockquote>
+<p>According to Juha Lindfors some two years ago, that would be a simple fix. On a separate discussion IIRC from Eric that the Controller still has to be compiled for Java6. <br/>
+Wouldn't it be possible to distribute two versions? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 25, 2015 09:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596773"></a>
+                                    <font class="smallfont"><p>That is, if at me now the installed on Synology DS-214Play: Java SE Embedded 1.8.0_33 and OpenRemote 2.1.1 (free), send an e-mail will not work? And the rules do not work? Need to downgrade version Java to 1.6.0, for work these functions? <br/>
+With this version Java will work? (ejre-1_6_0_38-fcs-b05-linux-i586-headless-13_nov_2012.tar.gz)</p>
+
+<p>I tried <a href="http://www.openremote.org/display/forums/Emails%2C+Text-to-Speech%2C+Serial+Port">http://www.openremote.org/display/forums/Emails%2C+Text-to-Speech%2C+Serial+Port</a> ,but could not find the appropriate settings in the webapps/controller/WEB-INF/classes/config.properties<br/>
+This is only for the Pro version?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Feb 25, 2015 16:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596779"></a>
+                                    <font class="smallfont"><p>Thanks !</p>
+
+<p>I have downgraded Java to 1.6.0_38.</p>
+
+<p>I will test again...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gman0105 at Feb 25, 2015 20:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597967"></a>
+                                    <font class="smallfont"><p>Hi ,<br/>
+Please need help regarding the subject "send email via openremote" i need a tuto please .</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aissahmd at Apr 26, 2015 22:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597968"></a>
+                                    <font class="smallfont"><p>I have made this then what .please help am not very familiar with rules.please help</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aissahmd at Apr 26, 2015 22:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:41</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

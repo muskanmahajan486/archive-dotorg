@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Rule - wait some seconds then evaluate</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Rule - wait some seconds then evaluate
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 23, 2015 by <font color="#0050B2">madspoulsen</font>.
+				    </div>
+
+				    <p>I'm trying to set up a rule with this flow.</p>
+
+
+<p>Rule "turn off water boiler on high power usage"<br/>
+When<br/>
+waterboiler, state=on<br/>
+Powermeter value &gt; 1000<br/>
+then<br/>
+Turn off water boiler<br/>
+end</p>
+
+
+<p>/<b>this is the tricky one</b>/<br/>
+Rule "when water boiler status OFF and high power usage, notify resident"<br/>
+when <br/>
+waterboiler, state=off<br/>
+Powermeter value &gt; 1000<br/>
+then<br/>
+wait 20 seconds  /* to stabilize power and update power meter */<br/>
+if powermeter value &gt; 1000<br/>
+then <br/>
+notify by sonos speaker.</p>
+
+
+<p>The part i can't figure out is where the rule waits some seconds and after that, test a value which can lead to the action.</p>
+
+<p>Any ideas?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23600271"></a>
+                                    <font class="smallfont"><p>Add</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+timer(<span class="code-object">int</span>: 20s)
+</pre>
+</div></div>
+<p>before <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">when</pre>
+</div></div>and improve syntax.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jul 24, 2015 08:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600276"></a>
+                                    <font class="smallfont"><p>Thanks for your reply, Michal.</p>
+
+<p>I'm trying to have a rule triggered on a switch. that's fairly simple.<br/>
+But in the "then" statement, i will define an action.<br/>
+wait 20seconds<br/>
+and execute another action.</p>
+
+<p>Like having a PIR sensor turning on the light.<br/>
+If PIR is activated, then turn on the light.<br/>
+If not re-ativated within 20seconds, turn off the light.</p>
+
+<p>does it make sense?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by madspoulsen at Jul 25, 2015 01:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600277"></a>
+                                    <font class="smallfont"><blockquote>
+<p>I'm trying to have a rule triggered on a switch. that's fairly simple.<br/>
+But in the "then" statement, i will define an action.<br/>
+wait 20seconds<br/>
+and execute another action.</p></blockquote>
+<p>It is not a good idea to wait within rule's "then" statement. You will hang the whole rule engine. A much better solution is the one I've given in my previous post.</p>
+<blockquote>
+<p>Like having a PIR sensor turning on the light.<br/>
+If PIR is activated, then turn on the light.<br/>
+If not re-ativated within 20seconds, turn off the light.</p></blockquote>
+<p>You just need 2 rules, one for switching light on and one for switching light off. Like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"PIR light on"</span>
+when
+  Event(source==<span class="code-quote">"PIR"</span>, value==<span class="code-quote">"on"</span>)
+then
+  execute.command(<span class="code-quote">"Light-on"</span>);
+end
+
+rule <span class="code-quote">"PIR light off"</span>
+timer(<span class="code-object">int</span>: 20s)
+when
+  Event(source==<span class="code-quote">"PIR"</span>, value==<span class="code-quote">"off"</span>)
+then
+  execute.command(<span class="code-quote">"Light-off"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jul 25, 2015 11:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

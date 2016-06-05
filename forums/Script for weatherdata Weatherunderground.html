@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Script for weatherdata Weatherunderground</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Script for weatherdata Weatherunderground
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 08, 2014 by <font color="#0050B2">placemaster</font>.
+				    </div>
+
+				    <p>I am trying to get a reliable way of getting weather data from Weatherunderground. From <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Use+XML+Data+Sources">Use XML Data Sources</a> I had a lot of help but not sufficient for my knowledge. <br/>
+I want to get at a 10 minute interval a xml file that is stored on my synology (/volume1/@appstore/OpenRemote/webapps/private/). The XML file should be named forecast.xml.</p>
+
+<p>With the script below (from the thread earlier mentioned) it should work.<br/>
+<img src="attachments/22887352/23036591.png" align="absmiddle" border="0"/></p>
+
+<p>I have stored this script at /volume1/@appstore/OpenRemote/webapps/private/script/weather.sh<br/>
+Is this a good location or should it be placed elsewhere?</p>
+
+<p>Now my questions:<br/>
+How can I run this script using crontab.</p>
+
+<p>I have installed cronjob editor on my Synology to help. But I am stuck.<br/>
+I am able to create a new cronjob but I don't know the command I have to use.<br/>
+<img src="attachments/22887352/23036592.png" align="absmiddle" border="0"/></p>
+
+
+<p>After this I need to manage how to be able to read the xml file from a HTTP call.<br/>
+I see the Mr. Zanstra was able to read the file and extract some info. When I use his example I do not get any response. <br/>
+<img src="attachments/22887352/23036593.png" align="absmiddle" border="0"/><br/>
+Of course I adjusted the URL to my location.</p>
+
+<p>I understand it is a lot of info and many questions. But it would be super when I finally get it up and running.<br/>
+Of course I will share the results so others are able to use the info. </p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22887352/23036591.png">code.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22887352/23036592.png">Cronjob.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22887352/23036593.png">command.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22887352/23036594.png">Controller.PNG</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22887366"></a>
+                                    <font class="smallfont"><p>The command in crontab should be:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">/volume1/@appstore/OpenRemote/webapps/<span class="code-keyword">private</span>/script/weather.sh</pre>
+</div></div>
+<p>Make sure this script has read/write/execute permissions.<br/>
+On my installation the rights are:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">Owner:OpenRemote
+Group:Users</pre>
+</div></div>
+
+<p>In a terminal session I did edit with VI the file /etc/crontab</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">#minute hour    mday    month   wday    who     command
+*/14    *       *       *       *       root    /volume1/@appstore/OpenRemote/webapps/<span class="code-keyword">private</span>/weatherlogger.sh</pre>
+</div></div>
+<p>I do not know the cronjob editor.</p>
+
+<p>This makes that Wunderground is read every 14 minutes. The 14 minutes were set to avoid exceeding the allowed requests underthe free licence.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jun 30, 2014 08:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887378"></a>
+                                    <font class="smallfont"><p>Thanks Mr. Zanstra to help me out. </p>
+
+<p>The crontab works. It generates the file every 15 minutes.<br/>
+The XML file does have read/write/execute permissions.</p>
+
+<p>But I still can not acces the file from within openremote. I have tried to switch rights (Owner and Group)from root to openremote and viceversa. But still no luck.</p>
+
+<p>In the  thread <a href="http://www.openremote.org/display/forums/Get+Weather+information+from+XML">Get Weather information from XML</a> it is mentioned that a tomcat server is used.<br/>
+I know there is a tomcat server included in OR. Do I need to start this server or is it always running?</p>
+
+<p>Found the solution! You just need to use the port set at the controller.<br/>
+<img src="attachments/22887352/23036594.png" align="absmiddle" border="0"/></p>
+
+<p>In my case the URL is : <a href="http://10.10.10.10:18581/private/NIJMEGEN.xml">http://10.10.10.10:18581/private/NIJMEGEN.xml</a></p>
+
+<p>Now I can set up several commands to extract the data using Xpath.<br/>
+Also a first test shows a good result. Now it is time for more testing.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by placemaster at Jun 30, 2014 20:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887387"></a>
+                                    <font class="smallfont"><blockquote><p>In the thread Get Weather information from XML it is mentioned that a tomcat server is used</p></blockquote>
+<p>Tomcat is always running</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jul 01, 2014 07:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

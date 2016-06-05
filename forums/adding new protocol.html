@@ -1,0 +1,865 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : adding new protocol</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : adding new protocol
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 07, 2010 by <font color="#0050B2">digitaldan</font>.
+				    </div>
+
+				    <p>Hi guys, I have a few spare cycles this week and though I would try adding a new protocol.&nbsp;&nbsp; Adding the necessary classes to org.openremote.controller.protocol.&#42; seems failry strait forward, but I have a few questions:</p>
+<ol>
+	<li>Where else in the controller code do I need to add support (xml files, config files, java classes outside of  org.openremote.controller.protocol.*)</li>
+	<li>Where do I add this new protocol to the designer code?&nbsp; Am I missing other projects I need to add it to?</li>
+	<li>I want to support sensor state and especially the new polling sensor state mode, how supported is this right now in 2.0?</li>
+	<li>I see in the API 2.0 docs that sensor data comes back with &lt;status id="1"&gt;on&lt;/status&gt;, where are these types defined? If i wanted to send back a level (60%) how would that be done?</li>
+	<li>Is there any code that can demonstrate the sensor polling functionality?</li>
+	<li>The system I'm talking to uses a persisitent socket connection using a 16 character hex key for security, I would really like this to be connected all the time and not have the user have to enter this long key + the ip + the port for every command/sensor in the designer (and have to create a new connection for each request).&nbsp; Whats the best way to store this?&nbsp; Is there somewhere in the controller that the user can set the key, ip and port permanently?</li>
+</ol>
+
+
+<p>Thanks&#33;</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/10551576/10747910.png">Screen shot 2010-07-08 at 9.47.02 PM.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/10551576/10747911.png">Screen shot 2010-07-08 at 9.48.38 PM.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/10551576/10747912.png">Screen shot 2010-07-08 at 9.57.27 PM.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/10551576/10747913.png">Screen shot 2010-07-11 at 9.42.18 AM.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-10551578"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Where else in the controller code do I need to add support (xml files, config files, java classes outside of org.openremote.controller.protocol.*)</p></blockquote>
+
+<p>In the controller's applicationContext.xml : <a href="http://openremote.svn.sourceforge.net/svnroot/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Controller_2_0_0_Alpha6/config/applicationContext.xml">http://openremote.svn.sourceforge.net/svnroot/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Controller_2_0_0_Alpha6/config/applicationContext.xml</a></p>
+
+<p>Relevant sections:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+  <span class="code-tag">&lt;bean id = <span class="code-quote">"commandFactory"</span> class = <span class="code-quote">"org.openremote.controller.command.CommandFactory"</span>&gt;</span>
+    <span class="code-tag">&lt;property name = <span class="code-quote">"commandBuilders"</span>&gt;</span>
+      <span class="code-tag">&lt;props&gt;</span>
+        <span class="code-tag">&lt;prop key = <span class="code-quote">"ir"</span>&gt;</span>irCommandBuilder<span class="code-tag">&lt;/prop&gt;</span>
+        <span class="code-tag">&lt;prop key = <span class="code-quote">"knx"</span>&gt;</span>knxCommandBuilder<span class="code-tag">&lt;/prop&gt;</span>
+        <span class="code-tag">&lt;prop key = <span class="code-quote">"x10"</span>&gt;</span>x10CommandBuilder<span class="code-tag">&lt;/prop&gt;</span>
+        <span class="code-tag">&lt;prop key = <span class="code-quote">"tcpSocket"</span>&gt;</span>tcpSocketCommandBuilder<span class="code-tag">&lt;/prop&gt;</span>
+        <span class="code-tag">&lt;prop key = <span class="code-quote">"telnet"</span>&gt;</span>telnetCommandBuilder<span class="code-tag">&lt;/prop&gt;</span>
+        <span class="code-tag">&lt;prop key = <span class="code-quote">"httpGet"</span>&gt;</span>httpGetCommandBuilder<span class="code-tag">&lt;/prop&gt;</span>
+        <span class="code-tag">&lt;prop key = <span class="code-quote">"upnp"</span>&gt;</span>upnpCommandBuilder<span class="code-tag">&lt;/prop&gt;</span>
+        <span class="code-tag">&lt;prop key = <span class="code-quote">"mockup"</span>&gt;</span>mockupCommandBuilder<span class="code-tag">&lt;/prop&gt;</span>
+      <span class="code-tag">&lt;/props&gt;</span>
+    <span class="code-tag">&lt;/property&gt;</span>
+  <span class="code-tag">&lt;/bean&gt;</span>
+</pre>
+</div></div>
+
+<p>To add your command builder implementations responsible for the XML parsing. In the build(Element element) method of your command builder, expect the XML structure to be:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;command protocol = <span class="code-quote">"dans-protocol"</span> &gt;</span>
+  <span class="code-tag">&lt;property name = <span class="code-quote">"argname1"</span> value = <span class="code-quote">"..."</span>/&gt;</span>
+  <span class="code-tag">&lt;property name = <span class="code-quote">"argname2"</span> value = <span class="code-quote">"..."</span>/&gt;</span>
+  <span class="code-tag">&lt;property name = <span class="code-quote">"argnameX"</span> value = <span class="code-quote">"..."</span>/&gt;</span>
+<span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+<p>Where <b>protocol</b> attribute's value matches the <b>key</b> attribute's value in the command builders property list. As child elements you get an arbitrary list of property values (configured in the designer, see later) which you can freely parse and interpret (name,value list).</p>
+
+<p>Back to <em>applicationContext.xml</em>, below the command builder property list, add the class method mapping to instantiate your protocol command builder:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+	&lt;!-- COMMAND BUILDERS ============================================================================
+	 |
+	 | Implementation specific builders for the Event Factory bean. In short, each distinct command
+	 | type, as they appear in controller.xml, will need a corresponding builder implementation.
+	 |
+	 | See the org.openremote.controller.command.CommandBuilder interface for details if you seek to
+	 | extend the implementation with additional command types.
+	 +--&gt;
+	
+	<span class="code-tag"><span class="code-comment">&lt;!-- Infrared Command Builder --&gt;</span></span>
+	<span class="code-tag">&lt;bean id = <span class="code-quote">"irCommandBuilder"</span> class = <span class="code-quote">"org.openremote.controller.protocol.infrared.IRCommandBuilder"</span>/&gt;</span>
+</pre>
+</div></div>
+
+<p>Where the bean's <b>id</b> attribute value matches the command builder name you gave in the command builders property list earlier.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 07, 2010 19:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551580"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Where do I add this new protocol to the designer code?  Am I missing other projects I need to add it to?</p></blockquote>
+
+<p>Add the XML definition for your protocol attributes into the protocols directory : <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Designer_2_0_0_Alpha7/protocols/protocols/">http://openremote.svn.sourceforge.net/viewvc/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Designer_2_0_0_Alpha7/protocols/protocols/</a></p>
+
+<p>For example:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;</span>
+&lt;openremote xmlns=<span class="code-quote">"http://www.openremote.org"</span> <span class="code-keyword">xmlns:xsi</span>=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span>
+            xsi:schemaLocation=<span class="code-quote">"http://www.openremote.org protocol.xsd"</span>&gt;
+
+  <span class="code-tag">&lt;protocol displayName=<span class="code-quote">"Dan's New HA Protocol"</span> tagName=<span class="code-quote">"dans-protocol"</span>&gt;</span>
+
+    <span class="code-tag">&lt;attr name=<span class="code-quote">"command-name"</span> label=<span class="code-quote">"Command Name"</span>&gt;</span>
+      <span class="code-tag">&lt;validations&gt;</span>
+        <span class="code-tag">&lt;allowBlank&gt;</span>false<span class="code-tag">&lt;/allowBlank&gt;</span>
+        <span class="code-tag">&lt;regex message=<span class="code-quote">"Command must be A, B or C"</span>&gt;</span>[ABC]<span class="code-tag">&lt;/regex&gt;</span>
+      <span class="code-tag">&lt;/validations&gt;</span>
+    <span class="code-tag">&lt;/attr&gt;</span>
+
+    <span class="code-tag">&lt;attr name=<span class="code-quote">"command-value"</span> label=<span class="code-quote">"Value for Command"</span>&gt;</span>
+      <span class="code-tag">&lt;validations&gt;</span>
+        <span class="code-tag">&lt;allowBlank&gt;</span>false<span class="code-tag">&lt;/allowBlank&gt;</span>
+        <span class="code-tag">&lt;maxLength&gt;</span>1<span class="code-tag">&lt;/maxLength&gt;</span>
+        <span class="code-tag">&lt;regex message=<span class="code-quote">"Only numbers allowed"</span>&gt;</span>[0-9]<span class="code-tag">&lt;/regex&gt;</span>
+      <span class="code-tag">&lt;/validations&gt;</span>
+    <span class="code-tag">&lt;/attr&gt;</span>
+  <span class="code-tag">&lt;/protocol&gt;</span>
+<span class="code-tag">&lt;/openremote&gt;</span> 
+</pre>
+</div></div>
+
+<p>Where the value of <b>tagName</b> attribute matches the key value in the command builder property list in (1).</p>
+
+<p>This definition would produce an instance of XML Element for your command builder, such as:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;command protocol = <span class="code-quote">"dans-protocol"</span> &gt;</span>
+  <span class="code-tag">&lt;property name = <span class="code-quote">"command-name"</span> value = <span class="code-quote">"A"</span>/&gt;</span>
+  <span class="code-tag">&lt;property name = <span class="code-quote">"command-value"</span> value = <span class="code-quote">"1"</span>/&gt;</span>
+<span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 07, 2010 19:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551581"></a>
+                                    <font class="smallfont"><p>Juha, thank you for the detailed posting, I'm going to give it a shot right now.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 07, 2010 19:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551582"></a>
+                                    <font class="smallfont"><blockquote>
+<p>3. I want to support sensor state and especially the new polling sensor state mode, how supported is this right now in 2.0?</p></blockquote>
+
+<p>It needs to be thoroughly reviewed and tested. There are some parts of it that still look suspect to me, and may still change. However, it is stable enough so that even if you do use the current API and contribute your protocol back to our codebase, I'm willing to port the changes where API might still get modified.</p>
+
+<p>On top of that, this part is poorly documented which is also why it still needs a thorough review.</p>
+
+<blockquote>
+<p>4. I see in the API 2.0 docs that sensor data comes back with &lt;status id="1"&gt;on&lt;/status&gt;, where are these types defined? </p></blockquote>
+
+<p>For the controller configuration, specified in ?controller-2.0-M7.xsd here : <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Controller_2_0_0_Alpha6/config/controller-2.0-M7.xsd">https://openremote.svn.sourceforge.net/svnroot/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Controller_2_0_0_Alpha6/config/controller-2.0-M7.xsd</a> </p>
+
+<p>In particular, section:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+	<span class="code-tag"><span class="code-comment">&lt;!-- ###############  sensor  ################ --&gt;</span></span>
+
+	<span class="code-tag">&lt;xsd:element name=<span class="code-quote">"sensor"</span>&gt;</span>
+		<span class="code-tag">&lt;xsd:annotation&gt;</span>
+			<span class="code-tag">&lt;xsd:documentation&gt;</span>&lt;![CDATA[
+			the definition of a command. the command must have a id , protocol.  
+			]]&gt;<span class="code-tag">&lt;/xsd:documentation&gt;</span>
+		<span class="code-tag">&lt;/xsd:annotation&gt;</span>
+		<span class="code-tag">&lt;xsd:complexType&gt;</span>
+			<span class="code-tag">&lt;xsd:sequence&gt;</span>
+				<span class="code-tag">&lt;xsd:group ref=<span class="code-quote">"sensorGroup"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"unbounded"</span> /&gt;</span>
+			<span class="code-tag">&lt;/xsd:sequence&gt;</span>
+			<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"id"</span> type=<span class="code-quote">"idType"</span> use=<span class="code-quote">"required"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"type"</span> type=<span class="code-quote">"sensorType"</span> use=<span class="code-quote">"required"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"name"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"required"</span> /&gt;</span>
+		<span class="code-tag">&lt;/xsd:complexType&gt;</span>
+	<span class="code-tag">&lt;/xsd:element&gt;</span>
+	
+	<span class="code-tag">&lt;xsd:group name=<span class="code-quote">"sensorGroup"</span>&gt;</span>
+		<span class="code-tag">&lt;xsd:annotation&gt;</span>
+			<span class="code-tag">&lt;xsd:documentation&gt;</span>
+				&lt;![CDATA[
+					a sensor definition-group.
+				]]&gt;
+			<span class="code-tag">&lt;/xsd:documentation&gt;</span>
+		<span class="code-tag">&lt;/xsd:annotation&gt;</span>
+		<span class="code-tag">&lt;xsd:choice&gt;</span>
+			<span class="code-tag">&lt;xsd:element ref=<span class="code-quote">"include"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"unbounded"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:element ref=<span class="code-quote">"state"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"unbounded"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:element ref=<span class="code-quote">"min"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"1"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:element ref=<span class="code-quote">"max"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"1"</span> /&gt;</span>
+		<span class="code-tag">&lt;/xsd:choice&gt;</span>
+	<span class="code-tag">&lt;/xsd:group&gt;</span>
+
+	<span class="code-tag">&lt;xsd:element name=<span class="code-quote">"min"</span>&gt;</span>
+		<span class="code-tag">&lt;xsd:complexType&gt;</span>
+			<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"value"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span> /&gt;</span>
+		<span class="code-tag">&lt;/xsd:complexType&gt;</span>
+	<span class="code-tag">&lt;/xsd:element&gt;</span>
+	<span class="code-tag">&lt;xsd:element name=<span class="code-quote">"max"</span>&gt;</span>
+		<span class="code-tag">&lt;xsd:complexType&gt;</span>
+			<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"value"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span> /&gt;</span>
+		<span class="code-tag">&lt;/xsd:complexType&gt;</span>
+	<span class="code-tag">&lt;/xsd:element&gt;</span>
+
+	<span class="code-tag">&lt;xsd:element name=<span class="code-quote">"state"</span>&gt;</span>
+		<span class="code-tag">&lt;xsd:complexType&gt;</span>
+			<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"name"</span> use=<span class="code-quote">"required"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"value"</span> use=<span class="code-quote">"optional"</span> /&gt;</span>
+		<span class="code-tag">&lt;/xsd:complexType&gt;</span>
+	<span class="code-tag">&lt;/xsd:element&gt;</span>
+	
+	<span class="code-tag">&lt;xsd:simpleType name=<span class="code-quote">"sensorType"</span>&gt;</span>
+		<span class="code-tag">&lt;xsd:restriction base=<span class="code-quote">"xsd:string"</span>&gt;</span>
+			<span class="code-tag">&lt;xsd:enumeration value=<span class="code-quote">"switch"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:enumeration value=<span class="code-quote">"level"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:enumeration value=<span class="code-quote">"range"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:enumeration value=<span class="code-quote">"color"</span> /&gt;</span>
+			<span class="code-tag">&lt;xsd:enumeration value=<span class="code-quote">"custom"</span> /&gt;</span>
+		<span class="code-tag">&lt;/xsd:restriction&gt;</span>
+	<span class="code-tag">&lt;/xsd:simpleType&gt;</span>
+</pre>
+</div></div>
+
+<p>Where "switch" sensor type would in this case expects on/off strings as return values.</p>
+
+<blockquote>
+<p>If i wanted to send back a level (60%) how would that be done?</p></blockquote>
+
+<p>In the StatusCommand interface, the controller passes the type of the sensor that requests a value from your device (through a StatusCommand with read() interface). Expected return value is a string representation that matches the sensor's type (assuming your status command implementation can support such a sensor type).</p>
+
+<p>So in the designer if the sensor that has been mapped to your StatusCommand is type LEVEL, then it expects an integer value as a string in the range of [0-100]. In your case you'd return "60".</p>
+
+<p>This is the part that still needs some review and may undergo some changes.</p>
+
+
+<blockquote>
+<p>5. Is there any code that can demonstrate the sensor polling functionality?</p></blockquote>
+
+<p>Nothing good yet, only a (too) simplistic mock: <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Controller_2_0_0_Alpha6/src/org/openremote/controller/protocol/test/mockup/MockupCommand.java">https://openremote.svn.sourceforge.net/svnroot/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Controller_2_0_0_Alpha6/src/org/openremote/controller/protocol/test/mockup/MockupCommand.java</a></p>
+
+<p>I'm working on the rest.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 07, 2010 20:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551583"></a>
+                                    <font class="smallfont"><blockquote>
+<p>The system I'm talking to uses a persisitent socket connection using a 16 character hex key for security, I would really like this to be connected all the time and not have the user have to enter this long key + the ip + the port for every command/sensor in the designer (and have to create a new connection for each request).  Whats the best way to store this?  Is there somewhere in the controller that the user can set the key, ip and port permanently?</p></blockquote>
+
+<p>You can specify controller properties in the designer.</p>
+
+<p>They are defined here:</p>
+
+<p><a href="http://openremote.svn.sourceforge.net/svnroot/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Designer_2_0_0_Alpha7/config/controller-config-2.0-M7.xml">http://openremote.svn.sourceforge.net/svnroot/openremote/tags/OpenRemote_Boss_2_0_0_Alpha4/Designer_2_0_0_Alpha7/config/controller-config-2.0-M7.xml</a></p>
+
+<p>In your case, add your own category (Dan's Protocol) and the required configuration properties.</p>
+
+<p>This is also poorly documented at the moment.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 07, 2010 20:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551589"></a>
+                                    <font class="smallfont"><p>Awsome Juha, I'm just finishing up getting device on/off/level working.&nbsp; Next I need to set up a local copy of the designer, have a feeling that may take a little bit. I completely understand that things are a moving target, so no worries if the code changes.&nbsp; I defiantely plan to contribute my code back. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 07, 2010 20:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551591"></a>
+                                    <font class="smallfont"><p>So i have the sensor part working, I can create a switch in the designer and watch it update in realtime on my iphone simulator when I physically turn on or off the light.</p>
+
+<p>Now I'm having issues sending commands from the iphone, I have created simple switch commands (ON, OFF)&nbsp; and hooked them up in the modeler.&nbsp; The problem is that when I click on the switch&nbsp; or button (i tried both)&nbsp; that is wired up to the command it goes out and seems to grab all the files off the controller again rather then issue a command.</p>
+
+<p>I then tried a http command (http protocol) and wired a button to that, same result.</p>
+
+
+<p>I ran this under Wireshark, when you push a button (wired to either a http command or my protocol command) the iphone makes the following calls:</p>
+<ol>
+	<li>GET /controller</li>
+	<li>GET /controller/rest/panel/Main</li>
+	<li>GET /controller</li>
+	<li>GET /controller/rest/panel/Main</li>
+	<li>GET /controller/rest/servers</li>
+</ol>
+
+
+<p>It never calls a command action. I'm a little stumped.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 08, 2010 17:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551594"></a>
+                                    <font class="smallfont"><p>Does it work if you invoke the REST interface directly from your browser? <a href="http://localhost:8080/controller/rest/control/button-id/click">http://localhost:8080/controller/rest/control/button-id/click</a> ?</p>
+
+<p>Did you use the iPhone client from <a href="http://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/iPhone_profile_service">http://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/iPhone_profile_service</a> ?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 08, 2010 18:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551598"></a>
+                                    <font class="smallfont"><p>Yes, the rest link works, I'm able to use both the button and the switch (<a href="http://localhost:8080/controller/rest/control/8/on">http://localhost:8080/controller/rest/control/8/on</a> , <a href="http://localhost:8080/controller/rest/control/8/off">http://localhost:8080/controller/rest/control/8/off</a>).</p>
+
+<p>I was using the iphone project from the alpha4 tag, but the one you mention above has the same problem, it can pull sensor data just fine, but when I click on a button or switch it goes out and grabs the main controller login page ( GET /controller ) and the other ones mentioned above. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 08, 2010 19:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551599"></a>
+                                    <font class="smallfont"><p>hmm ok, sounds strange, haven't looked into it yet, might get to it next week</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 08, 2010 19:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551600"></a>
+                                    <font class="smallfont"><p>Found it,</p>
+
+<p>in ServerDefinition.m in the iPhone source there are two methods</p>
+
+
+<p>+ (NSString &#42;)controlRESTUrl {<br/>
+return [self serverUrl stringByAppendingPathComponent:@"rest/control"];<br/>
+}</p>
+
+<p>+ (NSString &#42;)securedControlRESTUrl {<br/>
+return [self securedServerUrl stringByAppendingPathComponent:@"rest/control"];<br/>
+}</p>
+
+
+<p>controlRESTUrl is what I think was suppose to be used (as everything else is non ssl), but ScreenViewController.m was using securedControlRESTUrl and trying to send via ssl on port 8443.</p>
+
+<p>So far so good, I'm going to finish the lighting control (levels and scenes) and continue on&nbsp; with audio, HVAC and security.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 08, 2010 20:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551601"></a>
+                                    <font class="smallfont"><p>Another question, my slider won't move or budge in the iPhone ui, I'm guesing this is because  the min and max values are undefined, where do these get set? I see them in the XSD  but I'm not sure if they are set in the designer (where?) or by something in the controller.   Right now the min should be 0 and max 100, but when I get to thermostats, the min will be something above 0 and max something above 100.  Also is the stepping always 1 or can you set it to something else (like .5 for Celsius users who use half increments).</p>
+
+<p>I'm finally getting comfortable in the code, so hopefully the frequency of questions will start to slow down <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 08, 2010 20:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551602"></a>
+                                    <font class="smallfont"><p>They're set in the designer. First the technical details on the "Building Modeler" window and once you're done, bind the slider definition to the actual UI widget on the UI Designer side (this means that on UI designer side you have no control over things like ranges or commands, only how the slider visually looks).</p>
+
+<p>Note that the Designer has UI bugs here (some I just noticed) so you more or less have to follow these steps, can't get too creative yet.</p>
+
+<p>Sensor of "level" type are implicitly in range [0-100] so usually for percentage values.</p>
+
+<p>Sensor of "range" type lets you define an arbitrary range (within MIN/MAX Integer values).</p>
+
+<p>So first create a new sensor for your device (and bind it to a command you use to poll its current value). If you choose "range' you can specify the min/max values:</p>
+
+<p><img src="attachments/10551576/10747910.png" align="absmiddle" border="0"/></p>
+
+<p>Then create a new slider element in the same device and bind it to your sensor. You should also bind to a command that you use to set a new value for the device when you move the slider knob:</p>
+
+<p><img src="attachments/10551576/10747911.png" align="absmiddle" border="0"/></p>
+
+<p>Once done, switch to the UI Designer side, drag a slider on your screen and bind it to your device's slider definition in the properties.</p>
+
+<p><img src="attachments/10551576/10747912.png" align="absmiddle" border="0"/></p>
+
+<p>You should end up with <em>controller.xml</em> with something like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+  <span class="code-tag">&lt;components&gt;</span>
+
+    ...
+
+    <span class="code-tag">&lt;slider id=<span class="code-quote">"41"</span>&gt;</span>
+      <span class="code-tag">&lt;setValue&gt;</span>
+        <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"45"</span> /&gt;</span>
+      <span class="code-tag">&lt;/setValue&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"42"</span> /&gt;</span>
+    <span class="code-tag">&lt;/slider&gt;</span>
+  <span class="code-tag">&lt;/components&gt;</span>
+
+  <span class="code-tag">&lt;sensors&gt;</span>
+    <span class="code-tag">&lt;sensor id=<span class="code-quote">"42"</span> name=<span class="code-quote">"Range Sensor [-100..500]"</span> type=<span class="code-quote">"range"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"46"</span> /&gt;</span>
+      <span class="code-tag">&lt;min value=<span class="code-quote">"-100"</span> /&gt;</span>
+      <span class="code-tag">&lt;max value=<span class="code-quote">"500"</span> /&gt;</span>
+    <span class="code-tag">&lt;/sensor&gt;</span>
+  <span class="code-tag">&lt;/sensors&gt;</span>
+
+</pre>
+</div></div>
+
+<p>So there you have your range. The usual disclaimer, much of slider functionality still needs some testing/tweaking.</p>
+
+<blockquote>
+<p>Also is the stepping always 1 or can you set it to something else (like .5 for Celsius users who use half increments).</p></blockquote>
+
+<p>Think we talked about default stepping for "level" type of sensors but that might have been dropped. I need to check. </p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 08, 2010 21:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551603"></a>
+                                    <font class="smallfont"><p>Great, thats just what I was looking for. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 08, 2010 21:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551608"></a>
+                                    <font class="smallfont"><p>So I have made really great progress in the last 24 hours.&nbsp; I have everything wired up with a persistent connection to my controller.&nbsp; The polling sensor feature is great, there is almost no delay from when I turn off a light, change the volume or have a temperature change and when the iphone software updates, very cool.&nbsp; I'm now wrestling with the modeler code a bit, I will probably post back here again with some more questions.</p>
+
+<p>I thought i would post my progress here in case others are curious.</p>
+
+<p>I have the following working</p>
+<ol>
+	<li>Lights
+	<ol>
+		<li>Setters
+		<ol>
+			<li>On</li>
+			<li>OFF</li>
+			<li>Level</li>
+		</ol>
+		</li>
+		<li>Getters
+		<ol>
+			<li>On/OFF (switch)</li>
+			<li>Level (slider/range)</li>
+		</ol>
+		</li>
+	</ol>
+	</li>
+	<li>&nbsp;Thermostats
+	<ol>
+		<li>Setters
+		<ol>
+			<li>Cool Set Point</li>
+			<li>Heat Set Point</li>
+			<li>Hold modes</li>
+			<li>System Modes</li>
+			<li>Fan Modes</li>
+		</ol>
+		</li>
+		<li>Getters
+		<ol>
+			<li>Current Temp (with automatic C/F conversion)</li>
+			<li>Heat Point</li>
+			<li>Cool Point</li>
+			<li>Hold</li>
+			<li>Fan</li>
+		</ol>
+		</li>
+	</ol>
+	</li>
+	<li>Audio ( i currently have a Russound system connected to my omni)
+	<ol>
+		<li>Setters (per Audio Zone, my system has 12 zones and 6 sources)
+		<ol>
+			<li>On</li>
+			<li>Off</li>
+			<li>Source</li>
+			<li>Volume</li>
+			<li>Key press</li>
+		</ol>
+		</li>
+		<li>Getters
+		<ol>
+			<li>Power</li>
+			<li>Source</li>
+			<li>Source Name</li>
+			<li>Source Text</li>
+			<li>Volume</li>
+		</ol>
+		</li>
+	</ol>
+	</li>
+</ol>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 09, 2010 21:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551609"></a>
+                                    <font class="smallfont"><p>Happy to hear it has been smooth so far <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 09, 2010 21:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551612"></a>
+                                    <font class="smallfont"><p>I have a question on the modeler (really great work by the way, very polished and well thought out).&nbsp; Before I go down the path of creating commands, sensors and ui elements I want to make sure I'm thinking about it the right way.</p>
+<ol>
+	<li>Switch to modeler view</li>
+	<li>For a single light I create a On command, Off command, Level and Status Command.</li>
+	<li>I then create a sensor switch and a sensor level</li>
+	<li>I then create a switch and a sensor</li>
+	<li>switch to UI designer view</li>
+	<li>Add a switch and connect to modeler switch above</li>
+	<li>Add a slider and connect to modeler slider above</li>
+	<li>Add a label and connect to sensor level above (to show actual percent)</li>
+</ol>
+
+
+<p>Does this sound right?&nbsp; I have 50&#43; lights, so I'm going to have to create almost 500 objects.&nbsp; Is there anything I can do to speed this up? I'm going to have the same problem for audio commands, there are almost 40 key presses that can be sent, there's one command on the controller which takes an integer for the key, but in the modeler I have to create 40 commands, one for each command press, and this is for just one audio zone (and I have 12). I also have 9 thermostats, some temp sensors, omni macros and scenes commands, phew this could take a while <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+<p>Now that I am actually verbalizing this, I think it may make sense for me to write an importer from a connection to the omni hardware. Once connected I can pull all devices on the system (name, number, type, etc...).&nbsp; Do you have any thoughts on how such a call might be best implemented in the modeler?&nbsp; I just need to add a button that asks for the ip, port and key and have it go out and create the commands, sensors switches and sliders&nbsp; based on what comes back.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 10, 2010 20:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551613"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Now that I am actually verbalizing this, I think it may make sense for me to write an importer from a connection to the omni hardware. Once connected I can pull all devices on the system (name, number, type, etc...).  Do you have any thoughts on how such a call might be best implemented in the modeler?  I just need to add a button that asks for the ip, port and key and have it go out and create the commands, sensors switches and sliders  based on what comes back.</p></blockquote>
+
+<p>Only at high level, however, if you look at an already created device in the modeler window, you will find there's an "Import IR commands" in the context menu. You could add your own import command there with an additional menu item.</p>
+
+<p>Long term, if there are more import functionality we want to include in the UI - which could be quite likely - this may not be the right place. My thinking is it would fit better with the "New Device" wizard dialog flow, however, we may need to redesign this dialog flow differently to accommodate importing. So short term additional context menu item would be fine.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 11, 2010 08:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551614"></a>
+                                    <font class="smallfont"><p>You may also need a HTTP/REST interface in the controller to delegate the connection actions to for discovery, depending what type of connection needs you have from the web application (which is essentially your local web browser and therefore sand-boxed to some degree).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 11, 2010 08:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551615"></a>
+                                    <font class="smallfont"><p>Replying to myself, actually all imports should start here, including the current "Import IR Commands" flow.</p>
+
+
+
+<p><div align="center"><img src="attachments/10551576/10747913.png" border="0"/></div></p>
+
+<p>It's clear enough with a new "Import..." button and then a choice of systems to import from (Beehive, discovery or otherwise)/</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 11, 2010 08:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551618"></a>
+                                    <font class="smallfont"><p>Edited with the correct screenshot.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 11, 2010 09:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551621"></a>
+                                    <font class="smallfont"><p>Agreed, I'm looking at DeviceCommandWindow.java as a place to start, I'm thinking it would be similar, you pick a protocol, enter the required fields (taken from the protocol xml file) and click import. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 11, 2010 16:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551623"></a>
+                                    <font class="smallfont"><p>Yep.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 11, 2010 19:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551625"></a>
+                                    <font class="smallfont"><p>Hi, Dan, as far as I see you write an interface to HAI Omni, right? It's nice too see such an effort. I will have to do the same with my own hardware that I'm building right now. It will have very simple ASCII protocol of "command,value" type. I hope you will make your code public to help me walk the road easier <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mishoboss at Jul 13, 2010 09:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551631"></a>
+                                    <font class="smallfont"><p>Right now I'm just starting on getting a REST import service working from the controller so the modeler could hit /rest/import/omnilinkII/ip/port/key on the controller and get back commands, sensors and controls in an XML format.</p>
+
+<p>Once I have this working I will be able to post all of it back to the projetct.&nbsp; Nothing I'm working on is secret, so I can send you anything that you need in the mean time.&nbsp; The detailed instructios Juha gave above was enough to get something working in about a day or two.&nbsp; So I would definately start there. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 13, 2010 15:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551633"></a>
+                                    <font class="smallfont"><p>Here's the xml I'm thinking about returning, this would be a device with a single light, let me know what you think.</p>
+
+<p>&lt;device model="OmniPro II 3.2"&gt;<br/>
+&nbsp;&nbsp;&nbsp; &lt;commands&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;command name="unit 106 Dan's Office Set On" id="1"&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;params&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="command" value="UNIT_SET_ON"/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="deviceNum" value="106"/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="additionalParam" value=""/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/params<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/command&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;command name="unit 106 Dan's Office Set Off" id="2"&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;params&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="command" value="UNIT_SET_OFF"/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="deviceNum" value="106"/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="additionalParam" value=""/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/params<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/command&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;command name="unit 106 Dan's Office Set Level" id="3"&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;params&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="command" value="UNIT_SET_LEVEL"/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="deviceNum" value="106"/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="additionalParam" value=""/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/params<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/command&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;command name="unit 106 Dan's Office Get Status" id="4"&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;params&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="command" value="UNIT_GET_STATUS"/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="deviceNum" value="106"/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;param name="additionalParam" value=""/&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/params<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/command&gt;<br/>
+&nbsp;&nbsp;&nbsp; &lt;/commands&gt;<br/>
+&nbsp;&nbsp;&nbsp; &lt;sensors&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;sensor name="unit 106 Dan's Office Sensor Switch" id="5" command="4" type="SWITCH"&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;sensor name="unit 106 Dan's Office Sensor Range" id="6" command="4" type="RANGE" min="0" max="100"&gt;<br/>
+&nbsp;&nbsp;&nbsp; &lt;/sensors&gt;<br/>
+&nbsp;&nbsp;&nbsp; &lt;switches&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;switch name="unit 106 Dan's Office Switch" id="7" oncommand="1" offcommand="2" sensor="5"&gt;<br/>
+&nbsp;&nbsp;&nbsp; &lt;/switches&gt;<br/>
+&nbsp;&nbsp;&nbsp; &lt;sliders&gt;<br/>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;slider name="unit 106 Dan's Office Slider" id="8" command="3" sensor="6"&gt;<br/>
+&nbsp;&nbsp;&nbsp; &lt;/sliders&gt;<br/>
+&lt;/device&gt;</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 13, 2010 16:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551643"></a>
+                                    <font class="smallfont"><p>Hi Dan,</p>
+
+<p>Just to be clear.. is this the XML you want to use to parse and translate into a model (commands, switches, etc.) in the OR Designer?</p>
+
+<p>Who/what generates it?</p>
+
+<p>Thanks,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 14, 2010 16:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551644"></a>
+                                    <font class="smallfont"><p>Yes, this would be the controller response to the modeler.&nbsp; I have this setup as /rest/import/omnilinkII right now.&nbsp; With just my lights, its creating over 700 objects (command, sensors, switches, sliders), I'm working on the modeler side right now to get these to import.</p>
+
+
+<p>The command sections contain protocol specific information/parameters (in the modeler these are what I have defined in the protocol xml file as attrs).</p>
+
+<p>Every element has an id so that other elements can point to them.&nbsp; For example, sliders point their command attribute to the id of a command element, and they point their sensor attribute to the id of a sensor element.</p>
+
+<p>I have no attachment to the format of the xml and I'm quite possibly the worst namer of objects/methods/packages/classes/xml elements possible, so if you have a better schema I would be happy to implement it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by digitaldan at Jul 14, 2010 17:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10551652"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Yes, this would be the controller response to the modeler. </p></blockquote>
+
+<p>Ok, understand.</p>
+
+<blockquote>
+<p>I have this setup as /rest/import/omnilinkII right now.</p></blockquote>
+
+<p>Sounds fine.</p>
+
+<blockquote>
+<p>I have no attachment to the format of the xml and I'm quite possibly the worst namer of objects/methods/packages/classes/xml elements possible, so if you have a better schema I would be happy to implement it.</p></blockquote>
+
+<p>Looks dandy to me. And whatever schema you're comfortable with. It looks very clean to me.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 14, 2010 23:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-11960611"></a>
+                                    <font class="smallfont"><p>Recapped most of this discussion in:</p>
+
+<ul>
+	<li><a href="http://www.openremote.org/display/docs/Developer+How+To+-+Adding+Your+Own+Protocol+to+OpenRemote+Boss+2.0+Controller" title="Developer How To - Adding Your Own Protocol to OpenRemote Boss 2.0 Controller">Developer How To &#45; Adding Your Own Protocol to OpenRemote Boss 2.0 Controller</a></li>
+	<li><a href="http://www.openremote.org/display/docs/Developer+How+To+-+Adding+Your+Own+Protocol+to+OpenRemote+Boss+2.0+Designer" title="Developer How To - Adding Your Own Protocol to OpenRemote Boss 2.0 Designer">Developer How To &#45; Adding Your Own Protocol to OpenRemote Boss 2.0 Designer</a></li>
+</ul>
+
+
+<ul>
+	<li><a href="http://www.openremote.org/display/docs/Designer+2.0+-+Create+Range+Sensor" title="Designer 2.0 - Create Range Sensor">Designer 2.0 &#45; Create Range Sensor</a></li>
+	<li><a href="http://www.openremote.org/display/docs/Designer+2.0+-+Create+Sliders+for+Installers" title="Designer 2.0 - Create Sliders for Installers">Designer 2.0 &#45; Create Sliders for Installers</a></li>
+	<li><a href="http://www.openremote.org/display/docs/Designer+2.0+-+Create+Sliders+for+UI+Designers" title="Designer 2.0 - Create Sliders for UI Designers">Designer 2.0 &#45; Create Sliders for UI Designers</a></li>
+</ul>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 23, 2010 15:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

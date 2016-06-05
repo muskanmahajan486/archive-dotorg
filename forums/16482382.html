@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : custom text for switches?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : custom text for switches?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 20, 2011 by <font color="#0050B2">cortextual</font>.
+				    </div>
+
+				    <p>Good afternoon.</p>
+
+<p>Reading panel-2.0-M7.xsd for the link element suggests that localized text (rather than images) for switches can be specified:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+        <span class="code-tag">&lt;xsd:element name=<span class="code-quote">"link"</span>&gt;</span>
+                <span class="code-tag">&lt;xsd:annotation&gt;</span>
+                        <span class="code-tag">&lt;xsd:documentation&gt;</span>&lt;![CDATA[
+                                A Element used to link a sensor with sensor states, take a sensor for switch for example:
+                                <span class="code-tag">&lt;link type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"5"</span>&gt;</span>
+                                        <span class="code-tag">&lt;state name=<span class="code-quote">"on"</span> value=<span class="code-quote">"on"</span>/&gt;</span>
+                                        <span class="code-tag">&lt;state name=<span class="code-quote">"off"</span> value=<span class="code-quote">"off"</span>/&gt;</span>
+                                <span class="code-tag">&lt;/link&gt;</span>
+                                value here is a localized string for switch.
+                        ]]&gt;<span class="code-tag">&lt;/xsd:documentation&gt;</span>
+                <span class="code-tag">&lt;/xsd:annotation&gt;</span>
+                <span class="code-tag">&lt;xsd:complexType&gt;</span>
+                        <span class="code-tag">&lt;xsd:sequence&gt;</span>
+                                <span class="code-tag">&lt;xsd:element ref=<span class="code-quote">"state"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"unbounded"</span> /&gt;</span>
+                        <span class="code-tag">&lt;/xsd:sequence&gt;</span>
+                        <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"type"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"required"</span> /&gt;</span>
+                        <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"ref"</span> type=<span class="code-quote">"idType"</span> use=<span class="code-quote">"required"</span> /&gt;</span>
+                <span class="code-tag">&lt;/xsd:complexType&gt;</span>
+        <span class="code-tag">&lt;/xsd:element&gt;</span>
+</pre>
+</div></div>
+
+<p>this is from <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/branches/project/Controller_2_0_0_Alphas/config/panel-2.0-M7.xsd">https://openremote.svn.sourceforge.net/svnroot/openremote/branches/project/Controller_2_0_0_Alphas/config/panel-2.0-M7.xsd</a>, which was last changed in revision 2499.</p>
+
+<p>The Android console code appears to always assume the the "value" attributes here are filenames for images, using "ON" and "OFF" if no images could be loaded based on those filenames.  Is this correct behavior?</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-16482443"></a>
+                                    <font class="smallfont"><p>There probably isn't a 'correct' behavior right now, but we can define one.</p>
+
+<p>If the value cannot be resolved to an image resource, display the text value as label instead?</p>
+
+<p>(checked the designer, there's no way to specify non-image values right now)</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 26, 2011 23:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482447"></a>
+                                    <font class="smallfont"><p>In the current implementation for iOS, this is done as a 2 state button. So I can use label if images are not found.</p>
+
+<p>This got me thinking about whether we want the UI to be in accordance with the platforms guidelines or at least be able to use platform "specific" widgets.<br/>
+For instance, on iOS a switch has a specific look and feel, you cannot provide any images or text, it's handled by the system and automatically localized. At this stage, there is no way to have that type of element in an OR panel design.<br/>
+No opinion at this stage on this topic, just a thought...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 27, 2011 09:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482449"></a>
+                                    <font class="smallfont"><p>Yeah thought about it somewhat... if we do want to go that way, I think we should first fix the UI designer to support design modes for specific platforms &#8211; switches with iOS behavior only made available when designing iOS panel, etc.</p>
+
+<p>That's sort of the SWT approach to things.</p>
+
+<p>Alternative is we design a "cross-platform" UI for all panels. That's sort of the Swing philosophy of things.</p>
+
+<p>Both approaches have their fans.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 27, 2011 09:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

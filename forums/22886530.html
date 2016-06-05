@@ -1,0 +1,263 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Push status update with  HTTP REST ?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Push status update with  HTTP REST ?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 17, 2014 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <p>The <em>Razberry</em> now has <b>http.request()</b> to push data using HTTP requests. In order to get rid of continuous inefficient polling at the OpenRemote side, this could be a solution. So I read the REST API docs again. I did notice that the "Send Write command" can do a couple of things:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    Switch: ON/OFF
+    Slider: some integer or <span class="code-object">float</span>, e.g. 27
+    Button: click
+    Gesture: swipe
+</pre>
+</div></div>
+
+<p>Unfortunately no Status update in that list. Is that correct? If so why wasn't that considered?<br/>
+If not what am I overlooking?</p>
+
+<p>PS: At the moment sockets are not yet supported in Razberry, but they may come in a couple of months. </p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22886530/23789586.png">Status.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22886530/23789587.png">ON.PNG</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22886747"></a>
+                                    <font class="smallfont"><p>bump</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at May 28, 2014 10:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886776"></a>
+                                    <font class="smallfont"><p>This is used by the console to send an action to the controller. Maybe if you use a virtual command and rules to take the received command to update a sensor this could be a workaround.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 29, 2014 21:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886794"></a>
+                                    <font class="smallfont"><p>Thanks Marcus. Thought about that myself, but I'm not to fond of Drools anymore.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at May 30, 2014 09:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593413"></a>
+                                    <font class="smallfont"><p>The first draft of the REST API stated as it goal:</p>
+<blockquote><p>The first draft of Controller 2.0 REST API (this is the API between panels and other external client software that wants to integrate with OR Boss controller)</p></blockquote>
+<p>So in the intention it is definitely not constrained to consoles.</p>
+
+<p>So I dug a bit deeper into this. So following the <a href="http://www.openremote.org/display/docs/Controller+2.0+HTTP-REST-XML">REST instructions</a> I made a command instruction for the status sensor. In the controller.xml file I did find the the necessary command_id for my specific sensor command. As this command afaik does not have any parameters I added <em>null</em></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">http:<span class="code-comment">//192.168.1.33:8688/controller/<span class="code-keyword">rest</span>/control/2539/<span class="code-keyword">null</span></span></pre>
+</div></div>
+
+<p>It is clumsy, I know. But it is for the principle to see if and how I could send a sensor update command using the standard functions of OpenRemote.</p>
+
+<p>With Firefox the URL returns</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">&lt;openremote xsi:schemaLocation=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org http://www.openremote.org/schemas/controller.xsd"</span>&gt;
+</span>  &lt;error&gt;
+    &lt;code&gt;200&lt;/code&gt;
+    &lt;message&gt;SUCCESS&lt;/message&gt;
+  &lt;/error&gt;
+&lt;/openremote&gt;</pre>
+</div></div>
+
+<p>Unfortunately I do not see in the logs that a status call has been made.<br/>
+I have tried the same from a http call within OR, where I could explicitly specify content-type and GET/POST. This gave many errors that I have to dig in first. <br/>
+May be later more here. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 30, 2014 13:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593424"></a>
+                                    <font class="smallfont"><p>You cannot modify a sensor through the rest api. <br/>
+You can only send what a console would send when a button is pushed or a slider is moved wich would trigger a command.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 31, 2014 08:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593426"></a>
+                                    <font class="smallfont"><p>How is this restricted then to a console? Must it identify itself to the controller to let this happen? The REST aPI documentation says nothing about that. </p>
+
+<p>My intention is to <b>Send Write Command</b> using the syntax</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">/<span class="code-keyword">rest</span>/control/{control_id}/{command_param}</pre>
+</div></div>
+
+<p>I expected I could turn a switch on from a piece of code that sends the following URL</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">http:<span class="code-comment">//192.168.1.33:8688/controller/<span class="code-keyword">rest</span>/control/2541/ON</span></pre>
+</div></div>
+
+<p>But that apparantly should not work?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 31, 2014 10:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593427"></a>
+                                    <font class="smallfont"><p>You are right that it is not restricted to a console. You can just call the URL from a browser and the light turns on.<br/>
+What I mean is that you cannot modify a sensor value through this API. Sensor values can only be modified from status commands from within the controller.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 31, 2014 10:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593428"></a>
+                                    <font class="smallfont"><blockquote><p>Sensor values can only be modified from <b>status commands</b> from within the controller</p></blockquote>
+<p>That is what I initially tried to achieve. Do a <em>Send Write Command</em> to the status command I defined for this particular switch.</p>
+
+<p>(My ultimate goal is to work around polling from within OR. At every "value change"event on the RaZberry side, RaZberry should call this OR status command, which in turn asks RaZberry to send the value.)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 31, 2014 10:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593429"></a>
+                                    <font class="smallfont"><p>I know your goal but it is not possible unless you create your own protocol and implement this in Java.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 31, 2014 10:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593430"></a>
+                                    <font class="smallfont"><p><a class="confluence-thumbnail-link 320x411" href='http://www.openremote.org/download/attachments/22886530/Status.PNG'><img src="attachments/thumbnails/22886530/23789586" align="right" border="0"/></a><a class="confluence-thumbnail-link 358x411" href='http://www.openremote.org/download/attachments/22886530/ON.PNG'><img src="attachments/thumbnails/22886530/23789587" align="right" border="0"/></a> So in conclusion, a (http) command connected to a <b>switch</b> can be activated with a REST send write, but the almost identical command connected to a <b>sensor</b>, can not.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 31, 2014 11:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593432"></a>
+                                    <font class="smallfont"><p>You can call it but the one connected to the sensor will not update the sensor value. It will execute the HTTP call but the result is not evaluated.<br/>
+If you look into the java source of HttpGetCommand.java you will see that the class implements to interfaces "ExecutableCommand" and "EventListener". The call from the REST API will trigger the method related to "ExecutableCommand". The logic to fill a sensor is related to "EventListener" interface.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 31, 2014 12:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593434"></a>
+                                    <font class="smallfont"><p>Thanks this helps. So my problem is in the HttpGetCommand, and not in the REST API part? <br/>
+If so, would it be conceivable to make a variant of the HttpGetCommand, which does fill a sensor? Or is that a silly question?<br/>
+Sorry for being so tenacious.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 31, 2014 12:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593458"></a>
+                                    <font class="smallfont"><p>Looking at the source of the "stuff" happening when calling the REST URL, a modified HttpGetCommand will not work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 02, 2014 07:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593460"></a>
+                                    <font class="smallfont"><p>Marcus, thank you for taking the time to look into this.<br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 02, 2014 09:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594874"></a>
+                                    <font class="smallfont"><p>The required functionality was implemented with UDPListener and a rule. It is described in one of the HowTo's</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 24, 2014 09:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

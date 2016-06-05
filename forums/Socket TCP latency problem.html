@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Socket TCP latency problem</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Socket TCP latency problem
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 04, 2014 by <font color="#0050B2">gillen</font>.
+				    </div>
+
+				    <p>Hi, I'm new to the forum, I trying to interface my Audio system ROTEL which is controlled by serial port. I have just implemented commands towards amplifier using an interface TCP-RS232 using hex bytes and it work. The protocol for reading status is: send request(6 hex bytes)then amp. response is echo command (6 bytes) + answer(26 bytes) total 32 bytes. I used sensor with command associate but it's not stable in sense of sometime read less bytes than 32. To better test what's happen I modified source java and I've noticed that buffer is 200 chrs so there is no problem with length, it seems that for some reason 'read function' stop early.Any suggestion?<br/>
+Thank You</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22886263/23036572.txt">readReplay1.txt</a> (text/plain)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22886275"></a>
+                                    <font class="smallfont"><p>What happens if you replace the method with following (untested code so fix where necessary):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+<span class="code-keyword">private</span> <span class="code-object">String</span> readReply(java.net.Socket socket) <span class="code-keyword">throws</span> IOException 
+{
+  BufferedReader bufferedReader = <span class="code-keyword">new</span> BufferedReader(<span class="code-keyword">new</span> InputStreamReader(socket.getInputStream()));
+  <span class="code-object">char</span>[] buffer = <span class="code-keyword">new</span> <span class="code-object">char</span>[200];
+     
+  <span class="code-object">int</span> len;
+  <span class="code-object">int</span> offset = 0;
+     
+  <span class="code-keyword">while</span> (<span class="code-keyword">true</span>)
+  {
+    len = bufferedReader.read(buffer, offset, 200-offset);  
+    
+    <span class="code-keyword">if</span> (len == -1)
+    {
+      <span class="code-keyword">break</span>;
+    }
+
+    offset += len;
+       
+    <span class="code-keyword">if</span> (offset &gt;= 200)
+    {
+      offset = 200;
+
+      <span class="code-keyword">break</span>;
+    }
+  }
+     
+  <span class="code-keyword">if</span> (offset &gt; 0) 
+  {
+    <span class="code-object">String</span> reply = <span class="code-keyword">new</span> <span class="code-object">String</span>(buffer, 0, offset);
+    <span class="code-keyword">return</span> reply;
+  } 
+
+  <span class="code-keyword">else</span> 
+  {
+    <span class="code-keyword">return</span> "";
+  }
+}
+
+</pre>
+</div></div>
+
+<p>EDIT: removed reference to unknown readChars variable and replaced it with offset instead<br/>
+EDIT2: fixed a bug</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 05, 2014 18:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886324"></a>
+                                    <font class="smallfont"><p>Thank You Juha, Your suggestion works with a few mod. Here is the code used for testing scope (I'm newer in Java programming so .......)</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">private</span> <span class="code-object">String</span> readReply(java.net.Socket socket) <span class="code-keyword">throws</span> IOException 
+{
+  BufferedReader bufferedReader = <span class="code-keyword">new</span> BufferedReader(<span class="code-keyword">new</span> InputStreamReader(socket.getInputStream()));
+  <span class="code-object">char</span>[] buffer = <span class="code-keyword">new</span> <span class="code-object">char</span>[200];
+     
+  <span class="code-object">int</span> len;
+  <span class="code-object">int</span> offset = 0;
+     
+  <span class="code-keyword">while</span> (<span class="code-keyword">true</span>)
+  {
+    len = bufferedReader.read(buffer, offset, 200-offset);  
+    offset += len;
+    logger.info(<span class="code-quote">"offset: "</span> + offset);  
+ <span class="code-comment">//   <span class="code-keyword">if</span> (len == -1 || offset &gt;= 200)
+</span> <span class="code-comment">//   {
+</span> <span class="code-comment">//     <span class="code-keyword">break</span>;
+</span> <span class="code-comment">//   }   
+</span>  <span class="code-keyword">if</span> (offset &gt;= 32) 
+  {
+    <span class="code-object">String</span> reply = <span class="code-keyword">new</span> <span class="code-object">String</span>(buffer, 0, offset);
+    <span class="code-keyword">return</span> reply;
+  } 
+}
+<span class="code-comment">//  <span class="code-keyword">else</span> 
+</span><span class="code-comment">//  {
+</span><span class="code-comment">//    <span class="code-keyword">return</span> "";
+</span><span class="code-comment">//  }
+</span>}
+
+	
+   <span class="code-keyword">public</span> void run() {
+      
+      <span class="code-keyword">while</span> (doPoll) {
+         <span class="code-comment">// Strip response from control characters (non-ASCII)...
+</span>         <span class="code-comment">// Patch provided by Phillip Lavender
+</span>         <span class="code-object">String</span> rawResult = <span class="code-keyword">this</span>.requestSocket();
+         Pattern p = Pattern.compile(<span class="code-quote">"\\p{Cntrl}"</span>);
+         Matcher m = p.matcher(rawResult);
+         <span class="code-object">String</span> readValue = m.replaceAll("");
+
+         <span class="code-keyword">if</span> (regex != <span class="code-keyword">null</span>) {
+           Pattern regexPattern = Pattern.compile(regex);
+           Matcher matcher = regexPattern.matcher(readValue);
+           <span class="code-keyword">if</span> (matcher.find()) {
+             <span class="code-object">String</span> result = matcher.group();
+             logger.info(<span class="code-quote">"result of regex evaluation: "</span> + result);
+             sensor.update(result);
+           } <span class="code-keyword">else</span> {
+             logger.info(<span class="code-quote">"regex evaluation did not find a match"</span>);
+             sensor.update(<span class="code-quote">"N/A"</span>);
+           }
+         } <span class="code-keyword">else</span> {
+		<span class="code-object">String</span> s = rawResult;
+		<span class="code-object">int</span> len = s.length();
+		logger.info(<span class="code-quote">"rawresult: "</span> + rawResult);
+		logger.info(<span class="code-quote">"Lunghezza s: "</span> + len);
+		<span class="code-keyword">if</span> (len == 32){
+		<span class="code-object">String</span> g = s.substring(10,23);	<span class="code-comment">//extract 13 CHRS ASCII 
+</span>		readValue = g;
+		} <span class="code-keyword">else</span> {
+			readValue = <span class="code-quote">"No data"</span>;
+			}
+           sensor.update(readValue);
+         }
+         <span class="code-keyword">try</span> {
+            <span class="code-object">Thread</span>.sleep(pollingInterval); <span class="code-comment">// We wait <span class="code-keyword">for</span> the given pollingInterval before reading socket again
+</span>         } <span class="code-keyword">catch</span> (InterruptedException e) {
+            doPoll = <span class="code-keyword">false</span>;
+            pollingThread.interrupt();
+         }
+      }
+      logger.debug(<span class="code-quote">"*** Out of run method: "</span> + sensor);
+   }
+
+}
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gillen at May 07, 2014 20:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886330"></a>
+                                    <font class="smallfont"><p>Hmm, that won't work in general case though, even if it would happen to work in your current case.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 08, 2014 05:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886336"></a>
+                                    <font class="smallfont"><p>I agree with You, mine was only a test, I'm thinking to develop a protocol like Russound or Denon Avr, but for now I have no time.<br/>
+Thank You</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gillen at May 08, 2014 08:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

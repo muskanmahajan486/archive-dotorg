@@ -1,0 +1,375 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Samsung TV macro</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Samsung TV macro
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 18, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm trying to use several Samsung protocol commands in a macro. However, this does not seem to work properly. When for example I put 3 KEY_RIGHT commands in a macro (separated by delays, but it doesn't help) then only the first command is executed. The rest is not and in the dev.log I see errors like this:</p>
+
+<p>2013-02-23 12:01:03,324 ERROR [HTTP-Thread-9]: Could not send key.<br/>
+java.io.IOException: Unsupported reply exception<br/>
+	at org.openremote.controller.protocol.samsungtv.SamsungTVSession.readCharArray(Unknown Source)<br/>
+	at org.openremote.controller.protocol.samsungtv.SamsungTVSession.readText(Unknown Source)<br/>
+	at org.openremote.controller.protocol.samsungtv.SamsungTVSession.internalSendKey(Unknown Source)<br/>
+	at org.openremote.controller.protocol.samsungtv.SamsungTVSession.sendKey(Unknown Source)<br/>
+	at org.openremote.controller.protocol.samsungtv.SamsungTVCommand.send(Unknown Source)<br/>
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(Unknown Source)<br/>
+...</p>
+
+<p>On the other hand, when I have one KEY_RIGHT command and press the button very fast then there are no problems. Therefore what I suspect is that there is a problem with either protocol implementation or macro implementation. Have anybody tried with success to use multiply Smasung commands in a macro?</p>
+
+<p>Kind regards,<br/>
+Michal</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21857959"></a>
+                                    <font class="smallfont"><p>I think that perhaps I'm doing something wrong. What I have in my macro is:</p>
+
+<p>KEY_RIGHT<br/>
+delay 1000ms<br/>
+KEY_RIGHT<br/>
+delay 1000ms<br/>
+KEY_RIGHT</p>
+
+<p>So the first KEY_RIGHT comes through but for the two following I've got the error</p>
+
+
+<p>2013-02-23 15:59:37,312 ERROR [HTTP-Thread-11]: Could not send key.<br/>
+java.io.IOException: Unsupported reply exception</p>
+
+<p>2013-02-23 15:59:37,714 ERROR [HTTP-Thread-6]: Could not send key.<br/>
+java.io.IOException: Unsupported reply exception</p>
+
+<p>However the time stamps are only 400 ms apart, and not 1s! But on the other hand, 400ms should be enough though. I don't know...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 23, 2013 15:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858015"></a>
+                                    <font class="smallfont"><p>The error comes from our code or actually the guys who initially wrote this. I only modified it to fit to OpenRemote.<br/>
+It looks like Samsung is sending something back which is not interpreted by the code:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+   <span class="code-keyword">private</span> <span class="code-keyword">static</span> <span class="code-object">char</span>[] readCharArray(Reader reader) <span class="code-keyword">throws</span> IOException {
+      <span class="code-keyword">if</span> (reader.markSupported()) reader.mark(1024);
+      <span class="code-object">int</span> length = reader.read();
+      <span class="code-object">int</span> delimiter = reader.read();
+      <span class="code-keyword">if</span> (delimiter != 0) {
+         <span class="code-keyword">if</span> (reader.markSupported()) reader.reset();
+         <span class="code-keyword">throw</span> <span class="code-keyword">new</span> IOException(<span class="code-quote">"Unsupported reply exception"</span>);
+      }
+      <span class="code-object">char</span>[] buffer = <span class="code-keyword">new</span> <span class="code-object">char</span>[length];
+      reader.read(buffer);
+      <span class="code-keyword">return</span> buffer;
+   }
+</pre>
+</div></div>
+
+<p>It looks like the delay is to short and that's why Samsung reacts different, maybe?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 25, 2013 11:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858047"></a>
+                                    <font class="smallfont"><p>Adding delay does not help. Moreover, as I said previously, hitting a button pretty fast does not cause the problem. Macro does. What I suspect is that during the macro execution reader instance is collecting some garbage during sending commands to Samsung hence rising exception afterwards. The fast and dirty solution would be to recreate the reader instance between calls, the nice and proper solution would be of course analyze what exactly is going wrong.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 26, 2013 12:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858048"></a>
+                                    <font class="smallfont"><p>If you have some time, feel free to dig into this.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 26, 2013 12:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858054"></a>
+                                    <font class="smallfont"><p>Sure, I'll try to fix it as this would be a part of my 'killer remote application' which I'm working on <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+However, as I'm quite new to the OR code I would appreciate any hint you can give me. Some simple ones like which source files to study would do.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 26, 2013 15:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858055"></a>
+                                    <font class="smallfont"><p>Files are in the samsungtv folder:
+<a href="http://openremote.svn.sourceforge.net/viewvc/openremote/tags/project/Controller/Controller_2_0_1/src/org/openremote/controller/protocol/samsungtv/">http://openremote.svn.sourceforge.net/viewvc/openremote/tags/project/Controller/Controller_2_0_1/src/org/openremote/controller/protocol/samsungtv/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 26, 2013 15:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858090"></a>
+                                    <font class="smallfont"><p>I would rather study the difference between command execution through button versus macro as this is where the error is triggered. I imagine that this code is outside the protocol integration.<br/>
+Anyway, thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 27, 2013 15:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858092"></a>
+                                    <font class="smallfont"><p>No difference <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> It calls the same send() method on the command.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 27, 2013 15:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858130"></a>
+                                    <font class="smallfont"><p>Spent almost whole day on this and what happens? This error is only present in the professional designer with eBox! When I try the same macro on the free controller then is OK. Now I know what I should check first!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 28, 2013 20:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858131"></a>
+                                    <font class="smallfont"><p>Thanks Michal for finding this.<br/>
+We have to double check what could cause this between the 2 version.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 28, 2013 20:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858185"></a>
+                                    <font class="smallfont"><p>Michal,</p>
+
+<p>Can you elaborate on the tests you made to confirm an issue with the Pro controller running on the eBox ?</p>
+
+<p>I did some testing and did not see an issue in the macro with delays.<br/>
+I did use the "in memory" protocol, defining 3 commands: on, off and status.<br/>
+I created a simple switch sensor to get the feedback on the value.<br/>
+Then I created 2 macros: on, delay, off. One macro with a 2000ms delay, the other with 10000ms.<br/>
+I created a simple UI with a label giving me feedback on the value and 4 buttons: on, off, macro 2s, macro 10s.<br/>
+Used the iOS console (in simulator on Mac), to exercise the different buttons and I get the expected result, the delays in the macros are correctly applied.<br/>
+I did this with the Pro controller running on my Mac and with it running on the eBox.</p>
+
+<p>Eric</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Mar 03, 2013 11:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858209"></a>
+                                    <font class="smallfont"><p>Hi Eric,</p>
+
+<p>My test case was very simple. 3 times KEY_RIGHT with delays in between. The macro is to be used on SmartTV menu to select a correct icon. It failed to run on the latest ebox firmware but runs OK on the latest Synology. I can try to build the pro version on my mac (just give me the link to the source you are using) and then put on my e-box and see if the bug is there too. The problem can have to do with delays or the samsung protocol or with combination of both. I'l try to create a clear test case.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 04, 2013 12:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881057"></a>
+                                    <font class="smallfont"><p>Hi Michal, Marcus and Eric,</p>
+
+<p>What is the status on this issue? I have just come across it on my fresh OpenRemote installation on my Qnap NAS. (intel, so Qpkg install)</p>
+
+<p>Could it help if I get the newest tv control script from here ( <a href="http://sourceforge.net/projects/openremote/files/samsung/">http://sourceforge.net/projects/openremote/files/samsung/</a> ) and look for somewhere to replace the current one with it?</p>
+
+
+<p>Mikkel</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tyleet at Dec 10, 2013 22:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881107"></a>
+                                    <font class="smallfont"><p>Update:</p>
+
+<p>I tried replacing the 4 files in /share/MD0_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/WEB-INF/classes/org/openremote/controller/protocol/samsungtv<br/>
+, but as this made the Openremote service unable to start, I assume that it is not enough to only update this fraction of the installation alone.</p>
+
+<p>I am running the official QNAP QPKG of OpenRemote, which is with version: r8495</p>
+
+<p>Is there any plan for when the QPKG will receive and update to the latest version?<br/>
+And do you think that this would solve my problem, or do I need to go in another direction?</p>
+
+<p>Really want this awesome feature, instead of going with IR signals =)</p>
+
+
+<p>I can add the information that the KEY_MUTE seems to execute perfectly no matter where in the macro it is, whereas all others only work if they are the very first one (just like Michal describes...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tyleet at Dec 11, 2013 17:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881131"></a>
+                                    <font class="smallfont"><p>This is not an issue for me anymore as I've shifted from macros to rules and it seems that the problem is not present.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 12, 2013 08:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881135"></a>
+                                    <font class="smallfont"><p>Thank you for the update!</p>
+
+<p>I will consider using rules instead.</p>
+
+<p>I have started looking at the related tutorials.<br/>
+At first glance I can see the advantage in rules with options to make very advanced behaviours, but I don't think it fits very well into the OpenRemote designer concept.</p>
+
+<p>As I understand it, the rule system is a way to program everything in code instead of using the GUI...<br/>
+Which seems to go against what was intended with the GUI in the first place.</p>
+
+<p>To make something usable in a rule, I first have to create a switch or a sensor in the GUI, which I am only allowed to do if I also bind a command to it.<br/>
+What confuses me is that I thought the mapping of commands to a button was to be done in the rule only.<br/>
+And what about adding waits between action calls...</p>
+
+<p>Anyway... still have to understand it fully before I judge it =)</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tyleet at Dec 12, 2013 18:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882385"></a>
+                                    <font class="smallfont"><p>Hello.</p>
+
+<p>So there is any way to make macros work with samsung smart TV?</p>
+
+<p>Single commands works. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by urmet at Jan 08, 2014 14:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882386"></a>
+                                    <font class="smallfont"><blockquote>
+<p>So there is any way to make macros work with samsung smart TV?</p></blockquote>
+<p>As I've stated previously macros were working on one HW platform and not working on other. Therefore, whether they work for you depends on your hardware.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 08, 2014 14:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882396"></a>
+                                    <font class="smallfont"><p>Actually I need macro to run web browser app.<br/>
+I didnt find any command to open web browser, so i thought make macro as You.<br/>
+But macro gives same error: java.io.IOException: Unsupported reply exception</p>
+
+<p>Also, is it possible to run openremote commands via command line interface?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by urmet at Jan 08, 2014 14:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882402"></a>
+                                    <font class="smallfont"><p>It would help if we have the full specs of Samsung TV. Unfortunately I don't have it, and because it works perfectly through rules I don't have a drive to dig the macro path. Actually, I don't see any reason to use macros. Rules are easier for me.</p>
+
+<p>About running openremote commands via command line interface it is possible but kind cumbersome. You would use for example a http protocol command to define a sensor and command line to write a html document with value. The sensor can be used to trigger an openremote command, again via a rule. The more detailed description how to do it you can find in the book <a href="http://www.openremote.com/wp-content/uploads/2013/12/How-To-Smart-Home-PDF-OR.pdf">http://www.openremote.com/wp-content/uploads/2013/12/How-To-Smart-Home-PDF-OR.pdf</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 08, 2014 15:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882453"></a>
+                                    <font class="smallfont"><p>So via rules I should make this work? Aka open some app.</p>
+
+<p>Can you paste your rules?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by urmet at Jan 09, 2014 07:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

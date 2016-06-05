@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : HTTP POST is slow</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : HTTP POST is slow
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 05, 2014 by <font color="#0050B2">noelhibbard</font>.
+				    </div>
+
+				    <p>I am trying to control the volume of a SqueezeBox player via an HTTP POST but it has about a 3 second lag. I can also control the volume via an HTTP GET and it doesn't have any lag at all. I really want to control it via a POST because I have more options via POST vs putting the parms on the URL and using GET. The lag is definitely caused by OpenRemote because I can generate a POST from other apps and there is no lag at all. Has anyone else noticed that HTTP POST is very slow in OpenRemote?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22887868"></a>
+                                    <font class="smallfont"><p>Took a quick glance at the source code and don't see anything specific to POST that might delay processing.</p>
+
+<p>Depending on the version of the controller you're using, might be good to use the "ORCJAVA-400" patched version, mentioned in this How To : <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Philips+Hue">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Philips+Hue</a></p>
+
+<p>It fixes something on the HTTP protocol that caused issues with other products.</p>
+
+
+<p>Otherwise, I do have a SqueezeBox player running, so I could try your command myself and see how it behaves.<br/>
+Could you post the details on the URL and the payload used and I'll check ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Aug 06, 2014 18:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887915"></a>
+                                    <font class="smallfont"><p>I will check out the version you are referring to. In the meantime, here is what I am trying to do:</p>
+
+<p>URL:<br/>
+http://&lt;host&gt;:&lt;port&gt;/jsonrpc.js</p>
+
+<p>Method:<br/>
+POST</p>
+
+<p>Payload:</p>
+<div class="error"><span class="error">Unknown macro: {&quot;id&quot;}</span> </div>
+
+<p>So the host and port needs to be that of your LMS/SqueezeServer. You also need the MAC address of the player you want to change the volume of. The example above sets the volume to 0. Full volume would be 100. If you want to increase the volume 5% use +5. To drop 5% use -5. When I setup a command like this it takes about 3 seconds to execute. But I can generate a packet with windows PowerShell and it executes instantly. So I know the lag isn't coming from the SqueezeServer or SqueezePlayer.</p>
+
+<p>Thanks for the response Eric!</p>
+
+<p>Edit: Looks like my JSON is getting lost. Here is a pastebin of my payload:
+<a href="http://pastebin.com/raw.php?i=hyK2K7ju">http://pastebin.com/raw.php?i=hyK2K7ju</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by noelhibbard at Aug 08, 2014 16:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887925"></a>
+                                    <font class="smallfont"><p>You should enclose your payload in a {code} section, that should work or escape the { character with a backslash.</p>
+
+<p>I did a first quick test, having a mute command linked to a button and tested via the Web Console.</p>
+
+<p>What I observed was that on the first press on the button, it took indeed something like 3 seconds, but after that it was nearly immediate (didn't do any timing but definitely below 0.5s).</p>
+
+<p>Curious if you have the same experience or if you always experience a long delay?</p>
+
+<p>When I get the time, I'll dig a bit more into why the initial delay is there.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Aug 09, 2014 09:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887975"></a>
+                                    <font class="smallfont"><p>This initial delay might be establishing new connection. Next time connection established for the first time is reused and you get an immediate response. This is only a guess, but usually it works this way in various libraries/languages including Apache HttpClient used in OR.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by druciak at Aug 11, 2014 21:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

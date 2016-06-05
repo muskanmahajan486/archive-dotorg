@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Help please with TCPIP or Telnet Switch Sensors</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Help please with TCPIP or Telnet Switch Sensors
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 29, 2011 by <font color="#0050B2">mbarne36</font>.
+				    </div>
+
+				    <p>Hello</p>
+
+<p>Newbie here I'm afraid, just getting to grips with this (potentially-the-best-thing-since-sliced-bread) application. Need a little help please. Hopefully nothing too noob.</p>
+
+<p>I have an Extron MPX423 Video Matrix switcher (but that's not important). What is important is that I am setting up a simple test Openremote BOSS panel to control this device over TCP/IP.</p>
+
+<p>I have a switch on the Panel called Mute and another one called Unmute. I can send TCP/IP commands to the Extron switch - perfectly. It Mutes and Unmutes. The possibilities are endless.....</p>
+
+<p>But: I'm having troubles with using any Status (or Sensor) information coming back.</p>
+
+<p>A couple of questions then (if I may...)</p>
+
+<p>1. Does OR open a socket, send a command and then close the socket again for each press of a button or switch? Or does it Open all sockets for a Panel or Page that it thinks it will need?</p>
+
+<p>2. The answer to 1) is important because when you open a socket to the Extron it gives you a "welcome message", so if it's doing this, and we're opening a socket for each press of a switch or button, then how do I parse the reply when it is pre-ambled with the welcome message?</p>
+
+<p>3. If I send the Extron a Mute Command "1*z", do I need to do anything with the reply form the Extron "Amt1", or do I ignore that and use the Sensor which I presume is polling the Extron for Mute condition by sending "1z" every so often. If it is polling, once again, is it going to hold the socket open, or open it for every poll query?</p>
+
+<p>4. For the Sensor, If the Extron is returning "Amt1" for Mute is ON and "Amt0" for Mute is Off, do I just have to set up a Custom state sensor... but then how do I attribute "Amt0" to a state for the switch?</p>
+
+<p>Clearly I am getting hung up on Mute, but once I have this working the possibilities, surely, are endless?</p>
+
+<p>Any help appreciated.</p>
+
+<p>thanks</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19432141"></a>
+                                    <font class="smallfont"><p>Hi Martyn,</p>
+
+<p>welcome to OpenRemote. We are always happy if people try to integrate special hardware that is not that common <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>OR does always open and close a socket when performing a command. Do you use telnet or socket to communicate with your device? The implementation is not perfect yet and probably needs some rework or you need your own protocol implementation for your device. There are some other threads on the forum regarding telnet and socket and a few people already did some changes to fit their needs. You can try and have a look here: <a href="http://www.openremote.org/pages/viewpage.action?pageId=15532042">http://www.openremote.org/pages/viewpage.action?pageId=15532042</a></p>
+
+<p>In general the switch object is used for light switches but it might work for your use case also. To be able to use a switch object in user interface designer you need to create 5 objects in the building modeler part:<br/>
+1) command to turn on<br/>
+2) command to turn off<br/>
+3) command to read status<br/>
+4) switch sensor which uses command that reads status (you might need custom sensor and map to "on" and "off")<br/>
+5) switch object that uses the switch sensor and the commands for "on" and "off"</p>
+
+<p>You will have to figure our your commands first since that is the part where we communicate with your device. Can you create 3 distinct commands for "mute", "unmute" and "status"? If your status command returns "Amt0" and "Amt1" you can use a custom sensor and map those to "on" and "off" which are needed for the switch object.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Aug 30, 2011 07:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432142"></a>
+                                    <font class="smallfont"><p>Thanks Marcus. Great to know you're there to help.</p>
+
+<p>I am at work now, so might not have a chance to give some of your thoughts a try until the weekend, but will certainly do what i can.</p>
+
+<p>I am taking away one message though from your comment (tell me if i'm wrong)....</p>
+
+<p>... that the inbuilt parsing is pretty basic, and that if i want to get real crazy with this device (or any) then the right thing to do is to "get coding" and implement it as a new device. oooh, I feel a challenge coming on <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>.</p>
+
+<p>One more thing for now though If I may... the real benefit of WiFi communication over, say, IR is that you can get feedback (ack or nack). So if I tell my device (or a TV, or anything really) to do soemthing, I really want to know that it has understood and acknowledged my command. So if I tell my TV to turn on, I want to know that it did. I think you're telling me that the way to do this is to use Sensors to poll the device for status, rather than being able to do anything with the return message from my commands. Am I right?</p>
+
+<p>If I do go crazy and become a contributor (and I would love to by the way), then I wouldn't want to implement just my MPX423 device, I might try to get a bit more generic and sweep up all of my (and possibly other peoples needs at the same time - but I will need some help... I trust you are willing?)</p>
+
+<p>thanks Marcus... will let you know how I get on with your suggestions.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Aug 30, 2011 07:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432144"></a>
+                                    <font class="smallfont"><p>Using the feedback of a "action" command and use this as the current "status" is one way. But what if you switch the status of your device by other means? For example a wall switch turns on the light, here you also want to reflect the status of the light in OR and that is why we use polling or listener to have the active status. A network or serial communication with the device is always prefered because of infrared missing a status. Sometimes you don't necessary need a status, let's say you want to control your TV you most likely are sitting in front of it and will see what happens <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Having a generic (maybe scripting based) solution for all kinds of TCP/IP, Socket, RS232 communication is on the todo list and if you are a Java developer you are more then welcome to dig in <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>You will always find some help on the forums.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Aug 30, 2011 08:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432148"></a>
+                                    <font class="smallfont"><p>Good points well made <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Thanks Marcus</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Aug 30, 2011 09:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:47</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

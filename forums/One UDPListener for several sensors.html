@@ -1,0 +1,285 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : One UDPListener for several sensors</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : One UDPListener for several sensors
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 24, 2014 by <font color="#0050B2">rberg</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I have an Arduino mega that I setup to send UDP broadcast every 250ms with a string like this:</p>
+
+<p>23:on:24:off:25:on:26:on:27on:28:off.........53:off<br/>
+Where the numbers are the pin numbers and on|off the status of that pin.</p>
+
+<p>So I can have all 30 port status updated every 0.25s, all in one string, sending to one UDP port.</p>
+
+<p>It works for one Sensor (one udplistener). Actually it works up to 4 sensors (4 udplisteners, same UDP port), I don't know why. I guess it should give Concurrent exception for the second on?? (see below).</p>
+
+<p>With this regex filter in the UDPListener:<br/>
+(?&lt;=49<img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>(on|off)<br/>
+I will have the status from the arduino digital port (pin) 49. It works.. Sensor type switch.</p>
+
+<p>The question is How can I have several sensors sharing the same UDPListener?</p>
+
+
+<p>This is the error when add 5 udplisteners with the same port:<br/>
+2014-11-24 01:17:49,191 ERROR <span class="error">&#91;UDPListener Port: 7006&#93;</span>: Error in UDPListenerThread<br/>
+java.util.ConcurrentModificationException<br/>
+	at java.util.HashMap$HashIterator.nextEntry(HashMap.java:894)<br/>
+	at java.util.HashMap$EntryIterator.next(HashMap.java:934)<br/>
+	at java.util.HashMap$EntryIterator.next(HashMap.java:932)<br/>
+	at org.openremote.controller.protocol.socket.UDPListenerCommand$UDPListenerThread.run(Unknown Source)</p>
+
+<p>OR Pro 1.0.14</p>
+
+<p>Thanks.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23594098"></a>
+                                    <font class="smallfont"><p>I am working on that for RaZberry. See <a href="http://www.openremote.org/display/forums/How+can+I+use+UDPListener+and+Drools+to+update+Sensors">this thread</a></p>
+
+
+<p><a href="http://www.openremote.org/display/~pz1/OpenRemote+2.0+How+To+-+Receive+RaZberry+UDP+Status+Updates">Draft description here:</a> (you must be logged in the forum to read that)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 24, 2014 07:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594099"></a>
+                                    <font class="smallfont"><p>I saw it, <br/>
+The problem I have with your solution is to verify all the options (port 23, 24, ....) in just one event call.</p>
+
+<p>something like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"UDPListener"</span>
+when
+  Event(source==<span class="code-quote">"Arduino1-UDP-Status"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"(?&lt;=49:\)(on|off)"</span>); <span class="code-comment">// understand :\) as : ) otherwise you would see a smiley :)
+</span>  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command("BTN_49, matcher.group(2));
+  }
+
+ ...... repeat <span class="code-keyword">for</span> every port ....
+
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"(?&lt;=22:\)(on|off)"</span>); <span class="code-comment">// understand :\) as : ) otherwise you would see a smiley :)
+</span>  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command("BTN_22, matcher.group(2));
+  }
+end
+
+</pre>
+</div></div>
+
+<p>Will give me error. Something like duplicated matcher, I can't remember now.</p>
+
+<p>I will try to change the arduino string to AR122:on:AR123:off....AR153:off<br/>
+So I can use commands AR123 ... AR153 on|off through matcher.group(1), matcher.group(2)</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rberg at Nov 24, 2014 07:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594100"></a>
+                                    <font class="smallfont"><p>Include your code in {code}...{code} tags</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 24, 2014 08:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594104"></a>
+                                    <font class="smallfont"><p>Done, Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rberg at Nov 24, 2014 08:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594106"></a>
+                                    <font class="smallfont"><p>As far as I understand it, UDPListener only reads one port? How many of these ports do you have? If there aren't to many you can consider making one listener for each. Each of those channels then gets a rule.<br/>
+I assume you can not tweak the Arduino side to push it all to one receiver?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 24, 2014 08:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594109"></a>
+                                    <font class="smallfont"><p>I'll need a bunch. this project with the Arduinos for a full home automation, I'll use Arduinos for every thing, light switches, dimmers, window blinds, swimming pool, presence sensors, doors, windows, power monitor and whatever is possible with Analog/Digital ports.</p>
+
+<p>I've done one UDP port for each Arduino port. It works like a charm, but it is not elegant at all to have hundreds of UDP packs flying at same time like a solar storm. </p>
+
+<p>If there is no way to do with one string/UDP port for each Arduino <br/>
+then <br/>
+I'll go with one UDP port for each Analog/Digital.</p>
+
+
+
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rberg at Nov 24, 2014 09:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594144"></a>
+                                    <font class="smallfont"><p>I got it working.<br/>
+Every call to matcher.find() to will move to the next match in the same string, so while() will do it.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+when
+  CustomState (source==<span class="code-quote">"AR01-UDP-7001"</span>, $v:value!="")  
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"([0-9][0-9]):(on|off)"</span>);
+  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">while</span> (matcher.find()) {
+	execute.command(<span class="code-quote">"AR01-"</span> + matcher.group(1),matcher.group(2));
+  }
+end
+
+</pre>
+</div></div>
+<p><img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Here you can see it working. <a href="http://youtu.be/9kSBTUN_2as">http://youtu.be/9kSBTUN_2as</a><br/>
+I've tested changing state at all ports at same time, it is almost real time response. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rberg at Nov 25, 2014 05:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594150"></a>
+                                    <font class="smallfont"><p>Good news, congrats! One question remaining:</p>
+<blockquote><p>The problem I have with your solution is to verify all the options (port 23, 24, ....)</p></blockquote>
+<p>How did you handle all these different UDP ports?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 25, 2014 08:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594153"></a>
+                                    <font class="smallfont"><p>It is just one UDPListener for each Arduino. The Arduino Mega has 54 Digital + 16 Analog. Total of 70 ports.<br/>
+Then I can connect 70 devices in just one Arduino and send one only string like this... almost like that. To make it more interesting I'll open 3 UDP ports to separate Digital/PWM/Analog status... but let's concentrate in the Digital ports for now.</p>
+
+<p>In the Arduino end it will read the ports every 250ms and broadcast through UDP port 7001 the string with all digital ports states</p>
+
+<p>22:on,23:off,24:on....</p>
+
+<p>In the OR, I have one UDPListener command at port 7001 with regex (.*), the whole string.<br/>
+Have a custom sensor attached to the Listener command, so the port is open by the OR and receives the whole string with all ports:status separated by comma or whatever.</p>
+
+<p>In the rules, like you did but using while() I catch with regex <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [0-9][0-9]:(on|off) </pre>
+</div></div><br/>
+what will return 22 on for group(1) and group(2) in the first find() call</p>
+
+<p>Then I run the virtual state command "AR01-" group(1), group(2) that will be AR01-22 on<br/>
+the While() will call the find() making it to jump to the second match</p>
+
+<p>Then it runs the command call again, at this time group(1) and group(2) will be 23 off, so the command will be AR01-23 off</p>
+
+<p>Every else you know, I have AR01-22 to AR01-53 virtual state commands, AR01-22 to AR01-53 custom sensors connected to the virtual commands and AR01-22 to AR01-53 switches connected to the sensors.</p>
+
+<p>In this specific case you see in the video, I have hacked that switch installing few components inside to accept a pulse to switch on/off. to turn the switch on/off the arduino sends a 50ms pulse in the port.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rberg at Nov 25, 2014 08:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594156"></a>
+                                    <font class="smallfont"><p>Thanks for the explanation. This will help others to follow your path!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 25, 2014 09:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594499"></a>
+                                    <font class="smallfont"><p>Hi R Berg,<br/>
+I see the video, very compliments for the result.<br/>
+Beautiful tablet, this is a Samsung tablet?</p>
+
+<p>I want apply your UDP Listener for my automation system.<br/>
+Please, Can you explayn your final configuration of rules, status sensor and sensor of switch? I tried it but i have problem.<br/>
+What is the version of your OR?<br/>
+Thanks for all</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gesatecnico at Dec 08, 2014 18:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

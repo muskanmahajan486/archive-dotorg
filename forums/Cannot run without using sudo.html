@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Cannot run without using sudo</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Cannot run without using sudo
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 09, 2015 by <font color="#0050B2">nfettinger</font>.
+				    </div>
+
+				    <p>I am using an Ubuntu x64 server, installed according to wiki.<br/>
+I gave full read/write/execute permissions to the entire OpenRemote folder located in /opt/OpenRemote<br/>
+I updated the config file to use an absolute path for the logs versus the relative one (so I could start it outside of the local directory).<br/>
+When using sudo (root) the controller starts normally and the application responds to requests.<br/>
+When not using the sudo command, I get these errors.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+fetty@Ramsley:~$ /opt/OpenRemote/bin/openremote.sh run
+Using CATALINA_BASE:   /opt/OpenRemote
+Using CATALINA_HOME:   /opt/OpenRemote
+Using CATALINA_TMPDIR: /opt/OpenRemote/temp
+Using JRE_HOME:       /usr
+
+---- Logging ----------------------------------------------------------
+
+ Console (stdout) threshold [CONTROLLER_CONSOLE_THRESHOLD]: INFO
+
+ <span class="code-object">System</span> logs:
+
+   - Controller startup log [CONTROLLER_STARTUP_LOG_LEVEL]: DEBUG
+     
+
+-----------------------------------------------------------------------
+Dec 8, 2015 8:47:53 PM org.apache.catalina.core.AprLifecycleListener init
+INFO: The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /opt/OpenRemote/webapps/controller/WEB-INF/lib/<span class="code-keyword">native</span>
+Dec 8, 2015 8:47:53 PM org.apache.coyote.http11.Http11Protocol init
+INFO: Initializing Coyote HTTP/1.1 on http-8688
+Dec 8, 2015 8:47:53 PM org.apache.catalina.startup.Catalina load
+INFO: Initialization processed in 395 ms
+Dec 8, 2015 8:47:53 PM org.apache.catalina.core.StandardService start
+INFO: Starting service Catalina
+Dec 8, 2015 8:47:53 PM org.apache.catalina.core.StandardEngine start
+INFO: Starting Servlet Engine: Apache Tomcat/6.0.18
+Dec 8, 2015 8:47:53 PM org.apache.catalina.startup.HostConfig deployWAR
+INFO: Deploying web application archive webconsole.war
+log4j:ERROR setFile(<span class="code-keyword">null</span>,<span class="code-keyword">true</span>) call failed.
+java.io.FileNotFoundException: ../logs/dev/dev.log (Permission denied)
+	at java.io.FileOutputStream.openAppend(Native Method)
+	at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:210)
+	at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:131)
+	at org.apache.log4j.FileAppender.setFile(FileAppender.java:289)
+	at org.apache.log4j.RollingFileAppender.setFile(RollingFileAppender.java:165)
+	at org.apache.log4j.FileAppender.activateOptions(FileAppender.java:163)
+	at org.apache.log4j.config.PropertySetter.activate(PropertySetter.java:256)
+	at org.apache.log4j.config.PropertySetter.setProperties(PropertySetter.java:132)
+	...
+</pre>
+</div></div>
+
+<p>What sort of users/permissions do I need to set up in order to fix this, currently the owner of everything in the OpenRemote directory is root:root.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23602568"></a>
+                                    <font class="smallfont"><p>Seems logs are created relative to the directory you're launching OR from.</p>
+
+<p>cd into /opt/OpenRemote/bin and then execute ./openremote.sh run</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 09, 2015 14:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602576"></a>
+                                    <font class="smallfont"><p>I've already tried that and I get the same exact error sequence.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+fetty@Ramsley:~$ cd /opt/OpenRemote/bin
+fetty@Ramsley:/opt/OpenRemote/bin$ ./openremote.sh run
+...
+INFO: Deploying web application archive webconsole.war
+log4j:ERROR setFile(<span class="code-keyword">null</span>,<span class="code-keyword">true</span>) call failed.
+     java.io.FileNotFoundException: ../logs/zwave/zwave.log (Permission denied)
+     ...
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nfettinger at Dec 10, 2015 02:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602591"></a>
+                                    <font class="smallfont"><p>The log file cannot be created, opened, or written in the location desired. Newer Linuxes are getting more and more restrictive here, selinux just to mention one thing.</p>
+
+<p>Try to, at least as a test, specify a log file in a place where you definitely can write, like /tmp.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by barf at Dec 11, 2015 09:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602606"></a>
+                                    <font class="smallfont"><p>Thanks for the suggestion, I tried this as well as giving full permissions to the /dev/ttyUSB0 device, and that got me going on the right track. I am still having trouble getting through all of them though. After the initial sequence, this is displayed (in the log, and partially in the terminal) every second until I stop the controller. Username removed for privacy. I cant tell what access violation is preventing the controller from doing what it is trying to do here.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+INFO 2015-12-12 18:16:01,728 : Unable to retrieve controller identity, retrying in 1,000 milliseconds...
+INFO 2015-12-12 18:16:01,728 : Unable to retrieve controller identity, retrying in 1,000 milliseconds...
+TRACE 2015-12-12 18:16:03,154 : Unable to retrieve controller identity
+org.openremote.controller.exception.ConnectionException: The required password <span class="code-keyword">for</span> user '####' was not found. Password manager error : Error accessing users password: {0}
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.connect(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.httpRequest(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.httpPost(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.getControllerIdentity(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.getRemoteCommandService(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.run(Unknown Source)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:701)
+Caused by: org.openremote.controller.service.Deployer$PasswordException: Error accessing users password: {0}
+	at org.openremote.controller.service.Deployer.getPassword(Unknown Source)
+	... 7 more
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nfettinger at Dec 13, 2015 00:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

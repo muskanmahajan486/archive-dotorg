@@ -1,0 +1,489 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : EnOcean support</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : EnOcean support
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 12, 2011 by <font color="#0050B2">rhitz</font>.
+				    </div>
+
+				    <p>Hello all,</p>
+
+<p>I just want to let you know about my plans to implement an EnOcean integration.</p>
+
+<p>Interfacing with EnOcean would be possible with USB and IP gateways. After evaluating available gateways I came to the conclusion that it is best to start with USB gateway support. These devices are commonly available, the serial protocol is very well defined and they are all using FTDI USB-serial chips. There is even a DIY guidance from EnOcean <a href="http://www.enocean.com/fileadmin/redaktion/pdf/app_notes/AN602_USB_TRANSCEIVER_Dec10.pdf" title="USB Based EnOcean Transceiver - Easy Realization of an EnOcean Gateway">AN602_USB_TRANSCEIVER_Dec10.pdf</a>.</p>
+
+<p>EnOcean is currently introducing bidirectional communication support, which is called Smart Acknowledge, with it's Dolphin chip line. All current and new gateways will have these new Dolphin chips. The <a href="http://www.enocean.com/en/enocean_modules/usb-300-oem/" title="EnOcean USB 300 gateway">USB 300</a> from EnOcean represents such a new gateway. The serial protocol of these new gateways is incompatible with the serial protocol of old ones with the TCM 120 EnOcean chip. I'm not sure about if we should support both serial protocols or only the new one. Currently it would be no problem to support both versions because there are not many products which rely on the new functionality introduced with the Dolphin chips but this may change in the future.</p>
+
+<p>I've noticed that there is a similar work with Z-Wave in combination with a serial daemon in progress. My next step is to test basic EnOcean communication via serial daemon.</p>
+
+<p>Any tips/suggestions are welcome.</p>
+
+
+<p>--Rainer</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19434234"></a>
+                                    <font class="smallfont"><p>There is a simpler gateway called <a href="http://www.bscgmbh.de/cms/index.php?option=com_content&amp;view=article&amp;id=137:bsc-bap-tx-bidirektionaler-lan-access-point-enocean-8683mhz-funktechnik&amp;catid=36:hw&amp;Itemid=57">Bap TX.</a> You can use it with ascii commands. Or even use Loxone with the enocean module.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Dec 12, 2011 14:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434268"></a>
+                                    <font class="smallfont"><p>Rainer,</p>
+
+<p>Thanks for offering to help with this.</p>
+
+<p>Regarding which protocol version to support, much depends on your personal interest &#8211; sounds like most people will have the older but undoubtedly some people will have upgraded to the more recent version too. Supporting both is an option too although of course would require more effort on your part.</p>
+
+<p>Regarding the serial daemon, the current work is in subversion under /workspace/olivier/pad &#8211; Olivier and Marcus are the go-to guys for detailed information on how to use. Building the native daemon will require CMAKE as the build tool. It currently works on Linux, and on Mac OS X although still debugging some issues there that seem to appear pretty randomly on different Macs we've tried. Windows is still being worked on.</p>
+
+<p>To use the daemon from Java (from within the controller), there's a Java interface for it. So start the daemon and call the Java API to interface with it. There are some unit tests being developed in subversion under /workspace/olivier/test/org/openremote/controller/protocol/port/pad which may be useful as examples on how to use the Java API.</p>
+
+<p>HTH</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Dec 13, 2011 20:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434269"></a>
+                                    <font class="smallfont"><p>Interesting. Thanks for posting the link.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 13, 2011 20:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434275"></a>
+                                    <font class="smallfont"><p>If a main design philosophy of OpenRemote is "orchestrate TCP/IP connected devices" and shift the hard part of hardware access to gateways your suggestion makes a lot of sense.</p>
+
+<p>I've found recently the very interesting home automation project <a href="http://www.bmvbs.de/DE/EffizienzhausPlus/effizienzhaus-plus_node.html" title="Energy efficiency project supported by german government">Effizienzhaus Plus</a> located in Berlin an was curious about what technology do they use for whole home control (lightning, HVAC, PV, EV). In the <a href="http://www.bbsr.bund.de/cln_032/nn_21260/BBSR/DE/Aktuell/Forschungsprojekte/10-08-17-7-11-67/Anlage9,templateId=raw,property=publicationFile.pdf/Anlage9.pdf" title="Effizienzhaus Plus design document">design overview</a> one can see that in addition to the Gira controller a second controller box for I/O from <a href="http://www.wago.com/cps/rde/xchg/wago_gt/style.xsl/gle_11392.htm" title="WAGO I/O-System 750">WAGO</a> is necessary. The system architecture is pretty much in line with your Loxone suggestion.</p>
+
+<p>I have to admit that I did not describe in my initial post why I (currently) favor a USB gateway over an IP gateway. While investigating EnOcean IP gateways I've found only two suitable candidates:</p>
+<ul class="alternate" type="square">
+	<li><a href="http://www.bscgmbh.de/cms/index.php?option=com_content&amp;view=article&amp;id=137:bsc-bap-tx-bidirektionaler-lan-access-point-enocean-8683mhz-funktechnik&amp;catid=36:hw&amp;Itemid=57" title="Bidirectional LAN Access-Point EnOcean">BSC-BAP-TX</a> from BSC Computer GmbH</li>
+	<li><a href="http://www.thermokon.de/DE/easysens/stcethernet--gateway.html" title="Bidirectional EnOcean IP gateway">STC-Ethernet</a> from Thermokon</li>
+</ul>
+
+
+<p>In my opinion both have the following problems:</p>
+<ul class="alternate" type="square">
+	<li>Only european version (868MHz) available</li>
+	<li>Expensive (Thermokon really expensive)</li>
+</ul>
+
+
+<p>When it comes to long term support I've a better feeling with the Thermokon gateway because they are a sensor manufacturer and they want to sell many sensors. With the BSC gateway I do not like that API description is not publicly available - at least I did not find a public download link.</p>
+
+<p>With wireless sensors I'ld like to have low barriers to entry for new home automation users and enable the following scenario: Buy a (cheap) USB stick, a few sensors and play around with the system and get comfortable with it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Dec 14, 2011 06:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434280"></a>
+                                    <font class="smallfont"><p>So when it comes to the simple use of automation components, then the Loxone system is ideal.<br/>
+Here you can attach easily KNX, enocean, 1-wire and other components.</p>
+
+<p>Most of elements can be configured graphically. Someone who deals with homeautomation should be able to<br/>
+utilize the system. If you want to have custom interfaces, then you can attach open remote.</p>
+
+<p>I think you should keep automation flexible. Each manufacturer has its own product philosophy and serves only<br/>
+specific technical solutions. Loxone offers a very flexible approach, because a lot of different technologies<br/>
+can be connected to one control unit.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Dec 14, 2011 10:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451582"></a>
+                                    <font class="smallfont"><p>Rainer,</p>
+
+<p>Great that you are working on Enocean support. <br/>
+Can't wait to try it out and maybe help you a bit to test if you like. (but keep in mind I am not a developer <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Anyway, for test purposes I have available here:</p>
+<ul class="alternate" type="square">
+	<li>an Enecoan BSC-BoR dongle</li>
+	<li>Eltako FWZ61-16A 1-fase kWh meter (is measuring the solar-panels on the roof of my house)</li>
+	<li>Eltako FMH4S-sz Mini handheld transmitter (4 buttons, small form factor)</li>
+	<li>Eltako FSR61NP-230V Impuls Switch with integrated relay function (useful to test several switching scenes)</li>
+</ul>
+
+
+<p>Regards,   Rick</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by reesen at Oct 08, 2012 19:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451591"></a>
+                                    <font class="smallfont"><p>Hello Rick,</p>
+
+<p>thanks for your offer, your help is very much appreciated.</p>
+
+<p>The Eltako devices are very interesting and also a bit of a challenge because some of them do not have an EnOcean equipment profile number (EEP) or are not 100% in accordance with the EEP specification but they're interesting because they're widespread use.</p>
+
+<ul class="alternate" type="square">
+	<li>The BSC-BoR dongle should be OK if it's a USB interface because we'll support both old (TCM120 - ESP2 protocol) and new (TCM300 - ESP3 protocol) interfaces.</li>
+	<li>The 'Automated meter reading (AMR)' profile A5-12-01 for the FWZ61 is not implemented yet but I'll add it because it's an interesting use case and not too much effort.</li>
+	<li>The FMH4S-sz should be no problem because I expect it to behave like a standard rocker switch (EEP: F6-02-01).</li>
+	<li>The FSR61NP seems to behave like a standard rocker (EEP: F6-02-01) if you press the second rocker (rocker B) - so it should work without additional effort.</li>
+</ul>
+
+
+<p>The EnOcean protocol is not ready yet, but the first beta version is not too far away. I'll let you know with a posting in the user forum when the beta phase starts.</p>
+
+<p>&#8211; Rainer</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Oct 09, 2012 09:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452297"></a>
+                                    <font class="smallfont"><p>Rainer, </p>
+
+<p>Thanks a lot, i think you are right about the epp's although i didn't verify with WinEtel software yet. <br/>
+Meanwhile I managed to get the BSC-BoR dongle active with usbserial on my synology, which is ESP2. Is there a way I can test if OpenRemote can reach/read the ttyUSB0 without your Enocean support?  Reading as garbage should be enough for now, or better wait untill next version?</p>
+
+<ul class="alternate" type="square">
+	<li>Rick</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by reesen at Oct 17, 2012 22:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452391"></a>
+                                    <font class="smallfont"><p>Rick,</p>
+
+<p>to show the data bytes received from the EnOcean interface type the following command:</p>
+<div class="panel" style="background-color: #E7dbd0;border-color: #AEA193;border-style: solid;border-width: 1px;"><div class="panelContent" style="background-color: #E7dbd0;">
+<p>od -x &lt; /dev/ttyUSB0</p>
+</div></div>
+<p>The beginning of a packet is indicated by the synchronizer sequence 5AA5 - you should see this sequence in the data stream each time an EnOcean radio telegram has been received (e.g. press a button of your FMH4S-sz).<br/>
+If you don't see these synchronizer sequences make sure with the stty command that the serial port is configured with the following settings (ESP2 interface):</p>
+<ul class="alternate" type="square">
+	<li>9600 bps</li>
+	<li>8 data bits</li>
+	<li>no parity bit</li>
+	<li>one start bit</li>
+	<li>one stop bit</li>
+</ul>
+
+
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Oct 18, 2012 19:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452398"></a>
+                                    <font class="smallfont"><p>Thanks Rainer, it's fine by default. Did not need to configure the serial port.<br/>
+So as soon as OR has the Enocean support, i can test more on the mentioned devices.</p>
+
+<p>DiskStation&gt; od -x &lt; /dev/ttyUSB0<br/>
+0000000 5aa5 050b 0050 0000 2400 785e 8a30 5aa5<br/>
+0000020 098b 0000 0000 0000 0000 9400 5aa5 0a8b<br/>
+0000040 0000 0000 0000 0000 9500 5aa5 0a8b 0000<br/>
+......etc</p>
+
+<p>Cheers,   Rick</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by reesen at Oct 18, 2012 20:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414240"></a>
+                                    <font class="smallfont"><p>Hi Rainer,</p>
+
+<p>Sorry for I have to do it this way, but I failed to find either personal messaging or your mail or any other means to contact you. So hoping that the site will drop you mail that 'someone replied your comment'.</p>
+
+<p>Willing to contribute to EnOcean to speed up its appearance to Remote. If there is anything I can help coding please reply here.</p>
+
+<p>I'm experienced java dev with good background in automation, remote control and monitoring systems, PLC, X10 and etc.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by miasnikov at May 14, 2013 11:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414246"></a>
+                                    <font class="smallfont"><p>Rainer,</p>
+
+<p>I've received my EnOcean starter kit and I'm going to test it with eBox. When I plug the dongle (USB300) into eBox I see in the log that it is correctly recognized and mapped:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>May 14 19:50:52 orb kernel: [690485.259727] usb 4-1: new full-speed USB device number 4 using ohci_hcd
+May 14 19:50:52 orb kernel: [690485.408938] usb 4-1: New USB device found, idVendor=0403, idProduct=6001
+May 14 19:50:52 orb kernel: [690485.409061] usb 4-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+May 14 19:50:52 orb kernel: [690485.409172] usb 4-1: Product: EnOcean USB 300 DA
+May 14 19:50:52 orb kernel: [690485.409246] usb 4-1: Manufacturer: EnOcean GmbH
+May 14 19:50:52 orb kernel: [690485.409319] usb 4-1: SerialNumber: FTVUMJ1A
+May 14 19:50:52 orb kernel: [690485.424515] ftdi_sio 4-1:1.0: FTDI USB Serial Device converter detected
+May 14 19:50:52 orb kernel: [690485.429012] usb 4-1: Detected FT232RL
+May 14 19:50:52 orb kernel: [690485.429096] usb 4-1: Number of endpoints 2
+May 14 19:50:52 orb kernel: [690485.429167] usb 4-1: Endpoint 1 MaxPacketSize 64
+May 14 19:50:52 orb kernel: [690485.429242] usb 4-1: Endpoint 2 MaxPacketSize 64
+May 14 19:50:52 orb kernel: [690485.429316] usb 4-1: Setting MaxPacketSize 64
+May 14 19:50:52 orb kernel: [690485.433653] usb 4-1: FTDI USB Serial Device converter now attached to ttyUSB1
+</pre>
+</div></div>
+
+
+<p>However with the `od -x &lt; /dev/ttyUSB1` command there is no output. I clearly see that the dongle receives packets but no joy. Any ideas?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 14, 2013 19:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414331"></a>
+                                    <font class="smallfont"><p>Rainer is at conference so may be with limited internet access, he should receive email notifications on the thread though.</p>
+
+<p>But in general, yes would really appreciate your offer to help. The current EnOcean implementation is fairly complete but I'll let Rainer fill in the details of tasks to do, etc. Fixed one nagging issue (unrelated to EnOcean really) in the branch and if that fix looks ok, the current first iteration is ready to be merged to the release branches.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 16, 2013 08:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414373"></a>
+                                    <font class="smallfont"><p>Sorry for delay,</p>
+
+<p>first of all thanks for your offer - I'll reply with a more detailed answer at the weekend - so please stay tuned.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at May 16, 2013 18:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414374"></a>
+                                    <font class="smallfont"><p>The USB300 interface is based on the 'EnOcean Serial Protocol 3' (ESP3) and it communicates with 57600 baud as opposed to the old interfaces (ESP2) with 9600 baud - so try to configure the serial port with 57600 baud before submitting the  `od -x &lt; /dev/ttyUSB1` command.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at May 16, 2013 19:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414408"></a>
+                                    <font class="smallfont"><p>Yes, this was it. Works like a charm <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Thanks.</p>
+
+<p>BTW, I'm looking for few window contacts. Till now I've found this one from China <a href="http://www.alibaba.com/product-gs/511897850/enocean_868MHz_Window_Contact.html">http://www.alibaba.com/product-gs/511897850/enocean_868MHz_Window_Contact.html</a><br/>
+They seem a little pricey to me, do you know any less expensive ones?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 17, 2013 10:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414443"></a>
+                                    <font class="smallfont"><p>The window contacts I know are in between 55 € - 70 € (from german online shops) - unfortunately that's not what you are looking for - I think a reasonable price would be 20 € - 30 €. </p>
+
+<p>As always I prefer the components from TELEFUNKEN because they have in my opinion the most attractive housing design.
+<a href="http://www.manketech-shop.de/de/Funksystem-Telefunken-Joonior/Fenster-/Tuerkontakt">http://www.manketech-shop.de/de/Funksystem-Telefunken-Joonior/Fenster-/Tuerkontakt</a></p>
+
+<p>I've also ordered the ELTAKO FTK but I was a bit disappointed because the finish of the housing feels cheap (Ok most people don't care in case of a window contact)
+<a href="http://www.eibmarkt.com/DwDE/products/NS6509852.html">http://www.eibmarkt.com/DwDE/products/NS6509852.html</a></p>
+
+<p>The Thermokon SRW01 (I do not own) seems to be an OEM product from EnOcean and its dimensions are bigger compared to the TELEFUNKEN product. I have the feeling that this could be an advantage of the SRW01 during installation time. The magnet of the TELEFUNKEN product has to be positioned very precisely in a single position. The SRW01 offers two magnet positions with bigger tolerances. 
+<a href="http://shop.akktor.de/SRW01-Fensterkontakt">http://shop.akktor.de/SRW01-Fensterkontakt</a></p>
+
+<p>Unfortunately I've never ordered from chinese sources directly.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at May 18, 2013 09:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414558"></a>
+                                    <font class="smallfont"><p>The work done so far is based on the EnOcean Equipment Profiles (EEP) specification 2.1. This specification contains 20 application classes with almost 100 telegram profiles - 70 % of these profiles are already implemented. I've prioritized most commonly used profiles but I also implemented profiles I'm in doubt if they'll ever be needed and I'm a bit tired of doing this. I think that the current implementation is extensive enough to begin and it's better to wait which profiles are requested by the users.</p>
+
+<p>The implementation of the following profiles (EEP 2.1 specification) are missing:</p>
+
+<ul class="alternate" type="square">
+	<li>RPS profiles - 4 Rocker switch (F6-03-XX), Key Card (F6-04-01), Mechanical Handle (F6-10-00)</li>
+	<li>Environmental Applications like weather station, sun intensity ... (A5-13-XX)</li>
+	<li>HVAC (A5-20-XX) - especially battery powered actuator (A5-20-01)</li>
+	<li>Digital input (A5-30-XX)</li>
+	<li>Energy management - demand response (A5-37-01)</li>
+	<li>PHC gateway (A5-38-08)</li>
+	<li>Room control panel (D2-00 bidirectional) - smart acknowledge is also missing</li>
+</ul>
+
+
+<p>In march 2013 the EEP 2.5 specification was released. I'm currently working on the new D2-01-XX profiles for 'Electronic switches and dimmers with Energy Measurement and Local Control' because there is already an interesting device available based on this profile (<a href="http://www.telefunken-sb.de/produkte1/produkte0/aufputz/funktionsstecker/funktionsstecker.html">http://www.telefunken-sb.de/produkte1/produkte0/aufputz/funktionsstecker/funktionsstecker.html</a>)</p>
+
+<p>The following profiles (EEP 2.5 specification) are missing:</p>
+
+<ul class="alternate" type="square">
+	<li>20 new 4BS sensor profiles</li>
+	<li>3 environmental sensor profiles (D2-02-XX)</li>
+	<li>VLD 2 rocker switch profile (D2-03-00)</li>
+	<li>Fan control (D2-20-XX)</li>
+	<li>5 EEP 2.1 profile updates</li>
+</ul>
+
+
+<p>At the end of last year EnOcean released the 'Security of EnOcean Radio Networks' specification. The implementation of this specification has to be done in the future but it's not very urgent because it will take some time until there are device with security available.</p>
+
+<p>With the current OR EnOcean implementation it's not possible to dim lights or control shutters. That's because it's not possible to request the state of a typical EnOcean actuator. I'm waiting for bidirectional actuators based on a standard EEP. I've already played around with Eltako actuators but they do not conform to a standard EEP - I do not like that. I suspect that the new TELEFUNKEN actuators are bidirectional and based on a standard EEP but I'm not 100 % sure (the data sheet lists only the F6-02-01 profile). This has to be evaluated/reverse engineered.</p>
+
+<p>For further discussions on how you could contribute please contact me at rainer at openremote dot org</p>
+
+<p>Thanks,</p>
+
+<p>&#8211; Rainer</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at May 19, 2013 21:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879813"></a>
+                                    <font class="smallfont"><p>Hi Rainer,<br/>
+I'm impressed with you work on the Enocean Support!</p>
+
+<p>After reading the above, I suspect that confirmation telegrams from actors are not implemented yet.<br/>
+I'm running an Eltako system (Series-14, and are happy so far<img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>One thing I'm missing are the confirmation telegram, from FUD14 etc. (They are bidirectional)</p>
+
+<p>I think EEP A5-38-08 Command 2, could be used.</p>
+
+<p>Are there any plans to support this EEP?</p>
+
+<p>/Rgds, Hans</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by hansn at Nov 14, 2013 03:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879843"></a>
+                                    <font class="smallfont"><p>Hi Hans,</p>
+
+<p>indeed the Eltako Series-14 is super interesting because it enables cost efficient solutions compared to KNX (new construction buildings - e.g. <a href="http://www.weberhaus.de">Weberhaus</a> a well known prefabricated home manufacturer in Germany offers smart home buildings <a href="http://www.weberhaus.de/energie-technik/heiz-und-haustechnik/weberlogic.html">WeberLogic</a> which are based on Eltako EnOcean technology). </p>
+
+<p>Half a year ago I've played around with an Eltako Series-14 system (FAM14+FUD14) in order to figure out if it's possible to request the actuator status. It seems that Eltako Series-14 actuators send their status automatically in case of a status change and in addition after reset of the Eltako Series-14 system. I couldn't figure out how to send a status request command. At that time I stopped to investigate it further because I thought reverse engineering would only be possible with an Eltako controller/visualization (Eltako GFVS-Safe).</p>
+
+<p>The EEP A5-38-08 hint sounds interesting - is this information based on Eltako documentation ?</p>
+
+<p>Regards</p>
+
+<p>&#8211; Rainer</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Nov 15, 2013 09:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879854"></a>
+                                    <font class="smallfont"><p>Hi Rainer,</p>
+
+<p>I dont think its possible to "request" a status from an actuator, but its possible to configure the FAM14 to regularly poll them, and its then transmitted over the air. Also when the actuator receives a telegram, it can transmit the confirmation telegram. That should me enough to have a sensor in sync for OpenRemote, regardless of wich unit triggered the actuator.</p>
+
+<p>My conclusion about EEP A5-38-8, was based on "Direct transfer of dimming value from 0 to 100%, similar to<br/>
+FUNC=38, Command 2." for FUD14 in combination with specs on the confirmation telegram for FUD14.</p>
+
+<p>All from <a href="http://www.eltako.com/fileadmin/downloads/en/datasheets/Contents_of_Eltako_Wireless_Telegrams.pdf">http://www.eltako.com/fileadmin/downloads/en/datasheets/Contents_of_Eltako_Wireless_Telegrams.pdf</a></p>
+
+<p>/Rgds, Hans</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by hansn at Nov 15, 2013 12:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

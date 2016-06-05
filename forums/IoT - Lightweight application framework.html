@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : IoT - Lightweight application framework</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : IoT - Lightweight application framework
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jun 02, 2014 by <font color="#0050B2">atamariya</font>.
+				    </div>
+
+				    <p>The technology landscape is changing fast and for good. With HTML5 becoming standard and protocols for M2M like MQTT getting wider acceptance, it's about time OR was redesigned. I've done a PoC with these components and am excited with the outcome.</p>
+
+<p>The framework consists of the following:</p>
+<ul class="alternate" type="square">
+	<li>Lightweight HTML5 client with only MQTT JS library dependency. This allows easy customization of UI with simple HTML and CSS. It uses Websockets to communicate with broker.</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>MQTT broker. I used HiveMQ (27 MB). Any other MQTT broker supporting websockets, even cloud based, would do.</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>Device client based on MQTT API. I used Java API. However, C API is also available which can be used to run the logic in low-powered microcontroller; or Python API running on RPi. This involves two Java classes:
+	<ul>
+		<li>SerialClient - Interacts with device implementing device specific calls for 0 <img class="emoticon" src="images/icons/emoticons/lightbulb.gif" height="16" width="16" align="absmiddle" alt="" border="0"/>, 1 <img class="emoticon" src="images/icons/emoticons/lightbulb_on.gif" height="16" width="16" align="absmiddle" alt="" border="0"/> and range messages</li>
+		<li>TestDevice - Interacts with broker and SerialClient</li>
+	</ul>
+	</li>
+</ul>
+
+
+<p>This design allows limiting the amount of code deployed on a resource starved device instead of using one-size fits all approach which is bulky and difficult to customize.</p>
+
+<p>Also, the framework supports the idea of hierarchy of devices. So if a device is published at topic/home/room1/lights1 (A) and another at topic/home/room1 (B), then turning off B in the UI would turn off both A AND B.</p>
+
+<p>Let me know if anybody is interested in taking this forward.</p>
+
+<p>Code: <a href="https://github.com/atamariya/iot">https://github.com/atamariya/iot</a><br/>
+Video: <a href="http://youtu.be/yqLjVDUZzhA">http://youtu.be/yqLjVDUZzhA</a></p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22886860"></a>
+                                    <font class="smallfont"><p>How does your "redesigned" OR relate to existing installations of e.g. KNX, X10, Z-Wave ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jun 02, 2014 09:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886865"></a>
+                                    <font class="smallfont"><p>OR has existing implementation for almost all the protocols out there. With little bit of modification (pick the protocols you need), generate a JAR and one is ready with the setup. But that is only if OR team wants to go this route.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Jun 02, 2014 14:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886867"></a>
+                                    <font class="smallfont"><p>Nothing stopping an HTML5 client at the moment. The controller/console API is well documented and uses long polling (as apposed to websockets).  There is a web client but I believe it relies on GWT. The OR controller could probably be easily modified to support websockets. Problem is that all devices don't support websockets (think older mobile devices).</p>
+
+<p>Personally, I use the OR consoles (android, iphone) and the designer (very nice!) but I made my own backend with Perl &amp; XMPP (pubsub) to replace the controller. It is pretty custom so not really for general use. Some might argue XMPP is way too heavyweight for this, but I like it. <br/>
+   a) Server to server connections (think cloud vs local). I can have data grabbers in the cloud that communicate to a local XMPP server.<br/>
+   b) presence (I known when a data grabber fails).<br/>
+   c) runs over TCP (less worries about data loss). Also has auto-retry if a link fails and comes back up.<br/>
+   d) My data grabbers are small. For example: one script would grab temperatures via OWFS and send the results via XMPP. Of course, these are run on full fledged linux boxes and not on microcontrollers.</p>
+
+<p>XMPP is certainly not for small devices as the XML processing is large. That said, some of the IoT devices out there have pretty hefty processors. For example, Belkin WeMo lineup uses UPnP which would have similar processing requirements as XMPP.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdarwin at Jun 02, 2014 18:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886871"></a>
+                                    <font class="smallfont"><p>Martin, that's some good thought. Of course there are multiple ways of doing this and people with programming knowledge can always come up with their own solution. However, I just wanted to put up some ideas for discussion which use widely accepted standards so that we have minimal need for customization and do not re-invent the wheel.</p>
+
+<p>I see that we do need a multi-tier architecture.</p>
+<ul class="alternate" type="square">
+	<li>OR designer is indeed nice. However, for simplistic scenarios, it's an overkill. If I am just starting up and have only couple of devices, I'd like them to appear in the controller without doing any work (auto-discovery). Switching on/off or sensor readings is basic functionality; adding scenes will involve work.</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>Your data grabbers are an example of how I'd describe my device clients - they are small and provide the API to interact with devices.</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>A backend with server to server communication capability (XMPP/MQTT based).</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Jun 03, 2014 05:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

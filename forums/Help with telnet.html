@@ -1,0 +1,548 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Help with telnet</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Help with telnet
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 05, 2013 by <font color="#0050B2">renatoriolino</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>I have a home automation built by myself and now I'm looking for a software to controls it.  That's why I'm here.</p>
+
+<p>I found that the easiest way to make my automation works with OR is using telnet, as I already have a working telnet host that I can use to get the status and turn on/off all lamps of my home.</p>
+
+<p>I have some doubts about how the OR telnet works. I followed the telnet how to, but it's not working as I expected.</p>
+
+<p>The STATUS command that is not working is configured as follow:</p>
+
+<p>Command: null|STATUS COZINHA<br/>
+Read Timeout: 1<br/>
+Read Regex Filter: blank<br/>
+Read Regex Group: blank<br/>
+Default Read Response: blank<br/>
+Polling Interval: 1s</p>
+
+<p>Looking at the debug terminal of my telnet server, I am receiving correctly the string "STATUS COZINHA" every 1 sec as expected. This command respond the following bytes:</p>
+
+<p>6F 6E 0 (aka "on").</p>
+
+<p>But on my android the sensor is still "off".</p>
+
+<p>My doubts are:</p>
+
+<p>1- Which string does OR telnet expect from a sensor in the "off" and "on" state?<br/>
+2- Does the string needs to be NULL terminated? Line-break terminated? return feed terminated?</p>
+
+<p>Well, I think that's it for now.</p>
+
+<p>Btw, running OR Controller 2.0.2 on Linux and Panel on Android (latest one available at Play Store).</p>
+
+<p>Thanks</p>
+
+<p>Renato</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21859693"></a>
+                                    <font class="smallfont"><p>I've tryied to use regex without success. </p>
+
+<p>My sensor on controller.xml:</p>
+
+
+<p>&lt;command id="57" protocol="telnet"&gt;<br/>
+&lt;property name="port" value="12345"/&gt;<br/>
+&lt;property name="statusDefault" value="off"/&gt;<br/>
+&lt;property name="command" value="null|STATUS COZINHA"/&gt;<br/>
+&lt;property name="statusFilter" value="on|off"/&gt;<br/>
+&lt;property name="pollingInterval" value="1s"/&gt;<br/>
+&lt;property name="statusFilterGroup" value="0"/&gt;<br/>
+&lt;property name="timeout" value="1"/&gt;<br/>
+&lt;property name="ipAddress" value="localhost"/&gt;<br/>
+&lt;property name="name" value="CMD_COZINHA_STATUS"/&gt;<br/>
+&lt;/command&gt;</p>
+
+
+<p>The output of the command STATUS COZINHA is always "on" or "off" (without quotes).</p>
+
+<p>On dev.log I got:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>2013-04-05 14:41:00,452 ERROR [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: Telnet Read Status: No 
+Match using Regex: 'on|off' on response from command 'null|STATUS COZINHA'
+2013-04-05 14:41:00,453 WARN [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: Event producer bound 
+to sensor (ID = 58) returned a value that is not consistent with sensor's datatype : off  setting sensor 
+value to 'N/A'
+</pre>
+</div></div>
+
+<p>The sensor on controller.xml is:</p>
+
+<p>&lt;sensor id="58" name="SENSOR_COZINHA" type="switch"&gt;<br/>
+&lt;include type="command" ref="57"/&gt;<br/>
+&lt;state name="on"/&gt;<br/>
+&lt;state name="off"/&gt;<br/>
+&lt;/sensor&gt;</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by renatoriolino at Apr 05, 2013 19:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859694"></a>
+                                    <font class="smallfont"><p>Setting a default read response, this is what I got (when the sensor is "on" and default response is "off"):</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>2013-04-05 15:29:18,277 INFO [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: received: on
+2013-04-05 15:29:18,277 ERROR [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: Telnet Read Status: 
+No Match using Regex: 'on|off' on response from command 'null|STATUS COZINHA'
+2013-04-05 15:29:18,277 TRACE [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: Processed off, received off
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by renatoriolino at Apr 05, 2013 19:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859695"></a>
+                                    <font class="smallfont"><p>One more thing (and possible the cause of the problem), here what I found on xml-parser.log:</p>
+
+
+<p>DEBUG 2013-04-05 15:51:26,929 (XML): A switch sensor (Name = 'SENSOR_COZINHA', ID = 58) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = on/&gt;.<br/>
+DEBUG 2013-04-05 15:51:26,929 (XML): A switch sensor (Name = 'SENSOR_COZINHA', ID = 58) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = off/&gt;.</p>
+
+
+<p>But my controller.xml has both state name = on and off:</p>
+
+<p>&lt;sensor id="58" name="SENSOR_COZINHA" type="switch"&gt;<br/>
+&lt;include type="command" ref="57"/&gt;<br/>
+&lt;state name="on"/&gt;<br/>
+&lt;state name="off"/&gt;<br/>
+&lt;/sensor&gt;</p>
+
+
+<p>Anyone? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by renatoriolino at Apr 05, 2013 19:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859707"></a>
+                                    <font class="smallfont"><p>The last one is just a debug statement caused by an incorrect XML generated by the designer tool. The controller reads your sensor snippet just fine though, the message exists just to note the inconsistency (there should be a value attribute next to the name attributes).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 06, 2013 08:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859713"></a>
+                                    <font class="smallfont"><blockquote>
+<p>On dev.log I got:</p>
+
+<p>2013-04-05 14:41:00,453 WARN [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: Event producer bound <br/>
+to sensor (ID = 58) returned a value that is not consistent with sensor's datatype : off  setting sensor <br/>
+value to 'N/A'</p>
+</blockquote>
+
+<p>This looks like it might be the root of the problem. I should add double quotes around the value that is being ignored but from the output that you posted (unless you changed it) it looks like there's an extra space after the 'off' &#8211; so might be 'off ' instead which would fail string matching.</p>
+
+<p>Also should add automatic trimming on our side to remove white space.</p>
+
+<p>It might be an issue with the last zero byte in your stream. Unlike C, Java doesn't expect strings to end with a zero byte, and it may be adding it to the string it is attempting to match.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 06, 2013 08:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859751"></a>
+                                    <font class="smallfont"><p>Juha, I've changed my telnet server to not send the end of string with a zero byte and I tryed to change the regext too, but didn't work.</p>
+
+<p>My STATUS COMMAND new is:</p>
+
+<p>&lt;command id="57" protocol="telnet"&gt;<br/>
+&lt;property name="port" value="12345"/&gt;<br/>
+&lt;property name="statusDefault" value="off"/&gt;<br/>
+&lt;property name="command" value="null|STATUS COZINHA"/&gt;<br/>
+&lt;property name="pollingInterval" value="3s"/&gt;<br/>
+&lt;property name="statusFilter" value="^.<b>(on|off).</b>$"/&gt;<br/>
+&lt;property name="statusFilterGroup" value="1"/&gt;<br/>
+&lt;property name="timeout" value="3"/&gt;<br/>
+&lt;property name="ipAddress" value="localhost"/&gt;<br/>
+&lt;property name="name" value="CMD_COZINHA_STATUS"/&gt;<br/>
+&lt;/command&gt;</p>
+
+<p>My telnet server output log is:</p>
+
+<p>selectserver: new connection from ::ffff:127.0.0.1 on socket 4<br/>
+recv: STATUS COZINHA<br/>
+reply: 6F 6E <img class="emoticon" src="images/icons/emoticons/lightbulb_on.gif" height="16" width="16" align="absmiddle" alt="" border="0"/> (2 bytes)<br/>
+selectserver: socket 4 hung up</p>
+
+<p>And dev.log is:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>2013-04-06 09:49:56,231 INFO [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: 
+send: STATUS COZINHA
+2013-04-06 09:49:57,236 INFO [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: 
+received: on
+2013-04-06 09:49:57,238 ERROR [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: 
+Telnet Read Status: No Match using Regex: '^.*(on|off).*$' on response from command 
+'null|STATUS COZINHA'
+2013-04-06 09:49:57,238 TRACE [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: 
+Processed off, received off
+</pre>
+</div></div>
+
+
+<p>Any ideas?  I have no experience with java or regex.  I tested '^.<b>(on|off).</b>$' on the regex test page and at least there it correctly extract the on OR off string to group(1).</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by renatoriolino at Apr 06, 2013 13:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859753"></a>
+                                    <font class="smallfont"><p>So the warning is gone, yes or no?</p>
+
+<blockquote>
+<p>Event producer bound <br/>
+to sensor (ID = 58) returned a value that is not consistent with sensor's datatype : off setting sensor <br/>
+value to 'N/A'</p></blockquote>
+
+<p>Because what you are describing now sounds like a different issue with regexp.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 06, 2013 14:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859754"></a>
+                                    <font class="smallfont"><p>If your implementation is simply returning two strings either 'on' or 'off' you should not need to define a regular expression, those two strings are valid as is.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 06, 2013 14:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859757"></a>
+                                    <font class="smallfont"><p>Yes, the warning is gone now after a stopped sending the zero at the end of string.</p>
+
+<p>I removed the regexp and the read regexp group, but still not working.  Here'se the dev.log now:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>2013-04-06 10:47:27,108 INFO [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: send: STATUS COZINHA
+2013-04-06 10:47:28,110 INFO [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: received: on
+2013-04-06 10:47:28,110 TRACE [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: Processed off, received off
+</pre>
+</div></div>
+
+<p>If I remove the "off" from the default read response, it doesn't change anything.</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by renatoriolino at Apr 06, 2013 14:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859799"></a>
+                                    <font class="smallfont"><p>Juha, my telnet server is now sending only the strings 'on' or 'off' (without a NULL byte at the end), but OR still doesn't recognizes it.</p>
+
+<p>2013-04-06 10:47:27,108 INFO Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA': send: STATUS COZINHA<br/>
+2013-04-06 10:47:28,110 INFO Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA': received: on<br/>
+2013-04-06 10:47:28,110 TRACE Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA': Processed off, received off</p>
+
+<p>What do you sugest me to do?</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by renatoriolino at Apr 07, 2013 13:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859800"></a>
+                                    <font class="smallfont"><blockquote>
+<p>2013-04-06 10:47:28,110 INFO Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA': received: on<br/>
+2013-04-06 10:47:28,110 TRACE Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA': Processed off, received off</p></blockquote>
+
+<p>The last two lines are saying that the telnet implementation first receives an 'on' string but then for some reason decides to switch it to an 'off' value (I suppose the default value) because at the sensor level it is already processing an 'off' string.</p>
+
+<p>It's hard to say where it goes wrong because there doesn't seem to be sufficient logging in the telnet implementation. I need to add more log statements or you can try to do it yourself &#8211; the implementation is here: <a href="http://svn.code.sf.net/p/openremote/code/tags/project/Controller/Controller_2_0_2/src/org/openremote/controller/protocol/telnet/TelnetCommand.java">TelnetCommand.java</a>.</p>
+
+<p>You <b>can</b> try a patch I created for trimming the values &#8211; <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.0.2_ORCJAVA-324.zip/download">OpenRemote-Controller-2.0.2_ORCJAVA-324</a> &#8211; but I don't think this will have an impact since it is a patch at the higher level in the controller mechanism and from the log it looks like the value has already been determined to be 'off' before it reaches its target. So more logging in the telnet implementation seems necessary.</p>
+
+<p>I can try to get to this in couple of days, but unlikely that can do anything about it today unless you take a look at it yourself.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 07, 2013 14:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859822"></a>
+                                    <font class="smallfont"><p>Hmm, looking at the code, didn't have time to confirm this:</p>
+
+<p>can you try ending your strings with line feed character ('\u000A'), and see if that does it?</p>
+
+<p>something to try in the meantime.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 07, 2013 20:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859827"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>Tryied but didn't work.</p>
+
+<p>Log from my telnet server:</p>
+
+<p>recv: STATUS COZINHA<br/>
+reply: 6F 6E 0A   (on<br/>
+) (3 bytes)</p>
+
+<p>dev.log:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>2013-04-07 16:28:00,274 INFO [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: send: STATUS COZINHA
+2013-04-07 16:28:01,275 INFO [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: received: on
+
+2013-04-07 16:28:01,276 TRACE [Polling Sensor Thread ID = 58, Name ='SENSOR_COZINHA']: Processed off, received off
+</pre>
+</div></div>
+
+<p>I'll try to download the source code and put some log there, but I only know C.  But I guess java is not that different.</p>
+
+<p>Thanks for helping me out.</p>
+
+<p>[]'s</p>
+
+<p>Renato</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by renatoriolino at Apr 07, 2013 20:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859981"></a>
+                                    <font class="smallfont"><p>Ok, I figured out where was the problem. On TelnetCommand.java, on the last line of the function readString() there was a code appending a newline to end of recvd string:</p>
+
+<p>this.response += sb.toString() + "\n";</p>
+
+<p>I just changed it to:</p>
+
+<p>this.response += sb.toString();</p>
+
+<p>because later on the read() function, it was correctly replacing the "on" string to "true" but leaving the newline at the end of string (true\n). Then the ParseBoolean method understood true\n as false.</p>
+
+<p>I don't know it this change will break something for others, but here it solved the problem.</p>
+
+<p>Now I only have some issues with timeout. One doubt:</p>
+
+<p>How do OR knows that the response string finished?  Because I can see on the logs that it keeps waiting 1 sec and than it process the string.   I'll try to close the connection after sending the reply to see if it speeds up the process.</p>
+
+<p>[]'s</p>
+
+<p>Renato</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by renatoriolino at Apr 09, 2013 19:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860011"></a>
+                                    <font class="smallfont"><p>Hmm saw that, I found the implementation a bit strange there too. Not sure why it has been implemented that way.</p>
+
+<p>Regarding responses, don't know either. Will need to build up proper tests to make sure these behaviors are documented and work consistently.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 10, 2013 07:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860013"></a>
+                                    <font class="smallfont"><p>The timeout property should let you define how long the response is waited for?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 10, 2013 07:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860016"></a>
+                                    <font class="smallfont"><p>Also can you try the <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_Alpha-SNAPSHOT-2013-04-09.zip/download">OpenRemote-Controller-2.1.0_Alpha-SNAPSHOT-2013-04-09.zip</a>. I think there were some reports with the timeout not working but I haven't confirmed. There's no fix for the '\n' issue as far as I can tell but it's hard to tell exactly what has changed between the releases.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 10, 2013 07:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860046"></a>
+                                    <font class="smallfont"><blockquote>
+<p>because later on the read() function, it was correctly replacing the "on" string to "true" but leaving the newline at the end of string (true\n). Then the ParseBoolean method understood true\n as false.</p></blockquote>
+
+<p>Hmm I guess we could trim the value before this, and thus avoid any impact to anyone else who might rely on the existing '\n' addition.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 10, 2013 13:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860081"></a>
+                                    <font class="smallfont"><p>Renato,</p>
+
+<p>I'm building a regression test on the readString() issue and having trouble getting anything on the readString() implementation to be received at all.</p>
+
+<p>Was the change to response sb.toString() the only one you made?</p>
+
+<p>What was the exact configuration of the piped commands you set in the Designer ?</p>
+
+<p>Thanks,</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 11, 2013 05:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860082"></a>
+                                    <font class="smallfont"><p>The code branch for the snapshot is here : <a href="http://svn.code.sf.net/p/openremote/code/workspace/juha/Controller_2_1_0_FeatureMergeBranch/">http://svn.code.sf.net/p/openremote/code/workspace/juha/Controller_2_1_0_FeatureMergeBranch/</a> in case you want to apply your '\n' fix again.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 11, 2013 05:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860084"></a>
+                                    <font class="smallfont"><p>Ok, my bad. It does insist on 'null|cmd' for the readString() to work correctly, instead of just '|cmd'.</p>
+
+<p>Moving on.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 11, 2013 06:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860104"></a>
+                                    <font class="smallfont"><p>I've created a patch that should make it unnecessary to modify the source to remove the '\n' added in readString() method. Tests are passing ok with it but would appreciate if you were able to test it against your implementation.</p>
+
+<p><a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_FM_ORCJAVA-326.zip/download">OpenRemote-Controller-2.1.0_FM_ORCJAVA-326.zip</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 11, 2013 10:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860110"></a>
+                                    <font class="smallfont"><p>Juha, it worked perfectly!</p>
+
+<p>2013-04-11 06:41:37,755 INFO <span class="error">&#91;Telnet Polling thread for sensor: SENSOR\_COZINHA&#93;</span>: send: STATUS COZINHA<br/>
+2013-04-11 06:41:38,757 INFO <span class="error">&#91;Telnet Polling thread for sensor: SENSOR\_COZINHA&#93;</span>: received: on<br/>
+2013-04-11 06:41:38,757 TRACE <span class="error">&#91;Telnet Polling thread for sensor: SENSOR\_COZINHA&#93;</span>: Processed 'on', received 'on'</p>
+
+<p>There is still one issue: you see on the log above that between sending the command and receiving the reply there is a 1 sec interval. This 1 sec seems to be a timeout (timeout property is blank on designer). I don't know nothing about Java, but what does OR expect as "end of reply"? I tried sending a line-feed and even immediately close the socket after sending the reply but it seems that OR still waits 1 sec time-out to process the reply.</p>
+
+<p>This it not a big issue, but it would improve a little the response time.</p>
+
+<p>Other than that, everything is perfectly working!!</p>
+
+<p>Thank you so much for your support.</p>
+
+<p>Renato</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by renatoriolino at Apr 11, 2013 11:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:41</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

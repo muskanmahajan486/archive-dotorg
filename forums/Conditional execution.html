@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Conditional execution</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Conditional execution
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 14, 2014 by <font color="#0050B2">russ</font>.
+				    </div>
+
+				    <p>What would be the simplest way to accomplish the following?</p>
+
+<p>Upon a button press, if "IsNight" then execute one macro or group of commands, else (i.e., "IsDay") execute another macro or different group of commands?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22885254"></a>
+                                    <font class="smallfont"><p>The simplest would be to use rules.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 14, 2014 13:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885268"></a>
+                                    <font class="smallfont"><p>I'm not fully understanding the relationship of buttons (on the UI) to rules.  I think what needs to be done is define a sensor, link it to a button, possibly linking it an in-memory variable, then defining a rule based on the in-memory variable and IsNight to trigger the commands I need.  Am I thinking correctly?  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by russ at Mar 14, 2014 21:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885272"></a>
+                                    <font class="smallfont"><p>You can not run a macro from a rule. So you must write the respective commands into your rule code. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Mar 15, 2014 07:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885273"></a>
+                                    <font class="smallfont"><p>A button can execute command -&gt; command can set in-memory variable -&gt; another command can read this in-memory variable -&gt; this command can be used for sensor -&gt; sensor can trigger rule execution.<br/>
+IsNight can be another sensor, the you would have 2 rules:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"During night"</span>
+when
+  Event(source==<span class="code-quote">"inMemorySensor"</span>, value==<span class="code-quote">"on"</span>)
+  Event(source==<span class="code-quote">"isNightSensor"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+then
+  execute.command(<span class="code-quote">"inMemoryWriteCommand"</span>, <span class="code-quote">"off"</span>);  <span class="code-comment">// Clear button press
+</span>  <span class="code-comment">// Follow with <span class="code-keyword">rest</span> of your commands
+</span>end
+
+rule <span class="code-quote">"During day"</span>
+when
+  Event(source==<span class="code-quote">"inMemorySensor"</span>, value==<span class="code-quote">"on"</span>)
+  Event(source==<span class="code-quote">"isNight"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+then
+  execute.command(<span class="code-quote">"inMemoryWriteCommand"</span>, <span class="code-quote">"off"</span>);  <span class="code-comment">// Clear button press
+</span>  <span class="code-comment">// Follow with <span class="code-keyword">rest</span> of your commands
+</span>end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 15, 2014 10:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885275"></a>
+                                    <font class="smallfont"><p>Thanks Michal.  It's all starting to make sense now.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by russ at Mar 15, 2014 14:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885509"></a>
+                                    <font class="smallfont"><p>Thanks to your help it's working now.  One thing I'd like to comment on is that I needed to change an Event statement to a CustomState statement.</p>
+
+<p>This does not work:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"all-off button night"</span>
+when
+  Event(source==<span class="code-quote">"AllOff-Sensor"</span>, value==<span class="code-quote">"on"</span>)
+  Event(source==<span class="code-quote">"IsNight"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+then
+  execute.command(<span class="code-quote">"AllOff-Off"</span>);  <span class="code-comment">// Clear button press
+</span>  <span class="code-comment">// Follow with <span class="code-keyword">rest</span> of your commands
+</span>  execute.command(<span class="code-quote">"kitchen outlet off"</span>); 
+  execute.command(<span class="code-quote">"paper lamp off"</span>); 
+  execute.command(<span class="code-quote">"dining room lite off"</span>); 
+  execute.command(<span class="code-quote">"kitchen sink off"</span>); 
+  execute.command(<span class="code-quote">"kitchen lites off"</span>); 
+  execute.command(<span class="code-quote">"foyer lite off"</span>); 
+  execute.command(<span class="code-quote">"porch lite on"</span>); 
+  execute.command(<span class="code-quote">"deck lites on"</span>); 
+end
+</pre>
+</div></div>
+
+<p>This works:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"all-off button night"</span>
+when
+  Event(source==<span class="code-quote">"AllOff-Sensor"</span>, value==<span class="code-quote">"on"</span>)
+  CustomState(source==<span class="code-quote">"IsNight"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+then
+  execute.command(<span class="code-quote">"AllOff-Off"</span>);  <span class="code-comment">// Clear button press
+</span>  <span class="code-comment">// Follow with <span class="code-keyword">rest</span> of your commands
+</span>  execute.command(<span class="code-quote">"kitchen outlet off"</span>); 
+  execute.command(<span class="code-quote">"paper lamp off"</span>); 
+  execute.command(<span class="code-quote">"dining room lite off"</span>); 
+  execute.command(<span class="code-quote">"kitchen sink off"</span>); 
+  execute.command(<span class="code-quote">"kitchen lites off"</span>); 
+  execute.command(<span class="code-quote">"foyer lite off"</span>); 
+  execute.command(<span class="code-quote">"porch lite on"</span>); 
+  execute.command(<span class="code-quote">"deck lites on"</span>); 
+end
+</pre>
+</div></div>
+
+<p>I'm guessing using Event is proper when evaluating a switch sensor, and CustomState is for a custom sensor?  Is there a further distinction?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by russ at Mar 26, 2014 03:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885519"></a>
+                                    <font class="smallfont"><blockquote>
+<p>I'm guessing using Event is proper when evaluating a switch sensor, and CustomState is for a custom sensor? Is there a further distinction?</p></blockquote>
+<p>This is not the case. I use "IsNight" custom sensor with Event() without problems. I think that the issue that you have is that Drools sometimes does not check all when statements correctly &#8211; this problem was reported on this forum few times. For example you will notice that behaviour will change when you reverse the order of checking. Your workaround works for you and this is great. My private solution to this is to add the following definition:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare Event
+  @role(event)
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 26, 2014 09:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885523"></a>
+                                    <font class="smallfont"><blockquote><p>I'm guessing using Event is proper when evaluating a switch sensor, and CustomState is for a custom sensor? Is there a further distinction?</p></blockquote>
+
+<p>The question about distinction between Event and (Custom)State has been asked before, but sofar I haven't seen a formal answer from the designers. It is good that people like Michal do their best to find and describe work-arounds, but it leaves me with an awkward feeling about this unreliable drools implementation/version. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Mar 26, 2014 12:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

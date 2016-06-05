@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Send UDP command</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Send UDP command
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 01, 2012 by <font color="#0050B2">pmartens</font>.
+				    </div>
+
+				    <p>I am trying to send a UDP command to a Moxa Nport. The command has to be ended by a carriage return. I am using the standard 2.0 controller. when I try to send the command nothing happens.<br/>
+I wondered:<br/>
+Is UDP support already in 2.0?<br/>
+What is the right way to send a carriage return &lt;CR&gt;, or is it already being sent at the end of a UDP message?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20450305"></a>
+                                    <font class="smallfont"><p>UDP is supported in 2.0. For a &lt;CR&gt; you can try "\r" and &lt;newline&gt; is "\n".<br/>
+The 2.0.1 version on my website also supports HEX if that would help.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 02, 2012 21:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450306"></a>
+                                    <font class="smallfont"><p>Hi Marcus</p>
+
+<p>thanks for the reply.<br/>
+I tried \r and \0x0D before. On the 2.0 and on the 2.0.1 versions. It seems like nothing is comming trough to my Denon AVR-3310, which I have connected to my network via a Moxa Nport. When I try to send the same UDP message through other software (Hercules) it going well.<br/>
+On the 2.0.1 version what would you suggest to send if my receiver wants PWON&lt;CR&gt;. I tried PWON\r and PWON\0x0D.<br/>
+Is there I way to debug this? I cannot find a log which includes what gets send etc.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pmartens at Sep 02, 2012 21:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450307"></a>
+                                    <font class="smallfont"><p>In the 2.0.1 version you can try this: 0x50574F4E0D<br/>
+50=P<br/>
+57=W<br/>
+4F=O<br/>
+4E=N<br/>
+0D=&lt;CR&gt;</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 02, 2012 21:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450308"></a>
+                                    <font class="smallfont"><p>Great! That one works.<br/>
+It will be tedious however to convert all my commands to hex before entering them in Openremote. Is or will it be possible to send a CR in character data. or to send my command in ASCII and the CR in Hex. (e.g. PWON\0x0D)?<br/>
+Thanks for helping me out.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pmartens at Sep 02, 2012 21:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450309"></a>
+                                    <font class="smallfont"><p>Ok, it's more or less an XML issue. The "\r" is translated into <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-quote">"\\r"</span></pre>
+</div></div><br/>
+You need to use the character entity which is <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-quote">"&amp;#13;"</span></pre>
+</div></div><br/>
+In the designer enter this: <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">PWON&amp;#13;</pre>
+</div></div></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 02, 2012 22:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858010"></a>
+                                    <font class="smallfont"><p>This does not work in my case. If I send the string</p>
+
+<p>pause&#13;</p>
+
+<p>my device says invalid command "pause#13;". So the "#13;" is NOT translated to a &lt;CR&gt;. Is there any other solution?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by vman5 at Feb 25, 2013 09:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858017"></a>
+                                    <font class="smallfont"><p>In the designer did you write</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+pause&amp;#13;
+</pre>
+</div></div>
+<p>including the ampersand, the hashtag and the semicolon?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 25, 2013 12:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858033"></a>
+                                    <font class="smallfont"><p>Yes, I did. I did write exact this string in my post as well, but if I publish the post the "&amp; #13;" disapears.<br/>
+It is only displayed here if i use spaces between &amp; and #13; but i wrote it without space.</p>
+
+<p>Meanwhile discovered that a &lt;CR&gt; is appended automaticly (wihout appending any \r or &amp; #13; by myself) So my driver works for this device. <br/>
+But maybe the next device I want to control need a &lt;CR&gt;&lt;LF&gt; or (as many Panasonic devices) a &lt;3&gt;. So I'm still really interested in finding a solution to append any character that is not printable.</p>
+
+<p>BTW: The controller runs on a Raspberry Pi with Raspbian.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by vman5 at Feb 25, 2013 19:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

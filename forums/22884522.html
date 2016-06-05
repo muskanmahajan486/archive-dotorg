@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Custom Sensor Syntax?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Custom Sensor Syntax?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 19, 2014 by <font color="#0050B2">mcornhill</font>.
+				    </div>
+
+				    <p>Thank you to all who have contributed to Open Remote it's a great solution. I'm nearing my final goals and once achieved I'm going to purchase the professional designer even though I'm just a hobbyist.</p>
+
+<p>I'm working to integrate the Insteon Hub with Open Remote via HTTP and have almost all the functionality required to complete my OR proof of concept.</p>
+
+<p>I am struggling with the syntax for the custom sensor. If the value returned is greater than zero it should equate to "ON" and update the switch image in the UI. </p>
+
+<p>If I set a specific value, for example FF, and the dimmer is turned on to 100% brightness, the switch is updated correctly in the UI.</p>
+
+<p>If the dimmer is set from the wall switch manually to any value other than FF, the switch does not update in the UI. The sensor is polling every 1 second, I just need the correct syntax for "&lt;0" in the sensor On command.</p>
+
+<p><img src="attachments/22884522/23036481.png" align="absmiddle" border="0"/></p>
+
+<p>If anyone can assist I would greatly appreciate it.</p>
+
+<p>Regards<br/>
+Mark </p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22884522/23036481.png">customSensor.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22884552"></a>
+                                    <font class="smallfont"><p>The custom sensor does not allow for any "logic", only simple "key to value" mapping, so you won't be able to achieve what you want with that.</p>
+
+<p>Also, for a UI switch to work correctly, it should be bound to a sensor of type switch.</p>
+
+<p>The way I would go around this is to first create a Switch sensor and see if the parsing logic makes it behave as you want (don't remember all the details there, so it might work).</p>
+
+<p>If that does not work, I would create a switch sensor backed by a virtual command and bind this one to the UI switch.<br/>
+I would create a custom sensor with no states defined, just as you have above, but not link it to the switch.<br/>
+I would use the later to trigger a rule that would implement the comparison you want and update the virtual command switch.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Feb 20, 2014 08:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884555"></a>
+                                    <font class="smallfont"><p>Hi Eric,</p>
+
+<p>The switch sensor I have works fine as long as the values specified in the custom sensor fields are returned by the existing _GetStatus command so I know this works.</p>
+
+<p>Now, as I'm new to OR the next part of your reply is a little tricky to comprehend so I'll attempt to show my interpretation using a basic flow diagram.</p>
+
+<p>Use Existing Command<br/>
+Name: Bedroom1CeilingLights_GetStatus <br/>
+(returns a value from 00 to FF using HTTP POST to Insteon Hub and regex)<br/>
+.<br/>
+.<br/>
+.<br/>
+New Custom Sensor (using above Bedroom1CeilingLights_GetStatus command)<br/>
+Name: Bedroom1CeilingLights_Status <br/>
+(no states defined)<br/>
+.<br/>
+.<br/>
+.<br/>
+New Rule (new to me, need to research drools rules more)<br/>
+Comparison logic something like:</p>
+
+<p>when<br/>
+ Sensor(source == "Bedroom1CeilingLights_Status", value == "00") </p>
+
+<p>   then command.execute("Bedroom1CeilingLights_IMVC", "OFF")</p>
+
+<p>   else command.execute"(Bedroom1CeilingLights_IMVC", "ON")<br/>
+end<br/>
+.<br/>
+.<br/>
+.<br/>
+New In-Memory Virtual Command<br/>
+Name: Bedroom1CeilingLights_IMVC<br/>
+command:status<br/>
+address:switcha<br/>
+.<br/>
+.<br/>
+.<br/>
+New Custom Switch Sensor <br/>
+Use above virtual command with the following Custom State Items<br/>
+Name   Value<br/>
+On     ON<br/>
+Off    OFF<br/>
+.<br/>
+.<br/>
+.<br/>
+New Switch<br/>
+Use the above sensor and existing functional commands _On and _Off.<br/>
+.<br/>
+.<br/>
+.<br/>
+Add New Switch to UI</p>
+
+
+
+
+<p>I hope I have articulated this clearly and with enough detail for others to understand also. The power of OR is becoming more evident and so is the steepness of the learning curve! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Regards<br/>
+Mark</p>
+
+
+
+
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mcornhill at Feb 20, 2014 11:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884557"></a>
+                                    <font class="smallfont"><p>Two remarks:</p>
+
+<ul class="alternate" type="square">
+	<li>Drools does not have the <em>else</em> construct; so you have to make two rules</li>
+	<li>For a binary switch <b>on/off</b> should be all lower case! See: <a href="http://www.openremote.org/display/docs/Designer+2.0+-+Create+Custom+Sensor" title="Designer 2.0 - Create Custom Sensor">Designer 2.0 &#45; Create Custom Sensor</a></li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 20, 2014 13:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884577"></a>
+                                    <font class="smallfont"><p>As Pieter already mentioned you will need 2 rules, something like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"OFF rule"</span>
+when
+  CustomState(source == <span class="code-quote">"Bedroom1CeilingLights_Status"</span>, value == <span class="code-quote">"00"</span>)
+then 
+  execute.command(<span class="code-quote">"Bedroom1CeilingLights_IMVC"</span>, <span class="code-quote">"off"</span>);
+end
+
+rule <span class="code-quote">"ON rule"</span>
+when
+  CustomState(source == <span class="code-quote">"Bedroom1CeilingLights_Status"</span>, value != <span class="code-quote">"00"</span>)
+then 
+  execute.command(<span class="code-quote">"Bedroom1CeilingLights_IMVC"</span>, <span class="code-quote">"on"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 21, 2014 09:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885285"></a>
+                                    <font class="smallfont"><p>I have solved a similar situation using In-memory Virtual Command</p>
+
+<p><a href="http://openremote.org/display/forums/Scenes?focusedCommentId=22413597&amp;#comment-22413597">http://openremote.org/display/forums/Scenes?focusedCommentId=22413597&amp;#comment-22413597</a></p>
+
+<p>hope this helps.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ggraja at Mar 15, 2014 21:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:35</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

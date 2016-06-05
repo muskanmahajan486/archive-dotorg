@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Raspberry Pi + Denon AVR + HDMI = ?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Raspberry Pi + Denon AVR + HDMI = ?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jun 05, 2013 by <font color="#0050B2">balwan</font>.
+				    </div>
+
+				    <p>Hi folks, </p>
+
+<p>I just got an Raspberry Pi, which is connected to my Denon AVR over HDMI. I am very new to all this stuff, but what I basically plant to do is to write a small Java-program running on my Pi, that is able to switch on/off my AVR, adjust the volume etc. I would like to use the HTTP protocol with REST and JSON to set up commands to my AVR, I don't want to create any GUI for that using the openremote designer etc., I would like to control my AVR only programmatically. </p>
+
+<p>So far I have installed Java and openremote on my PI and <a href="http://localhost:8080/controller">http://localhost:8080/controller</a> shows the login-dialog, so I assume the installation worked.  </p>
+
+<p>But now I'm stuck: when the apache web server starts it says "could not find a controller definition to load at path .../webapps/controller/controller.xml"... What is a controller and how do I  set up the right one for my Denon AVR? So more questions I got:</p>
+
+<p>1. How do I tell openremote to communicate with my AVR over HDMI, is that necessary at all?<br/>
+2. How do I list all available CEC-Devices connected to my Pi over HDMI?<br/>
+3. How do I set up commands like switch on/off over HTTP? The given example on the openremote website (<a href="http://localhost:8080/controller/rest/panels">http://localhost:8080/controller/rest/panels</a>) doesn't do/show anything as I suppose one has first to configure devices</p>
+
+<p>Any help will be very appreciated.  </p>
+
+<p>Regards, <br/>
+Balwan</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22872360"></a>
+                                    <font class="smallfont"><p>I think that implementing HDMI-CEC-control, preferably bi-directional, as an alternative to IR, serial- and IP-control of consumer electronics would simply be a great thing to do. Frankly speaking, I thing you underestimate the effort and the skills needed "a bit". It may also turn out that the Raspie hardware is unsuitable, must be investigated.</p>
+
+<p>The CEC specification is contained in the HDMI specification version 1.3a. This can be downloaded from the HDMI consortium <a href="http://www.hdmi.org">http://www.hdmi.org</a> (as opposed to some later specs :-\ ) They require (free) registration though.</p>
+
+<p>Here are two interesting links, for Arduino: <a href="http://forum.arduino.cc/index.php/topic,22327.0.html">http://forum.arduino.cc/index.php/topic,22327.0.html</a> , for Eventghost <a href="http://eventghost.net/forum/viewtopic.php?f=9&amp;t=3243">http://eventghost.net/forum/viewtopic.php?f=9&amp;t=3243</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by barf at Jun 06, 2013 20:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872361"></a>
+                                    <font class="smallfont"><p>Other options are available, but the Open Remote Denon Protocol adapter communicates with the receiver using a serial RS232 connection. You will have to connect you Raspberry with the receive using such a cable. It is possible that you can also buy a USB adapter that simulates a RS232 port. You immediate problem is that you have not uploaded a config to your Open Remote controller. You should go to the Open  Remote Designer and create a UI (a dummy UI if you don't care). I suggest you create a minimalistic Denon UI with power on/off etc. Start with selecting a Denon Device, then add some buttons and connect them to the appropriate functions on the device. It is pretty self explaining. Then you download this config using the zip button in the designer and unzip the thing in the '.../webapps/controller/' folder. Make sure tomcat is granted read rights on this folder. Restart Tomcat and you should be able to bring up you UI on the url http://&lt;raspberry ip&gt;/controller</p>
+
+<p>If you want to build your own application you have two options. One option is to use the REST API provided by the controller. It allows you to trigger any button you have previously defined in you UI. Alternatively you can derive from the source of the DenonCommand.java.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Jun 06, 2013 20:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872380"></a>
+                                    <font class="smallfont"><p>Hi Bengt and Torbjörn,</p>
+
+<p>Thanks a lot for this very helpful input, I didn't even know that HDMI is problematic with openremote. I know that I underestimate the effort and the skills needed for my project, but as I have some experiences in software development and time and it's fun...</p>
+
+<p>I have followed the HDMI links and also took a look at RS232 adapters, both would be an alternative for me. I've also seen the possibility to connect my Pi and Denon over UDP as both are connected to my LAN. I've read that this way is much more unreliable, however it wouldn't require any additional hardware. So just to try that out I need to provide an IP-Address and Port-number. What I don't know is how to find out the proper Port number. Have you any ideas?</p>
+
+<p>Regards,<br/>
+Eugen</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by balwan at Jun 07, 2013 12:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872394"></a>
+                                    <font class="smallfont"><p>Hi Eugen,<br/>
+there are a number of contributions on IP/RS232 control of the Denon. (I own an A100 (deluxe version of the AVR-4311) as well as an older 3808A.) Basically IP control and RS232 are the same, the command are identical. TCP (not UDP) is used, port is 23. The IP-address is either assigned "dynamically" using DHCP, or assigned manually through GUI/remote or with the Http-interface. My recommendation: configure your DHCP-server to always, based on the MAC-address, issue the same IP-address. You can also have the Raspie to do serial control through its GPIO-pins 8 and 10; you "just" have to transform the levels: The 0/3.3Volts of the Raspie to +-12 Volts of RS232  (MAX232?) &#8211; otherwise you will fry the Raspie. Oh, and disconnect the serial cable when doing a firmware update over internet!!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by barf at Jun 07, 2013 19:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

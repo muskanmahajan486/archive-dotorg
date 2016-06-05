@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Controlling VLC with OpenRemote - Tip</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Controlling VLC with OpenRemote - Tip
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 16, 2012 by <font color="#0050B2">frand</font>.
+				    </div>
+
+				    <p>Hi everyone,</p>
+
+<p>I didn't notice there being any comments about this combo, so I thought I'd share yesterday's tinkering with you. Hopefully someone finds it useful.</p>
+
+<p>My goal is to make waking up in the morning slightly more pleasant, and OpenRemote is now slowly bringing up illumination and also playing music with smoothly increasing volume. Not going into the lights at all, here's the sound part of it...</p>
+
+<p>(Note, this setup was done with VLC 2.0.3 on Ubuntu 12.04. The OS shouldn't matter much, except the syntax for VLC command line options differs slightly on Windows machines.)</p>
+
+<p>VLC is a popular open source media player, and it also offers a wide range of different interfaces for remote control. The most popular is the web interface that allows usage via browser, but what's more interesting from OpenRemote's point of view is the ability to control it via Telnet commands.</p>
+
+<p>We'll skip the part about installing VLC, as this will depend on your OS.</p>
+
+<ol>
+	<li>Start VLC, open up its Preferences.</li>
+	<li>In VLC preferences (click on the bottom left corner to show All settings) you'll find the Main Interface section. Check the box for "Remote control interface". Do not choose the obvious choice "Telnet", because that would add a password check. "Remote control interface" offers the same functionality, but without the password check.</li>
+	<li>Close VLC, open a terminal, type: "vlc --extraintf rc --rc-host xxx.xxx.xxx.xxx:yyyyy" and replace with your computer's IP address and the port you wish to use. I noticed that the LAN IP with a large port number worked best, there were permission limits in starting a service on regular ports. So, for example: 192.168.0.100:32323 should work.</li>
+	<li>You'll notice we started VLC in dual mode. It's now accessible via port 32323 but also has a window on the desktop. Now add some songs to the VLC playlist.</li>
+	<li>At this point you can optionally use a telnet client and connect to the IP and port you just specified to see that it works. Also type "help" at VLC's prompt to see the list of available commands. (note: the lua remote interface may also work as well as the rc interface, but provides more functionality... testing that remains for another day)</li>
+	<li>Next, fire up the OpenRemote Designer</li>
+	<li>Add a new device (Your PC)</li>
+	<li>Add a new command:
+	<ul>
+		<li>Name: VLC_play</li>
+		<li>Protocol: Telnet</li>
+		<li>IP Address: Your PC's IP address here</li>
+		<li>Port: The port you chose (32323 if you followed the tutorial)</li>
+		<li>Command: null|play (this here will probably save you some headache, because despite VLC's remote service having a prompt, the null| in the front is what makes the command work!)</li>
+		<li>Read Timeout: 1</li>
+	</ul>
+	</li>
+	<li>Repeat the above for VLC_stop</li>
+	<li>And that's it! Now you can either add the command to a button on a panel, or to a rule that fires in the morning.</li>
+</ol>
+
+
+<p>The rule I set up for wake-up music is as follows:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Waketune"</span>
+
+  timer (cron: 0 0 7 * * ?)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+  
+  execute.command(<span class="code-quote">"Input PC"</span>);
+  execute.command(<span class="code-quote">"Volume Direct"</span>, 10);
+  execute.command(<span class="code-quote">"VLC_play"</span>);
+
+end
+
+
+rule <span class="code-quote">"Waketune_volup"</span>
+
+  timer (cron: 0,30 00-20 7 * * ?)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+  
+  execute.command(<span class="code-quote">"Volume Up"</span>);
+
+end
+</pre>
+</div></div>
+
+<p>So the Waketune rule first sets the amp to a correct input, then sets the initial volume level, then starts playback from the first item on the playlist.</p>
+
+<p>The Waketune volup rule just raises the volume every 30 seconds for 20 minutes. The commands for "Input PC", "Volume Direct" and "Volume Up" are custom commands set up for the amplifier, and are outside of the scope of this text.</p>
+
+<p>If your audio output is connected directly to your PC, it should be possible to control the music volume directly from VLC using Telnet commands.</p>
+
+<p>And that's all. Hope this is helpful to anyone, and also please comment any corrections or inaccuracies that may be written above. The steps above worked for me, but only through a process of trial and error <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21037372"></a>
+                                    <font class="smallfont"><p>Thanks for sharing this with us.<br/>
+I did not know you can control VLC via telnet <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 11, 2012 21:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601410"></a>
+                                    <font class="smallfont"><p>Hi Jani</p>
+
+<p>Can I ask which version of VLC you're using and on what platform?</p>
+
+
+<p>I've managed to get the basic controls working well with http commands to a VLC instance, running a web server on a Windows 7 Netbook, in line with the instructions on the VLC website.</p>
+
+<p><a href="https://wiki.videolan.org/VLC_HTTP_requests/">https://wiki.videolan.org/VLC_HTTP_requests/</a></p>
+
+
+<p>I can dynamically change the volume with an OR slider, with values from 0 to 400 and load and play any media I want, including streaming audio feeds. (BBC Radio 2 and Absolute Radio so far).</p>
+
+
+<p>But for the life of me I can't get the RC or Telnet functions working, which appears to be the only way way to extract "Now Playing" info, using the Get_Info command.</p>
+
+<p>(Although the web interface clearly shows the now playing info, so it must be possible to send a http command)</p>
+
+
+<p>When I try to load VLC with "VLC --extraintf RC" all I get is a command screen appear telling me it's running OldRC, which according to a page on the vlc forum isn't supported in Windows versions of VLC.<br/>
+Any telnet sessions just refuse to connect.</p>
+
+<p>I was thinking of setting up separate Linux headless PCs to run VLC in each area that I want audio / video in.</p>
+
+<p>(The long term thought is to stream audio from another instance of VLC in multicast mode, which according to another forum post synchronises the outputs really well)</p>
+
+<p>So I'm wondering if the success you've had is with vlc running on a Linux machine?</p>
+
+<p>Many thanks,</p>
+
+<p>Stuart</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Sep 24, 2015 10:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601413"></a>
+                                    <font class="smallfont"><blockquote><p>Can I ask which version of VLC you're using and on what platform?</p></blockquote>
+
+<p>This is what Jani statedd in the third paragraph of his post</p>
+
+<blockquote><p>(Note, this setup was done with VLC 2.0.3 on Ubuntu 12.04. The OS shouldn't matter much, except the syntax for VLC command line options differs slightly on Windows machines.)</p></blockquote></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 24, 2015 12:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601445"></a>
+                                    <font class="smallfont"><p>Thanks for that Pieter,</p>
+
+<p>As you know only too well, a lot can happen in 3 years.</p>
+
+<p>As it happens, it looks like the latest version of VLC is no longer able to receive HTTP commands.</p>
+
+<p>But interestingly, due to a chance they have made in their web server.</p>
+
+<p>Vlc now requires a password to be set to access the HTML information, BUT importantly, they haven't set a user name to go with it.</p>
+
+<p>So while I could get version 0.8 to accept http commands, but not run a telnet server, the new version does at least let me access it via Telnet, but not give full control, but OpenRemote doesn't seem to like sending http commands with a password, without an accompanying username.</p>
+
+<p>So unless there is a way to get OpenRemote to send http commands with a password, but no username, it looks like I'll be looking for a wholely different media player.</p>
+
+
+<p>Apparently Foobar is a cross platform media player which has a Web server plugin.</p>
+
+
+<p><a href="http://www.foobar2000.org">http://www.foobar2000.org</a></p>
+
+
+<p><a href="http://www.hydrogenaud.io/forums/index.php?showtopic=62218">http://www.hydrogenaud.io/forums/index.php?showtopic=62218</a></p>
+
+
+<p>Just in case anyone else is looking for a media player that isn't a full Linux OS deployment of Kodi / Geexbox etc.</p>
+
+
+<p>Such for the record, I'm thinking of installing in a room at some point.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Sep 25, 2015 17:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

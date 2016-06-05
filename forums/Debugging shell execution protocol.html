@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Debugging shell execution protocol</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Debugging shell execution protocol
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 12, 2013 by <font color="#0050B2">masas</font>.
+				    </div>
+
+				    <p>I'm using OpenRemote to launch my own shell script, with arguments which then tell what should happen. To this end I have created a few commands in the Desgner, where the executable is always the same, just the arguments differ. I then assign these commands to buttons with the Designer. It seemed to work for a while. For whatever reason, occasionally my panel gets totally messed up, in the sense that the buttons I have do not invoke the script with the correct arguments, but instead they use the arguments in the other commands, or even in commands I have tried to remove alltogether with the designer.</p>
+
+<p>What would be the proper way to debug the shell execution protocol? What are the log files I should look into? What documentation exists? What source code should I read? </p>
+
+<p>Somehow this could be related to caching, since rebooting the host (Mac OS) seems to fix the problem. Also, one error I get is "Failed to reload configuration and clear cache!" when I try to "reload configuration and clear the cache" with my controller main page. Any debugging info would be great. There is nothing obvious in logs/boot.log.</p>
+
+<p>--Matti</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22873872"></a>
+                                    <font class="smallfont"><p>You could add more logging into the /webapps/controller/WEB-INF/classes/log4j.properties files. Add the following entries to the end of the file:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>log4j.logger.OpenRemote.Controller.protocol.SHELLEXE = ALL, shell-file
+
+log4j.appender.shell-file = org.apache.log4j.RollingFileAppender
+log4j.appender.shell-file.File = ../logs/shell.log
+log4j.appender.shell-file.Threshold = DEBUG
+log4j.appender.shell-file.MaxFileSize = 500KB
+log4j.appender.shell-file.MaxBackupIndex = 1
+log4j.appender.shell-file.layout = org.apache.log4j.PatternLayout
+log4j.appender.shell-file.layout.ConversionPattern = %p %d (Shell): %m%n
+</pre>
+</div></div>
+
+
+<p>This should create a /log/shell.log file with debug output &#8211; it may give you additional information of what's happening. Try that first. If it doesn't seem to reveal anything, then we need to look at the code to add more detailed logs and/or review the implementation.</p>
+
+<p>HTH,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 13, 2013 00:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601101"></a>
+                                    <font class="smallfont"><p>Hi Juha.</p>
+
+<p>I am trying to finilize the Modbus integration but the sensors refuse to work.<br/>
+As seen in the Modbus post, all shell commands work fine under terminal. I can set coils, read status.<br/>
+Under shell ececution the commands work fine and I am able to set my coils as I please.</p>
+
+<p>Update:<br/>
+Version 2.1.0 does to log shell commands while 2.1.1 does.<br/>
+It looks like I do get responce from my bash files I have created for the ModBus but the sensors are not transfering data to the sensor (custom sensor one).<br/>
+I exit the bash file with Exit 0, 1 and 2 to reflect 2 states (On, Off and Comm Error).<br/>
+The sensors do not reflect the proper state.</p>
+
+<p>What am I doeing wrong?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Sep 06, 2015 15:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601267"></a>
+                                    <font class="smallfont"><p>Finally got it. Will post it under the Modbus post.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Sep 14, 2015 20:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601361"></a>
+                                    <font class="smallfont"><p>Could you out a link to your ModBus post here please?<br/>
+I'm also having troubles with shell execution protocol.</p>
+
+<p>and the debug log isn't making me any wiser....</p>
+
+
+
+<p>DEBUG 2015-09-19 19:02:58,876 (Shell): Found cached ShellExe command with id: 1357<br/>
+DEBUG 2015-09-19 19:02:58,927 (Shell): Will start shell command: /home/pi/shProject/CallCamPopUpToKodi.sh and use params: null<br/>
+DEBUG 2015-09-19 19:03:00,485 (Shell): Shell command: /home/pi/shProject/CallCamPopUpToKodi.sh returned: call to KODI sent<br/>
+DEBUG 2015-09-19 19:04:48,924 (Shell): Found cached ShellExe command with id: 1358<br/>
+DEBUG 2015-09-19 19:04:48,926 (Shell): Will start shell command: /home/pi/shProject/redScreenTV5Sec.sh and use params: null<br/>
+DEBUG 2015-09-19 19:04:49,500 (Shell): Shell command: /home/pi/shProject/redScreenTV5Sec.sh returned: <br/>
+DEBUG 2015-09-19 19:09:56,430 (Shell): Found cached ShellExe command with id: 1357<br/>
+DEBUG 2015-09-19 19:09:56,432 (Shell): Will start shell command: /home/pi/shProject/CallCamPopUpToKodi.sh and use params: null<br/>
+DEBUG 2015-09-19 19:09:57,638 (Shell): Shell command: /home/pi/shProject/CallCamPopUpToKodi.sh returned: call to KODI sent</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by icefluffy at Sep 19, 2015 18:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601362"></a>
+                                    <font class="smallfont"><p>Hi.</p>
+
+<p>This is the post.
+<a href="http://openremote.org/pages/viewpage.action?pageId=21039276&amp;focusedCommentId=23601278#comment-23601278">http://openremote.org/pages/viewpage.action?pageId=21039276&amp;focusedCommentId=23601278#comment-23601278</a></p>
+
+<p>It works great. Keep in mind that there might be a misunderstanding about the polling period. I did several changes at the last stage and one of them as to remove the m in the polling time. I think stands for minutes while nothing stands for milliseconds.<br/>
+furthermore, I have many polling (sensors) so I set each in a slightly different period so the chance of time conflict shall be lower.</p>
+
+<p>Hope this works for you.<br/>
+BTW, I am going on vacation tomorrow night so I will have less time to help. </p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Sep 19, 2015 19:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601363"></a>
+                                    <font class="smallfont"><p>Thx,</p>
+
+<p>the script I called contained the following:<br/>
+sshpass -p openelec ssh root@192.168.69.199 /storage/hyperion/bin/hyperion-remote.sh -c red -d 5000</p>
+
+<p>this did not work...</p>
+
+<p>I installed hyperion on my open remote platform and am now using this in my script:<br/>
+hyperion-remote -a 192.168.69.199:19444 --priority 50 --color red --duration 5000</p>
+
+<p>works like a charm now...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by icefluffy at Sep 19, 2015 19:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:40</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

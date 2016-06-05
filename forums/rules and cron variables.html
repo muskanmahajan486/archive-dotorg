@@ -1,0 +1,1357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : rules and cron variables</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : rules and cron variables
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 01, 2013 by <font color="#0050B2">annesodom</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>Thank you for all the good job ! OpenRemote is a very nice UI...</p>
+
+<p>I have sevral rules working allready working...</p>
+
+<p>I would like to use cron with variables, I want to be able to set a sensor in UI to set an hour to activate a rule</p>
+
+<p>is it possible to use a rule like : </p>
+
+<p>rule "test"<br/>
+ timer (cron: 0 0 $hour ? * 2-6)<br/>
+when eval(true) then<br/>
+ execute.command("dOn");<br/>
+end</p>
+
+<p>hour is a In virutal memory variable</p>
+
+<p>How could I get this rule work ? </p>
+
+<p>Thank's</p>
+
+<p>Dominique</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880550/23036292.png">VHOUR.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880550/23036294.png">VhourSlider.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880550/23036322.png">addition.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22880554"></a>
+                                    <font class="smallfont"><p>Missing closing bracket ')' in the first clause ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 01, 2013 20:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880559"></a>
+                                    <font class="smallfont"><p>This rule is ok when I replace $hour by 12 ie...</p>
+
+<p>Can I use a variable in cron fonction ? </p>
+
+<p>Thank's</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 01, 2013 22:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880561"></a>
+                                    <font class="smallfont"><p>Argh, I hadn't looked at the cron expression itself. Afaik you cannot use a variable in the cron expression. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 02, 2013 07:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880564"></a>
+                                    <font class="smallfont"><p>;-(</p>
+
+<p>Do you know how I could enter a value in the UI and get a cron action with this value ? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 02, 2013 08:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880567"></a>
+                                    <font class="smallfont"><p>Suppose that your variable resides in a virtual memory command VHOUR and you want the cron statement execute on this value. You will also need a time sensor (use TimeDate protocol to get hour, let's call it TDHOUR). The rule should be (not tested, so please let me know if it works):</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"test"</span>
+  timer (cron:0 0 * ? * 2-6)
+when
+  CustomState(source==<span class="code-quote">"TDHOUR"</span>, $v: value)
+  CustomState(source==<span class="code-quote">"VHOUR"</span>, value==$v)
+then
+  execute.command(<span class="code-quote">"dOn"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 02, 2013 11:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880570"></a>
+                                    <font class="smallfont"><p>@ Michal: I'll give this a try later this week. I have been pondering on such a thing for quite a while. I am experimenting with starting laundromat and/or dish washer on a certain minimum level of solar energy production, while also setting a deadline for those tasks to be finished.<br/>
+Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 02, 2013 11:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880589"></a>
+                                    <font class="smallfont"><p>I tried this rule, but I could not get it work...<br/>
+I have a slider with a VHOUR between 0 and 23, <br/>
+I created a TimeDate sensor... tried with hh:mm and also only with hh</p>
+
+<p>Nothing works...</p>
+
+<p>What am I doing false ? </p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 02, 2013 19:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880590"></a>
+                                    <font class="smallfont"><p>My example is for sensors of custom type. Make sure that you have the same.<br/>
+Further you can take a look in log file if you see any errors during loading rules (boot.log).<br/>
+By removing the test value==$v the rule should be triggered every hour regardless of sensor values, does it do that?<br/>
+The DateTime protocol should be hh.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 02, 2013 20:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880596"></a>
+                                    <font class="smallfont"><p>I can make a command formatted with hh.<br/>
+You are right, I get an error when I create a virtual custom sensor : </p>
+
+<p>XML Element : &lt;sensor xmlns="http://www.openremote.org" id="663" name="TDHOUR" type="custom"&gt;<br/>
+      &lt;include type="command" ref="394" /&gt;<br/>
+      &lt;state name="hh" value="" /&gt;<br/>
+    &lt;/sensor&gt;</p>
+
+
+<p>What custom state idems do I have to create ? <br/>
+Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 02, 2013 21:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880597"></a>
+                                    <font class="smallfont"><p>Custom state values leave empty. This way the sensor will return just string which virtual command holds.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 02, 2013 21:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880599"></a>
+                                    <font class="smallfont"><p>Thank you for all your advices... I tried this, but I get an error while creatign sensor in the log...</p>
+
+
+<p>ERROR 2013-12-02 23:06:00,050 : Creating sensor failed. Error :<br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="409" name="heure" type="custom"&gt;<br/>
+      &lt;include type="command" ref="391" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+java.lang.NullPointerException:<br/>
+        at java.math.BigDecimal.&lt;init&gt;(BigDecimal.java:739)<br/>
+        at com.luckycatlabs.sunrisesunset.dto.Location.&lt;init&gt;(Unknown Source)<br/>
+        at org.openremote.controller.protocol.datetime.DateTimeCommand.&lt;init&gt;(DateTimeCommand.java:85)<br/>
+        at org.openremote.controller.protocol.datetime.DateTimeCommandBuilder.build(DateTimeCommandBuilder.java:112)<br/>
+        at org.openremote.controller.command.CommandFactory.getCommand(CommandFactory.java:164)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:420)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:858)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)<br/>
+        at java.lang.Thread.run(Thread.java:679)</p>
+
+
+<p>I am trying to understand Openremote.... but I don't know java...<br/>
+can you tell me something about this error ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 02, 2013 22:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880604"></a>
+                                    <font class="smallfont"><p>I found why this error... wrong attribute in command...</p>
+
+<p>So I have no error in log. </p>
+
+<p>With only cron fonction, the rule fires <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>But when I compare my two values nothing happens ;-(</p>
+
+<p>I create a label in designer to see the value of the virtual sensor : "TDHOUR"... but I can allways see Label Text and no value, so the rule cannot fire.</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 02, 2013 22:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880624"></a>
+                                    <font class="smallfont"><p>The not updating label of TDHOUR sensor is the first thing you should solve before returning to the rule.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 03, 2013 09:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880632"></a>
+                                    <font class="smallfont"><p><a class="confluence-thumbnail-link 545x247" href='http://www.openremote.org/download/attachments/22880550/VHOUR.png'><img src="attachments/thumbnails/22880550/23036292" align="right" border="0"/></a><a class="confluence-thumbnail-link 529x178" href='http://www.openremote.org/download/attachments/22880550/VhourSlider.png'><img src="attachments/thumbnails/22880550/23036294" align="right" border="0"/></a><br/>
+@Dominique,<br/>
+This puzzles me. I made an in memory virtual command VHOUR where the command is <b>status</b>, and defined a sensor type:custom using it. My PRO designer does not allow to make a slider with a sensor of type:custom.<br/>
+How did you manage?  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 03, 2013 12:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880643"></a>
+                                    <font class="smallfont"><p>My Raspberry seems to be out... I'll install all again and come back when it works again...</p>
+
+<p>Pieter, I made a sensor form a virtual command type:range (0-23) for hours...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 03, 2013 15:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880654"></a>
+                                    <font class="smallfont"><p>I just installed my raspberry.. now it is working.</p>
+
+<p>I tried this rule</p>
+
+<p>rule "sliderhm"<br/>
+  timer (cron: 0 * * ? * *)<br/>
+when eval(true)<br/>
+then<br/>
+  execute.command("dOn");<br/>
+end</p>
+
+<p>This rule fires every minute...</p>
+
+<p>Then I tried to modify the rule with 2 variables : TDHOUR (system hour) and VHOUR (manual sensor value)</p>
+
+
+<p>rule "sliderhm"<br/>
+  timer (cron: 0 * * ? * *)<br/>
+when<br/>
+  CustomState(source=="TDHOUR", $h:value)<br/>
+  CustomState(source=="VHOUR", value==$h)<br/>
+then<br/>
+  execute.command("dOn");<br/>
+end</p>
+
+<p>I can see the two variables on the UI When I set them to the same time, the rule does not fire...</p>
+
+<p>I had a look in the logs, no more errors...</p>
+
+<p>Has somebody an idear ? </p>
+
+<p>Is there a file where I can find more about the rules actions ? </p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 03, 2013 22:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880660"></a>
+                                    <font class="smallfont"><p>As you said your VHOUR is a <b>range</b> type of device. IIRC CustomState is meant for sensors of type:custom only. So your rule tries to compare <em>string</em> with <em>integer</em> I guess. For integers you need to use <em>LevelState</em> which requires the following addition to your rule header:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">global org.openremote.controller.statuscache.LevelFacade levels;</pre>
+</div></div>
+<p>I assume the LevelFacade takes care of sensors of type <b>level</b> and <b>range</b>, but I do not know for sure.</p>
+
+<p>The starting point of rules documentation is <a href="http://www.openremote.org/display/docs/Designer+2.0+-+Controller+Rules" title="Designer 2.0 - Controller Rules">Designer 2.0 &#45; Controller Rules</a>. At the bottom of the page there is a link to the Drools manual. I think chapter 4 is the most interesting. The notion of the different facades should be added somewhere to the OpenRemote Controller Rules docs. </p>
+
+<p>I am in the process of collecting good rule examples from the forum pages. (See <a href="http://www.openremote.org/display/~pz1/My+Pages#Scratch pads">My Pages - Scratch pads</a> for a link to rules) You need to log in to the forum to read that space. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 04, 2013 08:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880679"></a>
+                                    <font class="smallfont"><p>Ok I tried to add the LevelState in the header...</p>
+
+<p>I modified my rule in : </p>
+
+<p>rule "sliderhm"<br/>
+  timer (cron: 0 * * ? * *)<br/>
+when<br/>
+  CustomState(source=="TDHOUR", $h:Integer.valueOf(value))<br/>
+  CustomState(source=="VHOUR", value==$h)<br/>
+then<br/>
+  execute.command("dOn");<br/>
+end</p>
+
+<p>It does not fire...</p>
+
+<p>I take a look in the Drools manual, but it is a bit difficult for a newbie...</p>
+
+<p>For the rules you want to collect, I can make a tuorial for a rule I actually  use witch get lights off at sunset if a switch is on in the UI...</p>
+
+<p>I am sorry but the actual discussion should not be your  good rules examples because it does not fire yet !!!</p>
+
+<p>Can you tell me how you have the code in an other color in your posts ?</p>
+
+<p>Thank you </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 04, 2013 22:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880685"></a>
+                                    <font class="smallfont"><p>I am not a programmer, and only know about rules from copying other examples. So I am not really the person to help you. So for what it is worth, I think at least the VHOUR thing should be a LevelState:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">LevelState(source==<span class="code-quote">"VHOUR"</span>, value==$h)</pre>
+</div></div>
+
+
+<blockquote><p>Can you tell me how you have the code in an other color in your posts ?</p></blockquote>
+<p> enclose your code within {code}..{code} tags <a href="http://www.openremote.org/display/website/Wiki+Markup+Quick+Start">(see markup instructions)</a>. Do not place a / inside the end tag!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 05, 2013 07:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880691"></a>
+                                    <font class="smallfont"><p>I don't know with LevelState, but when both sensors, TDHOUR and VHOUR are of type custom then the rule "test" works. I've just checked it on my eBox.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 05, 2013 08:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880699"></a>
+                                    <font class="smallfont"><p>The reason I suggested <em>LevelState</em> was because Dominique uses a slider to set <em>VHOUR</em>. Slider needs a range type sensor, which returns an integer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 05, 2013 09:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880708"></a>
+                                    <font class="smallfont"><p>I was unaware that you can set virtual command from slider. How you dot that? I.e. what is the write command?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 05, 2013 11:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880710"></a>
+                                    <font class="smallfont"><p>Sofar I have only tested this on screen. The command I use is described <a href="http://www.openremote.org/display/forums/rules+and+cron+variables?focusedCommentId=22880632#comment-22880632">earlier in this thread</a> I made a slider for that and placed the slider and a label connected to the sensor on screen. If I move the slider I see the label value change.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 05, 2013 12:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880711"></a>
+                                    <font class="smallfont"><p>But in this comment you describe the read command which is status for in the memory virtual command. What I'm asking is how you can get value back from slider (by moving it) to virtual command. With other commands you use ${param} to get the value from a slider. However, for in memory you can only use on|off|status. ${param} is not allowed.<br/>
+Or am I missing something... obviously <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 05, 2013 12:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880716"></a>
+                                    <font class="smallfont"><p>I made a command : <br/>
+Protocol : In-memory Virtual Command<br/>
+Command : status<br/>
+Adress : time</p>
+
+<p>I have a range sensor on this adress, and a slider on the sensor. </p>
+
+<p>In my UI I have a label with the sensor, and it returns the "time" variable I set in my slider...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 05, 2013 12:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880718"></a>
+                                    <font class="smallfont"><p>I don't use ${param}, just status. It looks as if for the Virtual command, <b>status</b> is command and ${param} combined.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 05, 2013 12:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880723"></a>
+                                    <font class="smallfont"><p>Yes that's exactly it : <br/>
+My slider gives me the value I chose back the In-Memory Virutal command with only the status command...</p>
+
+<p>So I have my two values : </p>
+<ul class="alternate" type="square">
+	<li>one comming from Date with H formatted</li>
+	<li>one comming from my slyder.</li>
+</ul>
+
+
+<p>I get the same value, but probabbly not teh same format...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 05, 2013 13:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880724"></a>
+                                    <font class="smallfont"><p>Well, this is what I've done and it didn't work. Value wasn't changing, so I thought that I was doing something wrong... After you send the picture, EUREKA, need to reboot my eBox <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Now it is working. Would be nice to have a sensor which would indicate that reboot is necessary, could be used for the watchdog.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 05, 2013 13:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880727"></a>
+                                    <font class="smallfont"><p>Try to change both sensors to the same type. In your case range.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 05, 2013 13:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881234"></a>
+                                    <font class="smallfont"><p>I just discovered that <em>LevelState</em> does not exist; should be <em>Level</em></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 15, 2013 14:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881235"></a>
+                                    <font class="smallfont"><p>hi Pieter, </p>
+
+<p>Thank's for giving me an anser....</p>
+
+<p>I have been trying to get this rule fire !!! but I never succeeded...</p>
+
+<p>I have allso tried to use integer in my rules but I allways get an error in boot.log ;-((</p>
+
+<p>With your new information I Just tried this : </p>
+
+<p>rule "sliderhm"<br/>
+timer (cron: 0 * * ? * *)<br/>
+when<br/>
+CustomState(source=="TDHOUR", $h:value)<br/>
+Level(source=="VHOUR", value==$h)<br/>
+then<br/>
+execute.command("dOn");<br/>
+end</p>
+
+<p>I have no error in the logs, but it does not work...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 15, 2013 15:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881254"></a>
+                                    <font class="smallfont"><p>Sorry my knowledge it to little to help. I am wrestling myself with some simple math operations on Level sensors.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 15, 2013 17:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881259"></a>
+                                    <font class="smallfont"><p>On further thought, reading older threads about rules, and reading this thread again, as your sensor is of type:<em>range</em>, I think you should use <em>Range</em> instead of <em>Level</em></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">Range(source==<span class="code-quote">"VHOUR"</span>, value==$h)</pre>
+</div></div>
+
+<p>I don't know if this will bring you any further, as there may still be other problems in your rule. The usage of Range in my own rule did not make it work yet (:</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 15, 2013 21:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881280"></a>
+                                    <font class="smallfont"><p>The problem is probably the fact that == operator does not work between strings and integers. A type conversion is necessary. This code should do the trick:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare TDHOURint
+  value: <span class="code-object">int</span>
+end
+
+rule <span class="code-quote">"Init TDHOUR"</span>
+when
+  not TDHOURint()
+then 
+  insert(<span class="code-keyword">new</span> TDHOURint(-1));
+end
+
+rule <span class="code-quote">"Conv TDHOUR"</span>
+no-loop <span class="code-keyword">true</span>
+when
+  CustomState(source==<span class="code-quote">"TDHOUR"</span>, $h:value)
+  $e: TDHOURint()
+then
+  $e.setValue(<span class="code-object">Integer</span>.parseInt($h.toString()));
+  update($e);
+end
+  
+rule <span class="code-quote">"sliderhm"</span>
+timer (cron: 0 * * ? * *)
+when
+  TDHOURint($h: value)
+  Range(source==<span class="code-quote">"VHOUR"</span>, value==$h)
+then
+  execute.command(<span class="code-quote">"dOn"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 16, 2013 11:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881281"></a>
+                                    <font class="smallfont"><p>@Michal<br/>
+May I hijack this thread for a related question on one of my solar energy rules? In principle it is simple. I just want to do some arithmatic on the <em>range</em> outputs of my two inverters</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">rule <span class="code-quote">"Combine Solar Power"</span>
+when
+   Range( source==<span class="code-quote">"SolarPowerLevel"</span>, $w1 : value)
+   Range( source==<span class="code-quote">"SolarPowerLevel2"</span>, $w2 : value)
+then
+  CombinedSolarPower = $w1 + $w2;
+  execute.command(<span class="code-quote">"VirtualCombinedSolarPower"</span>, CombinedSolarPower);
+end</pre>
+</div></div>
+<p>The log says:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">ERROR 2013-12-15 22:07:14,750 : Rule Compilation error CombinedSolarPower cannot be resolved
+The <span class="code-keyword">operator</span> + is undefined <span class="code-keyword">for</span> the argument type(s) java.lang.<span class="code-object">Object</span>, java.lang.<span class="code-object">Object</span>
+CombinedSolarPower cannot be resolved</pre>
+</div></div>
+<p>I did assume $w1 and $w2 are integers because I did convert them to Integer with the XPATH Expression in the HTTP-call. And because range only accepts Integer. (See my <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Monitor+Solar+Power+-+FuturePower4All+PVlogger" title="OpenRemote 2.0 How To - Monitor Solar Power - FuturePower4All PVlogger">description on solar power</a>)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 16, 2013 12:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881284"></a>
+                                    <font class="smallfont"><p>Pieter, no problem, please do hijack. In your example you have also a problem that CombinedSolarPower is of undefined type. You would need to declare it like:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  <span class="code-object">int</span> CombinedSolarPower = (<span class="code-object">Integer</span>) $w1 + (<span class="code-object">Integer</span>) $w2;
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 16, 2013 12:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881287"></a>
+                                    <font class="smallfont"><p><a class="confluence-thumbnail-link 195x169" href='http://www.openremote.org/download/attachments/22880550/addition.png'><img src="attachments/thumbnails/22880550/23036322" align="right" border="0"/></a> Thanks, that did the trick as you can see</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 16, 2013 13:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881289"></a>
+                                    <font class="smallfont"><p>Another solution would be to define additional sensor for the in memory command time but type custom. I.e. you would have two sensors for the same virtual memory command time, one of type range to use in the slider and one of type custom to use it in rules. Then the following rule would work (assuming your custom sensor has a name "VHOURcustom"):</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"sliderhm"</span>
+timer (cron: 0 * * ? * *)
+when
+  CustomState(source==<span class="code-quote">"TDHOUR"</span>, $h:value)
+  CustomState(source==<span class="code-quote">"VHOURcustom"</span>, value==$h)
+then
+  execute.command(<span class="code-quote">"dOn"</span>);
+end
+</pre>
+</div></div>
+<p>In this solution you would have less in the rule file and more one sensor in the designer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 16, 2013 15:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881401"></a>
+                                    <font class="smallfont"><p>Geat !!!! It works !!!!</p>
+
+<p>Thank's for all your advices... </p>
+
+<p>The easyest way to use 2 sliders (one for hour an one for minutes) and compare them to the actual time is : </p>
+
+<p>create a command : <br/>
+Protocol : In-memory Virtual Command<br/>
+Command : status<br/>
+Adress : time</p>
+
+<p>create a sensor<br/>
+range form 0 to 23<br/>
+with adress : time (thank's Michal)</p>
+
+<p>so you can compare your slider value with your range sensor...</p>
+
+<p>Thank you for your forum and your help !!!</p>
+
+<p>If someone wants to set an hour and minute in the UI to activate a command... let me know I can give you some advices... I have been looking for this for hours ;-((</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Dec 18, 2013 21:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881406"></a>
+                                    <font class="smallfont"><blockquote>
+<p>If someone wants to set an hour and minute in the UI to activate a command... let me know I can give you some advices... I have been looking for this for hours ;-((</p></blockquote>
+
+<p>Maybe consider writing a how to document out of it? We can make wiki available if you're up for it.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 19, 2013 04:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881416"></a>
+                                    <font class="smallfont"><p>My "math" rule mentioned <a href="http://www.openremote.org/display/forums/rules+and+cron+variables?focusedCommentId=22881281#comment-22881281">earlier in this thread</a> has already made its way to my emerging <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Monitor+Solar+Power+-+FuturePower4All+PVlogger" title="OpenRemote 2.0 How To - Monitor Solar Power - FuturePower4All PVlogger">page on solar power production</a>. </p>
+
+<p>Virtual commands should have a page on its own. Some of what has been stated here could go there. I am happy to contribute to that. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 19, 2013 08:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881535"></a>
+                                    <font class="smallfont"><p>I got stuck on a further exension of my rule menioned before. The rule gives me the value in Watts now. I tried to extend it to produce kWatts:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Combine Solar Power"</span>
+when
+   Range( source==<span class="code-quote">"SolarPowerLevel"</span>, $w1 : value)
+   Range( source==<span class="code-quote">"SolarPowerLevel2"</span>, $w2 : value)
+then
+  <span class="code-object">Integer</span> CombinedSolarPower = (<span class="code-object">Integer</span>) $w1 + (<span class="code-object">Integer</span>) $w2;   &lt;-- Changed from <span class="code-object">int</span> to <span class="code-object">Integer</span>
+  <span class="code-object">Double</span> CombinedSolarkW = CombinedSolarPower.doubleValue()/1000;  &lt;-- added
+  execute.command(<span class="code-quote">"VirtualCombinedSolarPower"</span>, CombinedSolarPower);
+  execute.command(<span class="code-quote">"VirtualCombinedSolarkWString"</span>, CombinedSolarkW.toString()); &lt;--added
+end
+</pre>
+</div></div>
+<p>I do not get errors during compilation, but <em>VirtualCombinedSolarkWString</em> doesn't display anything. <em>CombinedSolarPower</em> displays as expected </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 22, 2013 14:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881540"></a>
+                                    <font class="smallfont"><p>How about changing the line to:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  execute.command(<span class="code-quote">"VirtualCombinedSolarkWString"</span>, CombinedSolarPower/1000.0);
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 22, 2013 19:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881553"></a>
+                                    <font class="smallfont"><p>Thanks Michal, I did change the last line to what you suggested:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">rule <span class="code-quote">"Combine Solar Power"</span>
+when
+   Range( source==<span class="code-quote">"SolarPowerLevel"</span>, $w1 : value)
+   Range( source==<span class="code-quote">"SolarPowerLevel2"</span>, $w2 : value)
+then
+  <span class="code-object">Integer</span> CombinedSolarPower = (<span class="code-object">Integer</span>) $w1 + (<span class="code-object">Integer</span>) $w2;   <span class="code-object">Integer</span>
+  execute.command(<span class="code-quote">"VirtualCombinedSolarPower"</span>, CombinedSolarPower);
+  execute.command(<span class="code-quote">"VirtualCombinedSolarkWString"</span>, CombinedSolarPower/1000.0);
+end
+</pre>
+</div></div>
+
+<p>I get the following error message:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2013-12-23 09:15:07,517 : Rule definition 'modeler_rules.drl' could not be deployed. See errors below.
+ERROR 2013-12-23 09:15:07,591 : Rule Compilation error The method command(<span class="code-object">String</span>, <span class="code-object">String</span>) in the type CommandFacade is not applicable <span class="code-keyword">for</span> the arguments (<span class="code-object">String</span>, <span class="code-object">double</span>)
+The method command(<span class="code-object">String</span>, <span class="code-object">String</span>) in the type CommandFacade is not applicable <span class="code-keyword">for</span> the arguments (<span class="code-object">String</span>, <span class="code-object">double</span>)
+</pre>
+</div></div>
+<p>The error appears twice, because the full rule code contains equivalent lines for production data (kWh)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 23, 2013 08:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881555"></a>
+                                    <font class="smallfont"><p>Oh, now it is simple. Change the line into:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  execute.command(<span class="code-quote">"VirtualCombinedSolarkWString"</span>,<span class="code-object">String</span>.format(<span class="code-quote">"%.3f"</span>, CombinedSolarPower/1000.0));
+</pre>
+</div></div>
+<p>Dividing integer by float does proper conversion to float type. This was the intention of the code snippet I've sent.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 23, 2013 09:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881588"></a>
+                                    <font class="smallfont"><p>Thanks Michal, that did the trick.<br/>
+Except for that I had to use <b>command</b> <em>VirtualCombinedSolarkW</em> instead of the <b>sensor</b> <em>VirtualCombinedSolarkWString</em> <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>I am describing the application in <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Monitor+Solar+Power+-+FuturePower4All+PVlogger#OpenRemote2.0HowTo-MonitorSolarPower-FuturePower4AllPVlogger-Calculationswithsolardata">OpenRemote 2.0 How To &#45; Monitor Solar Power &#45; FuturePower4All PVlogger#Calculations with solar data</a></p>
+
+<p>I do appreciate your explanation of why it works as it does.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 23, 2013 14:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881739"></a>
+                                    <font class="smallfont"><p>Could you please show a picture of your sliders?</p>
+
+<p>Alex</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 27, 2013 00:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882271"></a>
+                                    <font class="smallfont"><p>Hi Pieter,</p>
+
+<p>Thanks for the offer &#8211; yes I think we should have separate reference pages for virtual commands. I'll try to set up some page template/location as soon as I find time. If you're able to start working on content already, then all the better (I'm pretty swamped right now).</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jan 07, 2014 13:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882272"></a>
+                                    <font class="smallfont"><p>Coincidentally yesterday I had made a first write-up on Virtual devices in the application page about optimising the use of solar energy. That is in my private space. It has to be brought in line/formatted with the other protocol pages. It is now more or less aligned with other protocol pages in my private space: <a href="http://www.openremote.org/display/~pz1/Draft+OpenRemote+2.0+How+To+-+In-memory+Virtual+Command+Protocol">Draft OpenRemote 2.0 How To - In-memory Virtual Command Protocol</a></p>
+
+<p>Comments/questions on the content are welcome here.<br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 07, 2014 13:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882693"></a>
+                                    <font class="smallfont"><p>Hey everyone,<br/>
+I'm trying to achieve the same result as above but I'm getting some very strange behaviour.<br/>
+My code is:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+rule <span class="code-quote">"Wekker"</span>
+
+timer (cron: 0 * * ? * *)
+
+when
+
+   Range( source==<span class="code-quote">"SystemUur"</span>, $uur:value)
+   Range( source==<span class="code-quote">"WekkerUur"</span>, value==$uur)
+   Range( source==<span class="code-quote">"SystemMinuut"</span>, $minuut:value)
+   Range( source==<span class="code-quote">"WekkerMinuut"</span>, value==$minuut)
+
+then
+
+  execute.command(<span class="code-quote">"Berging_AAN/UIT (ON)"</span>);
+
+end
+</pre>
+</div></div>
+
+<p>This works as long as you don't resynch the config from the controller with the designer.<br/>
+Once you go through a resynch the controller starts spitting out the following error at high rate:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR [Polling Sensor <span class="code-object">Thread</span> ID = 232000, Name ='WekkerUur']: Error in executing rule : <span class="code-keyword">null</span> -- Event Range Event (ID = 232000, Source = 'WekkerUur', Value = '11', Boundaries = [0...23]) not processed!
+java.lang.NullPointerException
+	at org.drools.core.util.RightTupleIndexHashTable.remove(RightTupleIndexHashTable.java:264)
+	at org.drools.reteoo.JoinNode.retractRightTuple(JoinNode.java:148)
+	at org.drools.reteoo.ObjectTypeNode.retractObject(ObjectTypeNode.java:232)
+	at org.drools.reteoo.EntryPointNode.retractObject(EntryPointNode.java:231)
+	at org.drools.common.AbstractWorkingMemory.retract(AbstractWorkingMemory.java:1288)
+	at org.drools.common.AbstractWorkingMemory.retract(AbstractWorkingMemory.java:1242)
+	at org.drools.impl.StatefulKnowledgeSessionImpl.retract(StatefulKnowledgeSessionImpl.java:255)
+	at org.openremote.controller.statuscache.rules.RuleEngine.push(Unknown Source)
+	at org.openremote.controller.statuscache.EventProcessorChain.push(Unknown Source)
+	at org.openremote.controller.statuscache.StatusCache.update(Unknown Source)
+	at org.openremote.controller.model.sensor.Sensor.update(Unknown Source)
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Unknown Source)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:701)
+</pre>
+</div></div>
+
+<p>When I now reboot the controller it works as before.</p>
+
+<p>The sensor itself is just a range sensor which can vary between 0-23</p>
+
+<p>Anyone any idea, quite anoying I have to reboot my controller after a resynch.<br/>
+Thanks<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 13, 2014 11:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882697"></a>
+                                    <font class="smallfont"><p>With my quite complex rule file I have this all the time. After resync I have to hard reboot the eBox. Nice that you were able to narrow it down to a single rule. This should be a nice test case to fish for this bug.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 13, 2014 12:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882698"></a>
+                                    <font class="smallfont"><p>Thanks Michal for confirming. I feel less alone now <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>.<br/>
+Ok is anyone up for fishing? I've got the bait right above <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 13, 2014 12:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882723"></a>
+                                    <font class="smallfont"><p>My <a href="http://www.openremote.org/download/attachments/21856835/slider.png">slider definition</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 13, 2014 18:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882806"></a>
+                                    <font class="smallfont"><p>I can confirm this behaviour with an even simpler rule that only monitors the hour:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+rule <span class="code-quote">"Start washing"</span>
+timer (cron: * 2 * ? * *)
+when
+  Range( source==<span class="code-quote">"SensorCurrentHour"</span>, $hour:value)
+  Range( source==<span class="code-quote">"WasherDeadlineH"</span>, value &lt;= $hour)
+then
+  execute.command(<span class="code-quote">"5-1ON"</span>);
+end
+</pre>
+</div></div>
+
+<p>For me this also only works after a restart of the OR controller on my Synology. It also is no longer working after a resync.</p>
+
+<p><b>inserted:19:44</b> I just noted in the <em>dev.log</em> that after a <em>synchronisation</em> the defined "virtual" sensor of type type:range is not processed. <br/>
+The same as what Stijn reported before. <b>Something funny happening with sensors at sync???</b></p>
+
+<p>I thought it could be a problem with the cron expression, because it is fired at the same? moment as when the hour and minute change. <br/>
+So I played a bit with non=zero values in the cron statement. Did not make a difference.</p>
+
+<p>There is an other thing that I do not understand. If I leave out the <b>timer</b> the rule never fires. <br/>
+My understanding is that this timer is used to reduce the number of checks on conditions in order to improve performance.<br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 14, 2014 15:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882814"></a>
+                                    <font class="smallfont"><p>Hey Pieter,<br/>
+It was the same for me, if I only matched on hour or minute the error occurred, not only when I matched on hour and minute.<br/>
+The timer needs to be set to run every minute because the rule needs to be checked every minute to check if the set time and actual time match.<br/>
+Although you would think that the change of the value of the system time sensor would trigger the rule as it changes every minute.<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 14, 2014 16:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882816"></a>
+                                    <font class="smallfont"><p>One more thing I noticed: With a resync all/most? virtual command values remain unaffected, with a controller restart all are <b>reset</b> to zero.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 14, 2014 16:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882817"></a>
+                                    <font class="smallfont"><blockquote><p>The timer needs to be set to run every minute because the rule needs to be checked every minute to check if the set time and actual time match.</p></blockquote>
+
+<p>I don't think so. This rule has a time element (isNight) but does not need a timer:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Sunshades Up"</span> when
+CustomState( source == <span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+(CustomState( source == <span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>) or 
+ CustomState( source==<span class="code-quote">"isNight_sensor"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>) or 
+ Event( source == <span class="code-quote">"WindGust"</span>, value &gt; 38 )
+)
+then
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+end
+</pre>
+</div></div>
+
+<p>I think the timer is needed so the rule does not fire to often (see <a href="http://www.mastertheboss.com/drools/how-to-create-time-based-rules">example here</a>)<br/>
+At least that is how I interpreted it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 14, 2014 16:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883612"></a>
+                                    <font class="smallfont"><p>Has anyone from the development team had any time to have a look at this?<br/>
+It's quite annoying that a resynch breaks the rule.<br/>
+Thanks<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 29, 2014 09:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883740"></a>
+                                    <font class="smallfont"><p>That looks like an NPE from Drools so it's likely an issue with the rule engine. First thing to try is to upgrade Drools. I think Michal at least is using a more recent version but still seems to report having the same issue.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jan 31, 2014 16:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885413"></a>
+                                    <font class="smallfont"><p>"If someone wants to set an hour and minute in the UI to activate a command... let me know I can give you some advices... I have been looking for this for hours ;-(("</p>
+
+<p>Hello Dominique, </p>
+
+<p>I've worked on this for 2 days. A can't compare Heures and minutes in the same rule. I thing there's a lot of bugs in Drools 5.1.1 compilation. Sometime a code works and 10 minutes latter the same code doesn't. Anyway, this what I used</p>
+
+
+<p>---------------------<br/>
+package org.openremote.controller.protocol</p>
+
+<p>global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+global org.openremote.controller.statuscache.SwitchFacade switches;<br/>
+import org.openremote.controller.protocol.*;<br/>
+import org.openremote.controller.model.event.*;</p>
+
+
+<p>rule "test"<br/>
+timer (cron: 0/5 * * * * ?)<br/>
+when<br/>
+  $evt : Range ( source == "SDTheures", $tm1 : value )<br/>
+  and  Range ( source == "Sheur", value == $tm1 )</p>
+
+<p>then</p>
+
+<p> execute.command("Cave ON");</p>
+
+<p>end</p>
+
+<p>-----------------</p>
+
+
+<p>SDTheures is a the date. (Date/time protocol Date H)<br/>
+Sheur my slider range sensor. </p>
+
+<p>Well some times, it works. </p>
+
+<p>I can change the rule for my minutes slider;<br/>
+------<br/>
+ $evt : Range ( source == "SDTminu", $tm1:value )<br/>
+  and Range ( source == "Sminu", value == $tm1 )<br/>
+------</p>
+
+<p>But I've never managed to make a working and with both condition. </p>
+
+<p>If you've find a way to execute a command on a chosen time with sliders, L'll be realy glad to see your code. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by michelrahal at Mar 22, 2014 11:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885414"></a>
+                                    <font class="smallfont"><p>You don't need the timer(cron:... ) statement.</p>
+
+<p>Please add this to your rules and see if it works better:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare Range
+  @role(event)
+end
+</pre>
+</div></div> </font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 22, 2014 11:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885415"></a>
+                                    <font class="smallfont"><p>That's fast reply, tks <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>.<br/>
+I tried what you said: <br/>
+-------------------------<br/>
+package org.openremote.controller.protocol</p>
+
+<p>global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+global org.openremote.controller.statuscache.SwitchFacade switches;<br/>
+import org.openremote.controller.protocol.*;<br/>
+import org.openremote.controller.model.event.*;</p>
+
+<p>declare Range<br/>
+  @role(event)<br/>
+end</p>
+
+<p>rule "test"<br/>
+// timer (cron: 0/10 * * * * ?)<br/>
+when<br/>
+  Range ( source == "SDTHeures", $uur:value )<br/>
+  Range ( source == "Sheur", value == $uur )<br/>
+  Range ( source == "SDTminu", $tm1:value )<br/>
+  Range ( source == "Sminu", value == $tm1 )<br/>
+then</p>
+
+<p> execute.command("Cave ON");</p>
+
+<p>end<br/>
+-------------------<br/>
+But It doesn't ligth my Cave<br/>
+Why do you thing I don't need timer? When does the program will check de conditions if I don't use cron? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by michelrahal at Mar 22, 2014 11:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885416"></a>
+                                    <font class="smallfont"><p>You not need the timer because the program should change conditions each time something is changed, either from time sensor or slider.<br/>
+However, if this doesn't work for you then I expect that it is caused by the default drools configuration. I personally use a different configuration. You can try my custom builds and see if this help. Pro controller <a href="https://dl.dropboxusercontent.com/u/2892838/OpenRemote-Controller-2.1.0_ORCJAVA-348.zip">https://dl.dropboxusercontent.com/u/2892838/OpenRemote-Controller-2.1.0_ORCJAVA-348.zip</a> is here and free one here <a href="https://dl.dropboxusercontent.com/u/2892838/OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17.zip">https://dl.dropboxusercontent.com/u/2892838/OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17.zip</a><br/>
+The also have rules logger so you can get better insight what is going on.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 22, 2014 12:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885421"></a>
+                                    <font class="smallfont"><p>Hi everybody, I was gone for a few month... I'm back, I just see the discussions you had...</p>
+
+<p>Here is a rule that fires on my raspberry... You don't need a cron on this rule because the CPU just tests the rules all the time..</p>
+
+<p>I had allso a problem whit my CPU Charge (up to 90 % with  350 rule lines and 5 screens.. This was due to an incompatibility between the raspbian an the java 7. I installed the java 8 and my CPU got back to 20 % !!!</p>
+
+<p>     rule "LightOn"<br/>
+       when<br/>
+       Event(source=="time", $htime:value)<br/>
+       Event(source =="htimeInt", value==$htime)<br/>
+       Event(source =="minute", $mtime:value)<br/>
+       Event(source =="minuteInt", value==$mtime)<br/>
+     then<br/>
+       execute.command("on");</p>
+
+
+<p>Last tip, if you have problems with rules fireing... restart your device... somtimes Openremote just getts silly and does not fire rules... after restart everything is OK !!!<br/>
+     end</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Mar 22, 2014 16:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885436"></a>
+                                    <font class="smallfont"><p>Thank you guys :-D<br/>
+It works perfectly like that. <br/>
+I lost a lot of time by testing some working changes without restarting the controler after synchornisation. <br/>
+I use a synology NAS. Just stop and restart openremote processe do the trick, I don't need to restart the all box. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by michelrahal at Mar 23, 2014 09:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886760"></a>
+                                    <font class="smallfont"><p>Hey Dominique, can you clarify your code for me a little bit? Where are you getting your htimeInt and minuteInt. Do you have to do some type of integer conversion? Also, what does your import/global section look like?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by voltron43 at May 29, 2014 02:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886885"></a>
+                                    <font class="smallfont"><p>Hy Nicholas, </p>
+
+<p>You have to create a command "hour" whith DateTime Protocol with "date" returned and formatted "H"<br/>
+Then you create a sensor with the command "hour" with type "range" and minimum "0" maximum "23"</p>
+
+<p>So you don't need to convert anything to integer. You "write" the value in a variable with the function DateTime, and you read the same variable with a range type. so you get an integer.</p>
+
+<p>Sorry I don't understand what you mean with the import/global section...</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by annesodom at Jun 03, 2014 21:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887555"></a>
+                                    <font class="smallfont"><p>Dominique he means the code at the top usually like the following.</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+</pre>
+</div></div>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by leafsfan at Jul 14, 2014 16:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Controller REST API 2.1</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Controller REST API 2.1
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 24, 2012 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>As we're moving into the next big version of the controller, changes to the REST API will be required.<br/>
+I started this thread to discuss those.</p>
+
+<p>As we move forward, one point we'd like to take into consideration is backward compatibility.<br/>
+To address this, a controller might want to support multiple versions of the API and clients (e.g. consoles) can also support multiple versions of the API.</p>
+
+<p>We add a REST call for the controller to report its API version(s) and other capabilities. Clients will use it as a first call to know what API level to use for communication.<br/>
+If the controller does not support this call, the client must consider it adheres to API v2.0</p>
+
+
+<h2><a name="ControllerRESTAPI2.1-RequestControllerCapabilities"></a>Request Controller Capabilities</h2>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>/rest/capabilities</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+</ul>
+
+
+<ul>
+	<li>Parameters: none</li>
+</ul>
+
+
+<ul>
+	<li>Example Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>http://localhost:8080/controller/rest/capabilities</pre>
+</div></div></li>
+</ul>
+
+
+
+<p><b>Example Response</b></p>
+
+<ul>
+	<li>content-type: application/xml</li>
+</ul>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> 
+<span class="code-tag">&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;</span>
+&lt;openremote xmlns=<span class="code-quote">"http://www.openremote.org"</span> 
+            <span class="code-keyword">xmlns:xsi</span>=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span> 
+            <span class="code-keyword">xmlns:schemaLocation</span>=<span class="code-quote">"http://www.openremote.org/capabilities.xsd"</span>&gt;
+  <span class="code-tag">&lt;rest-api-versions&gt;</span>
+    <span class="code-tag">&lt;version&gt;</span>2.2<span class="code-tag">&lt;/version&gt;</span>
+    <span class="code-tag">&lt;version&gt;</span>2.1<span class="code-tag">&lt;/version&gt;</span>
+  <span class="code-tag">&lt;/rest-api-versions&gt;</span>
+
+  <span class="code-tag">&lt;security&gt;</span>
+    <span class="code-tag">&lt;api path=<span class="code-quote">"panels"</span> security=<span class="code-quote">"none"</span> ssl-enabled=<span class="code-quote">"false"</span>/&gt;</span>
+    <span class="code-tag">&lt;api path=<span class="code-quote">"panel"</span> security=<span class="code-quote">"HTTP-basic"</span> ssl-enabled=<span class="code-quote">"true"</span>/&gt;</span>
+    ...
+  <span class="code-tag">&lt;/security&gt;</span>
+
+  <span class="code-tag">&lt;capabilities&gt;</span>
+    <span class="code-tag">&lt;capability name=<span class="code-quote">"SIP"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"5060"</span>/&gt;</span>
+    <span class="code-tag">&lt;/capability&gt;</span>
+  <span class="code-tag">&lt;/capabilities&gt;</span>
+<span class="code-tag">&lt;/openremote&gt;</span>
+</pre>
+</div></div>
+
+<p><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">&lt;<span class="code-keyword">rest</span>-api-versions&gt;</pre>
+</div></div> will return an ordered list of supported version (descending version order). The console will pickup the highest version it supports for further communication with the controller.</p>
+
+<p><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">&lt;security&gt;</pre>
+</div></div> indicates the security that is enforced at application server level on each REST call. An &lt;api&gt; entry for each API call indicates the security level (for now only none or HTTP-basic are supported). It also indicates if SSL can be used to call that API.</p>
+
+<p><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">&lt;capabilities&gt;</pre>
+</div></div> lists all the additional capabilities that this controller supports. For instance, the sip entry indicates that the controller supports SIP natively and console with VoIP support can register to this controller. The &lt;property&gt; entries under &lt;capability&gt; allow some capability specific information to be communicated without requiring any change to the XML structure.</p>
+
+
+<p>Question : do we need a specific version of the XMLs returned (e.g. to panel) or is this described as part of the REST API version ?</p>
+
+
+
+
+<p><b>Errors</b></p>
+
+<ul>
+	<li>No specific error, 2.0 controllers will return a 404 error code for this call</li>
+</ul>
+
+
+
+
+
+<p>Current (2.0) APIs use a URL prefix of /rest. To support multiple versions, going forward, the prefix will be /rest/&lt;API version&gt; e.g. /rest/2.1 (The exception being the capabilities call above, as the version is unknown at this stage)</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19433625"></a>
+                                    <font class="smallfont"><p>Some consideration needs to be paid to the JSON/JSONP REST API support, the current JSON-lib library does a rather bad job of serialising the XML into JSON and I have had to create a <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/branches/project/Controller_2_0_0_Alphas/src/org/openremote/controller/rest/support/json/JSONFormatter.java?view=log">JSONFormatter</a> to do some post processing of the JSON before returning it to the client, far from ideal. Haven't looked into options much but other JSON libraries can accept XSLT style sheets which tell it exactly how to serialise the XML into JSON so values are in the correct format etc.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Nov 13, 2011 11:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433626"></a>
+                                    <font class="smallfont"><p>A security info REST API call would be very useful (/rest/0.0/security). At present I just perform a fictitious panel enquiry (rest/panel/a) and check the Response code if it is 403 then the panel is secure but as each part of the REST API can be secured independently this isn't ideal. The security info should tell us: -</p>
+
+<p>*REST Commands and security state of each - Secure un-secure<br/>
+*Security Type (HTTP Basic, HTTP Digest, Form Based, HTTPS Client) - can we assume same security constraints used for all REST Command URLs<br/>
+*SSL Enabled</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Nov 13, 2011 11:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433627"></a>
+                                    <font class="smallfont"><p>Almost like we need a top level REST API call for controller info (/rest/0.0/controllerinfo) that could incorporate the API version and security info</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Nov 13, 2011 11:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433628"></a>
+                                    <font class="smallfont"><p>There is also a need for obtaining more panel information from the REST API, see below discussion with Juha: -</p>
+
+<blockquote>
+<p>One thing for the future, it would be useful if panel dimensions were available through the REST API (I don't even think this info is in the panel.xml) but the reason it would be useful is that on desktops I could size the console unit emulator to match the dimensions of the selected panel, at present I'd have to iterate through the screen elements and determine the limits from the widget positions, this is just a nicety and could possibly allow for a setting in the console to only show panels with a compatible size.</p>
+
+<p>Agreed, and has been on my list of changes for panel.xml &#8211; the resolution should be explicitly declared there, along with other potential properties, such as if one particular design is only intended for specific iOS device(s) then we can only present those designs as a choice to the user (further options may include things like forcing the console to skip panel choice altogether and/or lock the console to a single design which is driven by the controller-side configuration &#8211; this will come up fairly quickly on commercial/public installations).</p></blockquote></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Nov 13, 2011 11:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433718"></a>
+                                    <font class="smallfont"><p>The REST API in the current controller is a bit of a mess and is probably on the list of things to be re-done. A JSON error response code is required for "JSON failure to parse xml" at present there is no mechanism for this event.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Nov 18, 2011 18:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433742"></a>
+                                    <font class="smallfont"><p>Could do with an ID associated with each Tab Bar to make it easier to identify tab bar changes between groups.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Nov 19, 2011 21:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433898"></a>
+                                    <font class="smallfont"><p>Why do you need to know this before hand ? I mean why a fictitiuous panel enquiry? Why not just make the real call and if you receive an authentication request pop-up a panel for the user to fill-in credentials?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 28, 2011 08:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433899"></a>
+                                    <font class="smallfont"><p>Isn't that the /capabilities API I was proposing above ? (except you want to add security info). Or is this something different ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 28, 2011 08:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433912"></a>
+                                    <font class="smallfont"><p>Yes it is the same thing with the addition of the security info</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Nov 28, 2011 16:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433914"></a>
+                                    <font class="smallfont"><p>Need to know this at the controller list/settings stage at which point the panel names would not be known, so rather than get a list of panels and then query the first one in the list it is quicker to just make up a panel name and test that....works OK as a kludge.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Nov 28, 2011 16:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434226"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I realize I'm both a nube and a johnny-come-lately here, but I'd like to make a suggestion.</p>
+
+<p>The &lt;sip/&gt; tag describes a capability of the controller.  I would suggest that this should be wrapped in something like a &lt;capabilities&gt; or &lt;supports&gt; tag.  Inside that guy could be a list of things this controller supports.  This could also be slightly expanded to allow the controller to indicate versions of the technology supported (if that's relevant for that capability).</p>
+
+<p>An example:<br/>
+  &lt;supported-capabilities&gt;<br/>
+    &lt;protocol&gt;sip&lt;/protocol&gt;<br/>
+    &lt;protocol version="3.0"&gt;magic&lt;/protocol&gt;<br/>
+  &lt;/supported-capabilities&gt;</p>
+
+<p>This would allow future growth without having to hack the structure of this xml.</p>
+
+<p>.  Topher</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by topher_zicornell at Dec 12, 2011 02:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440207"></a>
+                                    <font class="smallfont"><p>Looks very good. Go ahead with this.</p>
+
+<ul class="alternate" type="square">
+	<li>By my reading we remain backward/forward compatible since this is an additional REST call, and does not require changes to existing API</li>
+	<li>On Richard's point of panel dimensions, that should be a separate additional REST API call for specific panel identity (specified the same way as Eric did here for controller's capabilities). Same could be done for flagging certain panels for specific console/panel devices.</li>
+	<li>I agree on Topher's point of capabilities should allow structured data &#8211; however capabilities are not merely protocols so the structure should remain arbitrary (and string content should be allowed as well, as shown in the original example). At that point this should be just a concern on defining the schema for this document to allow that (if we want to lock down a schema) but the 'hacking' part cannot be avoided with an arbitrary structure.</li>
+</ul>
+
+
+<blockquote>
+<p>Question : do we need a specific version of the XMLs returned (e.g. to panel) or is this described as part of the REST API version ?</p></blockquote>
+
+<p>Not sure I understood the question &#8211; do you mean if we should version the other XML return documents explicitly as well?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 16, 2012 21:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440208"></a>
+                                    <font class="smallfont"><blockquote>
+<p>On Richard's point of panel dimensions, that should be a separate additional REST API call for specific panel identity (specified the same way as Eric did here for controller's capabilities). Same could be done for flagging certain panels for specific console/panel devices.</p></blockquote>
+
+<p>Actually on this, I'd suspect additional optional elements for these features could be added to the <b>2.1</b> version of XML return document to /rest/2.1/panels request &#8211; since it will be an explicit path to 2.1 version it won't impact existing installations but can be taken advantage of by 2.1 capable panels once this current REST API controller capability info has been implemented. Screen dimensions and panel hardware/OS type should at least be relevant.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 16, 2012 21:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440209"></a>
+                                    <font class="smallfont"><p>Eric, while you're prototyping this on panels, would like to request this feature:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+  <span class="code-tag">&lt;capability&gt;</span>DISABLE_PANEL_SELECTION<span class="code-tag">&lt;/capability&gt;</span>
+</pre>
+</div></div>
+
+<p>For the controller to instruct the panel that it won't allow the user to select panel design but will deliver a preconfigured panel, and therefore the panel should skip the selection altogether. Subsequent calls to /rest/2.1/panels should return just a single panel ID per hardware/OS type (if this is included, see above) or alternatively just a single generic panel ID that has no hardware/OS types defined which is also used as a default panel ID if a hardware/OS match was not found. The panel would then automatically request the panel definitions using the matching panel ID.</p>
+
+<p>This skips a step for the panel user in configuration where they're never intended to choose anything but one design, and are never intended to change to a different panel design (think many commercial settings).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 16, 2012 21:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440214"></a>
+                                    <font class="smallfont"><p>Regarding the question, what I meant is we will have a version of the REST API supported by the controller, so that will define the calls that are recognized along with the XML/JSON document and error code that each call generates.<br/>
+But do we also want to have a specific version for the panel.xml and controller.xml files, that is files exported from the modeler ? And do we want those to be able to evolve independently?<br/>
+I guess yes, as those files are a contract between the designer and the controller and do not directly impact the consoles.<br/>
+The XML returned to the console (e.g. from a call to /rest/panel/&lt;panel id&gt;, which is different from the main panel.xml file), is defined by the REST API version. So controller API 2.1, defines that there is a /rest/panel/&lt;panel id&gt; call and what the XML returned by that call is.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Apr 17, 2012 10:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440215"></a>
+                                    <font class="smallfont"><p>Agreed on the feature but I don't see that as a capability that the controller should advertise.<br/>
+The way I would do it is:</p>
+<ul class="alternate" type="square">
+	<li>have these concepts defined in the designer and be part of the panel.xml generated by the designer</li>
+	<li>the ORB can interpret this and react accordingly to generate the appropriate response to the console</li>
+</ul>
+
+
+<p>So for this specific case:</p>
+
+<p>In the modeler, have a generic UI configuration that defines:</p>
+<ul>
+	<li>the default panel (irrelevant of the hardware/os)</li>
+	<li>if the user is allowed to select a panel or not</li>
+</ul>
+
+
+<p>In the panel.xml, we would have something like</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;ui_config defaultPanelId=<span class="code-quote">"1"</span> panelUserSelectable=<span class="code-quote">"<span class="code-keyword">false</span>"</span>/&gt;
+</pre>
+</div></div>
+
+<p>The controller interprets this and when it receives a /rest/panels call, will only return 1 entry in the list like</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;openremote xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> 
+</span>            xmlns:xsi=<span class="code-quote">"http:<span class="code-comment">//www.w3.org/2001/XMLSchema-instance"</span> 
+</span>            xmlns:schemaLocation=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org/panel.xsd"</span>&gt;
+</span>  &lt;panels userSelectable=<span class="code-quote">"<span class="code-keyword">false</span>"</span>&gt;
+    &lt;panel id=<span class="code-quote">"1"</span> name=<span class="code-quote">"Dad's iPhone"</span>/&gt; &lt;!-- 'name' is logical identity --&gt;
+  &lt;/panels&gt;
+&lt;/openremote&gt;
+</pre>
+</div></div>
+
+<p>This is still a temporary solution, because I believe we should be able to:</p>
+<ul class="alternate" type="square">
+	<li>have different users with different privileges (so some users can choose a panel, others not)</li>
+	<li>have a way to password protect access to the settings screen altogether (so that in commercial install, a user can not go to a different controller or change anything else)</li>
+</ul>
+
+
+<p>I'll start some other thread to discuss the changes required on the panel configuration level.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Apr 17, 2012 10:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440221"></a>
+                                    <font class="smallfont"><p>Ok, in this case we still do need to add the panel hardware/os type as part of the REST call arguments, as I'd still like to be able to provide fixed designs separately for iPad and iPhone for example. </p>
+
+<p>If that's the case, it would seem that controller could determine exactly one panel to return with the /rest/panels call, not sure the userSelectable attribute adds anything in this case? </p>
+
+<p>If there's only a single matching design, is there any benefit in leaving the panel selection to the user, rather than skipping the step altogether?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 17, 2012 21:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

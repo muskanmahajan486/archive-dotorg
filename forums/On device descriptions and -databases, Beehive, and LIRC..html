@@ -1,0 +1,460 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : On device descriptions and -databases, Beehive, and LIRC.</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : On device descriptions and -databases, Beehive, and LIRC.
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 16, 2010 by <font color="#0050B2">barf</font>.
+				    </div>
+
+				    <p>The Openremote project contains a lot of good ideas and concepts. In<br/>
+particular, the general goal of replacing proprietary solutions by<br/>
+truly open standards, and also free software ("open source")<br/>
+implementations, is very attractive. The present device description<br/>
+data base within OR is entirely based on LIRC for infrared (IR) controlled<br/>
+devices, while no systematic attempt exists for devices controlled<br/>
+e.g. by serial&#45; or IP-commands. My intent is to point out some of the<br/>
+deficincies, and to suggest better alternatives.</p>
+
+<p>For this, I have planned a multi-part article, developing some ideas<br/>
+that I have carried with me for some time. I have also implemented a<br/>
+fair amount of those ideas within GPL-code.</p>
+
+<p>In the first part, I will outline some requirements that can be put on<br/>
+a universal description of devices, mainly &#45;&#45; but not exclusively &#45;&#45;<br/>
+aiming at consumer audio-video equipment. The second part will in some<br/>
+detail describe my implementations (file format as well as code)<br/>
+within my present "hobby project". In the third part, I will treat IR<br/>
+protocols, representations and renderings. Finally, in the final part<br/>
+I will speculate on possible implications for the OR project.</p>
+
+<p>The purpose of these generate some discussion on these issues, and,<br/>
+possibly, to spread some inspiration. The intention is not to<br/>
+critizise other projects or solutions.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-10977287"></a>
+                                    <font class="smallfont"><h1><a name="Ondevicedescriptionsand-databases%2CBeehive%2CandLIRC.-Part1.RequirementsonadevicedescriptionforOR."></a>Part 1. Requirements on a device description for OR.</h1>
+
+<p>In this part, I will try to formulate requirements of a general device<br/>
+description, that will fit to Openremote's requirement for open and<br/>
+universal standards. Most importantly, we should strive at a truly<br/>
+universal solution, describing the devices and its commands (nothing<br/>
+more, nothing less) in a universal way, usable not only by the present<br/>
+project in its present form, but also for other applications, now<br/>
+existing as well as in future.</p>
+
+<p>First of all, the question of "canonical commands" (or "canonical<br/>
+names for commands") needs to be addressed. Ideally there should be a<br/>
+finite list of commands that the devices accept, with uniquely defined<br/>
+semantics. For example, there should be no command named "power", it<br/>
+is semantically not clear what "power" does (it is a noun, not a<br/>
+verb); instead there should be the names "power_on", "power_off"<br/>
+(these denote discrete power-commands) and the command "power_toggle",<br/>
+which toggles the power status (on &#45;&gt; off, off &#45;&gt; off). Another<br/>
+example: it must be clearly distinguished&nbsp; between a "play" button<br/>
+(discretely taking the player to a "play" state) and a<br/>
+"play/pause"-button (toggling the player between play and pause<br/>
+state). For a project involving a large number of both devices as well<br/>
+as contributors, this is probably not completely realistic &#45;&#45; which is<br/>
+not an argument against a partial solution&#33; A sound compromise has to<br/>
+be found, like having "standard" function having canonical names, and<br/>
+for the rest, a contributor invents "free-form" names (or submit<br/>
+suggestions for new "standard" names to a maintainer).</p>
+
+<p>The list of ("canonical") command names must of course be in a machine<br/>
+readable format. The syntax for allowed names has to be make<br/>
+explicitly clear &#45;&#45; including, for example, what characters are<br/>
+allowed. A command should have, in addition to its identifier,<br/>
+(optionally) a longer prose description, as well as a short form for<br/>
+labeling on a tight screen. Furthermore, there has to be a concept of<br/>
+synonyms: "ok", "enter", and "select" should probably be considered<br/>
+the same command, i.e., only on of those should be a canonical<br/>
+command, the other being synonyms to the first one.</p>
+
+<p>The format has to be in a format that is readable both for humans and<br/>
+machines (the latter in order to generate commands directly from the<br/>
+device descriptions). It may be "hosted" in some database (like MySQL<br/>
+deployed in Beehive), but nevertheless import&#45; and exportable in some<br/>
+readable format. It should of course allow versioning<br/>
+(including traceability etc.) and comments.</p>
+
+<p>Since the objects that we want to control are the devices, the device<br/>
+data base should contain devices, not remotes. (Strictly speaking,<br/>
+LIRC often does it the other way around.) The possibilty to model a<br/>
+particular remote (the very piece that you hold in your hand) is also<br/>
+desirable, but should not be confused by modeling the device and the<br/>
+commands it understands.</p>
+
+<p>It is not necessary, nor desirable, to restrict the description to<br/>
+commands that use IR light as their transmission medium. For example,<br/>
+many RF-signals are, just as IR signals, nothing but pulse-with<br/>
+modulated signals, with a radio signal carrier (common carrier<br/>
+frequencies are 433, 828, and 315 MHz) replacing the IR light carrier<br/>
+of &#126;950nm wavelength. Serial (and IP-) signals in general consist of a<br/>
+short text string, possibly with some preable and/or postamble. They<br/>
+may take arguments, and/or return values. Also web-api commands are<br/>
+found in some devices, possibly taking arguments and returning<br/>
+something. There are also a number of other protocols, X10, KNX,<br/>
+Bluetooth,... that it would be desirable to support at some time or<br/>
+another.</p>
+
+<p>It is also quite possible for a particular device to accept the same<br/>
+command (semantically) through several different media. (Like a DVD<br/>
+player with both IR and serial; you can say "play" both through IR and serial.)</p>
+
+<p>There should be a possibility to group commands<br/>
+in more or less arbitrary groups, either on hard differences (e.g. the<br/>
+media or different device addresses on IR signals), as well as more<br/>
+soft differences.</p>
+
+<p>In the interest of single-sourcing, there also has to be one (or more)<br/>
+include or reference mechanism, for example if one remote can be used<br/>
+to control several devices.</p>
+
+<p>Consumer electronics often come in variants:<br/>
+European/Americal/...-models, DVD and BD-Players come locked to<br/>
+regions/zones, in some cases some hardware features are optional<br/>
+(e.g. a serial interface). Also firmware versions can account for<br/>
+relevant differences that should be taken into account in the device<br/>
+description. For this reason, in order not to need a large amount of<br/>
+almost identical files (which also would violating the single-sourcing<br/>
+principle), it is necessary to have attributes with an if-semantic:<br/>
+The command/command-set "frunobulate" is present only in the North<br/>
+American version.</p>
+
+<p>For commands that have a structure like IR-commands (protocol name,<br/>
+device address, command number, possibly other parameter) this<br/>
+structure should be transparent in the device description. It would<br/>
+also be desirable to be able to mark a particular command number as<br/>
+doing nothing: "In search of undocumented features, I have tried this,<br/>
+and verified that it does not invoke anything." Finally, regardless of<br/>
+the "smartness", it is desirable to be able also to store "dumb" raw<br/>
+signals. (Some Canon cameras understand exactly two IR signals, each<br/>
+consisting of exactly two pulse pairs &#45;&#45; it would be silly and<br/>
+counter productive to find a smart representation for this.)</p>
+
+<p>A "device" should contain one or more command sets, each having a type<br/>
+of infrared, rf, serial, ip, web-api, x10, knx,... A command set consists of a<br/>
+number of commands, having something in common (either hard as<br/>
+device number, or soft as being useful...).</p>
+
+<p>Finally: redundancy is &#45;&#45; as such &#45;&#45; not a bad thing, as long as it<br/>
+does not violate single-sourcing, or introduces contradictions. That<br/>
+is to say, having several different representations of an IR signal is<br/>
+OK, and can be practical, as long as it is clear, e.g., that one<br/>
+representation has been computed from the other, and not the other way<br/>
+around. However, having several conflicting representation, where<br/>
+no-one knows where the particular data comes from &#45;&#45; is of course<br/>
+evil.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by barf at Jul 29, 2010 20:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10977312"></a>
+                                    <font class="smallfont"><p>Bengt, thanks for posting this. It makes good points, I will write down my comments later when I have some time (as it is a large topic).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 02, 2010 16:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10977314"></a>
+                                    <font class="smallfont"><h1><a name="Ondevicedescriptionsand-databases%2CBeehive%2CandLIRC.-Part2.Anattemptatapilotsolution"></a>Part 2. An attempt at a pilot solution</h1>
+
+<p>I have been working on these issues, basically as a hobby, for some<br/>
+years. My project, described <a href="http://openremote.org/display/forums/Introducing+myself+and+my+project%2C+Harc">here</a><br/>
+(<a href="http://www.bengt-martensson.de/harc/harc.html">project homepage</a>) contains attempted solutions for device<br/>
+descriptions and infrared(/RF) protocols. The project is GPL3, while<br/>
+protocol and files describing them (like DTDs) are in the public<br/>
+domain.<br/>
+To act as inspiration for OR, I describe my solution in some detail.<br/>
+For the description formats, I have selected XML with a DTD. Of<br/>
+course, using an XML scheme (as in the XML formats within OR) would<br/>
+have some advantages, in particular to be able to describe<br/>
+restrictions with more precision. The reason why I selected DTDs is<br/>
+that I have used them for 10 years... Migrating to Schemes is<br/>
+nevertheless desirable. (There are programs transforming a DTD (a<br/>
+&#42;.dtd file) into a Scheme (a &#42;.xsd file). This is not the goal, but to<br/>
+also use the additional possibilities in data modeling offered by the scheme.)<br/>
+The "canonical" names are defined in the XML file <a href="http://www.bengt-martensson.de/harc/commandnames.xml">commandnames.xml</a>,<br/>
+from which a Java enum <b>command_t</b> is created through an XSLT<br/>
+style-sheet <a href="http://www.bengt-martensson.de/harc/mk_command_t.xsl">mk_command_t.xsl</a>. This defines a Java enumeration,<br/>
+containing the valid command names. Further rules for command names are<br/>
+found as comments in that file. <a href="http://www.bengt-martensson.de/harc/dtds/commandnames.dtd">DTD here</a>.</p>
+
+<h2><a name="Ondevicedescriptionsand-databases%2CBeehive%2CandLIRC.-Devicedescriptionformat."></a>Device description format.</h2>
+
+<p>I have defined an XML format according to the requirements in the<br/>
+previous part. Syntactically, the XML format is defined by the <a href="http://www.bengt-martensson.de/harc/dtds/devices.dtd">DTD</a>. Although the DTD (through the element devices) allows several devices in one file,<br/>
+there is typically one file per device. The W3C recommendation<br/>
+xinclude is used, making it possible to reuse and "include" certain<br/>
+elements in multiple places.&nbsp; (Made possible just by declaring the<br/>
+parser to be xinclude-aware.) There is also the possibility of<br/>
+"tagging" elements and referring to them in other places (ids and<br/>
+Idrefs in the XML terminology).<br/>
+A device has one or more commandsets, each being of a particular type<br/>
+(IR, RF, serial, IP,...). Each command is described in a natural way,<br/>
+a serial/IP command has a transmit string, possibly with a preamble<br/>
+and/or postable inherited from the command set it belongs to, an IR<br/>
+command has a protocol name, a device number, a command number, and<br/>
+possibly some other parameters. (These issues will be dealt with in more<br/>
+detail in the next part.)<br/>
+Also (boolean) attributes discussed in the requirement section are<br/>
+present. (However, my presently software does not evaluate them :-\ )<br/>
+Some commands take arguments. The device description can model<br/>
+this. Also, in some cases, output is delivered. Presently, there are<br/>
+no possibilities to state a particular parsing, or semantics, of the<br/>
+returned values, just to state the number of expected lines in the<br/>
+response. (For example, a "parse string" like the one used by the C function<br/>
+scanf may be able to cover a large number of practically important cases.)</p>
+
+
+<h2><a name="Ondevicedescriptionsand-databases%2CBeehive%2CandLIRC.-Examples"></a>Examples</h2>
+
+<p>As an example, consider the Oppo DV-983 DVD player with serial<br/>
+support. This is supported by Harc with the file <a href="http://www.bengt-martensson.de/harc/device/oppo_dv983.xml">oppo_dv983.xml</a>. Its<br/>
+commands can be downloaded directly from the manufacturer (hats off&#33;),<br/>
+both the infrared and the serial commands. As can be found in the<br/>
+spreadsheet on the IR code, the device uses the<br/>
+nec1 protocol, with device number equal to 73. This corresponds to the<br/>
+first command set in the mentioned device file. The serial commands<br/>
+form another commandset, subdivided into command groups, depending on<br/>
+whether they take an argument and/or deliver output. Note that some<br/>
+commands (for example play) are available both as IR and as serial<br/>
+commands.<br/>
+Other interesting examples are the &#42;_dbox2.xml files (referring to the<br/>
+German cable/satellite receiver known as dBox2 with the open source<br/>
+tuxbox software), each containing two (<a href="http://www.bengt-martensson.de/harc/devices/sagem_dbox2.xml">sagem_dbox2.xml</a>,<br/>
+<a href="http://www.bengt-martensson.de/harc/devices/philips_dbox2.xml">philips_dbox2.xml</a>), or three (<a href="http://www.bengt-martensson.de/harc/devices/nokia_dbox2.xml">nokia_dbox2.xml</a>)<br/>
+different infrared command sets as well as an elaborate <a href="http://www.bengt-martensson.de/harc/devices/tuxbox_webapi.xi">web-api command set</a>.</p>
+
+
+<p>Another very interesting example is the Denon<br/>
+A/V-Receiver <a href="http://www.bengt-martensson.de/harc/devices/denon_avr3808.xml">denon_avr3808.xml</a> having several infrared command sets<br/>
+using the denon protocol (which, ironically, is called the "Sharp<br/>
+protocol" by the firm Denon), as well as several command sets using<br/>
+the denon_k (Denon-Kaseikyo protocol). Then there is a large number of<br/>
+"serial" commands, available through both the serial box as well as<br/>
+through the (telnet) tcp port 23. With the use of XML referencing,<br/>
+these commands are present in two different command sets, without the<br/>
+need of repeating.</p>
+
+
+<h2><a name="Ondevicedescriptionsand-databases%2CBeehive%2CandLIRC.-Suggestionsforsmallerprojects%2F%22Exercisesforthereader%22"></a>Suggestions for smaller projects/"Exercises for the reader"</h2>
+
+<p>The general structure of these device descriptions, plus of course the<br/>
+fact that is is XML, makes it possible to generate a lot of<br/>
+interesting results. Some of these are already implemented in the<br/>
+current HARC software. This includes the possibility to, from a single<br/>
+device description, generate Pronto CCF-Files (with actually operating<br/>
+buttons) (using Tonto through its API), generating JP1 Remotemaster files<br/>
+for JP1 remotes, extending the XML files with rendered signals in raw<br/>
+CCF format ("XML export"). Also rem-files for IRTrans and LIRC<br/>
+configuration files can be generated &#8211; in some cases using some<br/>
+compact (non-raw) representation, but in most cases using raw signals.<br/>
+Writing a cascading style sheet (css) for the XML files to be rendered<br/>
+in an XML-capable browser should not take too long. The same goes for<br/>
+a simple XML &#45;&gt; HTML translator (using e.g. XSLT), for documentation<br/>
+purposes, or, extending with suitable hyperlinks, to be able to send<br/>
+HTTP requests using the Controller API &#8211; just using XML<br/>
+transformations. Generating simple controller - or iphone.xml-file &#8211; either<br/>
+for testing or for inclusion in larger projects can also be done this way.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by barf at Aug 02, 2010 20:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10977315"></a>
+                                    <font class="smallfont"><h2><a name="Ondevicedescriptionsand-databases%2CBeehive%2CandLIRC.-Part3.%26nbsp%3BIRsignals%2Crepresentationandcomputing."></a>Part 3.&nbsp; IR signals, representation and computing.</h2>
+
+<p>For this part, some basic understanding of IR protocols is useful, for<br/>
+example as described in <a href="http://www.sbprojects.com/knowledge/ir/ir.htm">this article</a>.</p>
+
+
+<p>Abstractly, an infrared signal consists of number of on-off<br/>
+periods of modulated (typically 35-40kHz) infrared light. The<br/>
+information in the signal sits in the timing of the on/off periods. An<br/>
+infrared protocol is a mapping of a few parameters (a device number,<br/>
+possibly a subdevice number, a command number, and sometimes others)<br/>
+to an infrared signal, in the sense above. The device number (and<br/>
+subdevice) is (are) (typically) the same for all signals intended for<br/>
+the very device, while the command number enumerates the different<br/>
+commands/keys. Typically (but not always), one bits of the parameters<br/>
+are mapped onto one on/off-pair, one for the bit being 0, another for<br/>
+the bit being 1 (often called pulse-width-modulation, PWM). The bits<br/>
+making up the parameters have to be transmitted in a well defined<br/>
+order: the only practically used schemes are MSB (most-significant-bit<br/>
+first), and LSB (least-significant-bit first). Examples of common and<br/>
+well known protocols are the<br/>
+<a href="http://www.sbprojects.com/knowledge/ir/nec.htm">NEC protocol</a> (using PWM), the<br/>
+<a href="http://www.sbprojects.com/knowledge/ir/rc5.htm">RC5 protocol</a>, using bi-phase modulation. A complete infrared signal<br/>
+typically consists of a lead-in pair, the parameters coded in a<br/>
+suitable way, and possibly a lead-out pair - typically there is a<br/>
+period of "silence" between the "payloads", normally much longer than<br/>
+the useful signal.</p>
+
+
+<p>A "signal" in this form can, possibly after some "format-wrangling", be<br/>
+sent to IR transmitting devices like the GlobalCache, IRTrans,<br/>
+USB-UIRT, CommandIR, Iguana, ... (of course with appropriate drivers<br/>
+assumed). It can not be sent to a LIRC server in its current<br/>
+form. (I once submitted a patch, which was rejected since the<br/>
+maintainer felt that the signals belonged in the configuration file,<br/>
+and that my patch broke the concept.)<br/>
+On the Internet, in particular in the<br/>
+<a href="http://www.hifi-remote.com/forums/">JP1-Forum</a>, there is a vast<br/>
+knowledge of IR protocols. In particular, John Fine developed the<br/>
+so-called IRP notation (recently thoroughly documented by Graham Dixon<br/>
+<a href="http://www.hifi-remote.com/forums/dload.php?action=file&amp;file_id=7926">here</a>)<br/>
+This is a precise, human as well as machine readable, description of<br/>
+the mathematical mapping taking some parameters to an IR signal, in<br/>
+the sense above. This "notation" is not only useful for documentation<br/>
+and human communication, but can also be machine parsed and interpreted to<br/>
+automatically generate IR signals. For example, the previously mentioned<br/>
+NEC1 protocol is described as:</p>
+
+
+<p><div class="error"><span class="error">Unknown macro: {38.4k,564}</span> </div>&lt;1,-1&#124;1,-3&gt;(16,-8,D:8,S:8,F:8,~F:8,1,-78,(16,-4,1,-173)*)</p>
+
+<p>Somewhat appalled by the syntax and (then, in the dark ages before<br/>
+Graham's work) informal syntax and semantics I designed my own format,<br/>
+correspondingly called xirp. It is an xml-based file format for<br/>
+describing IR-Signals, considered as a mapping from a few numbers<br/>
+(device-number, command-number/OBC/function-number, subdevice-number?,<br/>
+toggle? etc) to an IR signal. It is quite "inspired" by irp, but does<br/>
+not try to mimic it to 100%. (One reason being that, at that time,<br/>
+Graham's specs did not exist.) I have implemented some stuff that<br/>
+definitely can be used (actually, I use it daily) at least for the<br/>
+cases and for the protocols I have chosen to implement. The focus has<br/>
+not been on covering all possible present and future cases. However, I<br/>
+am fairly confident that all realistic deficiencies can be quite<br/>
+easily fixed by straightforward extensions. Java-classes both for<br/>
+parsing and for rendering, for API-, command-line, and GUI-usage are<br/>
+available. The xml-format presently uses a DTD as its definition;<br/>
+however, a migration to scheme is on my to-do-list. (The reason is<br/>
+simply that I am pretty fluent in DTD-construction, unfortunately not<br/>
+yet on schemes.)</p>
+
+
+<p>XML offers some advantages compared to the irp-format. You do not need<br/>
+to write the parser yourself; you get a validating parser by using<br/>
+some available package (for example included in Java &gt;= 1.5). The<br/>
+DTD/Schema defines the syntax, so there is (at least in principle) no<br/>
+need to waste time writing manual documentation. (Of course, the<br/>
+semantics still needs manual documentation; however, there are tools<br/>
+available to help.) A number of well understood tools exist.<br/>
+As an example, consider the <a href="http://www.bengt-martensson.de/harc/nec1.xml">xirp file for the NEC1 protocol</a>.<br/>
+Most definitely much longer&#33; This is not the place to describe the<br/>
+syntax and semantics in detail, however, I hope the semantics is<br/>
+reasonably clear.</p>
+
+
+<h2><a name="Ondevicedescriptionsand-databases%2CBeehive%2CandLIRC.-Summingup"></a>Summing up</h2>
+
+<p>Summing we, need some way to systematically describe and implement<br/>
+different IR protocols, allowing extensions with reasonable<br/>
+ease. Implementing these as a OO-hierarchy of Java classes might be<br/>
+one possibly solution. (Actually, I first tried this some years ago -<br/>
+but discarded the solution in favor of the above described<br/>
+xirp-files.) A machine readable description can of course either be<br/>
+interpreted, or "compiled" in the sense of generating code (in Java or<br/>
+in another language) to be compiled. Of course, an agreed list of<br/>
+protocol and their definitions is also needed. The names used on the<br/>
+Internet are not registered, and sometime contradictory. Synchronizing<br/>
+with the JP1-ers may be a good idea.</p>
+
+
+<h3><a name="Ondevicedescriptionsand-databases%2CBeehive%2CandLIRC.-Remark"></a>Remark</h3>
+
+<p>It can be remarked that the above applies to large classes of<br/>
+RF-controlled equipment too (for example the<br/>
+<a href="http://www.intertechno.at">Intertechno</a> radio controlled switches with<br/>
+code wheel), since they are also effectively PWM-signals, just with a<br/>
+RF carrier instead of an IR carrier, similarly using 35-40kHz<br/>
+modulation.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by barf at Aug 02, 2010 21:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-10977317"></a>
+                                    <font class="smallfont"><p>Hei Juha, looking forwards to your comments. (as well as from everyone else <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> ). Yes, it is not really easy reading &#45;&#45; I am not known for that. <img class="emoticon" src="images/icons/emoticons/biggrin.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by barf at Aug 02, 2010 21:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038286"></a>
+                                    <font class="smallfont"><p>Bengt,<br/>
+Ah, one more treasure I found in the pile of OpenRemote documentation. This touches closely to my interests in knowledge representation. On a similar issue I have responded to a blog article here: <a href="http://www.openremote.org/display/project/2012/08/29/Reuters+Analyses+Home+Automation+Industry">http://www.openremote.org/display/project/2012/08/29/Reuters+Analyses+Home+Automation+Industry</a>. Nice to see that you begin your very interesting post with stating that (I paraphrase) your semantics for remotes should ultimately be extended to other devices. I started this from Z-Wave devices, where I found a device description set in XML (<a href="http://www.pepper1.net/zwavedb/">http://www.pepper1.net/zwavedb/</a>). That particular representation is an pragmatic packaging format. It's semantics can definitely be improved. Superficially it looks more like a description of elements that are packaged in a device, whereas the semantics of control are equally important.<br/>
+Would make a nice <b>computer science student project</b> I think. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 10, 2012 08:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038550"></a>
+                                    <font class="smallfont"><p>Pe, thanx for the answer. After two and a half years an answer <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>. My interest in these issues is not theoretical, but very practical. (Despite being a "theory person" in other contexts.) In these two and a half years, OR has not moved a bit in this direction, but rather in the opposite (adding a number of protocols etc). We need a device description that is integrated both in Beehive and in the controller. The LIRC-"integration" is still the only way to send IR signals, together with the possibility to access the API of devices like GlobalCache directly: To power toggle (e.g.) a Philips TV, you "just" send a commend like "sendir,2:1,1,36000,1,1,32,32,64,32,32,32,32,32,32,32,32,32,32,32,32,32,32,64,32,32,64,32,32,3272" over TCP to port 4998 of a suitable GlobalCache. (This is what is meant by "GlobalCache is supported") Here is clearly room for improvement. </p>
+
+<p>It would be quite sensible to corporate withing the community on issues like command list (including semantics and process for future maintenance),  file formats (DTD/Schema) for device descriptions (including extensibility etc),...</p>
+
+<p>I hope to be able to take up these themes again shortly, and hopefully be able to contribute at least some stuff. (<a href="http://www.openremote.org/pages/viewpage.action?pageId=14680136">Here</a> was a first attempt.)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by barf at Dec 16, 2012 19:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,85 @@
+/*
+ * OpenRemote, the Home of the Digital Home.
+ * Copyright 2008-2011, OpenRemote Inc.
+ *
+ * See the contributors.txt file in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+import org.openremote.controller.protocol.*;
+
+rule "Allumage Aquarium a 9h"
+  timer (cron: 0 9 * * *)
+when
+  eval(true)
+then
+  execute.command("SetOnA5");
+  execute.command("SetOnA9");
+end
+
+rule "Extinction Aquarium a 21h"
+  timer (cron: 0 21 * * *)
+when
+  eval(true)
+then
+  execute.command("SetOffA5");
+  execute.command("SetOffA9");
+end
+
+rule "VMC ON de 8h00 a 21h00"
+  timer (cron: * 8-21 * * *)
+when
+  eval(true)
+  Switch( source == "SenseOnOffC1", value == "on")
+then
+  execute.command("SetOnB5");
+end
+
+rule "VMC OFF de 8h00 a 21h00"
+  timer (cron: * 8-21 * * *)
+when
+  eval(true)
+  Switch( source == "SenseOnOffC1", value == "off")
+then
+  execute.command("SetOffB5");
+end
+
+rule "VMC OFF de 21h00 a 8h00"
+  timer (cron: * 21-8 * * *)
+when
+  eval(true)
+then
+  execute.command("SetOffB5");
+end
+
+rule "Lave linge ON de 23h05 a 5h00"
+  timer (cron: 5 23-5 * * *)
+when
+  eval(true)
+then
+  execute.command("SetOnB11");
+end
+
+rule "Lave linge OFF de 5h00 a 23h00"
+  timer (cron: 7 5-23 * * *)
+when
+  eval(true)
+then
+  execute.command("SetOffB11");
+end

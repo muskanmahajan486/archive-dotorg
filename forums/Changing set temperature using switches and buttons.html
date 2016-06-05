@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Changing set temperature using switches and buttons</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Changing set temperature using switches and buttons
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 11, 2013 by <font color="#0050B2">dwillems</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>At the moment I am creating a demo for a home automation panel. One of the elements is setting the temperature. This will be just changing the value in a label for now. The set temperature can be changed by pressing scenes switches (such as Away 12, Sleep 15, Home 21, Comfort 23) and by pressing up and down buttons to changes the currently set temperature by minus or plus one.</p>
+
+<p>Changing the temperature using switches works correctly, example of one of the switches:<br/>
+rule "ClimateScene1"<br/>
+when<br/>
+  $evt : Event(source == "climate1_Sensor", value == "on")<br/>
+then<br/>
+  execute.command("climate2_OFF");<br/>
+  execute.command("climate3_OFF");<br/>
+  execute.command("climate4_OFF");<br/>
+  execute.command("temp_ON", 12);<br/>
+end</p>
+
+<p>However, I dont know how to increase and decrease the temperature with the up and down buttons, could someone help me with that?</p>
+
+<p>Also, how do I add the celsius symbol ° to the label?</p>
+
+<p>Thank you and kind regards,</p>
+
+<p>Don</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22877996"></a>
+                                    <font class="smallfont"><p>I assume that you have temp_STATUS sensor which keeps temperature (by the way you can use it instead temp_ON).<br/>
+To increase/decrease temperature with buttons you will need create 2 switches, one for increase and the second for decrease. Then write rules:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+rule <span class="code-quote">"Increase Temp"</span>
+when
+  $e: Event(source==<span class="code-quote">"Increase_temp_Sensor"</span>,value==<span class="code-quote">"on"</span>)
+  $t: Event(source==<span class="code-quote">"temp_STATUS"</span>)
+then
+  execute.command(<span class="code-quote">"Increase_temp_STATUS"</span>,<span class="code-quote">"off"</span>)
+  execute.command(<span class="code-quote">"temp_STATUS"</span>, <span class="code-object">String</span>.format(<span class="code-quote">"%.1f"</span>), <span class="code-object">Double</span>.parseDouble($t.getValue().toString())+1);
+end
+
+rule <span class="code-quote">"Decrease Temp"</span>
+when
+  $e: Event(source==<span class="code-quote">"Decrease_temp_Sensor"</span>,value==<span class="code-quote">"on"</span>)
+  $t: Event(source==<span class="code-quote">"temp_STATUS"</span>)
+then
+  execute.command(<span class="code-quote">"Decrease_temp_STATUS"</span>,<span class="code-quote">"off"</span>)
+  execute.command(<span class="code-quote">"temp_STATUS"</span>, <span class="code-object">String</span>.format(<span class="code-quote">"%.1f"</span>), <span class="code-object">Double</span>.parseDouble($t.getValue().toString())-1);
+end
+</pre>
+</div></div>
+<p>Adding ° to the label can be done is String.format("%.1f \u2103",...) but then you would need to get substring in the parseDouble call.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 11, 2013 15:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878383"></a>
+                                    <font class="smallfont"><p>When using these rules, the temperature increases/decreases twice with one button press. Any ideas why?</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Increase Temp"</span>
+no-loop
+when
+  $e: Event(source==<span class="code-quote">"Increase_temp_Sensor"</span>,value==<span class="code-quote">"ON"</span>)
+  $t: Event(source==<span class="code-quote">"temp_Sensor"</span>)
+then
+  <span class="code-object">double</span> correctedValue = <span class="code-object">Double</span>.parseDouble($t.getValue().toString()) +0.5;
+  execute.command(<span class="code-quote">"Increase_temp_STATUS"</span>,<span class="code-quote">"off"</span>);
+  execute.command(<span class="code-quote">"temp_ON"</span>, <span class="code-object">String</span>.format(<span class="code-quote">"%.1f"</span>,correctedValue));
+end
+
+rule <span class="code-quote">"Decrease Temp"</span>
+no-loop
+when
+  $e: Event(source==<span class="code-quote">"Decrease_temp_Sensor"</span>,value==<span class="code-quote">"ON"</span>)
+  $t: Event(source==<span class="code-quote">"temp_Sensor"</span>)
+then
+  <span class="code-object">double</span> correctedValue = <span class="code-object">Double</span>.parseDouble($t.getValue().toString()) -0.5;
+  execute.command(<span class="code-quote">"Decrease_temp_STATUS"</span>,<span class="code-quote">"off"</span>);
+  execute.command(<span class="code-quote">"temp_ON"</span>, <span class="code-object">String</span>.format(<span class="code-quote">"%.1f"</span>,correctedValue));
+end
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dwillems at Oct 17, 2013 14:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878384"></a>
+                                    <font class="smallfont"><p>There's a typo. Event source name should be same as what you set to off in first execute command.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> Increase_temp_Sensor </pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 17, 2013 14:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878488"></a>
+                                    <font class="smallfont"><p>Indeed I've reproduced the behavior on my setup. It seems that the rules engine gets 2 calls (sometimes only one). Therefore it increases temp_ON twice, sometimes once. One, a bit ugly, solution would be to delay rules execution so the second immediate call will be suppressed. This can be done with timer(int: 500ms) statement. However, the real solution would be to investigate why the rule is called twice when it should be called only once.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 20, 2013 10:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878489"></a>
+                                    <font class="smallfont"><p>Event source name is a sensor name while the execution is a command name. Sensor and command can have the same names because they are in different name spaces but they don't have to, which is the case here.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 20, 2013 10:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878490"></a>
+                                    <font class="smallfont"><p>May be sensor polling thread is colliding with button press action.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 20, 2013 10:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878491"></a>
+                                    <font class="smallfont"><p>This is my idea too. This is either bug or a feature <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 20, 2013 10:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:40</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

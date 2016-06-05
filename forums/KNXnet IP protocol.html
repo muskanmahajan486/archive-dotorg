@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNXnet IP protocol</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNXnet IP protocol
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 21, 2009 by <font color="#0050B2">knxsimulator</font>.
+				    </div>
+
+				    <p>Hi to all!<br/>
+I'm a new openRemote user.<br/>
+I'm trying to simulate KNXnet/IP client and server using OMNET++ to realize my degree thesis; so i hope that here i can receive some useful advise.<br/>
+In the KNXnet/IP protocol i have read tha every KNXnet/IP server must implement, at least, one Service Container. <br/>
+Can anyone tell me what is exactly a service container?</p>
+
+<p>The second question is: a KNX frame must be first  translated in a cEMI message and then the cEMI is encapsulated into an UDP frame?</p>
+
+<p>Third: in this case the KNX stack contains the Data Link Layer?</p>
+
+<p>Thanks. </p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/2425322/2523176.jpg">Immagine.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/2425322/2523178.jpg">Immagine2.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/2425322/2523179.jpg">Immagine2.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/2425322/2523180.jpg">Immagine2.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/2425322/2523177.jpg">Immagine2.jpg</a> (image/jpeg)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-2425323"></a>
+                                    <font class="smallfont"><p>Service container is an KNX end point (so it has its own Host Protocol Address Information HPAI block). As far as I can tell it's a logical entity for a service provided by the server (discovery, control, etc.). For each connection to the KNX network, the spec mandates a logical service container (my reading of the spec anyway).</p>
+
+
+<p>There's a cEMI RAW mode but I don't know the details about that, and its implementation is optional by devices.</p>
+
+<p>For tunnelink in KNX datalink, first you need a EIBnet/IP frame, then assuming you're using an already established connection, you append a connection header. Then finally you embed a cEMI frame.</p>
+
+<p>In pure byte format, you'll end up with something like this (group write w/ tunneling on link layer):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+      <span class="code-object">byte</span>[] writebuffer = <span class="code-keyword">new</span> <span class="code-object">byte</span>[21];
+
+      <span class="code-comment">// EIBnet IP Header ----------------------------------------
+</span>
+      writebuffer[0] = 0x06;      <span class="code-comment">// Header size: 6 bytes
+</span>      writebuffer[1] = 0x10;      <span class="code-comment">// EIBnet IP Version
+</span>      writebuffer[2] = 0x04;      <span class="code-comment">// Tunneling Request (2 bytes)
+</span>      writebuffer[3] = 0x20;      <span class="code-comment">//  -- '' --
+</span>      writebuffer[4] = 0x00;      <span class="code-comment">// size (2 bytes) == header size (6b) + connection header (4b) + cEMI frame (11b <span class="code-keyword">for</span> <span class="code-object">short</span> telegram) == 21 == 0x15
+</span>      writebuffer[5] = 0x15;      <span class="code-comment">//  -- '' --
+</span>
+      <span class="code-comment">// Connection Header ---------------------------------------
+</span>      
+      writebuffer[6] = 0x04;      <span class="code-comment">// struct len: 4 bytes  -- TODO : wiki claims 0x06 value!
+</span>      writebuffer[7] = channelID;
+      writebuffer[8] = 0x00;      <span class="code-comment">// sequence counter
+</span>      writebuffer[9] = 0x00;      <span class="code-comment">// reserved
+</span>
+
+      <span class="code-comment">// cEMI frame ----------------------------------------------
+</span>
+      <span class="code-object">int</span> controlField1 = 0x8C;
+      <span class="code-object">int</span> controlField2 = 0xE0;
+      <span class="code-object">int</span> switchON      = 0x81;
+
+      writebuffer[10] = 0x11;     <span class="code-comment">// message code
+</span>      writebuffer[11] = 0x00;     <span class="code-comment">// additional info length : 0
+</span>      writebuffer[12] = (<span class="code-object">byte</span>)controlField1;
+      writebuffer[13] = (<span class="code-object">byte</span>)controlField2;
+      writebuffer[14] = 0x00;     <span class="code-comment">// source address hi <span class="code-object">byte</span>  (to be filled by gateway)
+</span>      writebuffer[15] = 0x00;     <span class="code-comment">// source address lo <span class="code-object">byte</span>  (to be filled by gateway)
+</span>      writebuffer[16] = 0x00;     <span class="code-comment">// dest address hi <span class="code-object">byte</span>
+</span>      writebuffer[17] = 0x04;     <span class="code-comment">// dest address lo <span class="code-object">byte</span>
+</span>      writebuffer[18] = 0x01;     <span class="code-comment">// data len
+</span>      writebuffer[19] = 0x00;     <span class="code-comment">// TPCI/APCI
+</span>      writebuffer[20] = (<span class="code-object">byte</span>)switchON;     <span class="code-comment">// APCI/data    (0x80 + 1 == bit on)</span>
+</pre>
+</div></div>
+
+<p>So 21 bytes to send 1 bit command to a 2 byte destination address. Supposedly the cEMI RAW mode allows less?</p>
+
+<p>The above assumes you already established a connection (you have ChannelID), your connection will need a heart beat or the gateway is likely to cut you off, and then you need to deal with the ACKs from the gateway itself and the ACK from the endpoint in the KNX network.</p>
+
+<p>Disclaimer: some of the above information may be wrong, my KNX experience is rather limited.</p>
+
+<p>HTH</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 21, 2009 18:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-2425377"></a>
+                                    <font class="smallfont"><p>Hi to all.<br/>
+I still have a problem in understanding how the KNX comunication stack comunicate with the KNXnet/IP protocol.<br/>
+A KNX/IP device, has this structure.</p>
+
+<p><img src="attachments/2425322/2523176.jpg" align="absmiddle" border="0"/></p>
+
+<p> I think that, in the step <img class="emoticon" src="images/icons/emoticons/star_yellow.gif" height="16" width="16" align="absmiddle" alt="" border="0"/>, i must create a message like this (cEMI):<br/>
+<img src="attachments/2425322/2523177.jpg" align="absmiddle" border="0"/></p>
+
+<p> Is this correct?</p>
+
+<p>Thanks! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by knxsimulator at May 23, 2009 07:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532164"></a>
+                                    <font class="smallfont"><p>Hello,</p>
+
+<p>I am new on this site. So I am searching for KNXnet/IP specification. Does anybody have the specification?</p>
+
+<p>Thank you very much.</p>
+
+<p>Myth</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mytrash at Jan 26, 2011 13:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Tie switches together</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Tie switches together
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 19, 2015 by <font color="#0050B2">cliffdabbs</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I've managed to get the basics of a ZWave setup going - now I'm stuck.</p>
+
+<p>I have some Light on/off switches which can be controlled via the OpenRemote or via a wall switch - the first problem is when I activate via the wall switch instead of the app - the OpenRemote doesn't seem to notice that the state of the switch has changed - this is more of an annoyance that anything else - as when I look at the app I don't know the status of the light until I try and turn it on/off.</p>
+
+<p>this seems important - as what I would like to do next is trigger 2 completely separate light circuits to work together from either light switch. Kind of a "Virtual 2 way circuit".</p>
+
+<p>for example, we have 3 sets of outdoor lights, all separately switched. I would like it that if I switch any one of the 3 switches, as well as switching the local switch, the other 2 circuits would come on/off - however that doesn't seem possible if OpenRemote doesn't see the status of the first switch changing.</p>
+
+<p>Any help please?!?</p>
+
+<p>Cheers</p>
+
+<p>cliff.</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23602620"></a>
+                                    <font class="smallfont"><p>Take a look at the rules engine. I've no experience with it yet, but to my knowledge this must be the way to go.
+<a href="http://www.openremote.org/display/docs/Designer+2.0+-+Controller+Rules">http://www.openremote.org/display/docs/Designer+2.0+-+Controller+Rules</a></p>
+
+<p>This must make you happy!</p>
+
+<p>Olivier</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by oliviertoebosch at Dec 13, 2015 23:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602636"></a>
+                                    <font class="smallfont"><p>Hello Cliff</p>
+
+<p>I'll confess that I don't know anything about Z-Wave technology, but the following theory should be somewhere near right.</p>
+
+<p>It sounds to me like you've got two issue.</p>
+
+<p>The first is that you don't have a 'sensor' command setup in OpenRemote to check / monitor the status of your Z-Wave switch.</p>
+
+<p>This how-to should help - <a href="http://www.openremote.org/display/docs/Designer+2.0+-+Create+New+Z-Wave+Switch">http://www.openremote.org/display/docs/Designer+2.0+-+Create+New+Z-Wave+Switch</a></p>
+
+
+
+<p>Secondly, linking switches to more than one device shouldn't be a major issue.</p>
+
+<p>Personally, I'd address that within the Z-Wave configuration, rather than creating a set of rules in OpenRemote.</p>
+
+<p>Purely because the danger of creating circular rules would be ever present.</p>
+
+<p>That said, once you have sensor commands and 'Switch' sensors setup in OpenRemote, it would be fairly straightforward to create a rule that read the status of 1 Z-Wave switch / relay and brought everything else into line.</p>
+
+<p>I hope that helps.</p>
+
+<p>Good luck.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Dec 15, 2015 12:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602637"></a>
+                                    <font class="smallfont"><p>Thanks for trying...this post has been here a while with no comment...</p>
+
+<p>yes I've managed to create the switch in the OpenRemote piece and that works fine - and there are sensors as part of that setup - I know they work as if I restart the openremote process it knows the current state of each switch.</p>
+
+<p>the problem comes when you switch them manually - I think there needs to be some way of polling the device for its status - but that doesn't seem possible.</p>
+
+<p>if I can get that bit sorted - then the rules to tie things together I think is relatively simple. </p>
+
+<p>Thanks again</p>
+
+<p>Cliff.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cliffdabbs at Dec 15, 2015 12:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602725"></a>
+                                    <font class="smallfont"><p>one step forwards 2 steps back I think.</p>
+
+<p>I got this working....basically by polling the switches to see their current state...</p>
+
+<p>rule "Lights Status "<br/>
+  timer (cron: 0 * * * * ?) when eval (true) then<br/>
+  execute.command("Driveway Lights-Status"); <br/>
+  TimeUnit.MILLISECONDS.sleep(1000);<br/>
+  execute.command("Porch Lights-Status"); <br/>
+end</p>
+
+<p>I had to put the timer in as the 2nd light status would fail - this is only really any use if the schedule is running &lt; 10s intervals really as I can't have it waiting for minutes to turn the other lights on....anyway - after some testing and running this at even 1 minute intervals - after a while if seems to crash - either the end device stops responding or something in open remote stops working....</p>
+
+<p>seems such a simple thing for the switch to tell OpenRmemote its status has changed rather than having to poll for its status....</p>
+
+<p>Cliff.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cliffdabbs at Dec 20, 2015 19:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602759"></a>
+                                    <font class="smallfont"><p>Hi Cliff.</p>
+
+<p>You need to know if you switch/dimmer is status report capable.  Then change the parameter that enable the hail option.</p>
+
+<p>In my case i have a aeotec micro smart switch with the parameter 80 set to 1 and the status report work all the time.</p>
+
+<p>Polling the the status constantly will keep the controller busy asking to the device it status and that spend a lot of the horsepower of you machine Rpi, x86 ... system.  If you device can't report it status change the polling  interval to 1 minute or more.</p>
+
+<p>I think that can help.</p>
+
+<p>Edito.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by edito at Dec 22, 2015 07:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602761"></a>
+                                    <font class="smallfont"><p>Hi, thanks for that - this sounds like progress!</p>
+
+<p>I have exactly the same modules - the aeotec micro switch (I think its the 2nd version but I'd expect they're capable)</p>
+
+<p>looking around the net this is clearly the answer I've been looking for...the question now is</p>
+
+<p>How do you set the param 80 to 1 in OpenRemote??</p>
+
+<p>(I completely agree - polling was never the answer!)</p>
+
+<p>Cheers</p>
+
+<p>Cliff.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cliffdabbs at Dec 22, 2015 08:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602982"></a>
+                                    <font class="smallfont"><p>When using Z-Wave 2.0 stack, OR will create an XML file for each Z-Wave device it recognizes. Through this file you can configure your Z-Wave device.<br/>
+Please see <a href="http://www.openremote.org/display/forums/New+Z-Wave+2.0.0+Release">http://www.openremote.org/display/forums/New+Z-Wave+2.0.0+Release</a> for more information on this. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 04, 2016 13:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602988"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>thanks for that - I saw that in the forum/net - but when I look for the xml files on my installation they aren't there.</p>
+
+<p>I'm using the zwave 2 stack and the latest openremote.</p>
+
+<p>Cheers</p>
+
+<p>Cliff.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cliffdabbs at Jan 04, 2016 15:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

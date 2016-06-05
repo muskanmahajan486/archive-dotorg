@@ -1,0 +1,315 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Object model and controller.xml</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Object model and controller.xml
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 11, 2011 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>Looking at the current modeler, in the Device section, it is possible to define an object model of the devices connected to the system.<br/>
+This is organized per Device, each having Commands, Sensors, Switches and Sliders belonging to it.</p>
+
+<p>I do find the Device -&gt; Command relationship fine. These commands allow basic read &amp; write possibility on the device.</p>
+
+<p>For Switches and Sliders, although I find it make sense to have them at the Device level, I have a few comments:</p>
+<ul class="alternate" type="square">
+	<li>they are already a higher level abstraction, so maybe somehow this should be reflected in the model</li>
+	<li>the current names are badly chosen, as they have a high connotation with UI</li>
+	<li>in fact they represent a property on the device, Switch is a boolean property, Slider is a scalar property</li>
+	<li>there might be other property types that we want to define</li>
+</ul>
+
+
+<p>Sensor already adds a notion of type, so it might not be required as the property itself would provide this information.<br/>
+We could have have an attribute on the property indicating if it's read-write, read-only, write-only or write-cache (impossible to read the value but the controller does cache it e.g. power status with IR control).<br/>
+A read-only property is basically a Sensor.</p>
+
+
+<p>A slightly different but linked topic is the controller.xml format. It completely looses this object model information.<br/>
+The commands, sensors, ... are organized in simple lists with no device presents. Some information is lost (like name for commands).<br/>
+The Macros, also defined in the modeler, are also lost (all their commands is copied where appropriate but the macro "entity" is lost).</p>
+
+<p>I would consider simply having controller.xml be a direct representation of the model present in the modeler.<br/>
+And the code in controller.xml would reconstruct a model identical to the one in the modeler, java code for these objects should in fact be shared between the 2 projects to ensure they are in sync.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-17957211"></a>
+                                    <font class="smallfont"><p>I totally agree with you <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>The current model is a bit confusing. Just to have a switch on the UI we need to define a device wich has three commands (on,off,status), a sensor, a switch and later the switch in the UI. The device is OK and reflects the physical layer on howto communicate. The other two should be combined into an object which has properties just like the models behind UI components in swing.</p>
+
+<p>A switch in the UI can be compared with a JToggleButton in swing which is covered by the ToggleButtonModel. We could call the new object a SwitchModel which has a property for the state (boolean = on/off) and which needs the associated commands to update the state (status command) and to perform an action(on/off command). Other properties which could be modified by the controller (eg the rule engine) like enabled/disabled can also be integrated. The actual UI switch would be backed by the SwitchModel to obtain it's properties from there.</p>
+
+<p>A slider could be presented by a SliderModel which again has the status command linked (scalar property), the action to set the value and min/max values.</p>
+
+<p>It should also be possible that these models are not linked to physical commands but only transfer information from the UI to the controller and the controller can perform rules based on the information. This means like you already suggested that the controller uses the same model as the modeler and also this model is available to the rule engine to have access to all properties which might be used to validate a rule or could be changed by the outcome of a rule.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 14, 2011 13:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17957215"></a>
+                                    <font class="smallfont"><p>I would be really pleased with the controller.xml schema reflecting the object model more closely.</p>
+
+<p>I've made some UML class diagrams representing the way the Android "binding" classes look using ArgoUML.  These look similar to the iOS code as far as I can tell, although I would really love to have a decent Objective C editor on linux.  The latest version of the ArgoUML file should be available from Subversion at <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/andrewball/Android_Console_2_0_0_Betas/doc/uml/OpenRemoteConsole.zargo">https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/andrewball/Android_Console_2_0_0_Betas/doc/uml/OpenRemoteConsole.zargo</a> .</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at Jul 14, 2011 15:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432600"></a>
+                                    <font class="smallfont"><p>Although the analogy with the Swing MVC pattern makes sense, I want to stress the fact that we are in this case working at the domain of devices and should not imply anything as to how such on object will be used at the UI level. So I would, e.g. not use SwitchModel as name but more Boolean. I see this are modeling properties with specific value types on a Device.</p>
+
+<p>So if we imagine a lamp device, we have a command to turn it on, a command to turn it off and a command to read its power status.<br/>
+Linking those 3 together, we end-up with a Boolean "power" property on Light.</p>
+
+<p>On the current implementation, there is also the Sensor that would encapsulate the status command and already type the data (it would be a switch sensor in this case). Would this still be required if we add this "Boolean property" object ?</p>
+
+<p>Also, do we want to add a further semantic aspect at this level i.e. for a power property, "on" and "off" are meaningful value. For a status property of a valve, maybe "opened" and "closed" make more sense. Both are boolean but with a slightly different semantic.</p>
+
+<p>In fact, this property could be a full fledged object with both data and actions. So in this case, this power property could be an object that has a state (on/off) that is read/write, an on action, on off action and toggle action.</p>
+
+<p>Taking the volume of a TV as an example, we would end up with a ScalarValue object that has a read/write value property, read-only min value and max value properties, and actions such as increase and decrease.</p>
+
+<p>This also leads to another question about what should be defined by the user in the tooling (either manually or through wizards) and what can be provided by the protocol implementation (either statically or through dynamic discovery).</p>
+
+<p>In your post above, you mention something like an enabled/disabled property. No sure if this needs to be here or just defined on the UI element itself. Because in the end anyway, we would like the controller to be able to modify any property of a UI element anyway (enabled/disabled, hidden, background color, ...). See also other posts about UI elements: <a href="http://openremote.org/display/forums/UI+elements+available+in+Modeler">http://openremote.org/display/forums/UI+elements+available+in+Modeler</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 29, 2011 10:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432601"></a>
+                                    <font class="smallfont"><p>I agree that the business domain is not equal to Swing MVC but maybe the concept should be similar. Lets take the "Boolean" example and start putting together the first "new object" which we can agree on and use that to define all other that come in mind.</p>
+
+<p>Some questions:<br/>
+1) Do we still define 3 commands (on/off/status) to link to this "Boolean" object?<br/>
+2) Would we replace the sensor with the new Boolean object?<br/>
+3) Could we combine the old 3 commands and the sensor into the new Boolean object?<br/>
+4) Properties like (enable/disable, hidden, color,...) should be available on the object so that the controller can modify them? What do you mean with "just defined on the UI element?</p>
+
+<p>My idea is that we have one object "Boolean" in the building area of the modeller which can be linked to different UI elements (switch, checkbox, label) in UI area of the modeller. The UI element would only use certain properties/actions on the "Boolean" object based on it's cababilities. A label can eg. only display a text which is configurable in the UI part based on the boolean but a switch eg. can also trigger the related action. The other UI related properties currently are only available in the UI modeller (font size, color, text). If we want those to be modifyable by the controller we would to put those into the new "Boolean" object as properties and only define defaults in the UI modeller.</p>
+
+<p>The controller would only know the "Boolean" object and this would also be the only object going into the rules knowledge base. The rules engine can access all proerties of that "Boolean" modify them if needed and also trigger the action if needed.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 29, 2011 10:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432603"></a>
+                                    <font class="smallfont"><p>So my view is yes to Q1 -&gt; 3 above and no to the last one (I do not agree with your last statement).</p>
+
+<p>By "just defined on the UI element", I mean:</p>
+
+<p>Let's take a button in the modeler. We can define several attributes like the name, the foreground color, its position, ... All those properties are defined on a "Button" object. This object for me is part of the model that the controller (rules, scripts, ...) has access to. So the knowledge base contains all the information defined in the modeler, also in 2 sections: the "building area" and the "UI area".<br/>
+This "Button" object is what I meant by "just defined on the UI".</p>
+
+<p>It makes sense to me to have those attributes not on the Boolean property because:</p>
+<ul class="alternate" type="square">
+	<li>as you said, I might want to link that property to several UI elements (label, button, ...). I don't want to have a "button boolean property", "label boolean property", ... The color of the button is not an attribute of the "boolean property".</li>
+	<li>I want to be able to have access to individual UI elements from the controller. So I could in the rules engine look up a label and hide it</li>
+	<li>this is also linked to the fact we want to have UI events enter the controller in the same way as device events. So a button push would be an Event object going through the event processing chain. On that Event object, I could have a Button object that I could manipulate.</li>
+</ul>
+
+
+<p>The enabled/disabled might be an exception, because I could see an example such as a TV device that could disable its volume property if it's not powered on.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 29, 2011 13:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432606"></a>
+                                    <font class="smallfont"><p>Ok, this means we have the "Button" object which is part of the UI modeller and the "Boolean" object which is part of the Building modeller.<br/>
+Let me summarize to make sure we have the same understanding:</p>
+
+<p>1) 3 commands (on/off/status) for the physical access to a device  -&gt; Building modeller<br/>
+2) "Boolean" object which is linked to the three commands and uses those to perform actions or read status -&gt; Building modeller<br/>
+3) "Switch" object which is linked to "Boolean" but has extra properties (defaults defined in modeller) -&gt; UI modeller<br/>
+4) The "Switch" object and the "Boolean" are visible to the controller/rules engine (access properties, read status, execute action)</p>
+
+<p>Maybe only the "Switch" is visible to the controller since the controller has access to the underlying "Boolean" through the link between them??</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 29, 2011 13:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432608"></a>
+                                    <font class="smallfont"><p>Agreed to your 4 points.</p>
+
+<p>By having only the "Switch" object visible in the controller, I suppose you mean that the knowledge base only has "direct access" to the UI modeler objects. And through those elements, they can get access to the building modeler objects.</p>
+
+<p>I wouldn't do that because this means that:</p>
+<ul class="alternate" type="square">
+	<li>building objects not linked to UI elements are not accessible</li>
+	<li>rules that want access to building objects have to go through 1 indirection, this would make writing rules harder</li>
+</ul>
+
+
+<p>Do you see an issue with having both in the knowledge base ?<br/>
+I suppose we could have one object which is the OpenRemoteConfiguration, which is used as the knowledge base. From there, you can get a list of panels, and access to groups, screens and UI elements or get a list of devices, which gives you access to the "building" part of the model.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 29, 2011 13:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432609"></a>
+                                    <font class="smallfont"><p>That's true, I suppose we could have bulding objects that are not exposed by UI elements.<br/>
+So the controller will have access to both "Switch" (UI object) and "Boolean" (Building object).<br/>
+Wrapping the complete configuration into one object "OpenRemoteConfiguration" which is on the controller is a good idea.<br/>
+The new deployer service could then just create that object.</p>
+
+<p>Should this object (and its object tree) also be available on the console side? Or would it be enough if the consoles only know about the UI objects?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 29, 2011 14:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432610"></a>
+                                    <font class="smallfont"><p>I don't see why the consoles would need to have access to building objects handled by the controller.<br/>
+I see a special use case though of "local" building objects.<br/>
+For instance, the VoIP capability could be implemented using a "local" device in the console. It can have properties like "ring", "connected" and ability to trigger actions that are local to console (e.g. pickup).</p>
+
+<p>So it could be exactly the same object structure be filtered out in terms of data: not a list of all panels but only the panel it requested and not a list of all devices but only the "local" ones</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 29, 2011 14:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432615"></a>
+                                    <font class="smallfont"><p>In some discussions the idea came up to only have one configuration.xml and no seperation of panel.xml and controller.xml anymore. Maybe that would fall into this direction of the console would have access to those objects if everything is in one xml file.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 29, 2011 14:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432616"></a>
+                                    <font class="smallfont"><p>Yes, having one XML to represent this object model with one OpenRemoteConfiguration at the root makes sense.<br/>
+I would still filter out what is sent to the console just to limit the size of what needs to be transferred to the console, potentially over a low bandwidth link; but the format would be the same one XML file, just with less information in it.<br/>
+Schema should be the same, data would be different.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 29, 2011 14:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433408"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Although the analogy with the Swing MVC pattern makes sense, I want to stress the fact that we are in this case working at the domain of devices and should not imply anything as to how such on object will be used at the UI level.</p></blockquote>
+
+<p>Just to clarify, references of MVC pattern are not related to Swing, but more to the various MVC web frameworks. I do think this still applies regardless of what the model represents (devices) &#8211; we do support multiple views, including a web view, and have multiple control paths (panel UI, scheduling, scripts, rules, and physical device interfaces themselves).</p>
+
+<p>That being said, the model's <b>datatype</b> should not be tied to the view's datatype.</p>
+
+<blockquote>
+<p>So I would, e.g. not use SwitchModel as name but more Boolean. I see this are modeling properties with specific value types on a Device.</p></blockquote>
+
+<p>Agreed.</p>
+
+<blockquote>
+<p>On the current implementation, there is also the Sensor that would encapsulate the status command and already type the data (it would be a switch sensor in this case). Would this still be required if we add this "Boolean property" object ?</p></blockquote>
+
+<p>I would build the model's datatype at a higher level than a device's property. In the simple case, yes it is possible that the model's datatype has one-to-one relationship to a device's property (such as modeling a single light switch with a boolean datatype).</p>
+
+<p>However, the model should be able to handle higher abstractions that are composed from multiple device properties. As an example, a model of a "room presence" could be a result of four presence sensors. Each of the presence sensors have a datatype to present the device state. However, at the object model level where this is consumed by either UI views or scripts/rules the model is a single datatype (in this case also boolean) but representing multiple device properties &#8211; that is, "room presence" as an object model would be a result of four boolean sensors, one of which "true" state results in the object model's "true" state.</p>
+
+<p>Another example is a fairly common "all devices on/off" model &#8211; again this at the model level is a boolean datatype but does not represent a single device property. It is a result of multiple properties which may be retrieved using several different device control protocols.</p>
+
+<p>What would need to be discussed is how do we address this composability of object models. </p>
+
+<p>It does mean datatypes are specified at each level of sensors, model and views. The view datatypes do exist to some extent but as you point out are not correct for the object model &#8211; the current view models are similar to Swing's MVC in a sense that they do merge model and control similar to what Swing does with its "delegates" model &#8211; i.e. Switch is a combination of on/off control and 'status' datatype.</p>
+
+<p>If we take this approach to model at a higher level than simply device properties then that does answer the question with regards to sensor use &#8211; when there's no simple one-to-one mapping to sensor's datatype, sensors clearly are separate constructs that are needed for the composability of the object model and to abstract away the device access protocol from model. In addition, they introduce a control (physical device control) into the model (via updating its state).</p>
+
+
+
+<blockquote>
+<p>Also, do we want to add a further semantic aspect at this level i.e. for a power property, "on" and "off" are meaningful value. For a status property of a valve, maybe "opened" and "closed" make more sense. Both are boolean but with a slightly different semantic.</p></blockquote>
+
+<p>I would yes, as described above. There is overlap. While sensor's datatype may carry no semantic beyond boolean true/false, the object model datatype could potentially carry higher semantic of on/off or open/close (the view component model/datatype would remain close to what it is today).</p>
+
+<p>So yes both are boolean, but if you draw the distinction between model and sensors (device properties) datatype, they can carry different semantics.</p>
+
+<p>What is the correct boundaries between those datatypes is still unclear to me though (should a device property, i.e. sensor, be always restricted to a boolean true/false values or should we allow higher semantics of on/off, open/close, up/down, etc.).</p>
+
+
+<blockquote>
+<p>In fact, this property could be a full fledged object with both data and actions. So in this case, this power property could be an object that has a state (on/off) that is read/write, an on action, on off action and toggle action.</p></blockquote>
+
+<p>Right, so in this case going towards the higher level object model. Actions (or sticking to MVC terminology &#8211; controls) are the command abstractions (control of devices) and sensors (physical device controls to alter in-memory state). I would also include here in the model the mechanism of metadata (i.e. properties) for items such as categories / device location, grouping, etc.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 31, 2011 09:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Getting started with automation</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Getting started with automation
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 26, 2014 by <font color="#0050B2">philatkin</font>.
+				    </div>
+
+				    <p>I'm running OR on a PC, with an Aeotec Z-stick currently controlling a TKBHome Plug socket.<br/>
+The basics are working fine: I can build an interface that switches the plug on and off.  Even this seemed over-complex: I had to create (it seems)</p>
+<ul>
+	<li>A device with Power ON, Power OFF and Power Status commands</li>
+	<li>An associated Power Sensor object, connected to the Power Status command</li>
+	<li>An associated Power Switch object, connected to the Power Sensor and the Power ON and Power OFF commands<br/>
+Is all this really necessary to control a device and report its status\?</li>
+</ul>
+
+
+<p>With these definitions, the interface correctly reflected the state of the circuit when it was controlled by the interface.  It did not react if I used the socket's local switch to control it.  To achieve that, I had to write a rule that send the "Power Status" regularly.</p>
+
+<p>One of the basic things I want to do is to have a circuit switch off automatically an hour after it's switched on.  To achieve this it seems I need to define different rules that insert and then retract an object, as in the <a href="http://www.openremote.org/display/docs/Advanced+Rule+Examples">Advanced Rule Example</a>.  The code I have is below.  I have checked that the "Switch" condition is correctly reporting the current status.</p>
+
+<p>It's difficult to describe the behaviour of the code.  The status appears to flicker between on and off, although the physical switch does not.  The log seems to contain a variable number of "begun" "retracted" "begun" "retracted" entries for each update, and these are at odd intervals (3s sometimes; other times 1s).</p>
+
+<p>Does anyone have any clues?  Thanks, Phil</p>
+
+<p>rule "Updater"<br/>
+  timer (cron: 0/1 * * * * ?) <br/>
+when <br/>
+  eval (true) <br/>
+then<br/>
+  execute.command("Power Status");<br/>
+end</p>
+
+<p>declare Running<br/>
+  isRunning: boolean<br/>
+end</p>
+
+<p>rule "Run"<br/>
+when<br/>
+  Switch(source == "Power Sensor", value == "on") and not Running()<br/>
+then<br/>
+  Running running = new Running();<br/>
+  insert ( running );<br/>
+  log("Running begun");<br/>
+end</p>
+
+<p>rule "RunOff"<br/>
+  timer (int: 10s)<br/>
+when<br/>
+  Switch(source == "Power Sensor", value == "on") and<br/>
+  $running: Running()<br/>
+then<br/>
+  execute.command("Power off");<br/>
+  retract($running);<br/>
+  log("Running: switching off");<br/>
+end</p>
+
+<p>rule "RunCancel"<br/>
+when<br/>
+  Switch(source == "Power Sensor", value == "off") and <br/>
+  $running: Running()<br/>
+then<br/>
+  retract($running);<br/>
+  log("Running retracted");<br/>
+end</p>
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22885617"></a>
+                                    <font class="smallfont"><blockquote>
+<p>The status appears to flicker between on and off, although the physical switch does not.</p></blockquote>
+<p>This is perhaps caused by the "Power Status" command. The return value it gives is not stable. You should concentrate to get it reliable first.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Apr 01, 2014 09:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885618"></a>
+                                    <font class="smallfont"><p>Thanks, but the status seems completely stable until I add the 'Run...' rules.<br/>
+Phil</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philatkin at Apr 01, 2014 09:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885654"></a>
+                                    <font class="smallfont"><p>But why do you have the 'Run...' rules after all?</p>
+<blockquote>
+<p>One of the basic things I want to do is to have a circuit switch off automatically an hour after it's switched on.</p></blockquote>
+<p>To do this you need just one rule:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Switch off after 1 hour"</span>
+timer (<span class="code-object">int</span>: 1h)
+when
+  Switch(source == <span class="code-quote">"Power Sensor"</span>, value == <span class="code-quote">"on"</span>)
+then
+  execute.command(<span class="code-quote">"Power off"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Apr 03, 2014 08:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885758"></a>
+                                    <font class="smallfont"><p>I really appreciate your help.  However, I'm afraid I can't get this to work.</p>
+
+<p>I have removed all the 'Run' rules and now have simply (imports and globals omitted):</p>
+
+<p>rule "Updater"<br/>
+  timer (cron: 0/1 * * * * ?) <br/>
+when <br/>
+  eval (true) <br/>
+then<br/>
+  execute.command("Power Status"); <br/>
+end</p>
+
+<p>rule "Switch off after 10 seconds"<br/>
+  timer (int: 10s)<br/>
+when<br/>
+  Switch(source == "Power Sensor", value == "on")<br/>
+then<br/>
+  execute.command("Power off");<br/>
+end  </p>
+
+<p>Although I've tried many, many variations on this, I have never seen the switch turn off due to the rule.</p>
+<ul>
+	<li>With an empty rule file, I can control the power with the UI but it does not update if I override using the physical button on the socket;</li>
+	<li>With just the "Updater" rule, I can control the power with the UI and the UI updates if I override using the physical button on the socket.  However, so long as the actual status is not as it was set by the UI, the UI is seen to flicker every second (but shows the actual status most of the time).</li>
+	<li>With both rules, the behaviour is indistinguishable from the previous case (no switch-off is ever observed).</li>
+</ul>
+
+
+<p>So this appears to be simpler ... which is good ... but doesn't actually achieve my 'basic thing'.  Can you tell me where to find some basic information about how Drools operates?  I've looked at the jboos.org site but it was really difficult to get started that way.  Equally, the OpenRemote documentation seems to give particular examples but not teach the principles on which to base variations.</p>
+
+<p>Thanks again, Phil</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philatkin at Apr 06, 2014 16:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885760"></a>
+                                    <font class="smallfont"><p>Phil, again I think that your problem is not stable sensor output which you confirm with:</p>
+<blockquote>
+<p>With just the "Updater" rule, I can control the power with the UI and the UI updates if I override using the physical button on the socket. However, so long as the actual status is not as it was set by the UI, the UI is seen to flicker every second (but shows the actual status most of the time).</p></blockquote>
+<p>Seems that "Power Status" command returns not always good status. I don't understand this bit:</p>
+<blockquote>
+<p>so long as the actual status is not as it was set by the UI</p></blockquote>
+<p>Why should this be of importance? In a good design it should not matter. However, the status should always be red from your device.<br/>
+I've done this with EnOcean and WeMo switches and they always are stable and reflecting correct status without flickering. I've described how I've defined commands and sensors on my blog: 
+<a href="http://mqlservice.net/openremote/2014/02/08/integrating-belkins-wemo-switch-and-motion-with-openremote/">http://mqlservice.net/openremote/2014/02/08/integrating-belkins-wemo-switch-and-motion-with-openremote/</a><br/>
+and
+<a href="http://mqlservice.net/openremote/2014/03/08/integrating-eltakos-socket-switching-actuator-fsva-230v/">http://mqlservice.net/openremote/2014/03/08/integrating-eltakos-socket-switching-actuator-fsva-230v/</a></p>
+
+<p>As long as the sensor output is not stable the timer(int: 10s) will be triggered every time the sensor changes value. You can try to change timer(cron: 0/20  * * * * ?) to update every 20s and note that the second rule will trigger.</p>
+
+<p>Hope this helps.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Apr 06, 2014 18:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885763"></a>
+                                    <font class="smallfont"><p>To clarify "so long as the actual status is not as it was set by the UI".<br/>
+My UI has an 'On' button, an 'Off' button, and a switch.  If I control the power using any of these, the switch's state reflects whether the plug is on or off and is completely stable.  If, however, I override the UI by pressing the physical button, then the 'actual status' is no longer 'as it was set by the UI'.  (For example, the UI turned it off but the physical switch has set it on).  Now, the switch shows the power as on for about 0.9s, then it flickers to off for about 0.1s, then on for 0.9s...  If I reverse the situation (so the UI turned it on but the physical switch has set it off), then the switch shows off for 0.9s ...<br/>
+Pressing the physical switch again, returns the actual status to what was set by the UI, and the flickering stops.</p>
+
+<p>I'll take a longer look at your blog to see if I can improve my understanding.  Thanks,</p>
+
+<p>Phil</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philatkin at Apr 06, 2014 19:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885764"></a>
+                                    <font class="smallfont"><p>Here's what is in zwave.log for two consecutive seconds while the switch is flickering:</p>
+
+<p>DEBUG 2014-04-06 19:38:18,001 (Z-Wave): Building Z-Wave command<br/>
+DEBUG 2014-04-06 19:38:18,001 (Z-Wave): Z-Wave command: command = status<br/>
+DEBUG 2014-04-06 19:38:18,001 (Z-Wave): Z-Wave command: nodeId = 2<br/>
+DEBUG 2014-04-06 19:38:18,001 (Z-Wave): Z-Wave command: paramValue = null<br/>
+DEBUG 2014-04-06 19:38:18,001 (Z-Wave): Z-Wave command created successfully<br/>
+DEBUG 2014-04-06 19:38:18,001 (Z-Wave): sending: 01 09 00 13 02 02 20 02 05 20 e2 <br/>
+DEBUG 2014-04-06 19:38:18,005 (Z-Wave): received: 06 <br/>
+DEBUG 2014-04-06 19:38:18,009 (Z-Wave): received: 01 04 01 13 01 e8 <br/>
+DEBUG 2014-04-06 19:38:18,009 (Z-Wave): sending: 06 <br/>
+DEBUG 2014-04-06 19:38:18,021 (Z-Wave): received: 01 05 00 13 20 00 c9 <br/>
+DEBUG 2014-04-06 19:38:18,021 (Z-Wave): sending: 06 <br/>
+DEBUG 2014-04-06 19:38:18,025 (Z-Wave): received: 01 09 00 04 00 02 03 20 03 00 d0 <br/>
+DEBUG 2014-04-06 19:38:18,025 (Z-Wave): sending: 06 <br/>
+DEBUG 2014-04-06 19:38:19,001 (Z-Wave): Building Z-Wave command<br/>
+DEBUG 2014-04-06 19:38:19,001 (Z-Wave): Z-Wave command: command = status<br/>
+DEBUG 2014-04-06 19:38:19,001 (Z-Wave): Z-Wave command: nodeId = 2<br/>
+DEBUG 2014-04-06 19:38:19,001 (Z-Wave): Z-Wave command: paramValue = null<br/>
+DEBUG 2014-04-06 19:38:19,001 (Z-Wave): Z-Wave command created successfully<br/>
+DEBUG 2014-04-06 19:38:19,001 (Z-Wave): sending: 01 09 00 13 02 02 20 02 05 21 e3 <br/>
+DEBUG 2014-04-06 19:38:19,007 (Z-Wave): received: 06 01 04 01 13 01 e8 <br/>
+DEBUG 2014-04-06 19:38:19,007 (Z-Wave): sending: 06 <br/>
+DEBUG 2014-04-06 19:38:19,019 (Z-Wave): received: 01 05 00 13 21 00 c8 <br/>
+DEBUG 2014-04-06 19:38:19,019 (Z-Wave): sending: 06 <br/>
+DEBUG 2014-04-06 19:38:19,027 (Z-Wave): received: 01 09 00 04 00 02 03 20 03 00 d0 <br/>
+DEBUG 2014-04-06 19:38:19,027 (Z-Wave): sending: 06 </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philatkin at Apr 06, 2014 19:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885766"></a>
+                                    <font class="smallfont"><p>OK, I see now. So you have in fact always series of pules and the correct value is about 0.9 s. This has probably to do with your hardware but we can fix it with rules. Now I can reuse your running example with some filtering. Try the following:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare Running
+  isRunning: <span class="code-object">boolean</span>
+end
+
+rule <span class="code-quote">"Run"</span>
+timer (<span class="code-object">int</span>: 750ms)
+when
+  Switch(source == <span class="code-quote">"Power Sensor"</span>, value == <span class="code-quote">"on"</span>) and not Running()
+then
+  Running running = <span class="code-keyword">new</span> Running();
+  insert ( running );
+  log(<span class="code-quote">"Running begun"</span>);
+end
+
+rule <span class="code-quote">"RunOff"</span>
+  timer (<span class="code-object">int</span>: 10s)
+when
+  $running: Running()
+then
+  execute.command(<span class="code-quote">"Power off"</span>);
+  retract($running);
+  log(<span class="code-quote">"Running: switching off"</span>);
+end
+
+rule <span class="code-quote">"RunCancel"</span>
+  timer (<span class="code-object">int</span>: 750ms)
+when
+  Switch(source == <span class="code-quote">"Power Sensor"</span>, value == <span class="code-quote">"off"</span>)
+  $running: Running()
+then
+  retract($running);
+  log(<span class="code-quote">"Running retracted"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Apr 06, 2014 20:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:36</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

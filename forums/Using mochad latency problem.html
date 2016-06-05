@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Using mochad latency problem</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Using mochad latency problem
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 13, 2011 by <font color="#0050B2">marcel.schot</font>.
+				    </div>
+
+				    <p>We use the mochad software to the X10 switches and had the problem that after one or two button presses on the panel an error message telling us that the server does not responds appears. It turned out that the socket command waits for a reply on the socket of at least 200 characters, comething that does not always happen or might arrive a bit late.</p>
+
+<p>After downloading the sources I saw that the message received from the socket is never given back to the client so it might be removed or my alteration can be used to wait for a limited time for the data to arrive before continuing. We have implemented this in out setup and it works great now.</p>
+
+<p>Altered readReply method for controller.protocol.socket.TCPSocketCommand</p>
+
+<p>   /**<br/>
+    &#42; @param socket<br/>
+    &#42; @return the response read from the socket.<br/>
+    &#42; @throws IOException<br/>
+    */<br/>
+   private String readReply(java.net.Socket socket) throws IOException {<br/>
+     boolean stopReading = false;<br/>
+     long lastRead = 1;<br/>
+     long strRead = 0;<br/>
+     String reply = "";<br/>
+     // Get socket channel and configure non blocking<br/>
+     // to be able to read just as much as has been delivered<br/>
+     // on the socket<br/>
+     SocketChannel sc = socket.getChannel();<br/>
+     sc.configureBlocking(false);<br/>
+     while(!stopReading){<br/>
+        ByteBuffer bb = ByteBuffer.allocate(200);<br/>
+        // The read function on the channel will deliver at most<br/>
+        // 200 (the buffer length) bytes and at least 0 if none are<br/>
+        // available yet.<br/>
+        strRead = sc.read(bb);<br/>
+        if(strRead == 0 &amp;&amp; lastRead == 0 ){<br/>
+           stopReading=true;<br/>
+        }else{<br/>
+           // This might go wrong on unicode replies! A single byte <br/>
+           // is read while a second one is underway....<br/>
+           // Because the reply is not returned to the client no<br/>
+           // fix is created.<br/>
+           reply = reply.concat(new String(bb.array()));<br/>
+           lastRead = strRead;<br/>
+        }<br/>
+        try{<br/>
+           // sleep at most 2 times this number of miliseconds before<br/>
+           // stopping to wait for a reaction.<br/>
+           Thread.sleep(50);<br/>
+        }catch(Exception ex){}<br/>
+     }<br/>
+     return reply;<br/>
+   }</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19434655"></a>
+                                    <font class="smallfont"><p>I tried to close OR sockets from the mochad side. Someone pointed out sending ok\r from mochad will cause OR to close the socket. I pushed a fix but it is not in the 0.1.13 release. I think it needs more testing so please try building from master. mochad with this fix works with the following and the Android client installed from the Android Market.<br/>
+OpenRemote-Controller-2.0.0_SNAPSHOT_20110611.zip </p>
+
+<p>git://mochad.git.sourceforge.net/gitroot/mochad/mochad</p>
+
+<p>Thanks,<br/>
+mmauka</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mmauka at Dec 29, 2011 08:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

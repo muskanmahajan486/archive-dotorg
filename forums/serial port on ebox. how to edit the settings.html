@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : serial port on ebox. how to edit the settings</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : serial port on ebox. how to edit the settings
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 08, 2014 by <font color="#0050B2">oliviertoebosch</font>.
+				    </div>
+
+				    <p>Hello, I have an ebox with OR installed on it. Purchased it, factory installed.<br/>
+I also have a denon AVR receiver, which can be controlled with the build in denonAVRSerial.</p>
+
+<p>I checked the cable which is a 'straight' one with db9f and one end and db9m at the other.<br/>
+I connected the cable to the receiver (no choice there) and to the serial 1 port of the ebox.</p>
+
+<p>The receiver does not react to my commands...</p>
+
+<p>Looking in the documentation, there is an instruction:</p>
+
+<p>Serial port<br/>
+Make sure that the correct port is configured under denonAVRSerial.comPort. If you are using a USB serial port under Linux, this is likely to be /dev/ttyUSB0.</p>
+
+<p>can someone tell me how to make those changes?</p>
+
+<p>No idea how to access which file here. I do not know how to adress the ebox neither. I only have a functionning webmin interface...<br/>
+how to share its filesystem, so that I can make changes over tcp/ip?</p>
+
+<p>what is the right name for the first com port on the ebox? Mind you I not really fluent in linux matters.</p>
+
+<p>best regards,</p>
+
+<p>Olivier</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23594503"></a>
+                                    <font class="smallfont"><p>ok. I found out how to enter in the linux system of the ebox (voyage), have access to the prompt. Did enter the command dmesg | grep tty and got a list with 3 ports,<br/>
+ttyS0, ttyS2 and ttyS3.<br/>
+I suppose ttyS1 is reserved for console matters.</p>
+
+<p>for the people wanting to know: use a terminalclient e.g Putty and open a ssh session to the ip adress of the ebox. login is root, password is eboxor</p>
+
+<p>Now I will look for the file containing denonAVRSerial.comport...tell you all where I found it!</p>
+
+<p>Olivier</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by oliviertoebosch at Dec 08, 2014 21:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594523"></a>
+                                    <font class="smallfont"><p> /opt/OpenRemote-Controller-Pro1.0.14/webapps/controller/WEB-INF/classes is the place were this file resides</p>
+
+<p>edit the file with the standard installed vi editor, which is not that userfriendly <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>will test all the possibilities and revert with the tty designation for com2. Hopefully this works.<br/>
+The ebox is equipped with two serial ports but still the image shipped with the ebox is configured to talk over usb with a denon receiver. Strange choice...So no joy, you are obliged to dig into linux!</p>
+
+<p>Cu</p>
+
+<p>Olivier</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by oliviertoebosch at Dec 09, 2014 18:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594524"></a>
+                                    <font class="smallfont"><p>So all of the tty ports tested. None worked. Wondering if the serial speed has to be set somewhere...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by oliviertoebosch at Dec 09, 2014 18:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594546"></a>
+                                    <font class="smallfont"><p>Well, I use eBox with Bose through serial. Because my eBox does not have RS232 port I use an USB&lt;-&gt;RS232 converter <a href="http://www.mqlservice.net/catalog/product_info.php?products_id=57">http://www.mqlservice.net/catalog/product_info.php?products_id=57</a><br/>
+Instead of adding a new protocol to Openremote to support my Bose Lifestyle, I use Python and run it through shell command interface - it works bidirectional. In Python setting com port parameters is done like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">import</span> serial
+ser = serial.Serial('/dev/ttyUSB0',19200,timeout=2)
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 10, 2014 11:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

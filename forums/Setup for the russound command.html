@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Setup for the russound command</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Setup for the russound command
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 31, 2011 by <font color="#0050B2">coffeeguy57</font>.
+				    </div>
+
+				    <p>Im trying ti get the russound protocol to work. The documentation is scarce. Im trying to get the controller to connect and send a command at this point.</p>
+
+<p>I am actually trying to us this to control another device with either -&gt; RS232 box or local RS232.</p>
+
+<p>My Sony Projector uses hex codes,this may be my best option. As i understand it i cant send hex commands using any of the other protocols available in the designer.</p>
+
+<p>Where does the controller get its settings for the RS232 Com port etc</p>
+
+
+<p>What does the command syntax look like in the designer. Is it -example "all.off" or is there more that needs to be entered? I am assuming they correlate with the hex strings in the RussoundCommands.properties file. Can I add commands to use?</p>
+
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19432173/23036118.png">russound_back.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19432184"></a>
+                                    <font class="smallfont"><p>You can probably use the Russound protocol to send other hex codes. You just need to add them to the russoundCommands.properties file. And yes, the command used in the designer is the key which is in the russoundCommands.properties. The settings for the RS232 port or UDP are coming from russound.properties. You can either name a RS232 port which will always be opened as 19200,8N1 or you can say connection type UDP and you need to give a IP and port number. This is useful if you have a Ethernet2Serial converter.</p>
+
+<p>So if you only want to control your Sony projector you can probably use the Russound protocol. If you want to use the projector and a Russound device, you will have the problem that the protocol right now only supports one connection to one device (either RS232 or UDP).</p>
+
+<p>There is also the UDPSocketCommand but that does not convert HEX-Strings into bytes. It just sends the given command as String to the UDP socket.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 01, 2011 08:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432190"></a>
+                                    <font class="smallfont"><p>I am getting an error that it cant send a command "Could not send command : all.off java.lang.illegalArgumentException: No enum constant".</p>
+
+<p>This is using a VSP. The VSP works if manually send data to it.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by coffeeguy57 at Sep 01, 2011 17:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432192"></a>
+                                    <font class="smallfont"><p>Which connectionType did you define in russound.properties? This has to be either "RS232" or "UDP".</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 01, 2011 22:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432193"></a>
+                                    <font class="smallfont"><p>Thanks for the help!</p>
+
+<p>Its the same either way. One setup is via UDP, i have a listener set up and nothing is transmitted. The other setup i tried was with a virtual com port, the virtual port logs rx/tx and logged nothing as well.</p>
+
+<p>The config was straight forward in russound.properties.</p>
+
+<p>The setup works either way I can send commands to VSP and and to my udp server that get to my PJ. The controller will send a command(text) via a the built in udp or tcp socket protocol to the UDP server I have set up.</p>
+
+<p>Here is the log file</p>
+
+
+<p>Controller2011-09-01 16:20:30,122 ERROR HTTP\-Thread\-2 org.openremote.controller.protocol.russound.RussoundCommand.sendCommand(140) | Could not send command: all.off<br/>
+java.lang.IllegalArgumentException: No enum constant org.openremote.controller.protocol.russound.RussoundCommand.ConnectionType.udp	<br/>
+	at java.lang.Enum.valueOf(Enum.java:236)<br/>
+	at org.openremote.controller.protocol.russound.RussoundCommand$ConnectionType.valueOf(RussoundCommand.java:67)<br/>
+	at org.openremote.controller.protocol.russound.RussoundCommand.sendCommand(RussoundCommand.java:120)<br/>
+	at org.openremote.controller.protocol.russound.RussoundCommand.send(RussoundCommand.java:101)<br/>
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:56)<br/>
+	at org.openremote.controller.rest.ControlCommandRESTServlet.doPost(ControlCommandRESTServlet.java:91)<br/>
+	at org.openremote.controller.rest.ControlCommandRESTServlet.doGet(ControlCommandRESTServlet.java:58)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:65)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)<br/>
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)<br/>
+	at java.lang.Thread.run(Thread.java:722)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by coffeeguy57 at Sep 02, 2011 00:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432196"></a>
+                                    <font class="smallfont"><p>Connection type in russound.properties has to be either "RS232" or "UDP". It looks like you wrote "udp" in small letters. It has to be capital.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 02, 2011 08:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432202"></a>
+                                    <font class="smallfont"><p>I tried caps aswell, It didnt help. Same response. I must be missing something else. These are the config files i have used. I must be missing something. does the rest of it look right?</p>
+
+<p>russound.connectionType=UDP	<br/>
+russound.comPort=<br/>
+russound.udpIp=192.168.0.189<br/>
+russound.udpPort=4023</p>
+
+<p>russound.connectionType=RS232	<br/>
+russound.comPort=COM8<br/>
+russound.udpIp=0.0.0.0<br/>
+russound.udpPort=0</p>
+
+<p>the command from the controller.xml</p>
+
+<p>    &lt;command&gt;<br/>
+      &lt;command id="188" protocol="russound"&gt;<br/>
+      &lt;property name="command" value="all.off" /&gt;<br/>
+    &lt;/command&gt;</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by coffeeguy57 at Sep 02, 2011 14:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432210"></a>
+                                    <font class="smallfont"><p>I just tried myself and did not have a problem.<br/>
+My russound.properties looks like this:</p>
+
+<p>russound.connectionType=RS232<br/>
+russound.comPort=/dev/ttyUSB0<br/>
+russound.udpIp=0.0.0.0<br/>
+russound.udpPort=0</p>
+
+<p>Make sure you don't have a space behind RS232. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 02, 2011 16:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432212"></a>
+                                    <font class="smallfont"><p>WOW...It was the space.. I had a space after RS232 and after UDP somehow.</p>
+
+<p>It works. Thanks!!!</p>
+
+<p>On another note, how hard would it be to have a property key file (for ASCII to HEX byte) for a generic tcp/ip or udp protocol.</p>
+
+<p>I have seen other A/V equipment that uses hex or ASCII hex combo commands.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by coffeeguy57 at Sep 02, 2011 18:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432213"></a>
+                                    <font class="smallfont"><p>I added a fix to the source code that would avoid this problem <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Thanks for finding it.<br/>
+The generic socket and RS232 protocols will undergo a rewrite to support some kind of scripting and ASCII/Hex command strings.<br/>
+That is already on the todo list for future releases.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 02, 2011 20:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440156"></a>
+                                    <font class="smallfont"><p>In the Russound how to page it states as follows</p>
+
+<p>"If the Russound is connected directly to a serial port of controller use device name here eg. /dev/ttyS0"</p>
+
+<p>russound.serialDevice=</p>
+
+<p>If I were to use a Russound CAA66 connected directly to a windows computer can I substitute /dev/ttyS0 with com1<br/>
+ex:<br/>
+russound.serialDevice=COM1</p>
+
+<p>Will this work?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ggraja at Apr 12, 2012 12:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440158"></a>
+                                    <font class="smallfont"><p>Yes, that should work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 12, 2012 13:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440178"></a>
+                                    <font class="smallfont"><p>Markus thank you for replying.</p>
+
+<p>You had mentioned "the protocol right now only supports one connection to one device " does this mean that we cannot have more than 1 RS232/UDP device?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ggraja at Apr 13, 2012 16:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440180"></a>
+                                    <font class="smallfont"><p>You can have multiple RS232/UDP but not multiple Russound devices.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 13, 2012 22:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876617"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>Could you let me know why only 1 russound device can be connected?  I ask because if it is just an implementation issue maybe I can take a crack at enhancing.</p>
+
+<p>One potential issue I saw was with passing in the com port via -d, it's not obvious how you could specify devices on different ports.  But is it something else?</p>
+
+<p>thanks,<br/>
+craig</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Sep 21, 2013 16:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876623"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>Never mind that last request.  I now realize I just had to specify 2 controllers to communicate with my second russound.  </p>
+
+<p>thanks,<br/>
+craig</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Sep 21, 2013 18:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876626"></a>
+                                    <font class="smallfont"><p>Normally multiple russound devices would be cascaded and they all can be controlled through only one RS232 connection.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 21, 2013 20:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876629"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>Are the graphics which were used in the composer demo for the Russound setup tutorial available on the internet?  I took a look but couldn't locate them.</p>
+
+<p>thanks,<br/>
+craig</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Sep 21, 2013 21:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876699"></a>
+                                    <font class="smallfont"><p>I have the background attached to this message, if that helps.<br/>
+<a class="confluence-thumbnail-link 320x480" href='http://www.openremote.org/download/attachments/19432173/russound_back.png'><img src="attachments/thumbnails/19432173/23036118" align="absmiddle" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 22, 2013 19:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 11:01</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Help with persisting in memory variables</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Help with persisting in memory variables
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 15, 2014 by <font color="#0050B2">jules_bike</font>.
+				    </div>
+
+				    <p>I definitely think that OR would benefit from the ability to persist values of in memory switches - especially in the case of a power outage or controller shutdown.  </p>
+
+<p>For example I use in memory switches for amplifiers linked to Sonos which works nicely for wake up alarms.  However if there is a power cut during the night the controller resets the switches to off and the relevant alarms will not sound.  </p>
+
+<p>I realise that this can be achieved by writing values out to a file - I had a look round the forums and no one has written up clear instructions how to do this.  I am happy to write a user guide but will need some technical assistance - I am using Windows XP.  </p>
+
+<p>Anyone able to help?  </p>
+
+<p>Jules</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22888800"></a>
+                                    <font class="smallfont"><p>Check here <a href="http://mqlservice.net/openremote/2014/09/16/persistent-in-memory-variables/">http://mqlservice.net/openremote/2014/09/16/persistent-in-memory-variables/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 16, 2014 14:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888802"></a>
+                                    <font class="smallfont"><p>Great - is this how it works?</p>
+
+<p>Every second it writes the status to an external file.</p>
+
+<p>When it starts up it checks the current status and if it is different from the external value is uses that.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Sep 16, 2014 21:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888809"></a>
+                                    <font class="smallfont"><p>1s delay is just to debounce the variable. It is frequent that novice users create infinite loops, you would want to save the hard drive from burning in this situation <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Nevertheless, values are stored only when they change and their value is stable for at least 1s.<br/>
+There is no check for different values. When it starts up it always read the value from the file. It recognises the startup by the fact that variables are either initialized to an empty string or value 'status'.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 17, 2014 08:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888833"></a>
+                                    <font class="smallfont"><p>Hi Michal - almost there but no cigar quite yet!  On a restart it is not updating the status of a switch which I have left on.  </p>
+
+<p>I've followed your instructions creating a second rules file with your code and I have a .txt file being updated each time I toggle the switch. </p>
+
+<p>The file is called "GVOFFICEMUSIC_STATUS.txt" and holds the value either "on" or "off".</p>
+
+<p>It appears that this file resets itself back to off when I restart openremote.  </p>
+
+
+<p>In designer I have a set of virtual commands  <br/>
+"GVOFFICEMUSIC_STATUS"  <br/>
+"GVOFFICEMUSIC_ON"<br/>
+"GVOFFICEMUSIC_OFF"</p>
+
+<p>These tie in with a switch sensor<br/>
+"GVOFFICEMUSIC_STATUS"<br/>
+which uses the "GVOFFICEMUSIC_STATUS" command</p>
+
+<p>A switch in the interface toggles this sensor.</p>
+
+<p>In my regular rules file I have the following rules will call the actual commands:<br/>
+"Office Music on"<br/>
+when<br/>
+Event(source=="GVOFFICEMUSIC_STATUS", value=="on")<br/>
+then<br/>
+execute.command("OFFICE_MUSIC_ON");<br/>
+end</p>
+
+<p>rule "Office Music off"<br/>
+when<br/>
+Event(source=="GVOFFICEMUSIC_STATUS", value=="off")<br/>
+then<br/>
+execute.command("OFFICE_MUSIC_OFF");<br/>
+end</p>
+
+
+<p>Can you see where I am going wrong?  </p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Sep 17, 2014 20:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888836"></a>
+                                    <font class="smallfont"><p>The sensor should be of type custom, because this one initialises in openremote with empty string which is replaced by value red from the file. Switch sensor initialises with "off" which is also a valid state, therefore overwriting it by value from a file is not feasible.</p>
+
+<p>I don't understand your regular rules file though. What is their purpose? You can execute command directly from switch, can't you?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 17, 2014 21:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888839"></a>
+                                    <font class="smallfont"><p>So that explains the reseting back to off each time.</p>
+
+<p>I am using a virtual memory sensor and switch because I am switching an Amplifier which has no feedback so the virtual sensor stores the status (on or off) and the rules files executes the actual commands.</p>
+
+<p>Can I use a custom sensor with a switch?  I've never tried that.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Sep 18, 2014 07:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888844"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Can I use a custom sensor with a switch? I've never tried that.</p></blockquote>
+<p>Yes, you can. As long as sensor provides "on" and "off" states it can be used with switches. In fact I use custom sensors for almost everything.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 18, 2014 09:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888858"></a>
+                                    <font class="smallfont"><p>I've tried changing the virtual sensor into a custom sensor with values "on" and "off" but this seems to break the switch in the interface?  </p>
+
+<p>Solved ---- it looks like there is an issue with case sensitivity &#8212; I have it working now.   </p>
+
+<p>Thanks for your help this looks like a good solution.  I will test it out fully and report back.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Sep 18, 2014 16:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596006"></a>
+                                    <font class="smallfont"><p>Hi Michal - I have set up a wake up alarm panel using sliders to set hours and minutes which then match the against the datetime variables to trigger events.   I've tried using your function to persist the value of the sliders but although it is creating the relevant text file it still defaults back to zero each time I restart the server.  </p>
+
+<p>Is there a way to get this to work?   The virtual sensor is a range sensor so I guess that is the issue.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jan 28, 2015 08:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596008"></a>
+                                    <font class="smallfont"><p>Hi Jules,</p>
+
+<p>perhaps you are right, I've tested this only with custom sensors which init to "" or "status" when linked with in-memory variables. Perhaps range has a different init value. Anyway, I think that you can simply amend the Init rule to the following and it will work with any type of sensor.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Init values"</span>
+  salience 100
+when
+  Event($s:source matches <span class="code-quote">"^GV.*"</span>, $v:value)
+then
+  execute.command($s, _ReadFromFile($s, $v.toString()));
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 28, 2015 10:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596022"></a>
+                                    <font class="smallfont"><p>Hi Michal thanks for the response.</p>
+
+<p>Not sure exactly what this does but it does not seem to work - if you press a switch it keeps going back to whatever is in the txt file.  For the slider if I put a value in the txt file when I try and move the slider it is fixed on the txt value.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jan 28, 2015 16:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596024"></a>
+                                    <font class="smallfont"><p>Sorry, my mistake. You want to fire the init only once when starting the controller. Because I use only custom sensors I've put value filter for them to do the init only when they are not intialised first. For range sensor the init value must be different. Therefore, perhaps the simplest solution would be to init your sensor explicitly:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Init values explicit"</span>
+  salience 100
+then
+  execute.command(<span class="code-quote">"YourSensorCommandName1"</span>, _ReadFromFile(<span class="code-quote">"YourSensorCommandName1"</span>, ""));
+  execute.command(<span class="code-quote">"YourSensorCommandName2"</span>, _ReadFromFile(<span class="code-quote">"YourSensorCommandName2"</span>, ""));
+  execute.command(<span class="code-quote">"YourSensorCommandName3"</span>, _ReadFromFile(<span class="code-quote">"YourSensorCommandName3"</span>, ""));
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 28, 2015 17:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596025"></a>
+                                    <font class="smallfont"><p>Do you mean that I keep the "init values" rule for custom sensors and add the other rule for the range sensor?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jan 28, 2015 18:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596045"></a>
+                                    <font class="smallfont"><p>Probably this is the best approach for now as range sensors are initialised to a valid range value. You can try to refactor it and make sure that "Init values" runs only once per sensor, thus you don't need to put explicit names into rules, but this would require a more sophisticated rule codings. Perhaps, I'll update my blog, when I find some time, with this general approach.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 29, 2015 10:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596049"></a>
+                                    <font class="smallfont"><p>Thanks Michal that works fine for the virtual range sensor, good timing as my alarm did not go off this morning because of a restart which reset all the values...</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jan 29, 2015 13:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596326"></a>
+                                    <font class="smallfont"><p>when i copy and paste your script in to my rules i get this error below, im using a custom sensor with a switch and variables starting GV in the names</p>
+
+<p>im using OpenRemote-Controller-2.2.0_TTS-Email-Serial</p>
+
+
+<p>ERROR 2015-02-04 13:15:41,540 : Rule definition 'modeler_rules.drl' could not be deployed. See errors below.<br/>
+ERROR 2015-02-04 13:15:41,541 : ERR 103 Line 15:0 rule 'rule_key' failed predicate: (validateIdentifierKey(DroolsSoftKeywords.RULE))? in rule<br/>
+ERROR 2015-02-04 13:15:41,541 : ERR 101 Line 15:8 no viable alternative at input 'org' in rule package<br/>
+ERROR 2015-02-04 13:15:41,542 : There was an error parsing the rule definition 'modeler_rules.drl' : Could not parse knowledge.<br/>
+java.lang.IllegalArgumentException: Could not parse knowledge.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Feb 04, 2015 12:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596335"></a>
+                                    <font class="smallfont"><p>have you restarted the controller?  I find that if you don't you get an error.   </p>
+
+<p>Here is my drools file with an example virtual switch.  You may be missing something in the header...</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*;
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+<span class="code-keyword">import</span> java.util.concurrent.TimeUnit;
+<span class="code-keyword">import</span> java.io.*;
+
+
+function void _WriteToFile(<span class="code-object">String</span> fn, <span class="code-object">Object</span> o){
+  <span class="code-object">String</span> vl = o.toString();
+  PrintWriter writer = <span class="code-keyword">new</span> PrintWriter(fn+<span class="code-quote">".txt"</span>, <span class="code-quote">"UTF-8"</span>);
+  <span class="code-keyword">try</span>{
+    writer.println(vl);
+  } <span class="code-keyword">finally</span> {
+    writer.close();
+  }
+}
+ 
+function <span class="code-object">String</span> _ReadFromFile(<span class="code-object">String</span> fn, <span class="code-object">String</span> dft){
+  <span class="code-object">String</span> result = dft;
+  <span class="code-keyword">try</span>{
+    BufferedReader fr = <span class="code-keyword">new</span> BufferedReader(<span class="code-keyword">new</span> InputStreamReader(<span class="code-keyword">new</span> FileInputStream(fn+<span class="code-quote">".txt"</span>), <span class="code-quote">"UTF-8"</span>));
+    <span class="code-keyword">try</span>{
+      result = fr.readLine();
+    } <span class="code-keyword">finally</span> {
+      fr.close();
+    }
+  } <span class="code-keyword">catch</span> (IOException e) {
+    e.printStackTrace();
+  }
+  <span class="code-keyword">return</span>(result);
+}
+ 
+rule <span class="code-quote">"Store values"</span>
+timer(<span class="code-object">int</span>: 1s)                                                                                             
+when
+  Event($s:source matches <span class="code-quote">"^GV.*"</span>, $v:value!=<span class="code-quote">"status"</span>)
+then
+  _WriteToFile($s, $v);
+end
+ 
+rule <span class="code-quote">"Init values"</span>
+  salience 100
+when
+(OR
+  Event($s:source matches <span class="code-quote">"^GV.*"</span>, value=="")
+  Event($s:source matches <span class="code-quote">"^GV.*"</span>, value==<span class="code-quote">"status"</span>)
+)
+then
+  execute.command($s, _ReadFromFile($s, <span class="code-quote">"-"</span>));
+end
+
+
+rule <span class="code-quote">"Masterbed music on"</span>
+when
+Event(source==<span class="code-quote">"SONOS PLAYER STATE"</span>, value==<span class="code-quote">"on"</span>) AND
+Event(source==<span class="code-quote">"GVMASTER_MUSIC_STATUS"</span>, value==<span class="code-quote">"on"</span>) 
+eval(<span class="code-keyword">true</span>)
+then
+execute.command(<span class="code-quote">"YAMAHAPOWERON"</span>);
+execute.command(<span class="code-quote">"YAMAHA-MDCDR"</span>);
+<span class="code-object">System</span>.out.println(<span class="code-quote">"MASTERBED SENSOR ON SONOS IS PLAYING  SET YAMAHA AMP TO MD"</span>);
+end
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 04, 2015 16:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596339"></a>
+                                    <font class="smallfont"><p>it works now, the problem was:<br/>
+package org.openremote.controller.protocol</p>
+
+<p>before i haD:<br/>
+package org.openremote.controller.model.event</p>
+
+<p>for some reason these 2 packages can't be combined </p>
+
+
+<p>this is what i have added now:<br/>
+//Package, globals and imports:<br/>
+package org.openremote.controller.protocol<br/>
+global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+global org.openremote.controller.statuscache.SwitchFacade switches;<br/>
+global org.openremote.controller.statuscache.LevelFacade levels;<br/>
+import org.openremote.controller.protocol.*;<br/>
+import org.openremote.controller.model.event.*;<br/>
+import java.lang.Float;<br/>
+import java.sql.Timestamp;<br/>
+import java.util.Date; <br/>
+import java.util.concurrent.TimeUnit;<br/>
+import org.openremote.controller.utils.Logger;<br/>
+import org.openremote.controller.Constants;<br/>
+import java.io.*;</p>
+
+<p>thanks for prompt reply</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Feb 04, 2015 17:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596341"></a>
+                                    <font class="smallfont"><p>one more question.. do you know where the txt file will be saved?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Feb 04, 2015 17:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596342"></a>
+                                    <font class="smallfont"><p>should be in your /bin folder of openremote</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 04, 2015 18:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596373"></a>
+                                    <font class="smallfont"><p>I OpenRemote install from source, Michał Rutka's solution does not work for me, txt files does not save, I haven't a bin directory, I run debian wheezy with tomcat7.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ludodoucet at Feb 06, 2015 06:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596381"></a>
+                                    <font class="smallfont"><p>I think it is at the tomcat7 permissions. an idea?  permission java.io.FilePermission</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ludodoucet at Feb 06, 2015 18:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596384"></a>
+                                    <font class="smallfont"><p>make sure you have java 6 otherwise drools will not work, if you copy Michal Rutka's command it should work fine a txt file will show up in the openremote/bin dir, for each custom variable 1 file.</p>
+
+<p>only custom sensors can be used, they will be saved</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Feb 06, 2015 18:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596385"></a>
+                                    <font class="smallfont"><p>Suite has a problem of compatibility with fr_FR I compile from source controller .<br/>
+No files are created in the directory that bin a security problem I think.<br/>
+I try to find a track.<br/>
+Maybe a policy file of tomcat7</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ludodoucet at Feb 06, 2015 18:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596386"></a>
+                                    <font class="smallfont"><p>If it's can help: catalina.out</p>
+
+<p>java.io.FileNotFoundException: GVMinall.txt (No such file or directory)<br/>
+	at java.io.FileInputStream.open(Native Method)<br/>
+	at java.io.FileInputStream.&lt;init&gt;(FileInputStream.java:140)<br/>
+	at java.io.FileInputStream.&lt;init&gt;(FileInputStream.java:96)<br/>
+	at org.openremote.controller.protocol.preserve._ReadFromFile._ReadFromFile(_ReadFromFile.java:22)<br/>
+	at org.openremote.controller.protocol.preserve.Rule_Init_values_0.defaultConsequence(Rule_Init_values_0.java:7)<br/>
+	at org.openremote.controller.protocol.preserve.Rule_Init_values_0DefaultConsequenceInvoker.evaluate(Rule_Init_values_0DefaultConsequenceInvoker.java:30)<br/>
+	at org.drools.common.DefaultAgenda.fireActivation(DefaultAgenda.java:917)<br/>
+	at org.drools.common.DefaultAgenda.fireNextItem(DefaultAgenda.java:856)<br/>
+	at org.drools.common.DefaultAgenda.fireAllRules(DefaultAgenda.java:1071)<br/>
+	at org.drools.common.AbstractWorkingMemory.fireAllRules(AbstractWorkingMemory.java:785)<br/>
+	at org.drools.common.AbstractWorkingMemory.fireAllRules(AbstractWorkingMemory.java:751)<br/>
+	at org.drools.impl.StatefulKnowledgeSessionImpl.fireAllRules(StatefulKnowledgeSessionImpl.java:218)<br/>
+	at org.openremote.controller.statuscache.rules.RuleEngine.push(RuleEngine.java:177)<br/>
+	at org.openremote.controller.statuscache.EventProcessorChain.push(EventProcessorChain.java:188)<br/>
+	at org.openremote.controller.statuscache.StatusCache.update(StatusCache.java:260)<br/>
+	at org.openremote.controller.model.sensor.Sensor.update(Sensor.java:342)<br/>
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Sensor.java:608)<br/>
+	at java.lang.Thread.run(Thread.java:701)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ludodoucet at Feb 06, 2015 19:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596391"></a>
+                                    <font class="smallfont"><p>Yessss it's work,</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+I replace:
+
+<span class="code-quote">"fn+"</span>.txt<span class="code-quote">", "</span>UTF-8"
+
+by:
+
+<span class="code-quote">"/<span class="code-keyword">var</span>/lib/tomcat7/webapps/controller/"</span>+fn+<span class="code-quote">".txt"</span>, <span class="code-quote">"UTF-8"</span>
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ludodoucet at Feb 07, 2015 09:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:36</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

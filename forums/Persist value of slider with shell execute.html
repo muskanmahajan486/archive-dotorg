@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Persist value of slider with shell execute</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Persist value of slider with shell execute
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 03, 2014 by <font color="#0050B2">flatlineato</font>.
+				    </div>
+
+				    <p>Hi all.<br/>
+I would like to create a programmable thermostat for the rooms of my house. <br/>
+My knx device does not allow chrono programming. <br/>
+My idea was to use 24 fake slider and every hourse set the value of the real temperature using a rule.<br/>
+If i use virtual command i can create sliders but on controller startup i lose programmed value.<br/>
+Using shell exceute protocol can i obtain same result saving values on a file?<br/>
+I have read the How To <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Execute+Shell+commands">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Execute+Shell+commands</a> but i don't understand if i can use this for sliders.<br/>
+any idea? or alternative solutions?</p>
+
+<p>tnx</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22887920"></a>
+                                    <font class="smallfont"><p>i've written facts to a file in linux using the shell execution protocol</p>
+
+<p>to do this i've written two scripts<br/>
+scr_read </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+more /opt/openremote/facts/$1
+</pre>
+</div></div>
+<p>and scr_write</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+echo <span class="code-quote">"$2"</span> &gt; /opt/openremote/facts/$1
+
+echo <span class="code-quote">"pl $1 $2"</span> | nc localhost 1099
+</pre>
+</div></div>
+
+<p>i then call them using the following setup</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Sensor command
+
+name: vacation_sensor_command
+Protocol: Shell execution protocol
+path: cat
+Command parameter: /opt/openremote/facts/vacation
+polling interval: 10m
+regular expression: ^([\w\-]+)
+sensor_name: vacation_sensor
+</pre>
+</div></div>
+<p> and to turn and off the switch (in my case x10)</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+name: vacation_sensor_command
+Protocol: Shell execution protocol
+path: /opt/openremote/scripts/scr_write
+Command parameter: vacation on
+</pre>
+</div></div>
+<p>HTH as i'm no expert</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nickbrookes76 at Aug 08, 2014 20:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888218"></a>
+                                    <font class="smallfont"><p>tnx <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flatlineato at Aug 25, 2014 16:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

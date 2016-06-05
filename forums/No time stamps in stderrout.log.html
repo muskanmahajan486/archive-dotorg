@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : No time stamps in stderrout.log</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : No time stamps in stderrout.log
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 19, 2013 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <p>I am using controller Professional 1.07 on Synology DS212+. <br/>
+The logfile OpenRemote/logs/container/<b>stderrout.log</b> does not produce time stamps with the errors. I could not find a setting for that in OpenRemote/conf/logging.properties.<br/>
+Any one out there who knows if and how that can be achieved?<br/>
+Thanks, Pieter</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21858933"></a>
+                                    <font class="smallfont"><p>You'll need to do it in bash, the std output and error stream redirection is not going through the logging system:</p>
+
+<p><a href="http://svn.code.sf.net/p/openremote/code/tags/project/Controller/Controller_ProInstaller_1_0_7_20130213/runtime/apache-tomcat-6.0.18/bin/openremote.sh">openremote.sh</a></p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>if [ "$4" = "service" ]; then
+
+    # Send standard error stream to standard out, direct standard out to a file, limit std out
+    # file to first 50000 characters. Note that the redirect will automatically switch to a
+    # buffered mode so stdout will appear in chunks, size of which is defined by the operating
+    # system. For more detailed handling of std output, tools such as logrotate can be used.
+
+    local REDIRECT="| head -c 50000 &gt;&gt; \"$CATALINA_BASE/logs/container/stderrout.log\" 2&gt;&amp;1 &amp;"
+  fi
+</pre>
+</div></div>
+
+<p>On the other hand, errors from the controller itself should not end up in the standard streams but <b>should</b> go through the logging system. What kind of errors are you tracking?</p>
+
+<p>If you decide to add timestamps to standard streams: <a href="http://stackoverflow.com/questions/1507674/how-to-add-timestamp-to-stderr-redirection">How to Add Timestamp to stderr redirection</a></p>
+
+<p>Would welcome a patch if successful.</p>
+
+<p>Thanks,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 19, 2013 17:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858937"></a>
+                                    <font class="smallfont"><p>It is not something that I make, but what the system creates in this new log subdirectory <b>container</b> that we discussed before in an other thread. <br/>
+The installation of Z-Wave describes that I should look into catalina.out for the rxtx serial thing to start. But I do <b>not</b> have a catalina.out file since I installed  the PRO 1.06 controller on my Synology.<br/>
+So I statrted to look for an alternative place, as there is quite a bit of redundant logging. So I found the RXTX thing in stderrout.log. But as said without timestamps.<br/>
+May be the problem is that my system does not create a catalina.out in the bases log directory ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Mar 19, 2013 23:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859312"></a>
+                                    <font class="smallfont"><p>I have asked this question before: Should my controller PRO 1.07 produce a catalina.out file or not?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Mar 28, 2013 10:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859319"></a>
+                                    <font class="smallfont"><p>It should not.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 28, 2013 12:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

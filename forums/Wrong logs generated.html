@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Wrong logs generated</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Wrong logs generated
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 27, 2013 by <font color="#0050B2">marco.miccini</font>.
+				    </div>
+
+				    <p>Hi!<br/>
+I'm noting a wrong behaviour with logs, tomcat-server.log and appcontext.log in the container directory.<br/>
+I've put OR in arm-linux and everytime I start the controller, two new logs are generated, so that the last logs used are tomcat-server.log.xx and appcontext.log.xx.<br/>
+It's the same if I use start or run command in openremote.sh.<br/>
+Instead, with linux x86 (and mac x64), this is only true with start command.</p>
+
+<p>It looks like it generates a new couple of logs for every process started, because when I stop OR started with run command there are no process running in background. Contrariwise, if I stop (no forced) OR started with start command, a background process stays on.<br/>
+If I forced stop OR, the process is killed and new logs aren't created.</p>
+
+<p>WHY??</p>
+
+<p>Thanks in advance.<br/>
+Marco</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22878989"></a>
+                                    <font class="smallfont"><p>Sorry Marco but I've no clue about this one. I can't think of any reason why logging would behave differently between ARM and x86 systems. The logging itself is in Java so should behave the same on both architectures &#8211; however, the file system access is always dependent on the underlying system so maybe there's something in the file locks, file permissions or difference in JVM native filesystem access that could cause this difference in behavior.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 29, 2013 00:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879012"></a>
+                                    <font class="smallfont"><p>Thanks Juha!<br/>
+Probably I understand the issue after your explanation. In the arm system, I use this arm jdk8 <a href="https://jdk8.java.net/download.html">https://jdk8.java.net/download.html</a>, and I placed it in /opt. Then, to enable the automatic start at startup, I had to link it in the /usr/bin directory.</p>
+
+<p>Can this be the cause of my question?<br/>
+How can I check if Java has some permission problem?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Oct 29, 2013 10:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879073"></a>
+                                    <font class="smallfont"><p>if it is <b>only</b> on tomcat-server.log and appcontext.log and not on any of the other log files, that could be a difference in java.util.logging implementation in the JDK8. I don't recall for sure &#8211; and would have to check &#8211; but those two log files may be generated using the j.u.l loggers instead of log4j. If other log files are <b>not</b> impacted, that could be a hint.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 30, 2013 01:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879157"></a>
+                                    <font class="smallfont"><p>The other logs are managed in a similar way. The difference is that for the other logs the last used is, for example, dev.log (not dev.log.xx), and another one is generated when the one used exceeds a memory limit (I suppose to avoid to manage too big logs).<br/>
+With these two logs, the last used is, for example, appcontext.log.xx and another one is generated each time you restart the controller, not for memory limits.</p>
+
+<p>I forgot to tell you another important thing. For each of the log in question there is a corresponding empty file .lck. These are always present, even when the controller is not running, but in the circumstances I described above it seems the lock files block the access to the logs, so that the controller needs to generate other files.</p>
+
+<p>Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Oct 31, 2013 18:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

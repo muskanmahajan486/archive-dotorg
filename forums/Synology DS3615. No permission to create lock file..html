@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Synology DS3615. No permission to create lock file.</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Synology DS3615. No permission to create lock file.
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 26, 2015 by <font color="#0050B2">aleksey_z</font>.
+				    </div>
+
+				    <p>On Synology DS214Play DSM5.0 been installed OpenRemote and USB Z-Wave Stick.<br/>
+To use USB Z-Wave Stick, it was necessary to:<br/>
+&gt; chown -R root.uucp /var/lock<br/>
+&gt; chown -R root.dialout /dev/ttyUSB0<br/>
+After rebooting the server rights directories were preserved, the application starts up, stick work. No matter how much the server restarts (in the past 8 months), it worked.</p>
+
+<p>Updated to Synology DS3615xs DSM5.1. Reinstall the application OpenRemote and USB Z-Wave Stick. To use USB Z-Wave Stick, it was necessary to:<br/>
+&gt; chown -R root.uucp /var/lock<br/>
+&gt; chown -R root.dialout /dev/ttyUSB0</p>
+
+<p>By RXTX I get this error:</p>
+
+<p>WARNING: RXTX Version mismatch<br/>
+Jar version = RXTX-2.2pre1<br/>
+native lib Version = RXTX-2.1-7<br/>
+check_group_uucp (): error testing lock file creation Error details: Permission deniedcheck_lock_status: No permission to create lock file.<br/>
+please see: How can I use Lock Files with rxtx? in INSTALL<br/>
+check_group_uucp (): error testing lock file creation Error details: Permission deniedcheck_lock_status: No permission to create lock file.<br/>
+please see: How can I use Lock Files with rxtx? in INSTALL<br/>
+ERROR main: Serial_Port_RXTX: Failed to configure the serial port <span class="error">&#91;Name: &#39;/dev/ttyUSB0&#39;, Communication Layer: RXTX&#93;</span> because it does not exist.<br/>
+ERROR main: Serial_Port: Failed to open the serial port <span class="error">&#91;COM port: /dev/ttyUSB0, Communication Layer: RXTX&#93;</span>.</p>
+
+<p>I found that if i am stop the application OpenRemote, in WinSCP change permissions on the directory /run/lock for 0777 (rwxrwxrwx), the stick begins to work:</p>
+
+<p>INFO 2015-05-26 14: 58: 14,584 (Z-Wave): Serial_Port: Opening the serial port <span class="error">&#91;COM port: /dev/ttyUSB0, Communication Layer: RXTX&#93;</span> ...<br/>
+INFO 2015-05-26 14: 58: 14,678 (Z-Wave): Serial_Port: The serial port <span class="error">&#91;COM port: /dev/ttyUSB0, Communication Layer: RXTX&#93;</span> has been successfully opened.</p>
+
+<p>BUT! After the server restarts, the rights to the directory /var/lock are rwxrwxrwx, but on /run/lock changed to rwxr-xr-x and the stick is not working.<br/>
+How can you solve a problem with the rights to a directory /run/lock?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23599309"></a>
+                                    <font class="smallfont"><p>This is Synology specific question and the answer is more probable to be found on their forum. Moreover, this is in fact DSM5 problem, as till DSM4 it was not present.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 27, 2015 07:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599310"></a>
+                                    <font class="smallfont"><p>Thanks for your reply.<br/>
+On DS214Play with DSM 5.0, I did not have this problem. I will look for a solution.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at May 27, 2015 08:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599312"></a>
+                                    <font class="smallfont"><p>Problem solved.<br/>
+For DSM 5.1U5 and USB Serial Drivers package: <a href="http://jadahl.dscloud.me/sspks/packages/UsbSerialDrivers_3.0.2.spk">http://jadahl.dscloud.me/sspks/packages/UsbSerialDrivers_3.0.2.spk</a></p>
+
+<p>I edited the file from the usbserial driver on /volume1/@appstore/UsbSerialDrivers/bin/load_usb.sh as follows</p>
+
+<p>#!/bin/sh</p>
+
+<p>/sbin/insmod /volume1/@appstore/UsbSerialDrivers/modules/usbserial.ko<br/>
+/sbin/insmod /volume1/@appstore/UsbSerialDrivers/modules/ftdi_sio.ko<br/>
+/sbin/insmod /volume1/@appstore/UsbSerialDrivers/modules/ch341.ko<br/>
+/sbin/insmod /volume1/@appstore/UsbSerialDrivers/modules/pl2303.ko<br/>
+/sbin/insmod /volume1/@appstore/UsbSerialDrivers/modules/cp210x.ko<br/>
+chown -R root.uucp /var/lock<br/>
+chmod -R g+w /var/lock/<br/>
+chown -R root.dialout /dev/ttyUSB0</p>
+
+<p>sleep 2<br/>
+echo $(date +"%D-%T") chmod 777 completed successfuly &gt;&gt; /volume1/@appstore/UsbSerialDrivers/var/logs/UsbSerialDrivers.log</p>
+
+<p>exit 0</p>
+
+<p>this changed the rights every time I boot the nas and my openhab worked without further mods.</p>
+
+<p>Source: <a href="http://forum.synology.com/enu/viewtopic.php?f=155&amp;t=82843&amp;hilit=%2Fvar%2Flock+uucp&amp;start=330#p380917">http://forum.synology.com/enu/viewtopic.php?f=155&amp;t=82843&amp;hilit=%2Fvar%2Flock+uucp&amp;start=330#p380917</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at May 27, 2015 09:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

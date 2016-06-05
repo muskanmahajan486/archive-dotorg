@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : error converting decimal to hex</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : error converting decimal to hex
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 02, 2015 by <font color="#0050B2">robnas</font>.
+				    </div>
+
+				    <p>hello,</p>
+
+<p>does anyone know how to convert decimal to hex in a rule?<br/>
+i made a slider with a range sensor from value 1 to 31, that value is $h, i want to send it to a tcp command.<br/>
+my catalina.out log says: </p>
+
+<p>ERROR 2015-02-26 17:30:21,268 : Rule definition 'modeler_rules.drl' could not be deployed. See errors below.<br/>
+ERROR Controller Definition File Watcher for Default Deployer: Rule definition 'modeler_rules.drl' could not be deployed. See errors below.<br/>
+ERROR 2015-02-26 17:30:21,269 : Rule Compilation error Type mismatch: cannot convert from Object to int<br/>
+hex cannot be resolved<br/>
+ERROR Controller Definition File Watcher for Default Deployer: Rule Compilation error Type mismatch: cannot convert from Object to int<br/>
+hex cannot be resolved<br/>
+Rule Compilation error : Rule name='snelheid wifi rgb controller1'<br/>
+	org/openremote/controller/protocol/Rule_snelheid_wifi_rgb_controller1_0.java (7:952) : Type mismatch: cannot convert from Object to int<br/>
+	org/openremote/controller/protocol/Rule_snelheid_wifi_rgb_controller1_0.java (9:1019) : hex cannot be resolved</p>
+
+
+<p>rule:</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">rule <span class="code-quote">"snelheid wifi rgb controller1"</span>
+when
+CustomState ( source == <span class="code-quote">"snelheid.rgb1"</span>, $h: value )
+then
+<span class="code-object">int</span> Val=$h;
+<span class="code-object">String</span> Hex=<span class="code-object">Integer</span>.toHexString(Val);
+log(<span class="code-object">String</span>.format(<span class="code-quote">"%.1f"</span>, hex));
+execute.command(<span class="code-quote">"output"</span>, hex);
+end</pre>
+</div></div>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23596882"></a>
+                                    <font class="smallfont"><p>I guess the // in front of all your lines is for formatting reasons within the forums. To avoid this, please enclose your code between {code} tags.<br/>
+As a general comment on your code, the rules body are Java and Java is case sensitive, so Hex does not equal hex, hence the error reported by the rules compiler.</p>
+
+<p>In your rule, $h will be a string that contains the decimal value.<br/>
+You should thus parse it to an int, then format it to an hex value to give to the command to execute.<br/>
+So something like (not tested)</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-object">int</span> val = <span class="code-object">Integer</span>.parseInt($h);
+<span class="code-object">String</span> hexValue = <span class="code-object">Integer</span>.toHexString(val);
+execute.command(<span class="code-quote">"output"</span>, hexValue);
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Mar 02, 2015 19:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596896"></a>
+                                    <font class="smallfont"><p>Eric. </p>
+
+<p>Thanks for the tip I changed the code above</p>
+
+<p>the code looks correct it's part of code for a led rgb controller ( wifi 370 controller)</p>
+
+<p>I found this code and would like to control it via a rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">import</span> java.io.DataOutputStream;
+
+<span class="code-keyword">import</span> java.net.InetAddress;
+
+<span class="code-keyword">import</span> java.net.Socket;
+
+<span class="code-keyword">import</span> javafx.scene.paint.Color;
+
+<span class="code-keyword">public</span> class Wifi370 {
+
+    <span class="code-keyword">public</span> <span class="code-keyword">static</span> void main(<span class="code-object">String</span> argv[]) <span class="code-keyword">throws</span> Exception {
+
+        <span class="code-keyword">final</span> <span class="code-object">byte</span>[] greenMsg = colour(Color.MEDIUMAQUAMARINE);
+
+        <span class="code-keyword">final</span> <span class="code-object">byte</span>[] redMsg = colour(Color.CORAL);
+
+        <span class="code-keyword">final</span> <span class="code-object">byte</span>[] blueMsg = colour(Color.ALICEBLUE);
+
+        InetAddress group = InetAddress.getByName(<span class="code-quote">"192.168.1.78"</span>);
+
+        <span class="code-keyword">try</span> (Socket clientSocket = <span class="code-keyword">new</span> Socket(group, 5577)) {
+
+            DataOutputStream outToServer = <span class="code-keyword">new</span> DataOutputStream(clientSocket.getOutputStream());
+
+            outToServer.write(control((<span class="code-object">byte</span>) 0x23));
+
+            <span class="code-keyword">do</span> {
+
+                outToServer.write(preset((<span class="code-object">byte</span>) 0x25, (<span class="code-object">byte</span>) 150));
+
+                <span class="code-object">Thread</span>.sleep(60000);
+
+                <span class="code-keyword">for</span> (<span class="code-object">int</span> i = 0; i &lt; 10; i++) {
+
+                    outToServer.write(greenMsg);
+
+                    <span class="code-object">Thread</span>.sleep(1000);
+
+                    outToServer.write(redMsg);
+
+                    <span class="code-object">Thread</span>.sleep(1000);
+
+                    outToServer.write(blueMsg);
+
+                    <span class="code-object">Thread</span>.sleep(1000);
+
+                }
+
+            } <span class="code-keyword">while</span> (<span class="code-keyword">true</span>);
+
+        }
+
+    }
+
+    /*
+
+     Combining Multiple Commands into one TCP packet
+
+     We didn't throughly test <span class="code-keyword">this</span>, but the WiFi Controller seemed quite happy when we concatenated multiple commands
+
+     into one TCP packet instead of sending two. i.e. to set the colour mode and turn OPEN on, sending the following
+
+     packet should suffice:
+
+     56 ff 00 ff aa cc 23 33
+
+     */
+
+    /*
+
+     I think it should be possible to <span class="code-keyword">do</span> what you want to <span class="code-keyword">do</span> using the custom mode of the controller. In <span class="code-keyword">this</span> mode,
+
+     you can set the sequence of colours that you want the controller to cycle through. Most of the detail is in the
+
+     <span class="code-quote">"custom colour mode"</span> section of the post, so I'll just post an overview of what I think the method should be.
+
+     To fade from colour A to colour B, the sequence of commands could be:
+
+     Set custom colour mode sequence to A, B, B, B, ... [99 rA gA bA (rB gB bB)x15 16 3a ff 66]
+
+     The initial colour A, is set so that LEDs start on the current colour (<span class="code-keyword">this</span> might not be necessary)
+
+     The reason <span class="code-keyword">for</span> having multiple B colours, is to give you time to pause the sequence after the colour has changed.
+
+     I can't remember <span class="code-keyword">if</span> there is any other way to stop looping.
+
+ 
+
+     Start playback of the sequence [cc 20 33]
+
+     Wait some time
+
+     Stop the sequence [cc 21 33]
+
+     */
+
+    /**
+
+     * Colour Ring Mode
+
+     *
+
+     * This is the simplest mode and simply sets the colour of the LEDs to the
+
+     * sent RGB colour. The command consists of five bytes: a header, a three
+
+     * <span class="code-object">byte</span> colour code and a footer <span class="code-object">byte</span>:
+
+     *
+
+     * 0x56 - header RR - RED value GG - GREEN value BB - BLUE value 0xaa -
+
+     * footer
+
+     *
+
+     * e.g.: 56 00 ff 00 aa -&gt; sets the LEDs to GREEN
+
+     */
+
+    <span class="code-keyword">private</span> <span class="code-keyword">static</span> <span class="code-object">byte</span>[] colour(Color c) {
+
+        <span class="code-keyword">final</span> <span class="code-object">byte</span>[] msg = {(<span class="code-object">byte</span>) 0x56, (<span class="code-object">byte</span>) (c.getRed() * 255), (<span class="code-object">byte</span>) (c.getGreen() * 255), (<span class="code-object">byte</span>) (c.getBlue() * 255), (<span class="code-object">byte</span>) 0xaa};
+
+        <span class="code-keyword">return</span> msg;
+
+    }
+}</pre>
+</div></div>
+
+
+<p>I have a rule which will get the hex value of the colour picker and would send it to the code above. The  value has to be received by this line "private static byte[] colour" I believe. Do you know a method?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Mar 02, 2015 20:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:35</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,932 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Cron vs. Rules</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Cron vs. Rules
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 19, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Hi everyone,</p>
+
+<p>I've read through the forums for all discussions regarding scheduling commands using rules and cron, and here is my odyssey so far.</p>
+
+<p>I'm trying to accomplish a wake-up light by slowly raising the brightness of a led light, and for that it seemed feasible to set up a rule.</p>
+
+<p>There may be a way to control a slider element in OpenRemote using rules (and this might be a more elegant approach if Slider accepts a time parameter), but I decided to do this on the command level. The controlled element is an ABB KNX 1-10V dimmer which accepts "dim up" offset commands as well as absolute brightness percentage values.</p>
+
+<p>So here's a rule that seems to work:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Sunrise"</span>
+
+  timer (cron: 0,15,30,45 35-59 6 * * ?)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+
+  execute.command(<span class="code-quote">"bedroom_dim(UP)"</span>, 1);
+
+end
+</pre>
+</div></div>
+
+
+<p>The above rule fires four times per minute, from 6.30 in the morning until 6.59, raising the brightness by 1% with each step.</p>
+
+<p>However, the gotchas that took quite a few hours for my humble abilities to realize are that:</p>
+<ul class="alternate" type="square">
+	<li>Reading wikipedia for cron is misleading, the first cron parameters used in the rule appear to be seconds, not minutes. (It was definitely confusing when cron: */2 * * * * ? started a disco...)</li>
+	<li>It's still not certain how the remaining parameters are set up. Logically the sixth parameter should be days of the week in either 0-6 or SUN-SAT format, but either of these will just cause an error. Seems that "?" is currently the only valid parameter, but hopefully someone smarter might shed some light on this.</li>
+	<li>The above rule does appear to work, but there's still the following output:<br/>
+INFO 2012-10-10 02:58:32,218 : Initialized event processor : Drools Rule Engine<br/>
+ERROR HTTP\-Thread\-3: CommandException occurs</li>
+	<li>This is OpenRemote 2.0.0 running on Raspberry Pi with icedtea6-jre-cacao</li>
+</ul>
+
+
+<p>Hopefully this is helpful for anyone else struggling with rules, and humble apologies for any possible mistakes in the above.</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20451718"></a>
+                                    <font class="smallfont"><p>The problem is that the cron syntax used in Drools (which we use for rules) is slightly different from the regular cron syntax <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> This is quite annoying. You can try and find some more information on the Drools website or forum. If your timer works as wanted, I guess you found the correct syntax <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Regarding the error do you see more information in the log files?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 11, 2012 08:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452047"></a>
+                                    <font class="smallfont"><p>The seconds, minutes and hours work fine, but the rule also fires off during weekends, which is a bit of a bummer for the ones hoping to sleep late <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>If the final parameter in cron is a question mark, the output is the one in the previous message. When I replace the question mark with either mon-fri or 1-5 (which I checked to the best of my ability in Drools syntax to be the correct parameter), then this happens:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Oct 14, 2012 11:44:09 PM org.openremote.controller.bootstrap.Startup redirectJULtoLog4j
+INFO: Initialized JUL to LOG4J Redirector.
+INFO 2012-10-14 23:44:20,872 : 
+
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+ERROR 2012-10-14 23:44:58,488 : Error in rule definition 'modeler_rules.drl' : <span class="code-keyword">null</span>
+java.lang.ArrayStoreException
+	at java.lang.<span class="code-object">System</span>.arraycopy(Native Method)
+	at java.util.ArrayList.toArray(ArrayList.java:328)
+	at org.drools.compiler.PackageBuilder.getErrors(PackageBuilder.java:1274)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.getErrors(KnowledgeBuilderImpl.java:70)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:508)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:615)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:537)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:148)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:760)
+	at org.openremote.controller.service.Deployer.startController(Deployer.java:271)
+	at org.openremote.controller.spring.SpringContext.initializeController(SpringContext.java:109)
+	at org.openremote.controller.service.ServiceContext.init(ServiceContext.java:364)
+	at org.openremote.controller.bootstrap.Startup.loadServiceContext(Startup.java:85)
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.initializeServiceContext(ServletStartup.java:190)
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.contextInitialized(ServletStartup.java:109)
+	at org.apache.catalina.core.StandardContext.listenerStart(StandardContext.java:3843)
+	at org.apache.catalina.core.StandardContext.start(StandardContext.java:4342)
+	at org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:791)
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:771)
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:525)
+	at org.apache.catalina.startup.HostConfig.deployDirectory(HostConfig.java:926)
+	at org.apache.catalina.startup.HostConfig.deployDirectories(HostConfig.java:889)
+	at org.apache.catalina.startup.HostConfig.deployApps(HostConfig.java:492)
+	at org.apache.catalina.startup.HostConfig.start(HostConfig.java:1149)
+	at org.apache.catalina.startup.HostConfig.lifecycleEvent(HostConfig.java:311)
+	at org.apache.catalina.util.LifecycleSupport.fireLifecycleEvent(LifecycleSupport.java:117)
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1053)
+	at org.apache.catalina.core.StandardHost.start(StandardHost.java:719)
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1045)
+	at org.apache.catalina.core.StandardEngine.start(StandardEngine.java:443)
+	at org.apache.catalina.core.StandardService.start(StandardService.java:516)
+	at org.apache.catalina.core.StandardServer.start(StandardServer.java:710)
+	at org.apache.catalina.startup.Catalina.start(Catalina.java:578)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:616)
+	at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:288)
+	at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:413)
+ERROR [main]: Error in rule definition 'modeler_rules.drl' : <span class="code-keyword">null</span>
+java.lang.ArrayStoreException
+	at java.lang.<span class="code-object">System</span>.arraycopy(Native Method)
+	at java.util.ArrayList.toArray(ArrayList.java:328)
+	at org.drools.compiler.PackageBuilder.getErrors(PackageBuilder.java:1274)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.getErrors(KnowledgeBuilderImpl.java:70)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:508)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:615)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:537)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:148)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:760)
+	at org.openremote.controller.service.Deployer.startController(Deployer.java:271)
+	at org.openremote.controller.spring.SpringContext.initializeController(SpringContext.java:109)
+	at org.openremote.controller.service.ServiceContext.init(ServiceContext.java:364)
+	at org.openremote.controller.bootstrap.Startup.loadServiceContext(Startup.java:85)
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.initializeServiceContext(ServletStartup.java:190)
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.contextInitialized(ServletStartup.java:109)
+	at org.apache.catalina.core.StandardContext.listenerStart(StandardContext.java:3843)
+	at org.apache.catalina.core.StandardContext.start(StandardContext.java:4342)
+	at org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:791)
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:771)
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:525)
+	at org.apache.catalina.startup.HostConfig.deployDirectory(HostConfig.java:926)
+	at org.apache.catalina.startup.HostConfig.deployDirectories(HostConfig.java:889)
+	at org.apache.catalina.startup.HostConfig.deployApps(HostConfig.java:492)
+	at org.apache.catalina.startup.HostConfig.start(HostConfig.java:1149)
+	at org.apache.catalina.startup.HostConfig.lifecycleEvent(HostConfig.java:311)
+	at org.apache.catalina.util.LifecycleSupport.fireLifecycleEvent(LifecycleSupport.java:117)
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1053)
+	at org.apache.catalina.core.StandardHost.start(StandardHost.java:719)
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1045)
+	at org.apache.catalina.core.StandardEngine.start(StandardEngine.java:443)
+	at org.apache.catalina.core.StandardService.start(StandardService.java:516)
+	at org.apache.catalina.core.StandardServer.start(StandardServer.java:710)
+	at org.apache.catalina.startup.Catalina.start(Catalina.java:578)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:616)
+	at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:288)
+	at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:413)
+ERROR 2012-10-14 23:44:58,538 : Cannot start event processor 'Drools Rule Engine' : <span class="code-keyword">null</span>
+java.lang.ArrayStoreException
+	at java.lang.<span class="code-object">System</span>.arraycopy(Native Method)
+	at java.util.ArrayList.toArray(ArrayList.java:328)
+	at org.drools.compiler.PackageBuilder.getErrors(PackageBuilder.java:1274)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.getErrors(KnowledgeBuilderImpl.java:70)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.newKnowledgeBase(KnowledgeBuilderImpl.java:53)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:532)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:615)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:537)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:148)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:760)
+	at org.openremote.controller.service.Deployer.startController(Deployer.java:271)
+	at org.openremote.controller.spring.SpringContext.initializeController(SpringContext.java:109)
+	at org.openremote.controller.service.ServiceContext.init(ServiceContext.java:364)
+	at org.openremote.controller.bootstrap.Startup.loadServiceContext(Startup.java:85)
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.initializeServiceContext(ServletStartup.java:190)
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.contextInitialized(ServletStartup.java:109)
+	at org.apache.catalina.core.StandardContext.listenerStart(StandardContext.java:3843)
+	at org.apache.catalina.core.StandardContext.start(StandardContext.java:4342)
+	at org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:791)
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:771)
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:525)
+	at org.apache.catalina.startup.HostConfig.deployDirectory(HostConfig.java:926)
+	at org.apache.catalina.startup.HostConfig.deployDirectories(HostConfig.java:889)
+	at org.apache.catalina.startup.HostConfig.deployApps(HostConfig.java:492)
+	at org.apache.catalina.startup.HostConfig.start(HostConfig.java:1149)
+	at org.apache.catalina.startup.HostConfig.lifecycleEvent(HostConfig.java:311)
+	at org.apache.catalina.util.LifecycleSupport.fireLifecycleEvent(LifecycleSupport.java:117)
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1053)
+	at org.apache.catalina.core.StandardHost.start(StandardHost.java:719)
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1045)
+	at org.apache.catalina.core.StandardEngine.start(StandardEngine.java:443)
+	at org.apache.catalina.core.StandardService.start(StandardService.java:516)
+	at org.apache.catalina.core.StandardServer.start(StandardServer.java:710)
+	at org.apache.catalina.startup.Catalina.start(Catalina.java:578)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:616)
+	at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:288)
+	at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:413)
+ERROR [main]: Cannot start event processor 'Drools Rule Engine' : <span class="code-keyword">null</span>
+java.lang.ArrayStoreException
+	at java.lang.<span class="code-object">System</span>.arraycopy(Native Method)
+	at java.util.ArrayList.toArray(ArrayList.java:328)
+	at org.drools.compiler.PackageBuilder.getErrors(PackageBuilder.java:1274)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.getErrors(KnowledgeBuilderImpl.java:70)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.newKnowledgeBase(KnowledgeBuilderImpl.java:53)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:532)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:615)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:537)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:148)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:760)
+	at org.openremote.controller.service.Deployer.startController(Deployer.java:271)
+	at org.openremote.controller.spring.SpringContext.initializeController(SpringContext.java:109)
+	at org.openremote.controller.service.ServiceContext.init(ServiceContext.java:364)
+	at org.openremote.controller.bootstrap.Startup.loadServiceContext(Startup.java:85)
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.initializeServiceContext(ServletStartup.java:190)
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.contextInitialized(ServletStartup.java:109)
+	at org.apache.catalina.core.StandardContext.listenerStart(StandardContext.java:3843)
+	at org.apache.catalina.core.StandardContext.start(StandardContext.java:4342)
+	at org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:791)
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:771)
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:525)
+	at org.apache.catalina.startup.HostConfig.deployDirectory(HostConfig.java:926)
+	at org.apache.catalina.startup.HostConfig.deployDirectories(HostConfig.java:889)
+	at org.apache.catalina.startup.HostConfig.deployApps(HostConfig.java:492)
+	at org.apache.catalina.startup.HostConfig.start(HostConfig.java:1149)
+	at org.apache.catalina.startup.HostConfig.lifecycleEvent(HostConfig.java:311)
+	at org.apache.catalina.util.LifecycleSupport.fireLifecycleEvent(LifecycleSupport.java:117)
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1053)
+	at org.apache.catalina.core.StandardHost.start(StandardHost.java:719)
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1045)
+	at org.apache.catalina.core.StandardEngine.start(StandardEngine.java:443)
+	at org.apache.catalina.core.StandardService.start(StandardService.java:516)
+	at org.apache.catalina.core.StandardServer.start(StandardServer.java:710)
+	at org.apache.catalina.startup.Catalina.start(Catalina.java:578)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:616)
+	at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:288)
+	at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:413)
+</pre>
+</div></div>
+
+<p>Also as a separate issue, is there any way to cap the max size of catalina.out? It grew to about 16GB in one week, causing the entire system to fail with no disk space remaining...</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Oct 14, 2012 21:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452136"></a>
+                                    <font class="smallfont"><p>Something similar was reported on the drools issue tracker:
+<a href="http://lists.jboss.org/pipermail/jboss-jira/2010-November/180191.html">http://lists.jboss.org/pipermail/jboss-jira/2010-November/180191.html</a></p>
+
+<p>I am not sure if the "cron" timer syntax has this issue also.<br/>
+Drools fixed this in Version 5.2 but we are on 5.1.1 in the moment.</p>
+
+<p>Catalina.out can be configured in the tomcat specific config file in conf folder.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 15, 2012 08:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452157"></a>
+                                    <font class="smallfont"><p>Thanks, I checked out the bug, but despite similarity the behavior does not seem to be connected to the use of spaces.</p>
+
+<p>  timer (cron: 0,30 00-20 7 * * ?) works<br/>
+  timer (cron: 0,30 00-20 7 * * *) crashes<br/>
+  timer (cron: 0,30 00-20 7 * * 1-5) crashes<br/>
+  timer (cron: 0,30 00-20 7 * * mon-fri) crashes</p>
+
+<p>What's the preferred way of reporting these issues? Is it alright just to make a forum post, or do you have a policy for submitting issues to Jira?</p>
+
+<p>I also tested the 2.0.1 developer snapshop from sourceforge, the crash is the same there as well.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2012-10-15 17:29:47,638 : Error in rule definition 'modeler_rules.drl' : <span class="code-keyword">null</span>
+java.lang.ArrayStoreException
+	at java.lang.<span class="code-object">System</span>.arraycopy(Native Method)
+	at java.util.ArrayList.toArray(ArrayList.java:328)
+	at org.drools.compiler.PackageBuilder.getErrors(PackageBuilder.java:1274)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.getErrors(KnowledgeBuilderImpl.java:70)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:508)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:633)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:555)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:840)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:420)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1268)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:679)
+ERROR [Controller Definition File Watcher <span class="code-keyword">for</span> Default Deployer]: Error in rule definition 'modeler_rules.drl' : <span class="code-keyword">null</span>
+java.lang.ArrayStoreException
+	at java.lang.<span class="code-object">System</span>.arraycopy(Native Method)
+	at java.util.ArrayList.toArray(ArrayList.java:328)
+	at org.drools.compiler.PackageBuilder.getErrors(PackageBuilder.java:1274)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.getErrors(KnowledgeBuilderImpl.java:70)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:508)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:633)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:555)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:840)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:420)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1268)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:679)
+ERROR 2012-10-15 17:29:47,654 : Cannot start event processor 'Drools Rule Engine' : <span class="code-keyword">null</span>
+java.lang.ArrayStoreException
+	at java.lang.<span class="code-object">System</span>.arraycopy(Native Method)
+	at java.util.ArrayList.toArray(ArrayList.java:328)
+	at org.drools.compiler.PackageBuilder.getErrors(PackageBuilder.java:1274)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.getErrors(KnowledgeBuilderImpl.java:70)
+	at org.drools.builder.impl.KnowledgeBuilderImpl.newKnowledgeBase(KnowledgeBuilderImpl.java:53)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:532)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:633)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:555)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:840)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:420)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1268)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:679)
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Oct 15, 2012 15:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452168"></a>
+                                    <font class="smallfont"><p>Since this is a Drools issue it might make sense to post on their forum.<br/>
+We are using Drools 5.1.1.<br/>
+If they come back and say that it is fixed in a later version, please let us know and I can open an issue to update our Drools version.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 15, 2012 19:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452176"></a>
+                                    <font class="smallfont"><p>If I understand this article from 2009 correctly, it seems the Drools team decided to handle the day-by-day scheduling using calendaring, and not cron.</p>
+
+<p><a href="http://blog.athico.com/2009/12/last-week-i-blogged-about-cron-and-int.html">http://blog.athico.com/2009/12/last-week-i-blogged-about-cron-and-int.html</a></p>
+
+<p>Would you know if OpenRemote supports this feature of Drools?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Oct 15, 2012 22:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452197"></a>
+                                    <font class="smallfont"><p>I don't think we support this yet and I will open an issue so we don't forget <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 16, 2012 08:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452704"></a>
+                                    <font class="smallfont"><p>Can someone tell us what actual syntax to use for cron in OR? I have searched the docs.jboss.org documentation and googled and googled and finally found this. BUT, is it correct for OR? Thanks.</p>
+
+<p>Cron expressions are comprised of 6 required fields and one optional field separated by white space. The fields respectively are described as follows:</p>
+
+<p>Field Name	 	Allowed Values	 	Allowed Special Characters</p>
+
+<p>Seconds	 		        0-59	 		, - * /<br/>
+Minutes	 			0-59	 		, - * /<br/>
+Hours	 			0-23	 		, - * /<br/>
+Day-of-month	 		1-31	 	        , - * ? / L W<br/>
+Month	 			1-12 or JAN-DEC	        , - * /<br/>
+Day-of-Week	 		1-7 or SUN-SAT	 	, - * ? / L #<br/>
+Year (Optional)	 		empty, 1970-2199	, - * /</p>
+
+<p>The * character is used to specify all values. For example, * in the minute field means "every minute".<br/>
+The '?' character is allowed for the day-of-month and day-of-week fields. It is used to specify 'no specific value'. This is useful when you need to specify something in one of the two fields, but not the other.<br/>
+The '-' character is used to specify ranges For example "10-12" in the hour field means "the hours 10, 11 and 12".<br/>
+The ',' character is used to specify additional values. For example "MON,WED,FRI" in the day-of-week field means "the days Monday, Wednesday, and Friday".<br/>
+The '/' character is used to specify increments. For example "0/15" in the seconds field means "the seconds 0, 15, 30, and 45". And "5/15" in the seconds field means "the seconds 5, 20, 35, and 50". Specifying '*' before the '/' is equivalent to specifying 0 is the value to start with. Essentially, for each field in the expression, there is a set of numbers that can be turned on or off. For seconds and minutes, the numbers range from 0 to 59. For hours 0 to 23, for days of the month 0 to 31, and for months 1 to 12. The "/" character simply helps you turn on every "nth" value in the given set. Thus "7/6" in the month field only turns on month "7", it does NOT mean every 6th month, please note that subtlety.<br/>
+The 'L' character is allowed for the day-of-month and day-of-week fields. This character is short-hand for "last", but it has different meaning in each of the two fields. For example, the value "L" in the day-of-month field means "the last day of the month" - day 31 for January, day 28 for February on non-leap years. If used in the day-of-week field by itself, it simply means "7" or "SAT". But if used in the day-of-week field after another value, it means "the last xxx day of the month" - for example "6L" means "the last friday of the month". When using the 'L' option, it is important not to specify lists, or ranges of values, as you'll get confusing results.<br/>
+The 'W' character is allowed for the day-of-month field. This character is used to specify the weekday (Monday-Friday) nearest the given day. As an example, if you were to specify "15W" as the value for the day-of-month field, the meaning is: "the nearest weekday to the 15th of the month". So if the 15th is a Saturday, the trigger will fire on Friday the 14th. If the 15th is a Sunday, the trigger will fire on Monday the 16th. If the 15th is a Tuesday, then it will fire on Tuesday the 15th. However if you specify "1W" as the value for day-of-month, and the 1st is a Saturday, the trigger will fire on Monday the 3rd, as it will not 'jump' over the boundary of a month's days. The 'W' character can only be specified when the day-of-month is a single day, not a range or list of days.<br/>
+The 'L' and 'W' characters can also be combined for the day-of-month expression to yield 'LW', which translates to "last weekday of the month".<br/>
+The '#' character is allowed for the day-of-week field. This character is used to specify "the nth" XXX day of the month. For example, the value of "6#3" in the day-of-week field means the third Friday of the month (day 6 = Friday and "#3" = the 3rd one in the month). Other examples: "2#1" = the first Monday of the month and "4#5" = the fifth Wednesday of the month. Note that if you specify "#5" and there is not 5 of the given day-of-week in the month, then no firing will occur that month. If the '#' character is used, there can only be one expression in the day-of-week field ("3#1,6#3" is not valid, since there are two expressions).<br/>
+The legal characters and the names of months and days of the week are not case sensitive.<br/>
+NOTES:<br/>
+Support for specifying both a day-of-week and a day-of-month value is not complete (you'll need to use the '?' character in one of these fields).<br/>
+Overflowing ranges is supported - that is, having a larger number on the left hand side than the right. You might do 22-2 to catch 10 o'clock at night until 2 o'clock in the morning, or you might have NOV-FEB. It is very important to note that overuse of overflowing ranges creates ranges that don't make sense and no effort has been made to determine which interpretation CronExpression chooses. An example would be "0 0 14-6 ? * FRI-MON".</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Oct 25, 2012 18:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452709"></a>
+                                    <font class="smallfont"><p>It seems currently only the parameters for seconds, minutes and hours work with OR. Trying to configure scheduling of weekdays will cause an error unless the sixth parameter is nothing other than the question mark.</p>
+
+<p>The first three parameters work according to the syntax you posted.</p>
+
+<p>If you have better success then please post your results.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Oct 25, 2012 20:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452716"></a>
+                                    <font class="smallfont"><p>Thanks for the reply Jani. It is very helpful. I will post results if different from your information. </p>
+
+<p>Just noticed the NOTE at the bottom of what I posted says "Support for specifying both a day-of-week and a day-of-month value is not complete (you'll need to use the '?' character in one of these fields)." Is that what you were referring to about the scheduling of weekdays?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Oct 25, 2012 22:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452717"></a>
+                                    <font class="smallfont"><p>Hey, you might be on to something there!</p>
+
+<p>My previous attempt was this:<br/>
+timer (cron: 0,30 00-20 7 * * ?) works<br/>
+timer (cron: 0,30 00-20 7 * * *) crashes<br/>
+timer (cron: 0,30 00-20 7 * * 1-5) crashes<br/>
+timer (cron: 0,30 00-20 7 * * mon-fri) crashes</p>
+
+<p>But that does give the hope that perhaps this may work:</p>
+
+<p>timer (cron: 0,30 00-20 7 ? * MON-FRI)</p>
+
+<p>I'll try that next, will post back shortly.</p>
+
+<p>EDIT: No quick resolution I'm afraid. Not sure what's changed with my Raspberry Pi, but there's a boatload of new Java errors that I have not seen before, even if I revert to the original rules-file that was working. I'll keep looking into this with better time and post again.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Oct 25, 2012 22:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452721"></a>
+                                    <font class="smallfont"><p>Hope that insight works. This should not be so difficult but it is hard to find any good complete documentation for Drools basic syntax.</p>
+
+<p>I'll see what I can come up with but probably won't be for a few days. Hope you get the problems straightened out.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Oct 26, 2012 01:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037060"></a>
+                                    <font class="smallfont"><p>Some progress.</p>
+
+<p>The errors were due to "apt-get upgrade" setting the wrong JRE as the default. Fixing that got things back to normal.</p>
+
+<p>My wake-up rule didn't fire on Saturday, but did wake us up on Sunday to our surprise. After that I re-read the docs you posted above... lo and behold, the cron syntax is different for weekdays too. Regular cron has 0-6 range for weekdays, Drools version has 1-7, gotcha.</p>
+
+<p>Overall this is positive news, both about me learning to read, and that daily scheduling may work in OR! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Oct 28, 2012 11:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037064"></a>
+                                    <font class="smallfont"><p>Glad you got the error to go away. At least you got one morning to sleep in! What was the syntax you used?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Oct 28, 2012 18:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037093"></a>
+                                    <font class="smallfont"><p>Here's a copy-paste from my entire rules file from Designer:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+
+rule <span class="code-quote">"Sunrise Inner"</span>
+
+  timer (cron: 0 00-30 7 ? * 2-6)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+
+  execute.command(<span class="code-quote">"bedroom_inner_dim(UP)"</span>, 1);
+
+end
+
+
+rule <span class="code-quote">"Sunrise Outer"</span>
+
+  timer (cron: 30 15-45 7 ? * 2-6)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+
+  execute.command(<span class="code-quote">"bedroom_outer_dim(UP)"</span>, 1);
+
+end
+
+
+rule <span class="code-quote">"Waketune"</span>
+
+  timer (cron: 15 10 7 ? * 2-6)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+  
+  execute.command(<span class="code-quote">"Input CD"</span>);
+  execute.command(<span class="code-quote">"Volume10"</span>);
+  execute.command(<span class="code-quote">"VLC_play"</span>);
+
+end
+
+
+rule <span class="code-quote">"Waketune_volup"</span>
+
+  timer (cron: 10,40 12-32 7 ? * 2-6)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+  
+  execute.command(<span class="code-quote">"Volume Up"</span>);
+
+end
+</pre>
+</div></div>
+
+<p>Sunrise inner and outer are two led-strips attached to the ceiling.<br/>
+Waketune is a combination of telnet commands to the AV-prepro to set the right input, and a telnet command to a VLC instance running an extra interface to start music playback.</p>
+
+<p>Everything worked on Monday morning as expected. So there's beginning to be empirical evidence that daily scheduling is working <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Oct 29, 2012 09:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037097"></a>
+                                    <font class="smallfont"><p>Sounds like its good to go. Thanks for the code. I hope to get working on automating some things using timer() around here next week. I'll post my results and code also.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Oct 29, 2012 16:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858700"></a>
+                                    <font class="smallfont"><p>Great job debugging and documenting this, thank you!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 17, 2013 18:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858927"></a>
+                                    <font class="smallfont"><p>I've added your cron rules on documentation page at <a href="http://www.openremote.org/display/docs/Designer+2.0+-+Scheduled+Rule+Examples" title="Designer 2.0 - Scheduled Rule Examples">Designer 2.0 &#45; Scheduled Rule Examples</a> where I'm attempting to collect common and useful examples and document them.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 19, 2013 16:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858928"></a>
+                                    <font class="smallfont"><p>This is correct, or as close to correct as it gets on the current 5.1.1 implementation which is the Quartz scheduler documentation on its cron expressions implementation, also available here: <a href="http://grepcode.com/file/repository.jboss.org/nexus/content/repositories/releases/org.drools/drools-core/5.1.1/org/drools/time/impl/CronExpression.java#CronExpression">http://grepcode.com/file/repository.jboss.org/nexus/content/repositories/releases/org.drools/drools-core/5.1.1/org/drools/time/impl/CronExpression.java#CronExpression</a></p>
+
+<p>Thanks for digging it up, Art.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 19, 2013 17:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858935"></a>
+                                    <font class="smallfont"><p>Happy to be of service <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Mar 19, 2013 19:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605539"></a>
+                                    <font class="smallfont"><p>I do not understand how these rules can operate without the packages <br/>
+import java.util.Date;<br/>
+import java.text.SimpleDateFormat;</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+
+rule <span class="code-quote">"Sunrise Inner"</span>
+
+  timer (cron: 0 00-30 7 ? * 2-6)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+
+  execute.command(<span class="code-quote">"bedroom_inner_dim(UP)"</span>, 1);
+
+end
+
+
+rule <span class="code-quote">"Sunrise Outer"</span>
+
+  timer (cron: 30 15-45 7 ? * 2-6)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+
+  execute.command(<span class="code-quote">"bedroom_outer_dim(UP)"</span>, 1);
+
+end
+
+
+rule <span class="code-quote">"Waketune"</span>
+
+  timer (cron: 15 10 7 ? * 2-6)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+  
+  execute.command(<span class="code-quote">"Input CD"</span>);
+  execute.command(<span class="code-quote">"Volume10"</span>);
+  execute.command(<span class="code-quote">"VLC_play"</span>);
+
+end
+
+
+rule <span class="code-quote">"Waketune_volup"</span>
+
+  timer (cron: 10,40 12-32 7 ? * 2-6)
+
+when
+
+  eval(<span class="code-keyword">true</span>)
+
+then
+  
+  execute.command(<span class="code-quote">"Volume Up"</span>);
+
+end</pre>
+</div></div>
+
+<p>because I have this error if I do not wear them.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">ERROR 2016-02-02 22:41:48,360 : Rule definition 'modeler_rules.drl' could not be deployed. See errors below.
+ERROR 2016-02-02 22:41:48,361 : Rule Compilation error Date cannot be resolved to a type
+Date cannot be resolved to a type
+SimpleDateFormat cannot be resolved to a type
+SimpleDateFormat cannot be resolved to a type
+ERROR 2016-02-02 22:41:48,363 : There was an error parsing the rule definition 'modeler_rules.drl' : Could not parse knowledge.
+java.lang.IllegalArgumentException: Could not parse knowledge.
+	at org.drools.builder.impl.KnowledgeBuilderImpl.newKnowledgeBase(KnowledgeBuilderImpl.java:58)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:532)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:659)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:858)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:744)
+INFO 2016-02-02 22:41:48,371 : Initialized event processor : Drools Rule Engine
+INFO 2016-02-02 22:41:48,400 : Initialized event processor : RRD4J Data Logger
+INFO 2016-02-02 22:41:48,400 : Initialized event processor : EmonCMS Data Logger</pre>
+</div></div>
+
+
+<p>If I add the packages I have more errors puts it still does not work. Someone would have an idea ?</p>
+
+<p>Thank you</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre2302 at Feb 06, 2016 02:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605540"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>Before you all pull your hair out....</p>
+
+<p>Richard has just completed a new protocol, which we are in the process of shaking down before it's included in the main Pro package.</p>
+
+<p>The HowTo is here...</p>
+
+<p><a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Alarm+Protocol">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Alarm+Protocol</a></p>
+
+
+<p>It might just solve all but the really complex time triggers..</p>
+
+<p>Please let us know if you think this will be useful</p>
+
+
+<p>Cheers,</p>
+
+<p>Stuart</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Feb 06, 2016 09:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605585"></a>
+                                    <font class="smallfont"><p>Hello</p>
+
+<p>Thank you for your reply.</p>
+
+<p>I think this method is a good solution to bypass the old version problem (drools 5.1.1).But I use the free version of OpenRemote, so I think that I will not be of much use</p>
+
+
+<p>cordially</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre2302 at Feb 08, 2016 17:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605597"></a>
+                                    <font class="smallfont"><p>In these rules file there is nothing which refers to Date nor SimpleDateFormat. From the error log the conclusion is that the modeler_rules.drl is different. Please check it (openremote/webaaps/controller/rules/modeler_rules.drl). Perhaps, there is a problem with update?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 09, 2016 10:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605610"></a>
+                                    <font class="smallfont"><p>Thank you very much. </p>
+
+<p>I understood your message that I had to have a conflict in my rules. I've realized that if I put "rule1" and "rule 2" Overall I this error message that appears. But if I separate the two rules I have not error.</p>
+
+<p>I also made a mistake in my timer rule because I wanted it to work every minute. So I replaced "timer (cron: 0 00 11-01 * * ?)" to "timer (cron: 0 00-59 11-01 * * ?)"</p>
+
+
+<p>Here is the rule that works for me:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-comment">//Package, globals and imports:
+</span>
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+global org.openremote.controller.statuscache.RangeFacade ranges;
+
+<span class="code-keyword">import</span> org.openremote.controller.Constants;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+<span class="code-keyword">import</span> java.util.Date;
+<span class="code-keyword">import</span> java.text.SimpleDateFormat;
+
+
+
+rule <span class="code-quote">"rule1"</span>
+
+timer (cron: 0 00-59 11-01 * * ?)
+
+when eval(<span class="code-keyword">true</span>)
+
+then
+
+<span class="code-object">System</span>.out.println ( <span class="code-quote">"Pierre..."</span>);
+
+end
+
+
+
+rule <span class="code-quote">"rule2"</span> 
+
+when
+
+  Event( source ==  <span class="code-quote">"mouvement"</span>, value == <span class="code-quote">"on"</span> )
+
+
+then
+
+  Date now = <span class="code-keyword">new</span> Date();
+  SimpleDateFormat dateFormatter = <span class="code-keyword">new</span> SimpleDateFormat(<span class="code-quote">"dd-MM' ---- 'H:mm:ss"</span>);
+  execute.command(<span class="code-quote">"heure_detection_multisensor"</span>, "" +dateFormatter.format(now));
+
+end</pre>
+</div></div>
+
+
+<p>Thanks again</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre2302 at Feb 09, 2016 20:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

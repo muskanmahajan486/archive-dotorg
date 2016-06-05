@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Telnet wait for regexp</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Telnet wait for regexp
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 27, 2013 by <font color="#0050B2">mditty</font>.
+				    </div>
+
+				    <p>I have a Pioneer 1120-VSX which is a bit flaky on it's telnet connection.  I'm trying to send a command to it but on this receiver if you close the TCP/IP connection before you get a message back to acknowledge the command it might get dropped.  I know there is a method to wait for a response before continuing but I can't find documentation that is clear if this can be a regexp or if it must be the full text.  From my testing it appears regexp is not supported, an example.</p>
+
+<p>Under Telnet Attributes:<br/>
+Command == &lt;wait&gt;|&lt;command&gt;|&lt;wait&gt;|&lt;command&gt;</p>
+
+<p>What I would like to do is this<br/>
+null|vu|VOL(\d+)</p>
+
+<p>So wait for VOL019 for example, but this is not working.</p>
+
+<p>Can someone confirm if regexp is allowed for the &lt;wait&gt; command?</p>
+
+<p>Also it appears the telnet instruction page is a bit outdated, I had to figure much of it out in the forums.  Any objection to writing up new text and submitting it to replace what is there now?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22877051"></a>
+                                    <font class="smallfont"><p>Checking the code, I can confirm it does not support regular expressions.<br/>
+It's waiting for the string, skipping characters if required, so <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">null</span>|vu|OL</pre>
+</div></div> would still match <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">VOL</pre>
+</div></div> but there does not seem to be anything that can work for skipping trailing characters.</p>
+
+<p>As for documentation, any contribution is always more than welcomed. If you can write some updated text, that would be greatly appreciated.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 27, 2013 10:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877135"></a>
+                                    <font class="smallfont"><p>Hmm, did some more testing and digging through tcpdump.  Looks like if I just have null|vu|VOL or OL it doesn't even wait for any return before closing the socket.  So my problem isn't with the wait syntax but that it doesn't seem to be doing what I expect.</p>
+
+<p>When I get more time I'll have to pull source code and try to debug what I'm doing wrong.  If anyone has pointers or things I might be missing to make the wait occur let me know.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mditty at Sep 29, 2013 06:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877259"></a>
+                                    <font class="smallfont"><p>The issues sound familiar, I was digging through the same bits some time ago. Recorded some as issues, and left some changes outside the current release due to potentially breaking compatibility with existing telnet usage.</p>
+
+<p>I'll need to dig up the notes and issues and the commits around that and refresh my memory. But if there's anything specific you need to know, can try to answer. Or help with troubleshooting your specific issue further.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 01, 2013 16:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877260"></a>
+                                    <font class="smallfont"><p>The one I'm mostly thinking might be related to you is <a href="http://jira.openremote.org/browse/ORCJAVA-327">ORCJAVA-327</a>. And there's an intermediate test binary with ORCJAVA-327 applied available here: <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_INTERMEDIATE-ORCJAVA-327.zip/download">OpenRemote-Controller-2.1.0_INTERMEDIATE-ORCJAVA-327.zip</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 01, 2013 17:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877271"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Also it appears the telnet instruction page is a bit outdated, I had to figure much of it out in the forums. Any objection to writing up new text and submitting it to replace what is there now?</p></blockquote>
+
+<p>Yes, please.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 01, 2013 21:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877380"></a>
+                                    <font class="smallfont"><p>I tried this build and it didn't seem to fully resolve the issues, still not seeing the wait for executed before the socket is closed..  When I have time I'm going to pull down the code and debug further.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mditty at Oct 03, 2013 07:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596591"></a>
+                                    <font class="smallfont"><p>So after a crazy year and a half of work and finally getting a development VM setup so I have a reasonable place to sync/compile/test things I have realized what my issues appears to be.  My receiver and many other devices which support telnet supports only one incoming connection at a time, but the way the telnet protocol is setup in ORC every command that is sent will open up a new connection even if one is already open.</p>
+
+<p>I would be happy to try and implement something here to test if I can resolve my issues with this, but it seems like this would have to be done above the protocol level or the protocol would have to be setup differently.  Any thoughts or is there another protocol that would be handled more like this I should poke around in?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mditty at Feb 16, 2015 04:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

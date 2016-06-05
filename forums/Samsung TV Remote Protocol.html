@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Samsung TV Remote Protocol</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Samsung TV Remote Protocol
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 23, 2012 by <font color="#0050B2">aamo</font>.
+				    </div>
+
+				    <p>Hi all!</p>
+
+<p>First of all I want to congratulate all the work done with openremote. It is a very powerful tool!<br/>
+I would like to collaborate with documentation about the different processes for the design of an installation and configuration of openremote. I think that you are lacking in documentation <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>On the other hand I have seen on the web designer, there is a protocol called "Samsung TV Remote". I've been testing with the controller version "2.0.0_SNAPSHOT_20110611" but apparently, as seen on the logs, this protocol is not implemented. It is possible to obtain a controller with this protocol implemented?</p>
+
+<p>Thanx a lot and congratulations!</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19435095"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I think you can find most of the responses to your questions into that thread:
+<a href="http://www.openremote.org/pages/viewpage.action?pageId=19432914">http://www.openremote.org/pages/viewpage.action?pageId=19432914</a></p>
+
+<p>This Samsung TV Remote Protocol is implemented on the current Controller (developer) release. You can download it from this address:
+<a href="http://www.redeker-consulting.de/openremote/OpenRemote-Controller-2.0.0_SNAPSHOT_20120103.zip">http://www.redeker-consulting.de/openremote/OpenRemote-Controller-2.0.0_SNAPSHOT_20120103.zip</a></p>
+
+<p>But don't forget that the current implementation is requesting to param the controller. Auto-Discovery with UpNP is not yet supported and you have to configure your TV IP-address within config.properties</p>
+
+<p>Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Jan 23, 2012 16:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435100"></a>
+                                    <font class="smallfont"><p>Hi! (I'm happy!)</p>
+
+<p>I've made some successful tests with vol_up and vol_down buttons, i'll try to explain my experince to those who have this same "problem":</p>
+
+<p>1.- With Openremote 2.0.0_SNAPSHOT_20120103: It works fine and as spected.</p>
+
+<p>I have de feeling that this version is heavier than the "stable" release 20110611, therefore...</p>
+
+<p>2.- With Openremote 2.0.0_SNAPSHOT_20110611: I've copied the samsungtv folder classes to "webapps/controller/WEB-INF/classes/org/openremote/controller/protocol" on this release and configure "config.properties" and "applicationContext.xml" from "webapss/controller/WEB-INF/classes"</p>
+
+<p>config.properties: Add my tv ip as seen on the how-to.</p>
+
+<p>applicationContext.xml: Add the line</p>
+
+<p>&lt;prop key = "samsungTV"&gt;samsungTVCommandBuilder&lt;/prop&gt;</p>
+
+<p>to the commandFactory bean. And the samsungTV commandBuilder bean in the correct place (search for "COMMAND BUILDERS")</p>
+
+<p>	&lt;!-- Samsung TV Command Builder --&gt;<br/>
+	&lt;bean id = "samsungTVCommandBuilder" class = "org.openremote.controller.protocol.samsungtv.SamsungTVRemoteCommandBuilder"&gt;<br/>
+		&lt;constructor-arg index="0" value="$&#123;samsungTV.interface.ip&#125;" /&gt;<br/>
+	&lt;/bean&gt;</p>
+
+<p>Then restart openremote. The pannel buttons works fine in this two cases.</p>
+
+<p>The only thing missing in the manual is to be explained that the tv must be turned on and when you press a button on the panel for the first time, the tv asks for allowing access to openremote (ip) and WIRELESS remote control. You have to accept and then all works fine.</p>
+
+<p>On the other hand i can't turn on the tv, because the ip interface is powered off, and therefore the tv is not listening for ip requests... I'll try to make tests with WOL but at the moment it doesn't work... <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Have you any idea?</p>
+
+<p>Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aamo at Jan 23, 2012 20:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435149"></a>
+                                    <font class="smallfont"><p>Glad to hear that you have this working <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+The 20120103 snapshot contains a few more protocols and also rule support. This will be the next stable version.<br/>
+I updated the Samsung How-To with your suggestions, thanks.<br/>
+You can find the How-To here: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Samsung+TV+Remote">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Samsung+TV+Remote</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 25, 2012 00:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435154"></a>
+                                    <font class="smallfont"><p>Indeed, Good news for you.<br/>
+I'm not sure the Samsung TV is supporting the WOL feature. The standard samsung remote application (on iPad and Android) has the same behavior. As explained in Samsung Doc, The TV has to be turn ON for the IP remotes to work.<br/>
+May be we can find a solution around this place: <a href="http://www.samygo.tv/">http://www.samygo.tv/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Jan 25, 2012 09:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435826"></a>
+                                    <font class="smallfont"><p>just installed the new snapshot and worked fine in my samsung tv.</p>
+
+<p>Before this version I have used itach to control the TV via openremote. But I have tested also an arduino to turn on TV using an IR sender.</p>
+
+<p>The only way I found to turn the tv on is using the IR emitter.</p>
+
+<p>My question here is : How do you expect to control more than one TV with a single openremote controller? </p>
+
+<p>This implementation is currently based in fixed IP on config.properties. </p>
+
+<p>Thanks for the good work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ivanfm at Feb 10, 2012 23:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435845"></a>
+                                    <font class="smallfont"><p>We will have to enhance the protocol to support multiple devices. <br/>
+This is going to come after the final 2.0 release is out.</p>
+
+<p>Which arduino setup did you use for arduino and IR?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 11, 2012 08:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19437251"></a>
+                                    <font class="smallfont"><p>The device are Arduino Nano + IO Board + wireless radio + DHT11(temperature/humidity sensor) + IR emitter led(with transistor+resistors) + relay board.<br/>
+The device can do a lot more than turning on the TV <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+<p>To send commands to this device I have connected to Ethernet an <a href="http://iteadstudio.com/store/index.php?main_page=product_info&amp;cPath=50_51&amp;products_id=511">iBoard</a> with wireless radio, which works as a bridge between the controllers and devices.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ivanfm at Feb 22, 2012 12:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19437253"></a>
+                                    <font class="smallfont"><p>Sounds like an interesting setup.<br/>
+Do you have an information about this on the internet or just the arduino pages?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 22, 2012 13:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19437255"></a>
+                                    <font class="smallfont"><p>I have my pages with links for the pages where I got (many things are in portuguese and the website is basically an MindMap designed as pages....). </p>
+
+<p><a href="http://dicas.ivanfm.com/eletronica/arduino">http://dicas.ivanfm.com/eletronica/arduino</a></p>
+
+<p><a href="http://dicas.ivanfm.com/equipamentos/samsung-tv">http://dicas.ivanfm.com/equipamentos/samsung-tv</a></p>
+
+<p><a href="http://dicas.ivanfm.com/eletronica/infrared-ir-infravermelho">http://dicas.ivanfm.com/eletronica/infrared-ir-infravermelho</a></p>
+
+
+<p>No page for the project itself, but I'm thinking about it.<br/>
+If anyone wants more information we can talk about it.</p>
+
+
+<p>ps. just tested and foreign users can use the bottom right button to translate the site with google translator. Not perfectly but you can read.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ivanfm at Feb 22, 2012 13:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440313"></a>
+                                    <font class="smallfont"><p>I have made a patch to support multiple IPs for samsung on the controller 2.0.<br/>
+Where I can send the patch ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ivanfm at Apr 22, 2012 17:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440318"></a>
+                                    <font class="smallfont"><p>Thank you very much.<br/>
+Your help is really appreciated.<br/>
+Just send the path to me: marcus(at)openremote(dot)org.</p>
+
+<p>If you are interested in doing more work, you can fill out the contribution agreement form and get yourself a sourceforge account.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 22, 2012 21:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

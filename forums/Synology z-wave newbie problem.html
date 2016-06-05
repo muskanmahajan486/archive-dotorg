@@ -1,0 +1,798 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Synology z-wave newbie problem</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Synology z-wave newbie problem
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 11, 2013 by <font color="#0050B2">willibald17</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>I am a complete Linux/Z-wave newbie.<br/>
+I followed the comprehensive manual on the <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Synology+with+Z-Wave?focusedCommentId=21858470#comment-21858470">open remote website</a>, but i got stuck.</p>
+
+<p>My issue looks quite like the one from Ralph, on which Joe Miller answered on March 10</p>
+
+<blockquote>
+<p>If you have nothing in zwave.log, it's probably because of either a) the UI configuration of zwave is not correct b) the libraries within OpenRemote are not correct.</p>
+
+<p>For (a), please refer to the settings I documented in step (6) above. I updated today to include my settings. It's important that you know the correct port#. For me, on my Synology, it's: /dev/ttyUSB0. It's probably the same for you, but not guaranteed.</p>
+
+<p>For (b), it's very important that you have the correct OpenRemote distro with the correct zwave.jar installed. This is a mistake I made originally. I missed the step about updating the OpenRemote distro and zwave.jar. After this is correct, ensure the following is correct:<br/>
+cd /volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/native<br/>
+rm -fr librxtxSerial.so<br/>
+ln -s /opt/lib/librxtxSerial-2.1-7.so librxtxSerial.so</p></blockquote>
+
+<p>Regarding (a), the controller.xml shows my correct settings and it resembles the dmesg output (see below)<br/>
+Regarding (b), it is set like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DiskStation&gt; cd /volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/<span class="code-keyword">native</span>
+DiskStation&gt; ls -ltr
+-rw-r--r--    1 openremo users        77759 Jun 17 12:41 rxtxSerial.dll
+-rw-r--r--    1 openremo users        47421 Jun 17 12:41 rxtxParallel.dll
+-rw-r--r--    1 openremo users       154682 Jun 17 12:41 librxtxSerial.sobackup
+-rw-r--r--    1 openremo users       169488 Jun 17 12:41 librxtxSerial.jnilib
+-rw-r--r--    1 openremo users        10075 Jun 17 12:41 librxtxParallel.so
+-rw-r--r--    1 openremo users       146364 Sep 10 22:32 librxtxSerial-2.1-7.so
+lrwxrwxrwx    1 root     root            22 Sep 10 22:33 librxtxSerial.so -&gt; librxtxSerial-2.1-7.so
+</pre>
+</div></div>
+
+<p>Could anyone try to help me out please?</p>
+
+<p>Cheers, Vincent (DS110J, 4.3)</p>
+
+
+<p><b>excerpt from dmesg</b></p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[  110.080000] usb 1-1.3: cp210x converter now attached to ttyUSB0
+[  110.130000] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver cp210x
+[  110.130000] cp210x: v0.09:Silicon Labs CP210x RS232 serial adaptor driver
+</pre>
+</div></div>
+
+<p><b>controller.xml</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DiskStation&gt; cat /volume1/@appstore/OpenRemote/webapps/controller/controller.xml 
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;openremote xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> xmlns:xsi=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span> xsi:schemaLocation=<span class="code-quote">"http://www.openremote.org http://www.openremote.org/schemas/controller.xsd"</span>&gt;
+</span>  &lt;components&gt;
+    &lt;label id=<span class="code-quote">"6"</span> /&gt;
+  &lt;/components&gt;
+  &lt;sensors /&gt;
+  &lt;commands /&gt;
+  &lt;config&gt;
+    &lt;property name=<span class="code-quote">"controller.roundrobin.multicast.port"</span> value=<span class="code-quote">"10000"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.roundrobin.tcpserver.port"</span> value=<span class="code-quote">"20000"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.groupname"</span> value=<span class="code-quote">"floor20"</span> /&gt;
+    &lt;property name=<span class="code-quote">"multicast.port"</span> value=<span class="code-quote">"3333"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.groupmember.autodetect.on"</span> value=<span class="code-quote">"<span class="code-keyword">true</span>"</span> /&gt;
+    &lt;property name=<span class="code-quote">"amx_ni.port"</span> value=<span class="code-quote">"50000"</span> /&gt;
+    &lt;property name=<span class="code-quote">"zwave.commLayer"</span> value=<span class="code-quote">"RXTX"</span> /&gt;
+    &lt;property name=<span class="code-quote">"copy.lircd.conf.on"</span> value=<span class="code-quote">"<span class="code-keyword">true</span>"</span> /&gt;
+    &lt;property name=<span class="code-quote">"irsend.path"</span> value=<span class="code-quote">"/usr/local/bin/irsend"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.applicationname"</span> value=<span class="code-quote">"controller"</span> /&gt;
+    &lt;property name=<span class="code-quote">"multicast.address"</span> value=<span class="code-quote">"224.0.1.100"</span> /&gt;
+    &lt;property name=<span class="code-quote">"Macro.IR.Execution.Delay"</span> value=<span class="code-quote">"500"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.roundrobin.multicast.address"</span> value=<span class="code-quote">"224.0.1.200"</span> /&gt;
+    &lt;property name=<span class="code-quote">"zwave.comPort"</span> value=<span class="code-quote">"/dev/ttyUSB0"</span> /&gt;
+    &lt;property name=<span class="code-quote">"zwave.pad.port"</span> value=<span class="code-quote">"7876"</span> /&gt;
+    &lt;property name=<span class="code-quote">"lutron_homeworks.password"</span> value=<span class="code-quote">"openremote"</span> /&gt;
+    &lt;property name=<span class="code-quote">"lagarto_network.broadcast"</span> value=<span class="code-quote">"tcp:<span class="code-comment">//127.0.0.1:5001"</span> /&gt;
+</span>    &lt;property name=<span class="code-quote">"lircd.conf.path"</span> value=<span class="code-quote">"/etc/lircd.conf"</span> /&gt;
+    &lt;property name=<span class="code-quote">"lutron_homeworks.port"</span> value=<span class="code-quote">"23"</span> /&gt;
+    &lt;property name=<span class="code-quote">"lutron_homeworks.address"</span> value=<span class="code-quote">"192.168.1.1"</span> /&gt;
+    &lt;property name=<span class="code-quote">"zwave.pad.host"</span> value=<span class="code-quote">"localhost"</span> /&gt;
+    &lt;property name=<span class="code-quote">"lutron_homeworks.username"</span> value=<span class="code-quote">"openremote"</span> /&gt;
+    &lt;property name=<span class="code-quote">"webapp.port"</span> value=<span class="code-quote">"8080"</span> /&gt;
+    &lt;property name=<span class="code-quote">"protocol.zwave.classname"</span> value=<span class="code-quote">"org.openremote.controller.protocol.zwave.ZWaveCommandBuilder"</span> /&gt;
+    &lt;property name=<span class="code-quote">"resource.upload.enable"</span> value=<span class="code-quote">"<span class="code-keyword">true</span>"</span> /&gt;
+    &lt;property name=<span class="code-quote">"amx_ni.address"</span> value=<span class="code-quote">"192.168.1.1"</span> /&gt;
+  &lt;/config&gt;
+&lt;/openremote&gt;
+</pre>
+</div></div>
+
+<p><b>catalina.out</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Sep 11, 2013 11:43:04 PM org.apache.catalina.core.AprLifecycleListener init
+INFO: The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/<span class="code-keyword">native</span>
+Sep 11, 2013 11:43:06 PM org.apache.coyote.http11.Http11Protocol init
+INFO: Initializing Coyote HTTP/1.1 on http-18581
+Sep 11, 2013 11:43:06 PM org.apache.catalina.startup.Catalina load
+INFO: Initialization processed in 24173 ms
+Sep 11, 2013 11:43:08 PM org.apache.catalina.core.StandardService start
+INFO: Starting service Catalina
+Sep 11, 2013 11:43:08 PM org.apache.catalina.core.StandardEngine start
+INFO: Starting Servlet Engine: Apache Tomcat/6.0.18
+Sep 11, 2013 11:43:08 PM org.apache.catalina.startup.HostConfig deployWAR
+INFO: Deploying web application archive webconsole.war
+Sep 11, 2013 11:43:43 PM org.openremote.controller.bootstrap.Startup redirectJULtoLog4j
+INFO: Initialized JUL to LOG4J Redirector.
+INFO 2013-09-11 23:44:28,076 : 
+
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+WARNING:  RXTX Version mismatch
+	Jar version = RXTX-2.2pre1
+	<span class="code-keyword">native</span> lib Version = RXTX-2.1-7
+gnu.io.NoSuchPortException
+	at gnu.io.CommPortIdentifier.getPortIdentifier(CommPortIdentifier.java:269)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveConnectionThread.run(ZWaveGatewayRxtx.java:108)
+INFO 2013-09-11 23:44:43,920 : No rule definitions found in '/volume1/@appstore/OpenRemote/webapps/controller/rules'.
+INFO 2013-09-11 23:44:43,942 : Initialized event processor : Drools Rule Engine
+INFO 2013-09-11 23:44:46,363 : Initialized event processor : RRD4J Data Logger
+INFO 2013-09-11 23:44:46,364 : Initialized event processor : EmonCMS Data Logger
+INFO 2013-09-11 23:44:46,421 : Startup complete.
+INFO 2013-09-11 23:44:46,424 : Controller Definition File Watcher <span class="code-keyword">for</span> Default Deployer started.
+Sep 11, 2013 11:44:56 PM org.apache.coyote.http11.Http11Protocol start
+INFO: Starting Coyote HTTP/1.1 on http-18581
+Sep 11, 2013 11:44:56 PM org.apache.catalina.startup.Catalina start
+INFO: Server startup in 109974 ms
+</pre>
+</div></div>
+
+<p><b>boot.log</b> </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DiskStation&gt; cat /volume1/@appstore/OpenRemote/logs/boot.log
+INFO 2013-09-11 23:44:28,076 : 
+
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+INFO 2013-09-11 23:44:43,920 : No rule definitions found in '/volume1/@appstore/OpenRemote/webapps/controller/rules'.
+INFO 2013-09-11 23:44:43,942 : Initialized event processor : Drools Rule Engine
+INFO 2013-09-11 23:44:46,363 : Initialized event processor : RRD4J Data Logger
+INFO 2013-09-11 23:44:46,364 : Initialized event processor : EmonCMS Data Logger
+INFO 2013-09-11 23:44:46,421 : Startup complete.
+INFO 2013-09-11 23:44:46,424 : Controller Definition File Watcher <span class="code-keyword">for</span> Default Deployer started.
+</pre>
+</div></div>
+
+<p><b>zwave.log</b></p>
+
+<p>Empty</p>
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22876234"></a>
+                                    <font class="smallfont"><p>Hi Vincent,</p>
+
+<p>This uninformative message:</p>
+
+<blockquote>
+<p>gnu.io.NoSuchPortException<br/>
+	at gnu.io.CommPortIdentifier.getPortIdentifier(CommPortIdentifier.java:269)<br/>
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveConnectionThread.run(ZWaveGatewayRxtx.java:108)</p></blockquote>
+
+<p>Is attempting to tell you that there's something wrong with your serial port configuration &#8211; it cannot find the port you've configured for your controller.</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 12, 2013 12:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876242"></a>
+                                    <font class="smallfont"><p>Hi Juha, </p>
+
+<p>Thanks a lot for this feedback. Unfortunately, I still can't figure out what is going wrong with the port.<br/>
+I followed the instruction under "Installation of Linux Serial Drivers"</p>
+
+<p>as a result dmesg says:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[  111.900000] usb 1-1.3: cp210x converter now attached to ttyUSB0
+</pre>
+</div></div>
+
+<p>I understood that this was the value to fill in the OpenRemote Designer -&gt; config for controller -&gt; z-wave -&gt; zwave.comPort: /dev/ttyUSB0<br/>
+After a sync, the controller.xml overtook this value:</p>
+
+<p>controller.xml says:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    &lt;property name=<span class="code-quote">"zwave.comPort"</span> value=<span class="code-quote">"/dev/ttyUSB0"</span> /&gt;
+</pre>
+</div></div>
+
+<p>I thought that if these 2 values match, that OpenRemote could find the device. I am missing something..</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by willibald17 at Sep 12, 2013 20:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876243"></a>
+                                    <font class="smallfont"><p>It could be a permission issue.<br/>
+What user do you use to run the controller and what permissions are set for /dev/ttyUSB0?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 12, 2013 21:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876320"></a>
+                                    <font class="smallfont"><p>Thank you for your reply, Marcus!</p>
+
+<p>The port:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+crw-rw----    1 root     root      188,   0 Sep 12 21:17 ttyUSB0
+</pre>
+</div></div>
+
+<p>The controller:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+drwxr-xr-x   11 openremo users       4.0K Sep 10 21:24 controller
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by willibald17 at Sep 14, 2013 08:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876329"></a>
+                                    <font class="smallfont"><p>Hi Vincent,</p>
+
+<p>First check the processor type of your Synology Nas!.</p>
+
+<p>I also had some permission problems: see<br/>
+<a href="http://www.openremote.org/pages/viewpage.action?pageId=22873401&amp;focusedCommentId=22873747#comment-22873747">http://www.openremote.org/pages/viewpage.action?pageId=22873401&amp;focusedCommentId=22873747#comment-22873747</a></p>
+
+<p>I got it working. (except the webconsole)</p>
+
+
+<p>Regards,<br/>
+Rein</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by reind at Sep 14, 2013 10:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876374"></a>
+                                    <font class="smallfont"><p>Hi Rein,</p>
+
+<p>Yes thanks for the reference.<br/>
+It seems that also all the corrections have been added to the manual, which i used.<br/>
+I hope I get everything working soon as well <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>This is my model.</p>
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'>System Model	</td>
+<td class='confluenceTd'>Processor Type</td>
+<td class='confluenceTd'>	Notes</td>
+</tr>
+<tr>
+<td class='confluenceTd'>DS110j</td>
+<td class='confluenceTd'>	Marvell Kirkwood mv6281 ARM</td>
+<td class='confluenceTd'>	SATA, 16-bit Memory Bus, 128MB of RAM</td>
+</tr>
+</tbody></table>
+
+<p>Hence, i downloaded this file from the Oracle blog:<br/>
+librxtxSerial-2.1-7.so for ARMv5 based Plug Computers</p>
+
+<p>I looked at the permissions again:</p>
+
+<p>read/write access on the /var/lock folder</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+drwxrwx--x    2 root     uucp          4096 Sep 14 10:39 lock
+</pre>
+</div></div>
+<p>and on the device</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+crw-rw----    1 root     root      188,   0 Sep 14 10:36 ttyUSB0
+</pre>
+</div></div>
+
+<p>Does it matter that the groups are different here?</p>
+
+<p>Is the owner correct for the zwave.jar file?</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+-rw-r--r--    1 openremo users        46972 Sep 10 20:51 zwave.jar
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by willibald17 at Sep 15, 2013 00:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876383"></a>
+                                    <font class="smallfont"><p>If you start the controller as user "openremote" you need to set the permission of the device for "everyone" (chmod +r+w /dev/ttyUSB0)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 15, 2013 07:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876396"></a>
+                                    <font class="smallfont"><p>Vincent,</p>
+
+<p>I could only get it to work by making openremote the owner:</p>
+
+<p>chown -R openremote.uucp /var/lock<br/>
+chown -R openremote.dialout /dev/ttyUSB0<br/>
+and restart </p>
+
+<p>zwave.jar is only read so that is ok.</p>
+
+<p>I think the problem is due to a error in the pcloadletter.co.uk package we both used.<br/>
+The reply of Marcus is probably better. ( Im als o rather new on Openremote and Linux, and i have not checked this yet)</p>
+
+<p>Rein</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by reind at Sep 15, 2013 15:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876408"></a>
+                                    <font class="smallfont"><p>Thanks Rein and Marcus</p>
+
+<p>The new issue is that the system changes the permissions on /dev/ttyUSB0 back to what it was, after reboot.<br/>
+It builds up these permissions/owner itself.</p>
+
+<p>How do I make the changes to /dev/ttUSB0 'stick' after a reboot?</p>
+
+<p>KR, </p>
+
+<p>Vincent</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by willibald17 at Sep 15, 2013 21:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876411"></a>
+                                    <font class="smallfont"><p>In that case you can try Rein's idea and change the owner.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 15, 2013 22:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876466"></a>
+                                    <font class="smallfont">
+
+<p>I face the same challenge with both of your options.</p>
+
+<p>Either changing the owner or changing the permission of /dev/ttyUSB0 is made undone after a reboot.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by willibald17 at Sep 16, 2013 21:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876479"></a>
+                                    <font class="smallfont"><p>If the changes don't stick after a reboot, you will have to configure some startup script to change your permission.<br/>
+The synology forums or wiki will probably have something about that.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 17, 2013 07:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876505"></a>
+                                    <font class="smallfont"><p>Vincent,</p>
+
+<p>I did not change permissions other than the two mentioned.<br/>
+the changes are not temporary, probably the are not made.<br/>
+Do you have enough persmissions to change the settings ?</p>
+
+<p>I use Winscp.net to track the properties and permissons (as mentioned I have a Windows background) saved me a lot of typing.</p>
+
+<p>Rein</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by reind at Sep 17, 2013 21:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876507"></a>
+                                    <font class="smallfont"><p>I will figure this one (how to make the permissions stick), and let you know the results.</p>
+
+<p>Thanks for the support so far.</p>
+
+<p>ps. I dont have a Windows machine <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by willibald17 at Sep 17, 2013 22:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876606"></a>
+                                    <font class="smallfont"><p>Hi all,</p>
+
+<p>With a little help I found the way to make the permissions stick after a reboot.</p>
+
+<p>We changed the permsissions (777) in /usr/syno/hotplug/tty.agent:</p>
+
+<p>tty_device_node_handler () # $1: "add" = remove old then add new one,  other action = remove only</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+{
+	local node_action=<span class="code-quote">"$1"</span>
+	local dev_node_path=<span class="code-quote">"/dev/${DEVNAME}"</span>
+	<span class="code-keyword">if</span> [ -e <span class="code-quote">"${dev_node_path}"</span> ]; then
+		/bin/rm ${dev_node_path} &gt; /dev/<span class="code-keyword">null</span> 2&gt;&amp;1
+	fi
+
+	<span class="code-keyword">case</span> $node_action in
+		<span class="code-quote">"add"</span>)
+			# make device node
+			/bin/mknod ${dev_node_path} c ${MAJOR} ${MINOR} &gt; /dev/<span class="code-keyword">null</span> 2&gt;&amp;1
+			/bin/chmod 777 ${dev_node_path} 
+			;;
+		*)
+			;;
+	esac
+}
+</pre>
+</div></div>
+
+<p>The catalina.log doesn't show the error any more, and there is LIGHT !!!!</p>
+
+
+<p>Thank you all very much for leading me into the light <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Cheers!</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by willibald17 at Sep 21, 2013 08:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881899"></a>
+                                    <font class="smallfont"><p>I seem to also have similar problems. Well, I see no errors anywhere, but nothing is working so far. I have a DS412+ (Intel system), DSM 4.3 and installed the Z-Wave packages as per: <a href="http://pcloadletter.co.uk/2011/10/25/openremote-package-for-synology/">http://pcloadletter.co.uk/2011/10/25/openremote-package-for-synology/</a>. I did however not replace the webapp with a manually downloaded snapshot, as there doesn't seem to be any reason for that.</p>
+
+<p>Hm, this markup editor is seriously broken, at least I see no way to insert any markup that would work for code or logs. Oh well...</p>
+
+<p>Looking at dmesg it seems the modules are being loaded ok:</p>
+
+<p>[  152.950261] usbcore: registered new interface driver usbserial_generic<br/>
+[  152.956879] usbserial: USB Serial Driver core<br/>
+[  152.994900] usbcore: registered new interface driver ftdi_sio<br/>
+[  153.027428] usbcore: registered new interface driver pl2303<br/>
+[  153.201243] usb 7-2: reset full-speed USB device number 2 using uhci_hcd<br/>
+[  153.364958] usb 7-2: cp210x converter now attached to ttyUSB0<br/>
+[  153.371107] usbcore: registered new interface driver cp210x</p>
+
+
+<p>Angua&gt; ls -la /dev/ttyUSB0<br/>
+crw-rw----    1 root     root      188,   0 Dec 29 20:30 /dev/ttyUSB0</p>
+
+
+<p>The permissions and owner seem fishy, I did change them to openremote.uucp (or similar) before rebooting. Apparently the Synology stuff is a bit buggy and changes the owner/permission on each boot back to root.root. But if there was a permission problem I'd assume there would be a mention of a failure in some log file. Can't seem to find any though.</p>
+
+<p>Lots of processes and threads running as openremote:</p>
+
+<p>Angua&gt; ps w | grep openre<br/>
+12127 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12139 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12140 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12144 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12145 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12146 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12150 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12151 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12152 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12304 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12305 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12306 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12307 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12308 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12309 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -<br/>
+12310 openremo  365m S    /volume1/@appstore/java6/jre/bin/java -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -</p>
+
+
+<p>Angua&gt; ls -la /var/lock/<br/>
+drwxrwxr-x    3 root     uucp          4096 Mar 20  2011 .<br/>
+drwxr-xr-x   13 root     root          4096 Dec 29 20:28 ..<br/>
+drwxr-xr-x    2 root     uucp          4096 Dec 29 20:28 lvm</p>
+
+
+<p>The zwave.jar was downloaded and manually copied to /volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/.</p>
+
+<p>Angua&gt; find /volume1/@appstore/OpenRemote/ -name zwave.jar -exec ls -la {} \;<br/>
+<del>rw-r</del><del>r</del>-    1 openremo users        46858 Dec 29 19:55 /volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/zwave.jar</p>
+
+
+<p>Angua&gt; ls -la /volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/native/<br/>
+drwxr-xr-x    2 openremo users         4096 Nov 21  2012 .<br/>
+drwxr-xr-x    3 openremo users         4096 Dec 29 19:55 ..<br/>
+<del>rw-r</del><del>r</del>-    1 openremo users        10075 Nov 21  2012 librxtxParallel.so<br/>
+<del>rw-r</del><del>r</del>-    1 openremo users       169488 Nov 21  2012 librxtxSerial.jnilib<br/>
+<del>rw-r</del><del>r</del>-    1 openremo users       154682 Nov 21  2012 librxtxSerial.so<br/>
+<del>rw-r</del><del>r</del>-    1 openremo users        47421 Nov 21  2012 rxtxParallel.dll<br/>
+<del>rw-r</del><del>r</del>-    1 openremo users        77759 Nov 21  2012 rxtxSerial.dll</p>
+
+<p>Peeking into boot.log:</p>
+
+<p>DEBUG 2013-12-29 22:30:22,511 : Deployer 'Default Deployer' initialized.<br/>
+DEBUG 2013-12-29 22:30:22,743 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2013-12-29 22:30:22,800 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2013-12-29 22:30:22,801 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2013-12-29 22:30:22,818 : Runtime object model has not been initialized. Using default configuration only.<br/>
+INFO 2013-12-29 22:30:22,836 : </p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>DEBUG 2013-12-29 22:30:23,247 : Initializing event processor: Drools Rule Engine<br/>
+INFO 2013-12-29 22:30:23,287 : No rule definitions found in '/volume1/@appstore/OpenRemote/webapps/controller/rules'.<br/>
+INFO 2013-12-29 22:30:23,288 : Initialized event processor : Drools Rule Engine<br/>
+INFO 2013-12-29 22:30:23,292 : Startup complete.<br/>
+INFO 2013-12-29 22:30:23,293 : Controller Definition File Watcher for Default Deployer started.</p>
+
+
+<p>Looking at catalina.out:</p>
+
+<p>Dec 29, 2013 10:30:16 PM org.apache.catalina.core.AprLifecycleListener init<br/>
+INFO: The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /volume1/@appstore/OpenRemote/webapps/controller/WEB-INF/lib/native<br/>
+Dec 29, 2013 10:30:16 PM org.apache.coyote.http11.Http11Protocol init<br/>
+INFO: Initializing Coyote HTTP/1.1 on http-18581<br/>
+Dec 29, 2013 10:30:16 PM org.apache.catalina.startup.Catalina load<br/>
+INFO: Initialization processed in 1275 ms<br/>
+Dec 29, 2013 10:30:16 PM org.apache.catalina.core.StandardService start<br/>
+INFO: Starting service Catalina<br/>
+Dec 29, 2013 10:30:16 PM org.apache.catalina.core.StandardEngine start<br/>
+INFO: Starting Servlet Engine: Apache Tomcat/6.0.18<br/>
+Dec 29, 2013 10:30:16 PM org.apache.catalina.startup.HostConfig deployWAR<br/>
+INFO: Deploying web application archive webconsole.war<br/>
+Dec 29, 2013 10:30:19 PM org.openremote.controller.bootstrap.Startup redirectJULtoLog4j<br/>
+INFO: Initialized JUL to LOG4J Redirector.<br/>
+INFO 2013-12-29 22:30:22,836 : </p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>INFO 2013-12-29 22:30:23,287 : No rule definitions found in '/volume1/@appstore/OpenRemote/webapps/controller/rules'.<br/>
+INFO 2013-12-29 22:30:23,288 : Initialized event processor : Drools Rule Engine<br/>
+INFO 2013-12-29 22:30:23,292 : Startup complete.<br/>
+INFO 2013-12-29 22:30:23,293 : Controller Definition File Watcher for Default Deployer started.<br/>
+Dec 29, 2013 10:30:23 PM org.apache.coyote.http11.Http11Protocol start<br/>
+INFO: Starting Coyote HTTP/1.1 on http-18581<br/>
+Dec 29, 2013 10:30:23 PM org.apache.catalina.startup.Catalina start<br/>
+INFO: Server startup in 7562 ms</p>
+
+
+<p>I have no logs/zwave directory nor any zwave.log file.</p>
+
+<p>No mention of any devices or anything. I have an Aeon Z-Wave USB Stick connected to the Synology and I have a simple power switch device that I've paired with the stick and tested earlier (with another system). The switch and the stick have been without power for a while now, but I can't possibly imagine that the pairing would simply disappear. The switch is connected to a wall socket now, so it should be visible.<br/>
+I have booted the NAS a few times after each change and nothing seems to get better or worse.</p>
+
+<p>Currently I'm close to just giving up on OpenRemote and Z-Wave in general, but I'd be happy to be larted in a good general direction by someone that has managed to get this to work.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Dec 29, 2013 21:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881900"></a>
+                                    <font class="smallfont"><p>Oh, forgot the controller.xml data:</p>
+
+<p>Angua&gt; cat /volume1/@appstore/OpenRemote/webapps/controller/controller.xml<br/>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br/>
+&lt;openremote xmlns="http://www.openremote.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openremote.org <a href="http://www.openremote.org/schemas/controller.xsd">http://www.openremote.org/schemas/controller.xsd</a>"&gt;<br/>
+  &lt;components&gt;<br/>
+    &lt;button id="6" /&gt;<br/>
+  &lt;/components&gt;<br/>
+  &lt;sensors /&gt;<br/>
+  &lt;commands /&gt;<br/>
+  &lt;config&gt;<br/>
+    &lt;property name="controller.groupmember.autodetect.on" value="true" /&gt;<br/>
+    &lt;property name="amx_ni.port" value="50000" /&gt;<br/>
+    &lt;property name="zwave.commLayer" value="RXTX" /&gt;<br/>
+    &lt;property name="copy.lircd.conf.on" value="true" /&gt;<br/>
+    &lt;property name="irsend.path" value="/usr/local/bin/irsend" /&gt;<br/>
+    &lt;property name="multicast.port" value="3333" /&gt;<br/>
+    &lt;property name="controller.roundrobin.multicast.port" value="10000" /&gt;<br/>
+    &lt;property name="controller.roundrobin.tcpserver.port" value="20000" /&gt;<br/>
+    &lt;property name="controller.groupname" value="floor20" /&gt;<br/>
+    &lt;property name="controller.applicationname" value="controller" /&gt;<br/>
+    &lt;property name="multicast.address" value="224.0.1.100" /&gt;<br/>
+    &lt;property name="Macro.IR.Execution.Delay" value="500" /&gt;<br/>
+    &lt;property name="controller.roundrobin.multicast.address" value="224.0.1.200" /&gt;<br/>
+    &lt;property name="zwave.comPort" value="/dev/ttyUSB0" /&gt;<br/>
+    &lt;property name="zwave.pad.port" value="7876" /&gt;<br/>
+    &lt;property name="lutron_homeworks.password" value="openremote" /&gt;<br/>
+    &lt;property name="lagarto_network.broadcast" value="tcp://127.0.0.1:5001" /&gt;<br/>
+    &lt;property name="lircd.conf.path" value="/etc/lircd.conf" /&gt;<br/>
+    &lt;property name="lutron_homeworks.port" value="23" /&gt;<br/>
+    &lt;property name="lutron_homeworks.address" value="192.168.1.1" /&gt;<br/>
+    &lt;property name="zwave.pad.host" value="localhost" /&gt;<br/>
+    &lt;property name="lutron_homeworks.username" value="openremote" /&gt;<br/>
+    &lt;property name="webapp.port" value="8080" /&gt;<br/>
+    &lt;property name="protocol.zwave.classname" value="org.openremote.controller.protocol.zwave.ZWaveCommandBuilder" /&gt;<br/>
+    &lt;property name="resource.upload.enable" value="true" /&gt;<br/>
+    &lt;property name="amx_ni.address" value="192.168.1.1" /&gt;<br/>
+  &lt;/config&gt;<br/>
+&lt;/openremote&gt;</p>
+
+
+<p>The values all look ok and the same as the various docs have used. There seems to be a single button in the components section, that's just something that got created when I followed the designer tutorial.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Dec 29, 2013 21:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881901"></a>
+                                    <font class="smallfont"><p>The Aeon Z-Wave stick seems to be detected on some level at least:</p>
+
+<p>Angua&gt; cat /proc/bus/usb/devices <br/>
+...<br/>
+T:  Bus=07 Lev=01 Prnt=01 Port=01 Cnt=01 Dev#=  2 Spd=12   MxCh= 0<br/>
+D:  Ver= 1.10 Cls=00(&gt;ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1<br/>
+P:  Vendor=10c4 ProdID=ea60 Rev= 1.00<br/>
+S:  Manufacturer=Silicon Labs<br/>
+S:  Product=CP2102 USB to UART Bridge Controller<br/>
+S:  SerialNumber=0001<br/>
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=100mA<br/>
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=00 Prot=00 Driver=cp210x<br/>
+E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms<br/>
+E:  Ad=01(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms<br/>
+...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Dec 29, 2013 21:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881902"></a>
+                                    <font class="smallfont"><p>I tried the fix for /usr/syno/hotplug/tty.agent posted by Vincent and the device stays writable:</p>
+
+<p>Angua&gt; ls -la /dev/ttyUSB*<br/>
+crwxrwxrwx    1 root     root      188,   0 Dec 29 21:22 /dev/ttyUSB0<br/>
+crw-rw-rw-    1 root     root      188,   0 Dec 29 16:45 /dev/ttyUSB1<br/>
+crw-rw-rw-    1 root     root      188,   0 Dec 29 16:45 /dev/ttyUSB2<br/>
+crw-rw-rw-    1 root     root      188,   0 Dec 29 16:45 /dev/ttyUSB3</p>
+
+<p>The user/group is reset on boot, but the permission has no effect, the logs look the same as before.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Dec 29, 2013 21:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881916"></a>
+                                    <font class="smallfont"><p>The total lack of anything related to Z-Wave in the logs indicates to a n00b like me that OpenRemote doesn't even try to check for Z-Wave. Perhaps the zwave.jar is bad or in the wrong place? Everyone else seems to have some kind of errors and at least something in the log files.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Dec 30, 2013 09:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881921"></a>
+                                    <font class="smallfont"><p>Well, I finally tested with a developer snapshot and now I see action in my log files! The docs on <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Synology+with+Z-Wave">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Synology+with+Z-Wave</a> should perhaps emphasis that the OpenRemote version supplied with the Synology packages does not work at all for Z-Wave. Now to see if it actually does work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Dec 30, 2013 09:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881922"></a>
+                                    <font class="smallfont"><p>Hah, and it works! I only have one switch device yet, but once I got the Z-Wave device is adding a simple switch to my design was a piece of cake. So now I have an UI on my iPhone with a single switch in it. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Dec 30, 2013 09:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

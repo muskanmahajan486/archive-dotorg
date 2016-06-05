@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Pro upgrade fail</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Pro upgrade fail
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 20, 2014 by <font color="#0050B2">stangel</font>.
+				    </div>
+
+				    <p>I tried out the free version for my Z-Wave setup at home, running on CentOS 6.4 and was happy with the results.  I decided to upgrade to the Pro version, both to support the project and also for the Z-Wave discovery and unlimited devices.  I was hoping I could pay my money, enter a license code and be done, but nothing could be further from the truth.</p>
+
+<p>I discovered right away that I need a new designer account, so my old design is lost.  No big deal, there were only 4 ZWave nodes there and some cron rules that I'll be able to copy over.  My Android panel was some work but okay, I'll re-do it.</p>
+
+<p>I then discovered that I need to install a different version of the software &#8211; that's where the real trouble began.  First off, can someone confirm that the free version is 2.1.0 but the Pro version is OpenRemote-Controller-Pro1.0.12 ?  I'm worried that I'm beating my head against a wall on an old (1.0) version.  But this is what I got when I clicked the "Download Resources" button in the top right of the Pro designer site.</p>
+
+<p>I got the Pro controller software running by shutting down the old free controller and extracting the new one to a separate directory, and adding execute permissions to bin/openremote.sh  but I'm having three problems:</p>
+
+<p>1. When I open the controller synchronization page and enter the credentials for my Pro designer account (where I've created a single blank panel to start), I get the following error:  "Downloading account configuration failed : sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"</p>
+
+<p>2. When I copy the MAC address from the controller synchronization page and attempt to link it in the designer site, I get the following error: "No controller with the given MAC address was found or maybe it's linked already. Please start your controller before linking it, make sure it is not linked yet and that it has internet access."</p>
+
+<p>3. In logs/boot.log I get a Beehive connection error every 30 seconds: <br/>
+       "ERROR 2014-04-20 11:43:57,667 : !!! Unable to announce controller MAC address to Beehive<br/>
+        Internal Connector Error (1002) - The calling thread timed out while waiting for a response to unblock it.<br/>
+        at org.restlet.resource.ClientResource.handle(ClientResource.java:867)<br/>
+        at org.restlet.resource.ClientResource.post(ClientResource.java:1206)<br/>
+        at org.openremote.controller.service.Deployer$ControllerAnnouncement.run(Unknown Source)"</p>
+
+<p>I am aware of the Beehive project but I didn't need it to toggle my Z-Wave devices using the free version &#8211; do I need it to achieve the same functionality in the Pro version?</p>
+
+<p>Thanks for any help you all can offer.</p>
+
+<p>Mike</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22886003"></a>
+                                    <font class="smallfont"><p>I got a similar occurence starting at 2014-04-20 11:07:45 as you can see from this log snippet.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+INFO 2014-04-19 14:14:37,274 : Registered sensor : Range Sensor (Name = 'SolarPowerLevel2', ID = '101915', Min: 0, Max: 3500)
+INFO 2014-04-19 14:14:44,891 : Startup complete.
+ERROR 2014-04-20 11:07:45,153 : !!! Unable to check <span class="code-keyword">for</span> <span class="code-keyword">new</span> controller command from Beehive
+Internal Connector Error (1002) - The calling thread timed out <span class="code-keyword">while</span> waiting <span class="code-keyword">for</span> a response to unblock it.
+	at org.restlet.resource.ClientResource.handle(ClientResource.java:867)
+	at org.restlet.resource.ClientResource.handle(ClientResource.java:766)
+	at org.restlet.resource.ClientResource.get(ClientResource.java:499)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.run(Unknown Source)
+ERROR 2014-04-20 11:10:54,239 : !!! Unable to check <span class="code-keyword">for</span> <span class="code-keyword">new</span> controller command from Beehive
+
+repeating pattern
+</pre>
+</div></div>
+<p>This morning the Pro designer said that my certificate was invalid and that I had to renew. After trying to sync the controller again I got:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> INFO 2014-04-21 12:10:54,768 : Startup complete.
+INFO 2014-04-21 12:10:54,770 : Controller Definition File Watcher <span class="code-keyword">for</span> Default Deployer started.
+ERROR 2014-04-21 12:11:24,535 : !!! Unable to announce controller MAC address to Beehive
+Internal Connector Error (1002) - The calling thread timed out <span class="code-keyword">while</span> waiting <span class="code-keyword">for</span> a response to unblock it.
+	at org.restlet.resource.ClientResource.handle(ClientResource.java:867)
+	at org.restlet.resource.ClientResource.post(ClientResource.java:1206)
+	at org.openremote.controller.service.Deployer$ControllerAnnouncement.run(Unknown Source)
+ERROR 2014-04-21 12:12:54,716 : !!! Unable to announce controller MAC address to Beehive
+Internal Connector Error (1002) - The calling thread timed out <span class="code-keyword">while</span> waiting <span class="code-keyword">for</span> a response to unblock it.
+	at org.restlet.resource.ClientResource.handle(ClientResource.java:867)
+	at org.restlet.resource.ClientResource.post(ClientResource.java:1206)
+	at org.openremote.controller.service.Deployer$ControllerAnnouncement.run(Unknown Source)
+ERROR 2014-04-21 12:14:24,824 : !!! Unable to announce controller MAC address to Beehive
+Internal Connector Error (1002) - The calling thread timed out <span class="code-keyword">while</span> waiting <span class="code-keyword">for</span> a response to unblock it.
+	at org.restlet.resource.ClientResource.handle(ClientResource.java:867)
+	at org.restlet.resource.ClientResource.post(ClientResource.java:1206)
+	at org.openremote.controller.service.Deployer$ControllerAnnouncement.run(Unknown Source)
+ERROR 2014-04-21 12:14:32,833 : Synchronizing controller with online account failed : Downloading account configuration failed : sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+org.openremote.controller.exception.ConnectionException: Downloading account configuration failed : sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at org.openremote.controller.service.Deployer$BeehiveConnection.downloadZip(Unknown Source)
+	at org.openremote.controller.service.Deployer$BeehiveConnection.access$200(Unknown Source)
+	at org.openremote.controller.service.Deployer.deployFromOnline(Unknown Source)
+	at org.openremote.controller.action.ConfigManageController.syncOnline(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.springframework.web.servlet.mvc.multiaction.MultiActionController.invokeNamedMethod(MultiActionController.java:434)
+	at org.springframework.web.servlet.mvc.multiaction.MultiActionController.handleRequestInternal(MultiActionController.java:372)
+	at org.springframework.web.servlet.mvc.AbstractController.handleRequest(AbstractController.java:153)
+	at org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter.handle(SimpleControllerHandlerAdapter.java:45)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:806)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:736)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:396)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:360)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(Unknown Source)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)
+Caused by: javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at sun.security.ssl.Alerts.getSSLException(Alerts.java:192)
+	at sun.security.ssl.SSLSocketImpl.fatal(SSLSocketImpl.java:1884)
+	at sun.security.ssl.Handshaker.fatalSE(Handshaker.java:276)
+	at sun.security.ssl.Handshaker.fatalSE(Handshaker.java:270)
+	at sun.security.ssl.ClientHandshaker.serverCertificate(ClientHandshaker.java:1341)
+	at sun.security.ssl.ClientHandshaker.processMessage(ClientHandshaker.java:153)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:868)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:804)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1016)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1312)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1339)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1323)
+	at sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:563)
+	at sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:185)
+	at sun.net.www.protocol.https.HttpsURLConnectionImpl.connect(HttpsURLConnectionImpl.java:153)
+	... 39 more
+Caused by: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:385)
+	at sun.security.validator.PKIXValidator.engineValidate(PKIXValidator.java:292)
+	at sun.security.validator.Validator.validate(Validator.java:260)
+	at sun.security.ssl.X509TrustManagerImpl.validate(X509TrustManagerImpl.java:326)
+	at sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:231)
+	at sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:126)
+	at sun.security.ssl.ClientHandshaker.serverCertificate(ClientHandshaker.java:1323)
+	... 49 more
+Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at sun.security.provider.certpath.SunCertPathBuilder.engineBuild(SunCertPathBuilder.java:196)
+	at java.security.cert.CertPathBuilder.build(CertPathBuilder.java:268)
+	at sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:380)
+	... 55 more
+INFO 2014-04-21 12:14:44,011 : 
+</pre>
+</div></div>
+
+<p>I'm puzzled. My MAC addresses are no longer accepted. Tried to renew those in Designer, but they were rejected.</p>
+
+<p>@Mike Stangel<br/>
+I would be surprised if there was something wrong with certicates at the time you were trying to upgrade to Pro.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 21, 2014 15:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886007"></a>
+                                    <font class="smallfont"><p>All reported issues were caused by a certificate problem this week-end, sorry for the inconvenience, it should now be solved.</p>
+
+<p>In a nutshell, because of the Heartbleed bug (for which we applied a patch immediately after the issue was made public), we changed the SSL certificate used by the Pro Designer site.<br/>
+This change was done Sunday. There was however an issue with the intermediate certificate installed on the server (the correct one was not served),<br/>
+which meant that you had to manually accept the certificate from browsers and that "automated processes" like synchronization  or pushing information to Beehive failed.</p>
+
+<p>Once again, sorry for the trouble.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Apr 21, 2014 20:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886016"></a>
+                                    <font class="smallfont"><p>Thanks Eric. Designer works for me again. Last Beehive error in my logs was at 2014-04-21 21:29:15. So that seems OK too.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 22, 2014 06:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593625"></a>
+                                    <font class="smallfont"><p>Hi Eric!</p>
+
+<p>I have certificate problem on professional controller. Your SSL is wrong.</p>
+
+<p>Error on update:<br/>
+Downloading account configuration failed : sun.security.validator.ValidatorException: PKIX path validation failed: java.security.cert.CertPathValidatorException: timestamp check failed</p>
+
+<p>Gabor</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gondag at Nov 10, 2014 17:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593629"></a>
+                                    <font class="smallfont"><p>I did inform Eric on the 9th of this month just after the certificate expired. He is working on it. </p>
+
+<p>I worked around by temporarily accepting the situation. <br/>
+As controller did not work either you can make a ZIP in Designer, and drop the contents to the webapps/controller folder.</p>
+
+<p>It is working again now</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 11, 2014 08:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593656"></a>
+                                    <font class="smallfont"><p>Certificate was updated yesterday morning, sorry for inconvenience.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 13, 2014 09:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,1561 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : One more question about rules.</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : One more question about rules.
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 02, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Hi!</p>
+
+<p>I've tried to write a rule who should fired once every hour and half hour, but I have problems getting it to fire only once per time point.</p>
+
+<p>I created a datetime (custom) sensor with the command formatted as "mm.ss" and a rule that looks like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+rule <span class="code-quote">"Every 30min"</span>
+when
+  CustomState ( source == <span class="code-quote">"minsec"</span>, val : value, eval(<span class="code-object">Float</span>.valueOf((<span class="code-object">String</span>)val) == 0.0) || eval(<span class="code-object">Float</span>.valueOf((<span class="code-object">String</span>)val) == 30.0))
+then
+  <span class="code-object">System</span>.out.println (<span class="code-object">Float</span>.valueOf($minsek.getValue()));
+end
+</pre>
+</div></div>
+
+<p>The rule works and fire when it should, but the problem is that it fire about 6 times per time point.</p>
+
+<p>I have tried with rule attributes as "no-loop true", "duration (950ms)" and "timer (int: 0s 2s), but I can't get it to work as I think it should.</p>
+
+<p>When I tried with the attribute "timer", I get it to work on simple rules, but if I do a longer more complex rule, it will not work.</p>
+
+<p>For example, this one works: (it is fired every 15 seconds).</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> java.io.*;
+<span class="code-keyword">import</span> java.util.*;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Float</span>;
+
+rule <span class="code-quote">"Every 30min"</span>
+timer (<span class="code-object">int</span>: 1s 15s)
+when
+  eval(<span class="code-keyword">true</span>)
+then
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"Fire!"</span>);
+end
+</pre>
+</div></div>
+
+<p>But this doesn't work: (mostly it fired continuously, but sometimes it ain't fired at all).</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+rule <span class="code-quote">"Test1"</span>
+timer (<span class="code-object">int</span>: 1s 15s)
+when  
+  eval(<span class="code-keyword">true</span>)
+  $templivingroom : CustomState (source == <span class="code-quote">"Temp Vardagsrum"</span>)
+  $bedroom : CustomState (source == <span class="code-quote">"Temp Sovrum"</span>)
+  $kidsroom1 : CustomState (source == <span class="code-quote">"Temp Barnrum 1n"</span>)
+  $tempFTXin : CustomState (source == <span class="code-quote">"Temp Tilluft"</span>)
+then
+  <span class="code-object">System</span>.out.println (<span class="code-object">Double</span>.parseDouble($bedroom.getValue()));
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"FIRE!"</span>);
+end
+</pre>
+</div></div>
+
+<p>Am I doing something wrong?</p>
+
+<p>I would be very grateful if someone had a suggestion on how I could get it to work.</p>
+
+<p>/Kenneth</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19440439"></a>
+                                    <font class="smallfont"><p>I think "timer(cron: ...)" will be more elegant for your needs. Each full hour and half hour should be:</p>
+
+<p> timer (cron: 0 0,30 * * * ?)</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 27, 2012 08:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440443"></a>
+                                    <font class="smallfont"><p>Thank you Markus.</p>
+
+<p>You are absolutely right "timer (cron: ...)" is much more elegant.</p>
+
+<p>I don't know why, but I thought the "timer (cron: ...)" was a new attribute that was only implemented in the latest version of Drools. What version of Drools have you implemented? Can I also use the calendar attribute?</p>
+
+<p>But even with the "timer (cron: 0 .30 ***)" the rule is fired several times <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> (first time it was fired two times the second time it was fired six times).</p>
+
+<p>I have been testing pretty much now and something is strange.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Apr 27, 2012 09:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440448"></a>
+                                    <font class="smallfont"><p>We use Drools 5.1.1 in the moment.<br/>
+I think for calendar to work we will have to configure the KnowledgeBase correct, which I think is not done yet.</p>
+
+<p>If you have any more info about "something is strange", anything might help.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 27, 2012 11:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440453"></a>
+                                    <font class="smallfont"><p>What kind of info are you thinking of? Unfortunately I don't have more info than what I have tried to describe.</p>
+
+<p>(That the rules goes of (fire) several times even though I try to limit it to just once with the "no-loop" or "timer" attributes)</p>
+
+<p>For me as a novice, it is as if it get stuck in a loop inside the "then" part of the rule.</p>
+
+<p>If I write a rule with "timer (cron: 0 .30 ***)" then it should fired once each full hour and half hour, but it is fired 2-6 times each full hour and half hour.</p>
+
+<p>It's the same with "no-loop true" if I understand everything correctly, it shall make the rule only fired once per event, but the rule is fired several times anyway. Likewise with timer (int: 0s 30s) fired several times each 30th second.</p>
+
+<p>The problem occurs only if I have a little more complex rule.</p>
+
+<p>For example, works this rule (Writes "Fire!" once each full hour and half hour).</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Every 30min"</span>
+timer (cron: 0 0,30 * * * ?) 
+when
+  eval(<span class="code-keyword">true</span>)
+then
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"Fire!"</span>);
+end
+</pre>
+</div></div>
+
+<p>But this writing "Fire!" + the temp values, ​​2-6 times each full hour and half hour (sometimes it may be only once).</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Every 30min"</span>
+timer (cron: 0 0,30 * * * ?)
+when
+  eval(<span class="code-keyword">true</span>)
+  $outdoortemp : CustomState (source == <span class="code-quote">"Utetemperatur"</span>)
+  $templivingroom : CustomState (source == <span class="code-quote">"Temp Vardagsrum"</span>)
+  $bedroom : CustomState (source == <span class="code-quote">"Temp Sovrum"</span>)
+  $kidsroom1 : CustomState (source == <span class="code-quote">"Temp Barnrum 1n"</span>)
+  $tempFTXin : CustomState (source == <span class="code-quote">"Temp Tilluft"</span>)
+then
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"Fire!"</span>);
+  <span class="code-object">System</span>.out.println (<span class="code-object">Double</span>.parseDouble($bedroom.getValue()));
+  <span class="code-object">System</span>.out.println (<span class="code-object">Double</span>.parseDouble($kidsroom1.getValue()));
+  <span class="code-object">System</span>.out.println (<span class="code-object">Double</span>.parseDouble($tempFTXin.getValue()));
+  <span class="code-object">System</span>.out.println (<span class="code-object">Double</span>.parseDouble($templivingroom.getValue()));
+  <span class="code-object">System</span>.out.println (<span class="code-object">Double</span>.parseDouble($outdoortemp.getValue()));
+end
+</pre>
+</div></div>
+
+<p>Can you fire complex rules only once, each full hour and half hour with the "timer (cron: 0 0.30 ***)"?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Apr 27, 2012 13:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448567"></a>
+                                    <font class="smallfont"><p>Hi all</p>
+
+<p>I have one more question related to the rules. Let's say that I have one pushbutton and one relay (for switching light). I can turn on and off relay through regular switch and now I would like to manage this relay also through pushbutton. <br/>
+Rule that I'm looking for, should look like this:</p>
+
+<p>When <br/>
+  pushbutton state is 1 (is pressed)(is pressed less then 1s - I would like to add a time component) and relay is on</p>
+
+<p>then<br/>
+  turn relay off<br/>
+and</p>
+
+<p>When <br/>
+  pushbutton state is 1 (is pressed)(is pressed less then 1s - I would like to add a time component) and relay is off</p>
+
+<p>then<br/>
+  turn relay on<br/>
+and</p>
+
+
+<p>Any suggestion?</p>
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Jul 10, 2012 14:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448571"></a>
+                                    <font class="smallfont"><p>Why a button and not just the switch UI object? If push button, why the time component?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 10, 2012 15:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448572"></a>
+                                    <font class="smallfont"><p>At home we have light switches to turn on and off lights. For test I connect one of them to 1-wire chip (DS2408) and now I can read its state(1/0). I also control relays with this 1-wire chip. I can control this relays with android application (openremote) but now I would like to control this relays also with light switch. To do this I first thought of a simple rule but there is a problem. If I turn relay ON with light switch (state 1) and then turn OFF with android application, light switch should still be in ON position (state 1). So the simple rule is not an option. Then I thought of the switch that acting as a button (<a href="http://www.p-wholesale.com/cn-pro/5/304to1/push-button-switchm82k12-10-291852.html">http://www.p-wholesale.com/cn-pro/5/304to1/push-button-switchm82k12-10-291852.html</a>). It could trigger rules. </p>
+
+<p>Why the time component? Because if there is no time component the rule will be caught in a loop until the button is pressed (on and off loop). The time component could also increase switches functionality. If it's pressed less then 1s, turn light on/off and if it's press more than 1s, turn all lights on/off.</p>
+
+
+<p>I hope that I have succeeded to explain my problem.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Jul 10, 2012 17:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449029"></a>
+                                    <font class="smallfont"><p>Kenneth, is this still an issue? I just created a test with one sensor and that works fine.<br/>
+Maybe this is related to the fact that you have multiple sensors in one rule or maybe, you have other events that could cause the rule to be triggered because of the "eval(true)". <br/>
+Maybe every time the rule engine is fired (which is with each sensor event) this causes the rule to be triggered in addition to the timer?<br/>
+Just an idea.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 20, 2012 10:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449030"></a>
+                                    <font class="smallfont"><p>Ok, I think I understood you. <br/>
+But since 1-wire is stateless and always has to be polled to give the current status it might not be the perfect protocol for this since you need a lot of polling.</p>
+
+<p>Using a push-button switch and not a on/off switch for the wall switch is correct because otherwise the wall switch could still be "on" while openremote already turned the light "off".<br/>
+You could probably implement a toggle rule (if status=off turn on else turn off). This rule can be triggered from either the android command or the wall switch and the status is just updated by reading the status of the relay every 500ms or so.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 20, 2012 10:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449599"></a>
+                                    <font class="smallfont"><p>Hi Markus and excuse the late response (I'm on vacation with limited internet access).</p>
+
+<p>Yes, it still happens (2-6 times per day) that my rules for logging temperatures, energy consumption and power triggers more than once (with less than one second intervals) each hour and half hour.</p>
+
+<p>"Maybe every time the rule engine is fired (which is with each sensor event) this causes the rule to be triggered in addition to the timer?"</p>
+
+<p>Yes, of course. You're probably right.</p>
+
+<p>A bit embarrassing, but as a beginner on both java and rules I hadn't realized that this line<br/>
+"$outdoortemp : CustomState (source == "Utetemperatur")" <br/>
+also triggers the rule each time the temperature sensor sends out a new temperature. I thought that it only declare the variable and initialize it with the latest temperature value.</p>
+
+<p>It is probably a temperature value that change at the same time, the timer trigger the rule.</p>
+
+<p>Is it possible to read the sensor value and store it in the variable from the "then" part of the rule instead?</p>
+
+<p>Is it possible to send a read request (of a temperature value) from a rule?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Aug 04, 2012 00:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451369"></a>
+                                    <font class="smallfont"><p>Hello</p>
+
+<p>Thanks Marcus for the reply, but I still need some more help.</p>
+
+
+<p>The first question: What is the best way to trigger switches in rules. I find two solutions:</p>
+
+<p>-execute.command("command  switch on");<br/>
+-switches.name("switch name").on();</p>
+
+<p>Am I right? Are both correct?</p>
+
+
+<p>The second question: I would like to create temperature level rule where limit value can be control with the slider.</p>
+
+<p>This is my plan:<br/>
+-create virtual command (name: virtual, command: status, Address: address)<br/>
+-create sensor for virtual command (name: sensor virtual, Command: virtual, type: range, Min:0, Max:30)<br/>
+-create slider (name: slider, sensor: sensor virtual, setValue: virtual)</p>
+
+<p>-create a rule:</p>
+
+<p>rule "turn on heating"</p>
+
+<p>when</p>
+
+<p>  Level( source == "temperature sensor", value &gt; (hear must be slider value) )//maybe: address. getValue()</p>
+
+<p>then</p>
+
+<p> execute.command("command  switch on");</p>
+
+<p>end</p>
+
+<p>I have problem with inserting slider value in the rule. Is command parameter: status in virtual command right choice?</p>
+
+
+
+<p>The third question: What is the best way to implement if /else logic in the rule (toggle rule). Is in creating two rules or inserting if/else in one rule. How to use if/else in the rule?</p>
+
+
+
+<p>Thanks all.</p>
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 05, 2012 10:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451380"></a>
+                                    <font class="smallfont"><blockquote>
+<p>The first question: What is the best way to trigger switches in rules. I find two solutions:</p>
+
+<p>-execute.command("command switch on");<br/>
+-switches.name("switch name").on();</p>
+
+<p>Am I right? Are both correct?</p></blockquote>
+
+<p>I think both would work, yes. If they do, matter of taste then whether you prefer conceptually operate on 'switch object' level or 'command object' level.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Oct 05, 2012 11:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451381"></a>
+                                    <font class="smallfont"><blockquote>
+<p>The third question: What is the best way to implement if /else logic in the rule (toggle rule). Is in creating two rules or inserting if/else in one rule. How to use if/else in the rule?</p></blockquote>
+
+<p>Two rules I guess is more natural for a declarative engine. Maybe this document offers some ideas? <a href="http://stackoverflow.com/questions/7993659/if-then-else-with-rule-engines">http://stackoverflow.com/questions/7993659/if-then-else-with-rule-engines</a></p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Oct 05, 2012 11:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451385"></a>
+                                    <font class="smallfont"><blockquote>
+
+
+<p>    rule "turn on heating"</p>
+
+<p>    when</p>
+
+<p>    Level( source == "temperature sensor", value &gt; (hear must be slider value) )//maybe: address. getValue()</p>
+
+<p>    then</p>
+
+<p>    execute.command("command switch on");</p>
+
+<p>    end</p>
+
+<p>    I have problem with inserting slider value in the rule. Is command parameter: status in virtual command right choice?</p></blockquote>
+
+
+<p>You could assign the limiter value to a variable like so (untested):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+when
+
+  Level ( source == <span class="code-quote">"MyVirtualSensorThingy"</span>, $limitvalue : value )
+  Level( source == <span class="code-quote">"temperature sensor"</span>, value &gt; $limitvalue )
+
+then
+
+execute.command(<span class="code-quote">"command <span class="code-keyword">switch</span> on"</span>);
+
+end
+
+</pre>
+</div></div>
+
+<p>Here's an example for reference: <a href="http://bit.ly/VpPPnC">http://bit.ly/VpPPnC</a></p>
+
+<p>Maybe that helps?</p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Oct 05, 2012 12:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451390"></a>
+                                    <font class="smallfont"><p>Thanks! </p>
+
+<p>I appreciate your help.</p>
+
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 05, 2012 15:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451394"></a>
+                                    <font class="smallfont"><p>If I attach to my third question. I created two rules. These two rules are needed because I would like to use physical push-button in combination with my phone to turn ON/OFF the lamp. As I expected loop appears (although it is push-button, duration  of value == "1" is too long). I was looking for a solution. I found attribute no-loop, but it prevents the further activation for the rule. I even found attribute duration, but it is also not useful.</p>
+
+
+<p>My rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">" turn OFF the lamp <span class="code-keyword">if</span> it is ON and push-button is pressed"</span>
+
+when
+  CustomState(source == <span class="code-quote">"button sensor"</span>, value == <span class="code-quote">"1"</span>)
+  CustomState(source == <span class="code-quote">"rele1 sensor"</span>, value == <span class="code-quote">"on"</span>)
+then
+  execute.command(<span class="code-quote">"rele1 OFF"</span>);
+end
+
+
+rule <span class="code-quote">" turn ON the lamp <span class="code-keyword">if</span> it is OFF and push-button is pressed "</span>
+
+when
+  CustomState(source == <span class="code-quote">" button sensor"</span>, value == <span class="code-quote">"1"</span>)
+  CustomState(source == <span class="code-quote">"rele1 sensor"</span>, value == <span class="code-quote">"off"</span>)
+then
+  execute.command(<span class="code-quote">"rele1 ON"</span>);
+end
+</pre>
+</div></div>
+
+
+<p>Any suggestions?</p>
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 05, 2012 16:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451395"></a>
+                                    <font class="smallfont"><p>One way to skin the cat might be to insert a new boolean fact into the knowledge base and use its existence to trigger a rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+
+/*
+ * This example demonstrates creation of <span class="code-keyword">new</span> facts from within the rules, in <span class="code-keyword">this</span>
+ * <span class="code-keyword">case</span> a vacation object that can be used to determine differing behavior on event
+ * actions.
+ */
+declare Vacation
+
+  onVacation : <span class="code-object">boolean</span>
+
+end
+
+
+
+/* Insert a <span class="code-keyword">new</span> vacation fact */
+
+rule <span class="code-quote">"I'm going on vacation"</span>
+
+when
+
+  Event ( source == <span class="code-quote">"vacation start"</span> )
+
+then
+
+  Vacation vacation = <span class="code-keyword">new</span> Vacation();
+
+  insert ( vacation );
+
+end
+
+
+
+/* Retract the vacation fact */
+
+rule <span class="code-quote">"I'm back from vacation"</span>
+
+when
+
+  Event ( source == <span class="code-quote">"vacation end"</span> )
+
+  $vacation : Vacation()
+
+then
+
+<span class="code-comment">// <span class="code-keyword">do</span> something here...
+</span>
+  retract ( $vacation );
+
+end
+
+</pre>
+</div></div>
+
+<p>Where the first rule injects a fact and the second rule checks the existence of the fact and then does something and retracts the fact.</p>
+
+<p>For reference, the entire example is here: <a href="http://bit.ly/SP4naw">http://bit.ly/SP4naw</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 05, 2012 17:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451396"></a>
+                                    <font class="smallfont"><p>Sorry missed the second part that shows testing of fact existence:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+/* Set night temperatures differently depending on presence of vacation fact */
+
+rule <span class="code-quote">"Set Night Temperature"</span>
+
+when
+
+  CustomState ( source == <span class="code-quote">"time of day"</span>, value == <span class="code-quote">"night"</span> ) and not Vacation()
+
+then
+
+  execute.command(<span class="code-quote">"temp"</span>, 18);
+
+end
+
+
+rule <span class="code-quote">"Set Night Temperature when on Vacation"</span>
+
+when
+
+  CustomState ( source == <span class="code-quote">"time of day"</span>, value == <span class="code-quote">"night"</span> ) and exists Vacation()
+
+then
+
+  execute.command(<span class="code-quote">"temp"</span>, 15);
+  
+end
+
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 05, 2012 17:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451398"></a>
+                                    <font class="smallfont"><p>I managed to fix rules so that now operates. Thanks for the help.</p>
+
+<p>Tested rules:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare Button
+onButton : <span class="code-object">boolean</span>
+end
+
+rule <span class="code-quote">"button is not pressed"</span>
+when
+CustomState(source == <span class="code-quote">" button sensor "</span>, value == <span class="code-quote">"0"</span>)
+then
+Button button = <span class="code-keyword">new</span> Button();
+insert ( button );
+end
+
+rule <span class="code-quote">" turn OFF the lamp <span class="code-keyword">if</span> it is ON and push-button is pressed"</span>
+when
+CustomState(source == <span class="code-quote">"button sensor"</span>, value == <span class="code-quote">"1"</span>) and exists Button()
+CustomState(source == <span class="code-quote">"rele1 sensor"</span>, value == <span class="code-quote">"on"</span>)
+$button : Button()
+then
+retract ( $button );
+execute.command(<span class="code-quote">"rele1 OFF"</span>);
+end
+
+rule <span class="code-quote">" turn ON the lamp <span class="code-keyword">if</span> it is OFF and push-button is pressed "</span>
+when
+CustomState(source == <span class="code-quote">" button sensor"</span>, value == <span class="code-quote">"1"</span>) and exists Button()
+CustomState(source == <span class="code-quote">"rele1 sensor"</span>, value == <span class="code-quote">"off"</span>)
+$button : Button()
+then
+retract ( $button );
+execute.command(<span class="code-quote">"rele1 ON"</span>);
+end
+</pre>
+</div></div>
+
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 05, 2012 18:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451596"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>I have problems with definition of this rule (rule from my second question).<br/>
+I could not find what was wrong (no error, but rule not working), so I decided to progressively build up rule. </p>
+
+<p>I stuck to this rule:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"slider value is &gt; 20 and virtual <span class="code-keyword">switch</span> is on "</span>
+when
+Switch( source == <span class="code-quote">"virtual <span class="code-keyword">switch</span> sensor"</span>, value == <span class="code-quote">"on"</span>)
+Level( source == <span class="code-quote">"virtual slider sensor"</span>, value &gt; 20)
+then
+execute.command(<span class="code-quote">"rele2 OFF"</span>);
+end
+
+
+rule <span class="code-quote">" slider value is &lt;= 20 and virtual <span class="code-keyword">switch</span> is on "</span>
+when
+Switch( source == <span class="code-quote">" virtual <span class="code-keyword">switch</span> sensor "</span>, value == <span class="code-quote">"on"</span>)
+Level( source == <span class="code-quote">" virtual slider sensor "</span>, value &lt;= 20)
+then
+execute.command(<span class="code-quote">"rele2 ON"</span>);
+end
+</pre>
+</div></div>
+
+
+<p>I have virtual slider with virtual slider sensor which is type RANGE: 0-40. Rule just with Switch and execute.command works.<br/>
+I have no errors but the switch does not turn on when the slider value is less than 20.</p>
+
+<p>Thanks.</p>
+
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 09, 2012 12:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451598"></a>
+                                    <font class="smallfont"><p>Is "rele2" a switch object?<br/>
+If that is the case, you need execute.command("rele2", "on");<br/>
+Also, make sure the names are typed correct. I can see spaces in the sesond rule where the source name is written.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 09, 2012 12:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451600"></a>
+                                    <font class="smallfont"><p>"rele2" is custom 1-wire PIO command and it works (tested on other rules).</p>
+
+<p>Names are typed correctly (yes, it is spaces in the second rule, but this is the result of mycopying). The names of my devices are actually different (written in my language).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 09, 2012 12:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451601"></a>
+                                    <font class="smallfont"><p>Now I tested this rule with a slider type LEVEL (before I have type RANGE) and it works. But I want to have range slider (from 10 to 40 degrees celsius).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 09, 2012 13:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451621"></a>
+                                    <font class="smallfont"><p>I'm looking for suggestions to solve this rule problem.</p>
+
+<p>Operating rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"radiator turns off"</span>
+when
+CustomState(source == <span class="code-quote">"temperature sensor"</span>, val : value,  eval(<span class="code-object">Float</span>.valueOf((<span class="code-object">String</span>)val) &gt; 23.0))
+then
+execute.command(<span class="code-quote">"rele2 OFF"</span>);
+end
+
+rule <span class="code-quote">"radiator turns on"</span>
+when
+CustomState(source == <span class="code-quote">"temperature sensor"</span>, val : value,  eval(<span class="code-object">Float</span>.valueOf((<span class="code-object">String</span>)val) &gt; 23.0))
+then
+execute.command(<span class="code-quote">"rele2 ON"</span>);
+end
+</pre>
+</div></div>
+
+<p>I added a slider to control the condition:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"radiator turns off"</span>
+when
+Level (source == <span class="code-quote">"slider sensor"</span>, $condition : value )
+CustomState(source == <span class="code-quote">"temperature sensor"</span>, val : value,  eval(<span class="code-object">Float</span>.valueOf((<span class="code-object">String</span>)val) &gt; $condition))
+then
+execute.command(<span class="code-quote">"rele2 OFF"</span>);
+end
+
+rule <span class="code-quote">"radiator turns on"</span>
+when
+Level (source == <span class="code-quote">" slider sensor "</span>, $condition : value )
+CustomState(source == <span class="code-quote">"temperature sensor"</span>, val : value,  eval(<span class="code-object">Float</span>.valueOf((<span class="code-object">String</span>)val) &lt;= $condition))
+then
+execute.command(<span class="code-quote">"rele2 ON"</span>);
+end
+</pre>
+</div></div>
+
+<p>I got this errors:</p>
+
+<div style="max-width: 800px;"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ERROR 2012-10-09 19:22:56,859 : Rule Compilation error The operator &lt;= is undefined for the argument type(s) Float, Object
+ERROR \[Controller Definition File Watcher for Default Deployer]: Rule Compilation error The operator &lt;= is undefined for the argument type(s) Float, Object
+ERROR 2012-10-09 19:22:56,859 : Rule Compilation error The operator &gt; is undefined for the argument type(s) Float, Object
+ERROR \[Controller Definition File Watcher for Default Deployer\]: Rule Compilation error The operator &gt; is undefined for the argument type(s) Float, Object
+Rule Compilation error : \[Rule name='radiator turns on'] ...
+</pre>
+</div></div></div>
+
+<p>What type is output value of slider?</p>
+
+<p>Thanks,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 09, 2012 18:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451634"></a>
+                                    <font class="smallfont"><blockquote>
+<p>What type is output value of slider?</p></blockquote>
+
+<p>It's an integer between the min/max values of the range (step of 1), or between 0-100 if level (step of 1)</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 09, 2012 20:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451665"></a>
+                                    <font class="smallfont"><p>So I need a line in the rule that compare string (1-wire temperature) and integer (slider).</p>
+
+<p>For example:<br/>
+CustomState(source == "temperature sensor", string &gt; integer)</p>
+
+<p>Any suggestions?</p>
+
+<p>I tried with this:</p>
+
+<p>Level(source == "slider sensor", $condition : value )<br/>
+CustomState(source == "temperature sensor", (int)Float.parseFloat((String)value) &gt; $condition )</p>
+
+
+<p>...but without success.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 10, 2012 09:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451719"></a>
+                                    <font class="smallfont"><p>Float.valueOf() returns a Float object which cannot be used with "&gt;".<br/>
+Float.parseFloat() return a float value that can be used with "&gt;".</p>
+
+<p>Your last example should work. Do you see an error?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 11, 2012 09:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451725"></a>
+                                    <font class="smallfont"><p>This is my rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"radiator se prizge"</span> <span class="code-comment">//heating on
+</span>when
+Level(source == <span class="code-quote">"v test senzor"</span>, $condition1 : value )<span class="code-comment">// virtual level slider
+</span>Switch(source == <span class="code-quote">"stikalo virtual stikalo"</span>, value == <span class="code-quote">"on"</span>) <span class="code-comment">//virtual <span class="code-keyword">switch</span> that turn on rule
+</span>CustomState(source == <span class="code-quote">"temperatura senzor"</span>, (<span class="code-object">int</span>)<span class="code-object">Float</span>.parseFloat((<span class="code-object">String</span>)value) &gt; $condition1 )
+then
+execute.command(<span class="code-quote">"rele2 ON"</span>);
+end
+
+rule <span class="code-quote">"radiator se ugasne "</span> <span class="code-comment">//heating off
+</span>when
+Level(source == <span class="code-quote">"v test senzor"</span>, $condition2 : value )  <span class="code-comment">//vitual level slider
+</span>Switch(source == <span class="code-quote">"stikalo virtual stikalo"</span>, value == <span class="code-quote">"on"</span>) <span class="code-comment">//virtual <span class="code-keyword">switch</span> that turn on rule
+</span>CustomState(source == <span class="code-quote">"temperatura senzor"</span>, (<span class="code-object">int</span>)<span class="code-object">Float</span>.parseFloat((<span class="code-object">String</span>)value) &lt;= $condition2 )
+then
+execute.command(<span class="code-quote">"rele2 OFF"</span>);
+end
+</pre>
+</div></div>
+
+<p>Errors:</p>
+
+<div style="max-width: 800px;"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ERROR 2012-10-11 11:19:18,679 : Rule definition 'modeler_rules.drl' could not be deployed. See errors below.
+ERROR [Controller Definition File Watcher for Default Deployer]: Rule definition 'modeler_rules.drl' could not be deployed. See errors below.
+ERROR 2012-10-11 11:19:18,682 : [ERR 101] Line 16:48 no viable alternative at input ')' in rule "radiator se prizge " in pattern CustomState
+ERROR [Controller Definition File Watcher for Default Deployer]: [ERR 101] Line 16:48 no viable alternative at input ')' in rule "radiator se prizge " in pattern CustomState
+ERROR 2012-10-11 11:19:18,683 : [ERR 101] Line 16:73 no viable alternative at input ')' in rule "radiator se prizge " in pattern Float.parseFloat
+ERROR [Controller Definition File Watcher for Default Deployer]: [ERR 101] Line 16:73 no viable alternative at input ')' in rule "radiator se prizge " in pattern Float.parseFloat
+ERROR 2012-10-11 11:19:18,683 : [ERR 101] Line 25:48 no viable alternative at input ')' in rule "radiator se ugasne " in pattern CustomState
+ERROR [Controller Definition File Watcher for Default Deployer]: [ERR 101] Line 25:48 no viable alternative at input ')' in rule "radiator se ugasne " in pattern CustomState
+ERROR 2012-10-11 11:19:18,683 : [ERR 101] Line 25:73 no viable alternative at input ')' in rule "radiator se ugasne " in pattern Float.parseFloat
+ERROR [Controller Definition File Watcher for Default Deployer]: [ERR 101] Line 25:73 no viable alternative at input ')' in rule "radiator se ugasne " in pattern Float.parseFloat ...
+</pre>
+</div></div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 11, 2012 10:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451817"></a>
+                                    <font class="smallfont"><p>Any suggestions to solve this problem?</p>
+
+<p>Thanks,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 13, 2012 11:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451851"></a>
+                                    <font class="smallfont"><p>Can you try this one:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+CustomState(source == <span class="code-quote">"temperatura senzor"</span>, eval(<span class="code-object">Float</span>.parseFloat((<span class="code-object">String</span>)value) &lt;= $condition2 )
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 13, 2012 19:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451854"></a>
+                                    <font class="smallfont"><p>Still errors:</p>
+
+<div style="max-width: 800px;"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ERROR 2012-10-13 21:07:52,261 : Rule Compilation error The operator &lt;= is undefined for the argument type(s) float, Object
+ERROR [Controller Definition File Watcher for Default Deployer]: Rule Compilation error The operator &lt;= is undefined for the argument type(s) float, Object
+ERROR 2012-10-13 21:07:52,261 : Rule Compilation error The operator &gt; is undefined for the argument type(s) float, Object
+ERROR [Controller Definition File Watcher for Default Deployer]: Rule Compilation error The operator &gt; is undefined for the argument type(s) float, Object
+Rule Compilation error : [Rule name='radiator se ugasne']
+	org/openremote/controller/model/event/Rule_radiator_se_ugasne_0.java (9:527) : The operator &lt;= is undefined for the argument type(s) float, Object
+Rule Compilation error : [Rule name='radiator se prizge']
+	org/openremote/controller/model/event/Rule_radiator_se_prizge_0.java (9:527) : The operator &gt; is undefined for the argument type(s) float, Object
+</pre>
+</div></div></div>
+
+<p>Rules:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"radiator se prizge "</span>
+when
+Level(source == <span class="code-quote">"v test senzor"</span>, $condition1 : value )
+Switch(source == <span class="code-quote">"stikalo virtual stikalo"</span>, value == <span class="code-quote">"on"</span>)
+CustomState(source == <span class="code-quote">"temperatura senzor"</span>, eval(<span class="code-object">Float</span>.parseFloat((<span class="code-object">String</span>)value) &gt; $condition1 ))
+then
+execute.command(<span class="code-quote">"rele2 ON"</span>);
+end
+
+rule <span class="code-quote">"radiator se ugasne "</span>
+when
+Level(source == <span class="code-quote">"v test senzor"</span>, $condition2 : value )
+Switch(source == <span class="code-quote">"stikalo virtual stikalo"</span>, value == <span class="code-quote">"on"</span>)
+CustomState(source == <span class="code-quote">"temperatura senzor"</span>, eval(<span class="code-object">Float</span>.parseFloat((<span class="code-object">String</span>)value) &lt;= $condition2 ))
+then
+execute.command(<span class="code-quote">"rele2 OFF"</span>);
+end
+</pre>
+</div></div>
+
+<p>Thanks Marcus for your help.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 13, 2012 20:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451873"></a>
+                                    <font class="smallfont"><p>Hi Marcus.</p>
+
+<p>I saw that Guillaume Carlier succeeded in creating interface like I have been trying to achieve for quite some time. (<a href="http://www.openremote.org/display/project/2012/10/09/OpenRemote+with+Zibase+Thermostat+Control">http://www.openremote.org/display/project/2012/10/09/OpenRemote+with+Zibase+Thermostat+Control</a>) Do you have his contact? Likely he used the rules and his rules implementation will be a great help. <br/>
+I also have many problems with the shape of the sliders in the new android application.</p>
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 14, 2012 11:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451994"></a>
+                                    <font class="smallfont"><p>Ok, value is treated as object. So we need another cast <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+New try:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+CustomState(source == <span class="code-quote">"temperatura senzor"</span>, eval(<span class="code-object">Float</span>.parseFloat((<span class="code-object">String</span>)value) &gt; ((<span class="code-object">Integer</span>)$condition1).intValue() ))
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 14, 2012 20:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451995"></a>
+                                    <font class="smallfont"><p>I asked Juha, if he has any information.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 14, 2012 20:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452142"></a>
+                                    <font class="smallfont"><p>That's it <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Now rule works as expected, but still something missing. The problem is that rule has worked only if I used LEVEL slider, in the case if I used RANGE slider it didn't worked. </p>
+
+<p>Any idea why this is happening?</p>
+
+
+<p>Thanks again!</p>
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 15, 2012 11:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452143"></a>
+                                    <font class="smallfont"><p>This problem is now completely solved <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> I replaced Level() with Range() and now rule also works with RANGE slider.</p>
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 15, 2012 11:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452149"></a>
+                                    <font class="smallfont"><p>Hi Nejc,</p>
+
+<p>Unfortunately I do not use rules for the Thermostat you mentionned, so I can't help you. Actually all commands are sent using HTTP get &gt; Php script &gt; Zibase variables (french box) &gt; Php &gt; xml &lt; OR polling</p>
+
+<p>regards</p>
+
+<p>Guillaume</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gcarlier at Oct 15, 2012 11:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452152"></a>
+                                    <font class="smallfont"><p>Hi Guillaume,</p>
+
+<p>Actually is Marcus just found the right combination and now i have operating rules.</p>
+
+<p>Did you have any problems with sliders design.</p>
+
+
+<p>Thanks for the reply.</p>
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Oct 15, 2012 11:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452153"></a>
+                                    <font class="smallfont"><p>Hello,</p>
+
+<p>No problem with sliders, using an Ipad</p>
+
+<p>Regards</p>
+
+<p>Guillaume</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gcarlier at Oct 15, 2012 11:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452557"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I am trying to write my own rules to handle the Schneider blinds that operate differently from other manufacturers and also my weather station (Temp, Rain, Wind and Light).<br/>
+I see the code of the various examples and I was also trying to understand Drool from the JBoss documenation which is around Eclipse and I am missing few basic things:<br/>
+1. Are all the top declaration like package...., global etc. required? Some examples have them and some not.<br/>
+2. What is the connection between parameters and status I read and the code. My guess in that the definition sources == &lt;name of a status item&gt;.<br/>
+3. I am not sure I understand how do I send a switching command (for instance turning off a curtain switch). I see the above example - execute.command("rele2 OFF");<br/>
+What is not clear to me is the link between the rele2 and the actual relay. If the name of the relay in the project is rele2, then it is all clear.</p>
+
+<p>I would also recommand to put all examples with some words in one thread. This would be more efficient.</p>
+
+<p>Thanks,</p>
+
+<p>Nir</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Oct 21, 2012 14:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452623"></a>
+                                    <font class="smallfont"><p>Package is needed to tell drools which package the generated java files will get.<br/>
+That package also includes our classes already which would not be found otherwise.<br/>
+Global is needed if you need some other of our classes like CommandFacade.</p>
+
+<p>Here is an example that listens on a switch (here a KNX switch) which sends either on or off.<br/>
+Based on that switch a command is triggered.<br/>
+You can just add another command within the "then" part to execute 2 commands.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+
+rule <span class="code-quote">"Turn Music on via KNX"</span>
+when
+  $evt:Event(source == <span class="code-quote">"SwitchSensor"</span>, value == <span class="code-quote">"on"</span>)
+then
+  execute.command(<span class="code-quote">"Zone6 Power (ON)"</span>);
+end
+
+rule <span class="code-quote">"Turn Music off via KNX"</span>
+when
+  $evt:Event(source == <span class="code-quote">"SwitchSensor"</span>, value == <span class="code-quote">"off"</span>)
+then
+  execute.command(<span class="code-quote">"Zone6 Power (OFF)"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 22, 2012 21:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452630"></a>
+                                    <font class="smallfont"><p>Hi Markus.</p>
+
+<p>One more question.</p>
+
+<p>If I have a sensor value that I want to use in a rule, but I don't want a change in the sensor value should trigger the rule. Is it possible to initialize a variable with the sensor value without triggering the rule each time the sensor value is changing?</p>
+
+<p>For example, outside the rule or in the "then" part?</p>
+
+<p>Thanks,<br/>
+Kenneth</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Oct 23, 2012 07:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452632"></a>
+                                    <font class="smallfont"><p>Maybe this will help:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+
+rule <span class="code-quote">"Demo rule"</span>
+when
+  Level(source == <span class="code-quote">"sensor-name"</span>, $currentVal : value ) <span class="code-comment">//This stores the value of the sensor in currentVal
+</span>  &lt;-- here you still need the condition when the rule should be executed, otherwise each change of <span class="code-quote">"sensor-name"</span> will execute <span class="code-keyword">this</span> rule --&gt;
+then
+  <span class="code-comment">// Whatever you want todo goes here. You can eg. work with the value
+</span>  execute.command(<span class="code-quote">"SetRoomHeating"</span>, eval(((<span class="code-object">Integer</span>)value)+5);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 23, 2012 08:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452635"></a>
+                                    <font class="smallfont"><p>Thanks Markus!</p>
+
+<p>It helped a lot.</p>
+
+<p>I'll try if I can make it work for me too.</p>
+
+<p>//Kenneth</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Oct 23, 2012 08:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452637"></a>
+                                    <font class="smallfont"><p>Hi Marcus.</p>
+
+<p>Line 1 is understood.<br/>
+Lines 2 &amp; 3 are understood except for the fact that I have no idea where can I find documentation of your classes and what classes exists.<br/>
+Line 4 (Import) - not sure I understand what is being imported (one event, all the events or so).</p>
+
+<p>As for the rest are the names SwitchSensor and Zone6 Power the exact names used under the definitions of the various switches under devices?</p>
+
+<p>One last thing. How do I get time, date etc. into the rules? I want to run events that are driven from time of day etc.</p>
+
+<p>Thanks,</p>
+
+<p>Nir</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Oct 23, 2012 08:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452639"></a>
+                                    <font class="smallfont"><p>There is not much documentation yet except looking at the code and the test classes from Juha.<br/>
+Hopefully sooner or later that will change <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Line4: The java class "org.openremote.controller.protocol.Event" is imported. <br/>
+My example does not include it, but earlier in this thread you can see an examples where it is used.<br/>
+Yes, the names are the names of sensors or commands used in the designer.</p>
+
+<p>Timer based rules are mentioned a few time in the forums already.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 23, 2012 09:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452650"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>Now things are clearer. I understand the starting point. </p>
+
+<p>Thanks.</p>
+
+<p>Nir</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Oct 23, 2012 21:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452664"></a>
+                                    <font class="smallfont"><p>One thing is not clear to me. All these commands like timer cron etc appear in examples. I guess there are some more. Where can I find documentation?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Oct 24, 2012 21:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452665"></a>
+                                    <font class="smallfont"><p><a href="http://www.jboss.org/drools/">http://www.jboss.org/drools/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 24, 2012 21:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037657"></a>
+                                    <font class="smallfont"><p>I am trying to put some rules to practice and what I get is:<br/>
+1. Error I do not understand (rule name System_Init)<br/>
+2. 2 Rules that does not do anything but does not generate any error (Test_Study_Light_On &amp; Test_Study_Light_Off)</p>
+
+<p>This is the rule file:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+
+/* ------------------------------------------ */
+/* Set Time to turn off Water Tank      */
+/* ------------------------------------------ */
+
+/* ------------------------------------------ */
+
+rule <span class="code-quote">"Init_System"</span>
+when
+         eval (<span class="code-keyword">true</span>)
+then
+      <span class="code-object">int</span> Default_Water_Tank_Time = 120;
+      <span class="code-object">int</span> Current_Water_Tank_Time = Default_Water_Tank_Time;
+      <span class="code-object">int</span> Time_Count =  Current_Water_Tank_Time;
+
+      $Water_Tank_Previous_State : CustomState(source == <span class="code-quote">"Water Tank Panel Status Light"</span>, value == <span class="code-quote">"on"</span>);
+      $WTS_On_State : eval (<span class="code-keyword">false</span>);
+end
+
+
+rule <span class="code-quote">"Test_Study_Light_On"</span>
+when
+         CustomState(source == <span class="code-quote">"Study Main Light Panel Status"</span>, value == <span class="code-quote">"on"</span>)
+then
+         execute.command(<span class="code-quote">"Entrance Closete Lights (ON)"</span>);
+         <span class="code-object">System</span>.out.println(<span class="code-quote">"Study Main Light is On !"</span>);
+end
+
+rule <span class="code-quote">"Test_Study_Light_Off"</span>
+when
+         CustomState(source == <span class="code-quote">"Study Main Light Panel Status"</span>, value == <span class="code-quote">"off"</span>)
+then
+         execute.command(<span class="code-quote">"Entrance Closete Lights (OFF)"</span>);
+         <span class="code-object">System</span>.out.println(<span class="code-quote">"Study Main Light is Off !"</span>);
+end
+</pre>
+</div></div>
+
+<p>This is what I get in the log file.</p>
+
+<div style="max-width: 800px;"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ERROR 2012-11-21 19:43:45,599 : Rule definition 'modeler_rules.drl' could not be deployed. See errors below.
+ERROR 2012-11-21 19:43:45,600 : Rule Compilation error source cannot be resolved
+value cannot be resolved
+The method eval(boolean) is undefined for the type Rule_Init_System_0
+ERROR 2012-11-21 19:43:45,604 : There was an error parsing the rule definition 'modeler_rules.drl' : Could not parse knowledge.
+java.lang.IllegalArgumentException: Could not parse knowledge.
+	at org.drools.builder.impl.KnowledgeBuilderImpl.newKnowledgeBase(KnowledgeBuilderImpl.java:58)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:532)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:633)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:555)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:840)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:420)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1268)
+	at java.lang.Thread.run(Unknown Source)
+
+</pre>
+</div></div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Nov 21, 2012 17:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037661"></a>
+                                    <font class="smallfont"><p>Your init rule is not working. This means every time rules are triggered (which is with each sensor change) that rule will fire. Besides the eval(true) is not correct as you can see in your error already.</p>
+
+<p>The other rules don't do anything because the whole rule subsystem is not started because of the problem in your first rule.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 21, 2012 20:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037672"></a>
+                                    <font class="smallfont"><p>1. I am not much of a Java expert but I have seen some examples with the eval(true) so I do not understand the error. It is missing run once which I will add. I added this rule just to test parameter initialization in this way.<br/>
+2. The 2nd rule was on his own also (without the 1st rule) but did not do anything. The Study Main Light was turned On using the actual switch and using OR. I had no errors in the log file yet Closete light did not turn on.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Nov 22, 2012 05:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037752"></a>
+                                    <font class="smallfont"><p>Finally it works.<br/>
+The issue here is lack of documentation.<br/>
+Please add some words about Switch, Level, CustomState, when "on" or "1" is to be used.<br/>
+Except for few examples no information.<br/>
+Now I understand the "head" of this but it was all guessing.<br/>
+It is very basic yet with no minimal documentation it takes hours to get it to work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Nov 24, 2012 20:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037781"></a>
+                                    <font class="smallfont"><p>You would be the perfect candidate to start a small documentation <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 25, 2012 19:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037808"></a>
+                                    <font class="smallfont"><p>Maybe. The only issue is to find out all the commands contained in the OR packages.<br/>
+From the examples I have seen:<br/>
+Level<br/>
+Switch<br/>
+execute.command<br/>
+CustomState</p>
+
+<p>I have no idea if there is any documentation of these and maybe other commands that were implemented.<br/>
+If you can shade some light on this issue I might be of help.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Nov 26, 2012 19:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037811"></a>
+                                    <font class="smallfont"><p>When a sensor changes a value, an event is fired which triggers the rule engine.<br/>
+The following events are available:</p>
+<ul class="alternate" type="square">
+	<li>CustomState</li>
+	<li>Range</li>
+	<li>Level</li>
+	<li>Switch<br/>
+They can be found in the java package: org.openremote.controller.model.event</li>
+</ul>
+
+
+<p>The CommandFacade which is defined as a global 'execute' can be used to trigger commands from within a rule.</p>
+
+<p>You can find all kind off examples in the test rules:
+<a href="http://openremote.svn.sourceforge.net/viewvc/openremote/tags/project/Controller/Controller_2_0_1/test/org/openremote/controller/fixture/statuscache/rules/">http://openremote.svn.sourceforge.net/viewvc/openremote/tags/project/Controller/Controller_2_0_1/test/org/openremote/controller/fixture/statuscache/rules/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 26, 2012 20:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881367"></a>
+                                    <font class="smallfont"><p>This link has changed (I found the path on <a href="http://sourceforge.net/p/openremote/code/HEAD/tree/tags/project/Controller/Controller_2_0_1/test/org/openremote/controller/fixture/statuscache/rules/">http://sourceforge.net/p/openremote/code/HEAD/tree/tags/project/Controller/Controller_2_0_1/test/org/openremote/controller/fixture/statuscache/rules/</a>)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 18, 2013 08:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881467"></a>
+                                    <font class="smallfont"><p>Nir, it would be nice to see your code. <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 20, 2013 10:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881882"></a>
+                                    <font class="smallfont"><p>I was asleep for a few months with OR.</p>
+
+<p>I am fixing some errors and will send the new code in a few days.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Dec 29, 2013 16:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

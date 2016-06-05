@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Telnet commands don't close connection?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Telnet commands don't close connection?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 16, 2012 by <font color="#0050B2">frand</font>.
+				    </div>
+
+				    <p>Hi everyone,</p>
+
+<p>I've got a Marantz AV7005 pre-amp which is controlled via Telnet commands using OpenRemote. So far I've gotten direct commands working, and status commands continuously failing, but the functionality seems to have recently regressed, and I'm wondering if 2.0.1 changed telnet command functionality.</p>
+
+<p>The telnet server on the Marantz accepts only a single connection, and apparently only a single command per connection... by this I'm assuming that the telnet client should close connection immediately after receiving the expected response.</p>
+
+<p>With OpenRemote 2.0.1 netstat -a (from how I interprete it) shows me an open telnet connection between the Raspberry Pi and the Marantz:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+tcp        0      0 gerald.local:42987      Marantz.local:telnet    ESTABLISHED
+</pre>
+</div></div>
+
+<p>Also I've noticed that I can no longer control the AV device, and the status sensors that used to give some kind of feedback with 2.0.0 now just default to N/A.</p>
+
+<p>These kind of errors are showing up in dev.log:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2012-12-16 21:12:14,083 ERROR [Polling Sensor <span class="code-object">Thread</span> ID = 367, Name ='VolumeCustom']: Socket event could not execute
+java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at java.net.Socket.connect(Socket.java:495)
+	at java.net.Socket.&lt;init&gt;(Socket.java:392)
+	at java.net.Socket.&lt;init&gt;(Socket.java:206)
+	at org.openremote.controller.protocol.socket.TCPSocketCommand.requestSocket(TCPSocketCommand.java:143)
+	at org.openremote.controller.protocol.socket.TCPSocketCommand.read(TCPSocketCommand.java:188)
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.read(Sensor.java:682)
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Sensor.java:608)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:679)
+</pre>
+</div></div>
+
+<p>Could it be that 2.0.1 has changed the behavior of Telnet commands so they leave the connection open? In any case, is there anything I could do to work around the situation?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21038554"></a>
+                                    <font class="smallfont"><p>You mention telnet but the error indicates you are using TCP ??</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 17, 2012 08:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038605"></a>
+                                    <font class="smallfont"><p>Sorry, just copy-pasted from the wrong part (also just experimented using a TCP command to port 23 in case it'd behave differently). Here's the error log from telnet commands, and the test sensor that used TCP commands has been disabled so it's not interfering.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2012-12-17 22:13:34,086 ERROR [Polling Sensor <span class="code-object">Thread</span> ID = 525, Name ='PowerSensor']: could not perform telnetEvent
+java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.apache.commons.net.SocketClient.connect(SocketClient.java:176)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:261)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.read(TelnetCommand.java:360)
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.read(Sensor.java:682)
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Sensor.java:608)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:679)
+</pre>
+</div></div>
+
+<p>And also in netstat -a:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+tcp        0      0 gerald.local:55678      Marantz.local:telnet    ESTABLISHED
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 17, 2012 20:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038609"></a>
+                                    <font class="smallfont"><p>I just checked the code of the TelnetCommand and that is actually closing the connection.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 17, 2012 22:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038612"></a>
+                                    <font class="smallfont"><p>Could there be a difference between a regular command and a status command?</p>
+
+<p>I could be totally misdiagnosing the issue: regular commands seem to work (mute, unmute, power off...), but status commands throw the above errors on a constant basis. The way I understand it, either status command read timeouts / connection closing are funky, or I have a clairvoyant AV prepro that refuses to connect with status requesting commands <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Here are the commands I'm using:</p>
+
+<p>Name: Power (OFF)<br/>
+Protocol: Telnet<br/>
+IP Address: 192.168.0.15<br/>
+Port: 23<br/>
+Command: null|PWSTANDBY<br/>
+Read Timeout: 1</p>
+
+
+<p>Name: Power(STATUS)<br/>
+Protocol: Telnet<br/>
+IP Address: 192.168.0.15<br/>
+Port: 23<br/>
+Command: null|PW?<br/>
+Read Timeout: 1<br/>
+Read Regex Filter: ^PW\w(2,7) (wiki markup gives an error with the wavy brackets)<br/>
+Read Regex Group: 0<br/>
+Default Read Response: PWON<br/>
+Polling interval: 1000</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 18, 2012 07:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038618"></a>
+                                    <font class="smallfont"><p>You have to escape  curly brackets with \ for the wiki to display it <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+I will double check the status commands and timeout but in general status commands and other commands use the same code for the telnet connection.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 18, 2012 08:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038795"></a>
+                                    <font class="smallfont"><p>I did not see where the connection would not be closed.<br/>
+Maybe you can try the 2.1 DeveloperSnapshot. I did do some changes in the TelnetProtocol.<br/>
+You can find that release here: <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_Developer-Snapshot-20120920.zip/download">http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_Developer-Snapshot-20120920.zip/download</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 18, 2012 23:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038796"></a>
+                                    <font class="smallfont"><p>Thanks Marcus, will do!</p>
+
+<p>Still the same situation, I'm afraid (taken from dev.log):</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2012-12-19 02:07:17,056 ERROR [Polling thread <span class="code-keyword">for</span> sensor: VolumeSensor]: could not perform telnetEvent
+java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.apache.commons.net.SocketClient.connect(SocketClient.java:176)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:123)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.run(TelnetCommand.java:244)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:679)
+</pre>
+</div></div>
+
+<p>Note, the situation is different on the side of netstat -a, instead of one open connection, here's how it shows:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+tcp        0      0 gerald.local:56812      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56703      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56760      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56677      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56797      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56808      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56843      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56708      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56683      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56803      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56745      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56764      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56719      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56688      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56693      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56788      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56793      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56782      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56818      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56775      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56673      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56714      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56739      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56749      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56754      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56729      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56833      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56724      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56734      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56838      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56828      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56770      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56823      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56779      Marantz.local:telnet    TIME_WAIT  
+tcp        0      0 gerald.local:56698      Marantz.local:telnet    TIME_WAIT  
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 18, 2012 23:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038815"></a>
+                                    <font class="smallfont"><p>Hmm, can't say anything else. Normally, if you use telnet to connect to a host, you have to end your session with a command like "exit". <br/>
+Maybe just closing the connection which is done by OpenRemote is confusing your receiver. <br/>
+Do you know if the receiver understands a "exit" command? How to you end the telnet session if you use a normal telnet client from the command line?</p>
+
+<p>You can also try the TCP protocl instead of Telnet and see how that goes. Maybe the receiver only uses the telnet port but does not implement a "real" telnet protocol.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 19, 2012 08:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038848"></a>
+                                    <font class="smallfont"><p>Well, the direct commands have worked fine, the problem has mostly been with status commands. Here's what I get back from the prepro when I log in using a telnet client:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Connected to marantz.local.
+Escape character is '^]'.
+BridgeCo AG Telnet server
+</pre>
+</div></div>
+
+<p>And admittedly I haven't used the escape character in the OpenRemote commands (not sure how I would accomplish that for a status command anyhow...)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 19, 2012 20:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

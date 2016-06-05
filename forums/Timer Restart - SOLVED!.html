@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Timer Restart - SOLVED!</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Timer Restart - SOLVED!
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 24, 2013 by <font color="#0050B2">sattva</font>.
+				    </div>
+
+				    <p>Recently found timer-code from NIR AVIRY and JOE MILLER - Thank you guys!!!</p>
+
+<p>It works fine, but I have very few brain and don't understand how to restart this timer.<br/>
+The idea is: with every used liter of water we need to restart the timer.<br/>
+As soon as the water will be no longer used, timer will countdown to zero.<br/>
+At this time water volume in boiler will be 100% - full boiler.</p>
+
+<p>Please help.</p>
+
+<p>After Button pressed (button - water counter emulator) timer should restart and coundown some X seconds.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Button pressed"</span>
+when
+  Event (source == <span class="code-quote">"SensButtonsOnOff"</span>) <span class="code-comment">// Check <span class="code-keyword">if</span> Water button was pressed
+</span>  CustomState (source == <span class="code-quote">"SensImpulses"</span>, $Liters: value)
+then
+  <span class="code-object">System</span>.out.println ( <span class="code-quote">"Button pressed"</span> );
+  <span class="code-object">Integer</span> iLitersCnt = <span class="code-object">Integer</span>.parseInt($Liters.toString() );
+  iLitersCnt = iLitersCnt + 1;
+  <span class="code-object">String</span> sLtCnt = <span class="code-object">String</span>.format(<span class="code-quote">"%d"</span>, iLitersCnt);
+
+  <span class="code-comment">// $countdown.setTime_left(iLitersCnt*5);  // &lt;==== Must be something like <span class="code-keyword">this</span>. ;-)
+</span>  <span class="code-comment">// iLitersCnt*5 = 5 seconds to boil every liter
+</span>end
+<span class="code-comment">//----------------------------------------------------------------------------------------</span>
+</pre>
+</div></div>
+
+
+<p>Working countdown code:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+global org.openremote.controller.statuscache.RangeFacade ranges;
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*
+<span class="code-keyword">import</span> java.io.*;
+<span class="code-keyword">import</span> java.util.Timer;
+<span class="code-keyword">import</span> java.util.TimerTask;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Float</span>;
+<span class="code-comment">//------------------------------------------------------------------------------------------
+</span>declare WtTimer1
+  time_left : <span class="code-object">int</span>
+end
+declare WtTimer1_Prev
+  wt_old_state : <span class="code-object">boolean</span>
+end
+<span class="code-comment">//----------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Boiler timer initialized"</span>
+no-loop
+when
+  eval (<span class="code-keyword">true</span>)
+then
+  WtTimer1_Prev wt_state = <span class="code-keyword">new</span> WtTimer1_Prev();
+  wt_state.setWt_old_state (<span class="code-keyword">false</span>);
+  insert (wt_state);
+  <span class="code-object">System</span>.out.println ( <span class="code-quote">"Boiler timer initialized"</span> );
+end
+<span class="code-comment">//----------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Boiler timer start"</span> 
+dialect <span class="code-quote">"mvel"</span>
+no-loop
+when
+ CustomState (source == <span class="code-quote">"SensImpulses"</span>, $Liters: value)
+ $wt_status : WtTimer1_Prev()
+ eval ($wt_status.wt_old_state == <span class="code-keyword">false</span> )
+ Switch ( source == <span class="code-quote">"SensBoilerStatusOnOff"</span>, value == <span class="code-quote">"on"</span> )
+then
+ WtTimer1 status = <span class="code-keyword">new</span> WtTimer1();
+ status.setTime_left(60); <span class="code-comment">// &lt;============= Would be nice to set walue from variable <span class="code-object">Integer</span>.parseInt($Liters.toString() ) * 5 sec per liter and restart the timer 
+</span> insert (status);
+ $wt_status.setWt_old_state(<span class="code-keyword">true</span>);
+ <span class="code-object">System</span>.out.println ( <span class="code-quote">"Water Tank was turned ON <span class="code-keyword">for</span> 60 seconds."</span> ); 
+end
+<span class="code-comment">//-----------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Boiler Off CountDown"</span> 
+timer (cron: 0/20 * * * * ?) <span class="code-comment">// Cron <span class="code-keyword">for</span> every 20 seconds
+</span>when
+  $countdown : WtTimer1()
+  Switch ( source == <span class="code-quote">"SensBoilerStatusOnOff"</span>, value == <span class="code-quote">"on"</span> )
+then
+  $countdown.setTime_left($countdown.getTime_left() - 20);
+  <span class="code-object">System</span>.out.println ( <span class="code-quote">"Water Tank Time Left is: "</span> + $countdown.getTime_left() +<span class="code-quote">" sec"</span>);
+  <span class="code-object">Integer</span> iSecLeft = $countdown.getTime_left();
+  <span class="code-object">String</span> sSecLeft = <span class="code-object">String</span>.format(<span class="code-quote">"%d"</span>, iSecLeft);
+  execute.command (<span class="code-quote">"Timer"</span>, sSecLeft +<span class="code-quote">" sec"</span>);
+  <span class="code-keyword">if</span> ( $countdown.getTime_left() &lt; 20) { execute.command (<span class="code-quote">"BoilerOff"</span>, <span class="code-quote">"off"</span>); }
+end
+<span class="code-comment">//----------------------------------------------------------------------------------------</span>
+</pre>
+</div></div>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22881701"></a>
+                                    <font class="smallfont"><p>Solution found!</p>
+
+<p>Lower at the page we can see another part of NIR AVIRY's code:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Button pressed"</span>
+no-loop
+when
+  $WTTimerReset : WtTimer1()  <span class="code-comment">// &lt;== WtTimer1 object created to access its property Time_left
+</span>then
+  $WTTimerReset.setTime_left (80); <span class="code-comment">// &lt;== set <span class="code-keyword">new</span> value to Time_left property of WtTimer1
+</span>  insert ($WTTimerReset);        <span class="code-comment">// &lt;== 
+</span>end
+</pre>
+</div></div>
+
+<p>Complete code of the button:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Button pressed"</span>
+no-loop
+when
+  $WTTimerReset : WtTimer1()  <span class="code-comment">// &lt;== WtTimer1 object created to access its property Time_left
+</span>  Event (source == <span class="code-quote">"SensButtonsOnOff"</span>) <span class="code-comment">// Check <span class="code-keyword">if</span> Water button was pressed
+</span>  CustomState (source == <span class="code-quote">"SensImpulses"</span>, $Liters: value) <span class="code-comment">// Used to callculate <span class="code-keyword">new</span> value of Time_left
+</span>then
+  $WTTimerReset.setTime_left (80); <span class="code-comment">// &lt;== set <span class="code-keyword">new</span> value to Time_left property of WtTimer1
+</span>  insert ($WTTimerReset);        <span class="code-comment">// &lt;== 
+</span>  
+  <span class="code-object">System</span>.out.println ( <span class="code-quote">"Button pressed"</span> );
+  <span class="code-object">Integer</span> iLitersCnt = <span class="code-object">Integer</span>.parseInt ($Liters.toString() );
+  iLitersCnt = iLitersCnt + 1;
+  <span class="code-object">String</span> sLtCnt = <span class="code-object">String</span>.format(<span class="code-quote">"%d"</span>, iLitersCnt);
+  execute.command (<span class="code-quote">"Impulses"</span>,  sLtCnt);
+  execute.command (<span class="code-quote">"BoilerOn"</span>, <span class="code-quote">"on"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 24, 2013 15:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

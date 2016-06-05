@@ -1,0 +1,332 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Setting up local Beehive, Designer and Controller</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Setting up local Beehive, Designer and Controller
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 17, 2014 by <font color="#0050B2">dot</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm working on adding support for the RFXtrx433 to OpenRemote. However, when setting up the local OpenRemote environment for development, I'm running into a bit of trouble.</p>
+
+<p>I've downloaded the latest stable components from:</p>
+
+<ul>
+	<li><a href="http://svn.code.sf.net/p/openremote/code/tags/project/Beehive/Beehive_3_0_0_Beta1">http://svn.code.sf.net/p/openremote/code/tags/project/Beehive/Beehive_3_0_0_Beta1</a></li>
+	<li><a href="http://svn.code.sf.net/p/openremote/code/tags/project/Controller/Controller_2_0_2">http://svn.code.sf.net/p/openremote/code/tags/project/Controller/Controller_2_0_2</a></li>
+	<li><a href="http://svn.code.sf.net/p/openremote/code/tags/project/Designer/Designer_2_13_9_Rosemary_20130330">http://svn.code.sf.net/p/openremote/code/tags/project/Designer/Designer_2_13_9_Rosemary_20130330</a></li>
+</ul>
+
+
+<p>Circumvented problems: </p>
+<ul>
+	<li>Java 7 disallowed using specific functions used by OpenRemote code base (name clash error), so I reverted back to Java 6 Update 45 (64 bit) and Java SE Development Kit 6 Update 45 (64 bit).</li>
+	<li>Google Web Toolkit (GWT) 2.6 broke compatibility with previous versions (Element type mismatch), so I reverted back to GWT 2.5.1.</li>
+</ul>
+
+
+<p>Used software:</p>
+<ul>
+	<li>Apache Ant 1.9.3 extracted to D:\apache-ant-1.9.3\bin</li>
+	<li>GWT 2.5.1 extracted to D:\OpenRemote_Sourceforge\Designer_2_13_9_Rosemary_20130330\gwt-2.5.1</li>
+	<li>MySQL 5.6.17.0 Community Edition on the default install path (C:/)</li>
+</ul>
+
+
+<p>Taken steps:</p>
+<ul>
+	<li>Created beehive database with MySQL Workbench (imported sql file), registered an user account and activated it in the database</li>
+	<li>Added JAVA_HOME, JAVA_JRE to system variables</li>
+	<li>Compiled the Controller with "ant"</li>
+	<li>Compiled the Beehive and Designer with "ant war"</li>
+	<li>Renamed Designer-2.13.9-2013-03-30-Rosemary.war output file to modeler.war</li>
+	<li>Moved Beehive and Designer to "D:\OpenRemote_Sourceforge\Controller_2_0_2\output\OpenRemote-Controller-2.0.2\webapps"</li>
+	<li>Started the controller by calling "D:\OpenRemote_Sourceforge\Controller_2_0_2\output\OpenRemote-Controller-2.0.2\bin\openremote.bat" from the cmd.</li>
+</ul>
+
+
+<p>The problems:</p>
+<ul>
+	<li>Log4J will give the following error: "log4j:ERROR setFile(null,true) call failed.<br/>
+java.io.FileNotFoundException: ..\logs\beehive.openremote.org\3.0\beta1\html\spring.html (The system cannot find the path specified)". Logging shouldn't break the system so I ignored this error.</li>
+	<li>Beehive, Controller and Designer all function but the designer gives "Error 500 The call failed on the server; see server log for details" when trying to save a simple Panel with one button.</li>
+</ul>
+
+
+<p>I've tried searching the forums and adjusting the config.properties files, but the given solutions do not seem to work in my case. The .log files only list that the user must be new and a beehive backup could not be found.</p>
+
+<p>BEEHIVE config.properties ##############################################<br/>
+#jdbc config<br/>
+jdbc.driverClassName=com.mysql.jdbc.Driver<br/>
+jdbc.url=jdbc:mysql://localhost:3306/beehive?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8<br/>
+jdbc.username = root<br/>
+jdbc.password = root</p>
+
+
+<p>#Work directory, contains svn-repos, workCopy and sync history logs.<br/>
+work.dir = D:/beehiveWorkDir</p>
+
+<p>#iconDir<br/>
+icons.dir = <a href="http://localhost:8080/beehive/icons/">http://localhost:8080/beehive/icons/</a></p>
+
+<p>#lircCrawRegex, it can not be modified until the structure of remote lirc website had changed.<br/>
+lirc.craw.regex = &lt;tr&gt;&lt;td valign=\"top\"&gt;&lt;img src=\"/icons/(folder|text|script)\\.gif\" alt=\"\\[<a href="file://s//w">\\s\\w</a>+\\]\"&gt;&lt;/td&gt;&lt;td&gt;&lt;a href=\"(.<b>?)/?\"&gt;.</b>?/?&lt;/a&gt;&lt;/td&gt;&lt;td align=\"right\"&gt;(\\d\\d-\\w\\w\\w-\\d\\d\\d\\d\\s\\d\\d:\\d<br clear="all" />d)  &lt;/td&gt;&lt;td align=\"right\"&gt;\\s*<span class="error">&#91;-\\w\\.&#93;</span>+<br clear="all" />s*&lt;/td&gt;&lt;/tr&gt;<br/>
+BEEHIVE ##################################################</p>
+
+
+<p>Only changed the line at the end of this file:</p>
+
+
+<p>CONTROLLER config.properties ###############################################<br/>
+beehive.REST.Root.Url = <a href="http://localhost:8080/beehive/rest/">http://localhost:8080/beehive/rest/</a><br/>
+CONTROLLER ##################################################</p>
+
+
+<p>DESIGNER config.properties #################################################<br/>
+jdbc.driverClassName=com.mysql.jdbc.Driver<br/>
+jdbc.url=jdbc:mysql://localhost:3306/beehive?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8<br/>
+jdbc.username = root<br/>
+jdbc.password = root</p>
+
+<p>beehive.REST.Root.Url = <a href="http://localhost:8080/beehive/rest/">http://localhost:8080/beehive/rest/</a><br/>
+irService.REST.Root.Url = <a href="http://localhost:8080/irservice/rest/">http://localhost:8080/irservice/rest/</a></p>
+
+<p>panel.xsd.path = /panel-2.0-M7.xsd<br/>
+controller.xsd.path = /controller-2.0-M7.xsd<br/>
+webapp.server.root = <a href="http://localhost:8080/modeler/">http://localhost:8080/modeler/</a></p>
+
+<p>controller.config.xml.path=/controller-config-2.0-M7.xml<br/>
+controller.config.xsd.path=/controllerConfig-2.0-M7.xsd</p>
+
+<p>#Email sender configuration for account activation.<br/>
+#NOTE: host, username, password MUST be trimmed! <br/>
+mail.sender.host=<br/>
+mail.sender.port=25 <br/>
+mail.sender.username=<br/>
+mail.sender.password=<br/>
+mail.smtp.auth.on=false<br/>
+mail.smtp.timeout=25000<br/>
+DESIGNER ##################################################</p>
+
+
+<p>DESIGNER build.properties ##################################################<br/>
+#Configure path to GWT SDK. IF you want compile the project, please download and config it.<br/>
+gwt.sdk = D:\gwt-2.5.1</p>
+
+<p>#Version number<br/>
+#<br/>
+#Major version for API/Schema compatibility<br/>
+#Minor version for compatible features<br/>
+#Last version for bug fixes<br/>
+version = 2.13.9</p>
+
+<p>#Build date (use YYYY-MM-DD format)<br/>
+build.date = 2013-03-30</p>
+
+<p>#Build Identifier (arbitrary string name to match major.minor version &#8211; for convenience)<br/>
+version.name = Rosemary<br/>
+DESIGNER ##################################################</p>
+
+<p>Any help solving this "500" error in the local Designer would be much appreciated!</p>
+
+<p>Douwe</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22885942"></a>
+                                    <font class="smallfont"><p>In your catalina logs on the tomcat where you are running your designer and beehive, can you find the stack traces that are reported after the 500 errors &#8211; they'll likely point out the code lines that are causing the error and then it is easier to narrow down the configuration mistake.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 17, 2014 11:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885943"></a>
+                                    <font class="smallfont"><p>Thanks for the pointer. The error below is added to the catalina log (localhost.log.0) when pressing "Save" in the local Designer.<br/>
+Given the error, I cannot tell where look for possible configuration errors. What could be wrong?</p>
+
+<p>17-apr-2014 12:55:44 org.apache.catalina.core.ApplicationContext log<br/>
+SEVERE: Exception while dispatching incoming RPC call<br/>
+java.lang.NullPointerException<br/>
+	at javax.servlet.GenericServlet.getServletName(GenericServlet.java:322)<br/>
+	at javax.servlet.GenericServlet.log(GenericServlet.java:277)<br/>
+	at com.google.gwt.user.server.rpc.RemoteServiceServlet.processCall(RemoteServiceServlet.java:212)<br/>
+	at com.google.gwt.user.server.rpc.RemoteServiceServlet.processPost(RemoteServiceServlet.java:248)<br/>
+	at com.google.gwt.user.server.rpc.AbstractRemoteServiceServlet.doPost(AbstractRemoteServiceServlet.java:62)<br/>
+	at org.openremote.modeler.server.BaseGWTSpringController.handleRequest(BaseGWTSpringController.java:67)<br/>
+	at org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter.handle(SimpleControllerHandlerAdapter.java:48)<br/>
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:859)<br/>
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:793)<br/>
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:476)<br/>
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:441)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:378)<br/>
+	at org.springframework.security.intercept.web.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:109)<br/>
+	at org.springframework.security.intercept.web.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:83)<br/>
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)<br/>
+	at org.springframework.security.ui.SessionFixationProtectionFilter.doFilterHttp(SessionFixationProtectionFilter.java:67)<br/>
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)<br/>
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)<br/>
+	at org.springframework.security.ui.ExceptionTranslationFilter.doFilterHttp(ExceptionTranslationFilter.java:101)<br/>
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)<br/>
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)<br/>
+	at org.springframework.security.ui.rememberme.RememberMeProcessingFilter.doFilterHttp(RememberMeProcessingFilter.java:116)<br/>
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)<br/>
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)<br/>
+	at org.springframework.security.wrapper.SecurityContextHolderAwareRequestFilter.doFilterHttp(SecurityContextHolderAwareRequestFilter.java:91)<br/>
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)<br/>
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)<br/>
+	at org.springframework.security.ui.AbstractProcessingFilter.doFilterHttp(AbstractProcessingFilter.java:277)<br/>
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)<br/>
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)<br/>
+	at org.springframework.security.ui.logout.LogoutFilter.doFilterHttp(LogoutFilter.java:89)<br/>
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)<br/>
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)<br/>
+	at org.springframework.security.context.HttpSessionContextIntegrationFilter.doFilterHttp(HttpSessionContextIntegrationFilter.java:235)<br/>
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)<br/>
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)<br/>
+	at org.springframework.security.util.FilterChainProxy.doFilter(FilterChainProxy.java:175)<br/>
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:183)<br/>
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:138)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.codehaus.groovy.grails.plugins.gwt.GwtCacheControlFilter.doFilter(GwtCacheControlFilter.java:57)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.springframework.orm.hibernate3.support.OpenSessionInViewFilter.doFilterInternal(OpenSessionInViewFilter.java:198)<br/>
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:75)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.openremote.modeler.filter.UserTimeoutFilter.doFilter(UserTimeoutFilter.java:61)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(Unknown Source)<br/>
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)<br/>
+	at java.lang.Thread.run(Unknown Source)</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dot at Apr 17, 2014 12:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885946"></a>
+                                    <font class="smallfont"><p>This seems a more generic framework error, and doesn't show the specifics.</p>
+
+<p>Is there a nested exception stack around this one which you posted? Before or after this log entry?</p>
+
+<p>Does <a href="http://localhost:8080/beehive/rest/">http://localhost:8080/beehive/rest/</a> from your web browser respond normally?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 17, 2014 12:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885949"></a>
+                                    <font class="smallfont"><p>No, there aren't any other exception stacks around the one I posted above.</p>
+
+<p><a href="http://localhost:8080/beehive/rest/">http://localhost:8080/beehive/rest/</a> returns: "HTTP Status 404 - Could not find resource for relative : / of full path: <a href="http://localhost:8080/beehive/rest/">http://localhost:8080/beehive/rest/</a>"</p>
+
+<p>However:</p>
+<ul>
+	<li><a href="http://localhost:8080/beehive/rest/icons">http://localhost:8080/beehive/rest/icons</a> returns a valid XML file with available icons.</li>
+	<li><a href="http://localhost:8080/beehive/">http://localhost:8080/beehive/</a> returns a website with "Beehive Database" and Administration.</li>
+</ul>
+
+
+<p>I should add that I did not upload a "openremote.zip" to the local Controller, because of the local Designer "500 error" when saving.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dot at Apr 17, 2014 13:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885950"></a>
+                                    <font class="smallfont"><p>Well the best I can decipher is that it fails in this line in the GWT code:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  log(<span class="code-quote">"An IncompatibleRemoteServiceException was thrown <span class="code-keyword">while</span> processing <span class="code-keyword">this</span> call."</span>, ex);
+</pre>
+</div></div>
+
+<p>So it seems to first fail due to what is an incompatible exception type, and then it fails again in logging it correctly by throwing a null pointer in the servlets log method attempting to retrieve the servlet name.</p>
+
+<p>IIRC the version of GWT the Designer releases has been tested with is GWT 2.4.0. Maybe downgrade to that version and see if the problem persists. Also make sure to clear your browser caches to make sure that only the versions of Javascript compiled for the version you're hosting on the Tomcat for the designer are used (and you don't get a mix of Javascript cached on browser and different versions expected on the server).</p>
+
+<p>That's the best guess I have at the moment, the error is getting raised in a place that could indicate GWT version incompatibility.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 17, 2014 14:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885951"></a>
+                                    <font class="smallfont"><p>Thank you for your time and help!</p>
+
+<p>Replacing GWT 2.5.1 with GWT 2.4.0 fixed the problem. I'm now able to save designs.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dot at Apr 17, 2014 14:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

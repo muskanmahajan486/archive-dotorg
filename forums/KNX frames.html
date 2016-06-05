@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNX frames</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNX frames
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 22, 2012 by <font color="#0050B2">swords</font>.
+				    </div>
+
+				    <p>I'm having a go with KNX/EIB and I'm wondering if anyone can fill in the blanks (?? in last part of CONNECTSTATE_REQUEST, DISCONNECT_REQUEST and common connection header) or spot some errors.</p>
+
+<p>CONNECTION_REQUEST:<br/>
+06 10 02 05 00 1a | EIBNet/IP Header (length = 6, version = 1.0, service type = CONNECTION_REQUEST, total length = 26)<br/>
+08 01 c0 a8 0b 17 e7 bd | HPAI control endpoint (length = 8, protocol = UDP, ip = 192.168.11.23, port = 59325)<br/>
+08 01 c0 a8 0b 17 8c b5 | HPAI data endpoint (length = 8, protocol = UDP, ip = 192.168.11.23, port = 36021)<br/>
+04 04 02 00 | CRI (length = 4, connection = TUNNELING_CONNECTION, KNX layer = 2, reserved = 0)</p>
+
+<p>CONNECTIONSTATE_REQUEST:<br/>
+06 10 02 07 00 1a | EIBNet/IP Header (length = 6, version = 1.0, service type = CONNECTIONSTATE_REQUEST, total length = 26)<br/>
+41 | channel id = 65<br/>
+00 | reserved<br/>
+08 01 c0 a8 0b 17 e7 bd | HPAI control endpoint (length = 8, protocol = UDP, ip = 192.168.11.23, port = 59325)<br/>
+09 08 29 07 01 00 58 be 0d 08 | ??</p>
+
+<p>TUNNELLING_REQUEST<br/>
+06 10 04 20 00 15 | EIBNet/IP Header (length = 6, version = 1.0, service type = TUNNELLING_REQUEST, total length = 21)<br/>
+04 41 00 00 | common connection header (length = 4, channel id = 65, sequence = 0, ?? = 0)<br/>
+11 00 ac f0 00 00 61 01 01 00 00 | cEMI frame </p>
+
+<p>cEMI frame:<br/>
+11 | L_Data.req<br/>
+00 | zero<br/>
+ac | 10101100 (standard frame, reserved, repeat, system broadcast, low, no ack, no error)<br/>
+f0 | 11110000 (group address, 7 hops, standard frame)<br/>
+00 00 | src 0 = (0*2048) + (0*256) + (0*1) = 0/0/0<br/>
+61 01 | dst 24833 = (12*2048) + (1*256) + (1*1) = 12/1/1<br/>
+01 | length = 1<br/>
+00 | data = 0</p>
+
+<p>TUNNELLING_ACK<br/>
+06 10 04 21 00 0a | EIBNet/IP Header (length = 6, version = 1.0, service type = TUNNELLING_ACK, total length = 10)<br/>
+04 41 00 00 | common connection header (length = 4, channel id = 65, sequence = 0, ?? = 0)</p>
+
+<p>DISCONNECT_REQUEST<br/>
+06 10 02 09 00 16 | EIBNet/IP Header (length = 6, version = 1.0, service type = DISCONNECT_REQUEST, total length = 22)<br/>
+41 | channel id = 65<br/>
+00 | reserved<br/>
+08 01 c0 a8 0b 17 e7 bd | HPAI control endpoint (length = 8, protocol = UDP, ip = 192.168.11.23, port = 59325)<br/>
+31 20 30 30 20 30 | ??</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19440314"></a>
+                                    <font class="smallfont"><p>I think I've found the answer to the last part of CONNECTIONSTATE_REQUEST and DISCONNECT_REQUEST. It seems as if EIBnetmux is doing something odd. From ETS the length is 16 so the last unknown 10 or 6 are not even there:</p>
+
+<p>06 10 02 07 00 10|EIBNet/IP Header (length = 6, version = 1.0, service type = CONNECTIONSTATE_REQUEST, total length = 16)<br/>
+44 | channel id = 68<br/>
+00 | reserved<br/>
+08 01 c0 a8 0b 35 e1 5f | HPAI control endpoint (length = 8, protocol = UDP, ip = 192.168.11.53, port = 57695)</p>
+
+<p>06 10 02 09 00 10|EIBNet/IP Header (length = 6, version = 1.0, service type = DISCONNECT_REQUEST, total length = 16)<br/>
+45 | channel id = 69<br/>
+00 | reserved<br/>
+08 01 c0 a8 0b 35 ef 96 | HPAI control endpoint (length = 8, protocol = UDP, ip = 192.168.11.53, port = 61334)</p>
+
+<p>So for now that would only leave the service type specific and connection type specific parts from the common connection header unknown.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by swords at Apr 22, 2012 17:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

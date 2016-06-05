@@ -1,0 +1,462 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Problem with understanding rules</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Problem with understanding rules
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 15, 2013 by <font color="#0050B2">pierre kil</font>.
+				    </div>
+
+				    <p>Apparantly I am overlooking somthing in rules syntax:<br/>
+In my Sunscreen application I defined a <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Control+Sunshades+-+Somfy+with+Raspberry+Pi#OpenRemote2.0HowTo-ControlSunshades-SomfywithRaspberryPi-Automation">rule</a> that lets the screen return to its docking position in certain conditions (rain, storm, night). That works fine, but the rule continues to send return commands if the screen is in the docking position.<br/>
+Therefor I added a binary sensor (reed relay) that indicates if the screen is docked or not. On the GUI I can see this sensor works as expected. </p>
+
+<p>So in the existing rule I added the SunScreenDocked clause. If that status is false, the rule should fire if any of the other conditions is met.<br/>
+<a class="confluence-thumbnail-link 866x516" href='http://www.openremote.org/download/attachments/22879185/SunScreenUp.png'><img src="attachments/thumbnails/22879185/23036238" align="right" border="0" hspace="40" vspace="20"/></a> <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+rule <span class="code-quote">"Sunshades Up"</span> when
+  (and
+   CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+   (or
+     Event( source == <span class="code-quote">"WindGust"</span>, value &gt; 38 )
+     CustomState(source==<span class="code-quote">"isNight_sensor"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+     CustomState(source==<span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+    )
+  )
+
+then
+
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+
+end
+</pre>
+</div></div></p>
+
+
+<p>What am I doing wrong?<br/>
+PS: <em>For readability I do use explicit, prefix notation in my rules</em></p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22879185/23036238.png">SunScreenUp.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22879189"></a>
+                                    <font class="smallfont"><p>See if this works:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Sunshades Up"</span> when
+  (and
+    (or
+     Event( source == <span class="code-quote">"WindGust"</span>, value &gt; 38 )
+     CustomState(source==<span class="code-quote">"isNight_sensor"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+     CustomState(source==<span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+    )
+   CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+  )
+
+then
+
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 01, 2013 15:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879192"></a>
+                                    <font class="smallfont"><p>Michal,<br/>
+Thanks for the response. Unfortunately the order did not make a difference.</p>
+
+<p>Did forget to mention that I had tested before that the rule does work if I only use SunScreenDocked clause in the LHS:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Sunshades Up"</span> when
+
+  CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+
+then
+
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+
+end</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 01, 2013 16:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879205"></a>
+                                    <font class="smallfont"><p>Well, your rule looks OK to me. In such situation I usually reboot controller few times until it "triggers". Sometimes a problem lies in a different part. Anyway, the next steps I would do to get the functionality working would be to split all 'or' conditions to separate rules each one with the SunScreenDocked(). There is something strange in the Drools that it behaves slight differently between reboots.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 01, 2013 19:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879228"></a>
+                                    <font class="smallfont"><p>Rewriting the code followed by a couple of ORC reboots, and a complete reboot of the Synology did not make the rule work as intended.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">rule <span class="code-quote">"Sunshades Up"</span> when
+
+    (or
+        Event( source == <span class="code-quote">"WindGust"</span>, value &gt; 38 ) and CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+        CustomState(source==<span class="code-quote">"isNight_sensor"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>) and CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+        CustomState(source==<span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>) and CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+    )
+
+then
+
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+
+end</pre>
+</div></div>
+
+<p>I must be overlooking something. This can't be magic.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 02, 2013 12:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879229"></a>
+                                    <font class="smallfont"><p>What I would try is:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Sunshades Up 1"</span> when
+        Event( source == <span class="code-quote">"WindGust"</span>, value &gt; 38 )
+        CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+then
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+end
+
+rule <span class="code-quote">"Sunshades Up 2"</span> when
+        CustomState(source==<span class="code-quote">"isNight_sensor"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+        CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+then
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+end
+
+rule <span class="code-quote">"Sunshades Up 3"</span> when
+        CustomState(source==<span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+        CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+then
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+end
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 02, 2013 12:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879232"></a>
+                                    <font class="smallfont"><p>Your suggestion is what according to the manual I would expect the Drools rule compiler to do: i.e. rewriting one complex rule into multiple simple rules.</p>
+
+<p>I tried your example, and even slimmed it down to rule 3 only. </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">rule <span class="code-quote">"Sunshades Up 3"</span> when
+        CustomState(source==<span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+        CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+then
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+end</pre>
+</div></div>
+
+<p>It still does not work. Why? Is it that both clauses have to change simultaneously?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 02, 2013 14:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879237"></a>
+                                    <font class="smallfont"><p>No, they should not have to change simultaneously, however, due to some kind of bug, which I reported already on the forum, in the AND statement conditions can be shortcut. Unusually, at least for me when the first one does not trigger then the second one is skipped and then is not run. Just to be sure, run these 2 rules:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Sunshades Up 3a"</span> when
+        CustomState(source==<span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+        CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+then
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+end
+
+rule <span class="code-quote">"Sunshades Up 3b"</span> when
+        CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+        CustomState(source==<span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+then
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+end</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 02, 2013 14:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879241"></a>
+                                    <font class="smallfont"><p>Unfortunately after the "full treatment" still no success.<br/>
+If I reduce your rules, it does work on changes of the individual sensors. </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">rule <span class="code-quote">"Sunshades Up 3a"</span> when
+        CustomState(source==<span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+then
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+end
+
+rule <span class="code-quote">"Sunshades Up 3b"</span> when
+        CustomState(source==<span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>)
+then
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+end
+</pre>
+</div></div>
+
+<p>Many thanks for your kind help. I'll let this simmer for a while...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 02, 2013 16:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879265"></a>
+                                    <font class="smallfont"><p>If you can please take this controller <a href="https://dl.dropboxusercontent.com/u/2892838/OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17.zip">OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17.zip</a> which logs rules execution to logs/rules/drools.log. It is set to DEBUG, if you need more noise set it in the log4j.properties.<br/>
+Should give you an insight what is happening.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 02, 2013 22:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879289"></a>
+                                    <font class="smallfont"><p>I had seen it in the other thread. As I don't want to spoil my production environment on Synology, I have to test on PC. There I am bound to Java 1.7. Does Drools in your package run with that?</p>
+
+<p>On the other hand I consider abandoning Drools. It is such a painful experience, and I do not see the prospect of improvement. And as ultimately using it results in Java programming, I expect it may be easier for me to do it with javascript modules in RaZberry.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 03, 2013 08:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879298"></a>
+                                    <font class="smallfont"><p>I haven't tested it on Java 7, so probably it is not running there.</p>
+
+<p>On the other hand, I'm testing few controller's builds on my ebox with help of symbolic links. To switch between different ones I change the symbolic link and reboot. This way the other controller stays intact during testing.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 03, 2013 10:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879308"></a>
+                                    <font class="smallfont"><p>Yes I know I could do that, but at the moment it is just too much of a mess for me. I feel I am wasting my time with Drools.</p>
+
+<p>Thanks anyway for your highly valued help. Maybe I'll pick it up again in a couple of weeks. </p>
+
+<p>Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 03, 2013 13:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879314"></a>
+                                    <font class="smallfont"><p>I understand you very well, everything new is frustrating when it does not work as expected. Anyway, as I'm tracing few of OR-Drools bugs myself here is my last question: what protocol are you using for your sensors? I have a feeling that some protocol implementations cause problems while others are OK.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 03, 2013 14:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879323"></a>
+                                    <font class="smallfont"><p>No problem discussing these things further.<br/>
+The commands I use are <b>DateTime</b> and a couple of http calls (See <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Control+Somfy+Sunshades+with+Raspberry+Pi">my application description</a>)<br/>
+The rainsor does a <b>http call</b> to the raspberry pi to read Z-Wave binary sensors for rain and screen position. There is another <b>http call</b> that extracts wind data from an XML file.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 03, 2013 19:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879645"></a>
+                                    <font class="smallfont"><p>Returning to <b>implicit</b> and <b>infix</b> notation this seems to work:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+rule <span class="code-quote">"Sunshades Up"</span> when
+
+CustomState( source == <span class="code-quote">"SunScreenDocked"</span>, value==<span class="code-quote">"<span class="code-keyword">false</span>"</span>)
+(CustomState( source == <span class="code-quote">"isItRaining"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>) or 
+ CustomState( source==<span class="code-quote">"isNight_sensor"</span>, value==<span class="code-quote">"<span class="code-keyword">true</span>"</span>) or 
+ Event( source == <span class="code-quote">"WindGust"</span>, value &gt; 38 )
+)
+
+then
+
+  execute.command( <span class="code-quote">"SunScreenUP"</span> );
+
+end
+</pre>
+</div></div>
+
+<p>It did not in earlier experiments. The only thing that is different is the addition of a space between the '(' and 'source', and the order of the or-clauses. According to the manual it should not matter if there is a space or not. It does look like earlier posts where some users insisted there should be empty lines before and after keywords <em>when, then, end</em> etc.</p>
+
+<p>I will do some more experimentation with different forms. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 09, 2013 12:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883008"></a>
+                                    <font class="smallfont"><p>Because of the still unpredictable behaviour of my rules, I have an additional question about the use of variables in rules. Consider this part of a rule:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">  Range(source==<span class="code-quote">"SolarPowerLevel"</span>, $w1 : value)</pre>
+</div></div>
+<p>where I assign a value to variable <em>$w1</em>.</p>
+
+<ul class="alternate" type="square">
+	<li>Can I use this variable in an other rule?</li>
+	<li>Can I use this variable in a rule in a different DRL file (in case I intend to split rules in multiple files?)</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 18, 2014 10:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883010"></a>
+                                    <font class="smallfont"><p>As far as I know the answer for both your questions is no.</p>
+
+<p>Anyway, on of the most confusing problems with rules for me was the fact that rule did not always execute when there were more conditions in the 'when' statement. Moreover, sometimes just changing the order of statements made it behave differently (not correctly, but differently). Currently I've solved this problem by doing the following:</p>
+
+<p>1. Set the drools engine to STREAM mode as opposed to the default CLOUD mode. Unfortunately you cannot do this via properties, only through the custom build. The build with the UDP listener patch which I've posted to the different thread has the Drools engine in the STREAM mode and rules logging too.<br/>
+2. Cast events to drools events. You do this the following way in the drl file:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare Event
+  @role(event)
+end
+
+declare CustomState
+  @role(event)
+end
+
+etc...
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 18, 2014 10:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883013"></a>
+                                    <font class="smallfont"><p>Michal,</p>
+<ul class="alternate" type="square">
+	<li>Thanks for the quick reply.</li>
+	<li>I haven't found the time yet to play with your with your UDP Listener patch. I will when and if I resume my activities with RaZberry. Their forum is a dysfunctional mess. Has all the symptoms of a dying business, hope I am wrong.</li>
+	<li>I do appreciate your efforts to get Drools running properly. I am afraid this casting events thing is becoming to hard to follow for me. I did not find anything on Stream/Cloud mode in the Drools Expert User Guide. So this must be way above my head for sure.</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 18, 2014 13:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 11:03</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

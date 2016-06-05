@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : SOLVED Feedback for iR or Rules</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : SOLVED Feedback for iR or Rules
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 23, 2013 by <font color="#0050B2">orjo</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>i`m currently building my Home Cinema Remote with an iTach IP2IR and Open Remote.<br/>
+All the features i`ve used until now are great; thanks for the great SW.</p>
+
+<p>There`s only one thing that worries me.<br/>
+I`ve two devices that have no iR-Codes for a discrete ON/Off. That means they have only a toogle code.</p>
+
+<p>On my harmony, which shall be completely replaced by OR + Nexus 7, the Remote "remembers" the states of the device so if the device is already turned on, the Turn ON/OFF code isn`t sent again.</p>
+
+<p>Scenario would be the following:</p>
+
+<p>Scene (Macro) "Watch TV (TV)" selected:<br/>
+  -&gt; TV ON sent  -&gt; (TV is on)<br/>
+  -&gt; Satellite Receiver Toogle sent (Receiver is ON)<br/>
+  -&gt; Yamaha RX-V767 sent (Yamaha is on)</p>
+
+<p>Now i want to watch TV on my Projector</p>
+
+<p>Scene (Macro) "Watch TV (Projector)" selected:<br/>
+  -&gt; TV OFF sent (TV was ON, TV is now turned off)<br/>
+  -&gt; Yamaha RX-V767 On sent (already on, nothing happens)<br/>
+  -&gt; Satellite Receiver Toggle sent (Receiver is now OFF)<br/>
+  -&gt; Sanyo PLV-Z200 Toggle sent (Projector is on)</p>
+
+
+<p>As you can see it causes an false result when switching between scenes when devices are invovced which have no discrete ON/OFF-IR-Code.</p>
+
+<p>Is it possible to solve the problems with rules?<br/>
+As i understood rules can only be used with sensors like KNX.</p>
+
+<p>Does anybody have an idea, i`m completely new to OR.</p>
+
+<p>Thank you</p>
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22414615"></a>
+                                    <font class="smallfont"><p>Recently some samples were posted on the forums where people use rules and virtual commands to simulate a distinct on/off.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 21, 2013 08:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414732"></a>
+                                    <font class="smallfont"><p>Thanks Marcus for your quick reply,</p>
+
+<p>i`ve searched the forum and found some interesting threads(<a href="http://www.openremote.org/display/forums/In-Memory+Virtual+Command+Help">This</a> one and <a href="http://www.openremote.org/display/forums/Light+switches+in+Cleaning+Mode?focusedCommentId=21859932#comment-21859932">this</a> one)</p>
+
+<p>I`ve created now three "commands" a sensor, a switch and a label.<br/>
+I also created the rule from Thread #2.</p>
+
+<p>I`m now able to toggle the switch and get the according output on my created label.</p>
+
+<p>At this point i didn`t know how to continue.</p>
+
+<p>So i created three more commands, another sensor/label.<br/>
+I can switch the second label like the first. So i tried to expand the rule to something like:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">If fake_sensor=on &amp;&amp; real_sensor==off
+then
+<span class="code-object">System</span>.out.println(<span class="code-quote">"<span class="code-keyword">switch</span> off"</span>);
+End
+</pre>
+</div></div>
+<p>But this is not working.</p>
+
+<p>I need something like</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+If
+  sensor_fake == on &amp;&amp; sensor_real==off (Would mean somtehing turns the device off)
+Then
+  Execute(Toggle)
+  Set sensor_fake=off
+End
+
+
+If
+  sensor_fake == off &amp;&amp; sensor_real==on (Would mean somtehing turns the device on)
+Then
+  Execute(Toggle)
+  Set sensor_fake=on
+End
+
+</pre>
+</div></div>
+
+<p>I hope you understand what i mean.<br/>
+As i said, i`m completely new to openremote and rules.</p>
+
+<p>It would be great if you somebody could give me some helpflu hints.<br/>
+Perhaps i`m on the completely wrong way and missing something?</p>
+
+<p>Thanks a lot</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at May 22, 2013 20:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414738"></a>
+                                    <font class="smallfont"><p>The threads you found are ok. The 2nd one has a post from Eric which explains it.<br/>
+Where he has "CL_on" or "CL_off" just trigger your ir commands for on and off.<br/>
+The in-memory sensor will handle the status.<br/>
+If in-memory is already on nothing will happen.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 22, 2013 22:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414830"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>i`m sorry but i still do not understand how to use this for my problem.<br/>
+I have now a switch with a rule and could call two commands from there but i got only one trigger ir command which would cause the problem as described.</p>
+
+<p>Could you explain me a little bit more detailed what you mean?</p>
+
+<p>Thank you for your previous help</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at May 23, 2013 18:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414835"></a>
+                                    <font class="smallfont"><p>Your one command has to be called in the rule for switch "on" and for switch "off".<br/>
+Since the in-memory switch is somehow intelligent the rule will not trigger if it's on already and you turn it on again.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 23, 2013 20:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414836"></a>
+                                    <font class="smallfont"><p>I think i`m on the right way now <img class="emoticon" src="images/icons/emoticons/biggrin.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p> -&gt; Create the in-memory switch with ON,OFF and status<br/>
+ -&gt; Create the rule<br/>
+ -&gt; Put in the toggle IR-Command into Rule in both On and OFF<br/>
+ -&gt; Create 2 Button or Macro and call the commands ON &amp; OFF</p>
+
+<p>Right direction?</p>
+
+<p><img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at May 23, 2013 21:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414837"></a>
+                                    <font class="smallfont"><p>Yes, that is how thought of it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 23, 2013 21:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

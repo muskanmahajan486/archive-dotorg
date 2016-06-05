@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Controller - Multiple threads sometimes created for each sensor?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Controller - Multiple threads sometimes created for each sensor?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 05, 2011 by <font color="#0050B2">kurrazyman</font>.
+				    </div>
+
+				    <p>I have noticed on occasions that multiple threads are created for the same sensor, here's the standard output that appears showing the threads being created using the same sensor ID:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+INFO: Starting Servlet Engine: Apache Tomcat/6.0.18
+------------- CALIMERO PATCH A -------------------------
+------------- CALIMERO PATCH A -------------------------
+ -------- Started thread <span class="code-keyword">for</span> sensor 9 custom org.openremote.controller.protocol.telnet.TelnetCommand@1c63e8c
+ -------- Started thread <span class="code-keyword">for</span> sensor 9 custom org.openremote.controller.protocol.telnet.TelnetCommand@1c63e8c
+ -------- Started thread <span class="code-keyword">for</span> sensor 9 custom org.openremote.controller.protocol.telnet.TelnetCommand@e7b3f2
+05-Feb-2011 23:18:02 org.apache.coyote.http11.Http11Protocol start
+INFO: Starting Coyote HTTP/1.1 on http-8080
+05-Feb-2011 23:18:02 org.apache.catalina.startup.Catalina start
+INFO: Server startup in 9503 ms
+</pre>
+</div></div>
+
+<p>Any ideas before I go digging in the code?</p>
+
+<p>Rich</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-15532346"></a>
+                                    <font class="smallfont"><p>Yes the controller definitely has issues with concurrency in its current Alpha 11 iteration (messy implementation) &#8211; I haven't gotten far enough yet with my cleanup to chase after this one, so feel free to go after it if you fancy.</p>
+
+<p>Marcus sent a similar report which I suspect might be related:</p>
+
+<blockquote>
+
+<p>I just downloaded the controller Alpha11 source to start on my 1-wire stuff and realized that the KNXConnectionManager is started twice. This is done because InitCachedStatusDBListener is calling SpringContext.getInstance() which results in a context initialization if the context is not initilized. But the ContextLoaderListener is also initializing the context. I don't know if this might be a problem. Maybe the KNXConnectionManager has to be able to realize that he was started already or the SpringContext should not be initiliazed twice??</p>
+</blockquote></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 07, 2011 07:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532352"></a>
+                                    <font class="smallfont"><p>I thought the only place the pollingMachineThreads were instantiated was from the InitCachedStatusDBListener -&gt; PollingMachinesService not from the web.xml definition as well.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 07, 2011 08:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532635"></a>
+                                    <font class="smallfont"><p>I have tracked down the cause of these duplicate sensor thread messages. They are being generated by the quartz scheduler XMLChangeListener which fires every 15s. It seems that when the controller first starts up the first time this scheduler fires it thinks the controller.xml file has changed (because it's comparing the controller.xml to an empty string) and so it refreshes the controller by running the following commands:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+         killAndClearPollingMachineThreads();
+         clearChangedStatusTable();
+         clearStatusCache();
+         clearAndReloadSensors();
+         restartPollingMachineThreads();
+         success = <span class="code-keyword">true</span>;
+</pre>
+</div></div>
+
+<p>This causes the Polling Threads to be killed and created again, which produces the first duplicate message. The next time the scheduler runs it thinks the panel.xml file has changed (same reason as the controller.xml) and so it once again refreshes the controller.</p>
+
+<p>I am going to look into a solution for this.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 19, 2011 16:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532670"></a>
+                                    <font class="smallfont"><p>Richard,</p>
+
+<p>Thank you for investigating and the update on this issue.</p>
+
+<p>&#8211; Juha</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 20, 2011 21:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532671"></a>
+                                    <font class="smallfont"><p>I have fixed the issue in my connection manager branch using the following change to the isObservedXMLContentChanged method in ControllerXMLChangeServiceImpl:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+   <span class="code-keyword">private</span> <span class="code-object">boolean</span> isObservedXMLContentChanged(<span class="code-object">String</span> observedXMLFileName) {
+      <span class="code-comment">//<span class="code-keyword">if</span> changed, save the latest controller.xml.
+</span>      <span class="code-object">String</span> observedXMLFilePath = PathUtil.addSlashSuffix(ConfigFactory.getCustomBasicConfigFromDefaultControllerXML().getResourcePath()) + observedXMLFileName;
+      File observedXMLFile = <span class="code-keyword">new</span> File(observedXMLFilePath);
+      <span class="code-object">StringBuffer</span> fileContent = <span class="code-keyword">new</span> <span class="code-object">StringBuffer</span>();
+      <span class="code-object">String</span> oldXMLFileContent = <span class="code-keyword">new</span> <span class="code-object">String</span>();
+      <span class="code-keyword">if</span> (Constants.CONTROLLER_XML.equals(observedXMLFileName)) {
+         oldXMLFileContent = gatewayManagerService.getControllerXMLFileContent();
+      } <span class="code-keyword">else</span> <span class="code-keyword">if</span> (Constants.PANEL_XML.equals(observedXMLFileName)) {
+         oldXMLFileContent = gatewayManagerService.getPanelXMLFileContent();
+      }
+      <span class="code-keyword">try</span> {
+         fileContent.append(FileUtils.readFileToString(observedXMLFile, <span class="code-quote">"utf-8"</span>));
+      } <span class="code-keyword">catch</span> (IOException ioe) {
+         logger.warn(<span class="code-quote">"Skipped "</span> + observedXMLFileName + <span class="code-quote">" change check, Failed to read "</span> + observedXMLFile.getAbsolutePath());
+         <span class="code-keyword">return</span> <span class="code-keyword">false</span>;
+      }
+      <span class="code-keyword">if</span> (oldXMLFileContent.equals(fileContent.toString()) || oldXMLFileContent.length() == 0) {
+         <span class="code-keyword">return</span> <span class="code-keyword">false</span>;
+      }
+      <span class="code-keyword">return</span> <span class="code-keyword">true</span>;
+   }
+</pre>
+</div></div>
+
+<p>I have also looked at the duplicate 'Calimero Patch A' message that appears at start up and this isn't related to the KNXConnectionManager code as far as I can see but is something internal to the calimero-2.0a4-PATCH-A.jar file that is loaded by tomcat at start up from WEB-INF/libs before any of the controller code 'kicks' in.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 20, 2011 21:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

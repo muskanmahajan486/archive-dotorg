@@ -1,0 +1,296 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Ability to execute shell commands on Windows</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Ability to execute shell commands on Windows
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 15, 2011 by <font color="#0050B2">orcusomega</font>.
+				    </div>
+
+				    <p>I am working on a customized system that is in the middle of migrating from X10 to Insteon, and I REALLY like the OpenRemote interface...  I am looking for documentation on how to have to the application execute a local shell command - most notably to use the X10 SDK command line executable to send the appropriate commands to the controller.  There is a "ghetto hack" where I can install Apache and execute commands through HTTP, but I would like to reduce the system overhead, and simply execute a command at the system shell level.</p>
+
+<p>Is this possible?  If it is, then that opens up a TON of possibilities for this platform - and is something I am seriously using for running remote support scripts in the data centers I support, etc.</p>
+
+<p>Any help is greatly appreciated!</p>
+
+<p>Thanks,</p>
+
+<p>Bob</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19434313"></a>
+                                    <font class="smallfont"><p>In general it is possible to start shell commands from within Java. <br/>
+You could easily create a new protocol that takes the path to the executable or shell scripts and that will be started when pushing a button.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 16, 2011 08:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434316"></a>
+                                    <font class="smallfont"><p>If you could provide some pointers, I would appreciate it - I am NOT a programmer, but I am pretty sure I could hack something to make it work.  I see a LOT of potential uses for this type of functionality - I am working through a few designs at the moment to use this capability to run HVAC controls, and perform system commands (such as remotely rebooting a server, restarting a service, etc using PSEXEC).</p>
+
+<p>To anyone else in the community:  If you also see a need for this, lets work together on this.  What I envision is a simple interface that allows you to define an executable (must be able to be located in a directory that contains spaces) and command line switches (such as "psexec -i -d -s c:\windows\regedit.exe") and run in the context of the user account running OpenRemote (should make it a bit easier).</p>
+
+<p>Thanks a ton!</p>
+
+<p>Bob</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orcusomega at Dec 16, 2011 15:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434325"></a>
+                                    <font class="smallfont"><p>For this to work in Java you need to create a String array with the command as first entry and the params follow. <br/>
+In your example the String array could either look like this: </p>
+
+<p>   {"psexec", "-i", "-d", "-s c:\windows\regedit.exe"}</p>
+
+<p>or like this</p>
+
+<p>   {"psexec", "-i", "-d", "-s", "c:\windows\regedit.exe"}</p>
+
+<p>And this is one problem we might have. <br/>
+How would you specify in one or 2 textfields (within our designer webapp) what is the command and what are parameters and parameter values?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 16, 2011 22:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434377"></a>
+                                    <font class="smallfont"><p>Well, it could be just one text field for all I care (I don't mean for that to sound flip - it really doesn't matter to me...)  but in the past this was needed because of the need for " in different places - it tended to jam different applications up.</p>
+
+<p>Since I am NOT a programmer, is there a protocol plugin that I can use, just change the commands executed, instead of recreating the wheel?</p>
+
+<p>Thanks,</p>
+
+<p>Bob</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orcusomega at Dec 19, 2011 14:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434484"></a>
+                                    <font class="smallfont"><p>Ok, I just implemented support for a new "shellexe" protocol. This protocol can be configured with the full path to the executable and one extra parameter. If you want to start something which needs more sophisticated parameter, you can just create a batch file and start from there.</p>
+
+<p>The protocol is only available in my developer branch "Controller_EP_SNAP_20111102_NewProtocols" but Juha should be able to integrate this into the upcoming 2.0 release.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 22, 2011 23:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434502"></a>
+                                    <font class="smallfont"><p>Hi markus,</p>
+
+<p>does your Protocol works under linux too.<br/>
+I you need tester my openremote controller is running on a SYNOLOGY NAS and I am really interested on your controller.</p>
+
+<p>many Thanks for your help</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by remylpat at Dec 23, 2011 10:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434510"></a>
+                                    <font class="smallfont"><p>I am using general Java commands todo this. This should work on all platforms.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 23, 2011 15:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434544"></a>
+                                    <font class="smallfont"><p>Sorry for the delay in response - holidays are brutal!</p>
+
+<p>Thanks a TON for this!  I will be sure to post up what I am doing to help the next person!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orcusomega at Dec 25, 2011 14:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434730"></a>
+                                    <font class="smallfont"><p>Hi all,</p>
+
+<p>I am a little bit lost.<br/>
+Can we or not execute shell command ?<br/>
+How to do it ?<br/>
+Can we test ?</p>
+
+<p>Many thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by remylpat at Jan 03, 2012 15:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434731"></a>
+                                    <font class="smallfont"><p>I implemented to protocol but it's not in the official download of the controller.<br/>
+I just commited into the 20111129 snapshot which is in Juha's workspace folder in SVN.<br/>
+You can download the source from there and test if you would like.</p>
+
+<p>The needed xml fragment for the controller.xml looks like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    &lt;command id=<span class="code-quote">"87"</span> protocol=<span class="code-quote">"shellexe"</span>&gt;
+      &lt;property name=<span class="code-quote">"commandParams"</span> value=<span class="code-quote">"..."</span> /&gt;
+      &lt;property name=<span class="code-quote">"commandPath"</span> value=<span class="code-quote">"..."</span> /&gt;
+    &lt;/command&gt;
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 03, 2012 16:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434732"></a>
+                                    <font class="smallfont"><p>Sorry for that noob question but how to download the source code and where run/test it on my system ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by remylpat at Jan 03, 2012 16:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434738"></a>
+                                    <font class="smallfont"><p>I just created a snapshot of the latest controller to download.<br/>
+You can try this version: www.redeker-consulting.de/openremote/OpenRemote-Controller-2.0.0_SNAPSHOT_20120103.zip<br/>
+The "Shell Execution" protocol was also added to the online designer, so you don't have to edit any xml just go online and create a "shellexe" command and link to a button.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 03, 2012 22:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434820"></a>
+                                    <font class="smallfont"><p>Hi markus,</p>
+
+<p>Thanks for the linkand the snapshot.<br/>
+I tried to install it on my synology but failed.<br/>
+The designer is up2date and I was thinking the controller too (I overwrited the old files with the new ones, changed the Port to the one I used, but each time I try to uplad my new design to the con,troller it failed. I have also other java error when running).<br/>
+Is there a release date for this new version ?</p>
+
+<p>Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by remylpat at Jan 09, 2012 15:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434821"></a>
+                                    <font class="smallfont"><p>I don't have a release date.<br/>
+What errors do you see?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 09, 2012 16:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434834"></a>
+                                    <font class="smallfont"><p>I will try re-install it tonight and update the thread with msg errors</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by remylpat at Jan 10, 2012 15:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434900"></a>
+                                    <font class="smallfont"><p>Here is one of the messages I had :</p>
+
+<p>org.openremote.controller.protocol.shellexe.ShellExeCommand.send(60) | Could not execute shell command: /bin/sh /volume1/homes/admin/GoogleMeteo.sh<br/>
+java.io.IOException: Cannot run program "/bin/sh /volume1/homes/admin/GoogleMeteo.sh ": java.io.IOException: error=2, No such file or directory</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by remylpat at Jan 12, 2012 20:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434902"></a>
+                                    <font class="smallfont"><p>How did you configure that in the designer?<br/>
+"/bin/sh" as full path to executable<br/>
+and<br/>
+"/volume1/homes/admin/GoogleMeteo.sh" as additional command param?</p>
+
+<p>If not, then that would be the problem.</p>
+
+<p>Other way would be that "/bin/sh" is the first line in "GoogleMeteo.sh"<br/>
+like this "#!/bin/sh"</p>
+
+<p>and then you just put the full path to "GoogleMeteo.sh" as path to executable and you have to chmod +x the file.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 12, 2012 22:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,1093 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OpenWebNet Integration</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OpenWebNet Integration
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 27, 2013 by <font color="#0050B2">marco.miccini</font>.
+				    </div>
+
+				    <p>Hi!<br/>
+As reported in my previous <a href="http://www.openremote.org/display/forums/OpenRemote+on+Android+or+customized+Linux?focusedCommentId=22880386#comment-22880386">thread</a>, I'm integrating the OpenWebNet protocol into OpenRemote.</p>
+
+<p>This is my reply to @Marcus to the thread mentioned above:</p>
+
+<p>So is the comment you reported in an old <a href="http://www.openremote.org/display/forums/sensors+with+TCP+protocol+problem?focusedCommentId=17039599#comment-17039599">thread</a> no longer correct?</p>
+
+<blockquote><p>Your command has to extend "ReadCommand" and implement ExecutableCommand. <span class="error">&#91;...&#93;</span></p></blockquote>
+
+<p>I've already tried in my first test to follow the HTTP implementation, but it didn't work. I'll work more around this and I'll do more attempts.</p>
+
+<p>Anyway, how can I know the type of the sensor I'm handling? I suppose this should be indispensable to set its right value. Do I have to do something like this?</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">if</span> (sensor <span class="code-keyword">instanceof</span> SwitchSensor)
+{
+    ...
+}
+<span class="code-keyword">else</span> <span class="code-keyword">if</span> (sensor <span class="code-keyword">instanceof</span> RangeSensor)
+{
+    ...
+}
+<span class="code-keyword">else</span> <span class="code-keyword">if</span> (sensor <span class="code-keyword">instanceof</span> LevelSensor)
+{
+    ...
+}
+<span class="code-keyword">else</span>
+{
+    ....
+}
+</pre>
+</div></div>
+
+<p>(... I didn't find ColorSensor and CustomSensor)</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22880393"></a>
+                                    <font class="smallfont"><p>Hi,<br/>
+yes that thread is over 2 years old and we changed the API.<br/>
+New command should implement EventListener interface.<br/>
+That interface will "inject" the sensor which is linked to the command.<br/>
+Once your command has new information for that sensor all you have todo is</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+mySensor.update(newValue);
+</pre>
+</div></div>
+<p>newValue has to be a String and the sensor will take care to convert it.<br/>
+Obviously the command has to set a value which the sensor can convert eg. HTTP command will set the value which is extracted via Regex, Xpath or Json.<br/>
+So it's up to the user to define the correct expression for the sensor he wants to use with this command.</p>
+
+<p>If you look at the Vera protocol that might be a good start: <a href="http://sourceforge.net/p/openremote/code/HEAD/tree/workspace/mredeker/Controller_2_1_0-ORCJAVA-330/src/org/openremote/controller/protocol/vera/">http://sourceforge.net/p/openremote/code/HEAD/tree/workspace/mredeker/Controller_2_1_0-ORCJAVA-330/src/org/openremote/controller/protocol/vera/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 27, 2013 19:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880396"></a>
+                                    <font class="smallfont"><p>I did refresh the documentation on that a few months ago, so checking this <a href="http://openremote.org/display/docs/Developer+How+To+-+Adding+Your+Own+Protocol+to+OpenRemote+Boss+2.0+Controller">How to</a> might help.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 27, 2013 20:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880506"></a>
+                                    <font class="smallfont"><p>Thanks all!<br/>
+It was only a stupid programming error.</p>
+
+<p>Now I'm going to manage more complex issues, but first I have another question.<br/>
+In the dev log, I have two rows like these:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2013-11-29 18:11:55,316 INFO [http-bio-8080-exec-6]: Had timeout <span class="code-keyword">for</span> waiting status change.
+2013-11-29 18:11:55,318 INFO [http-bio-8080-exec-6]: Finished polling at 2013-11-29 18:11:55
+</pre>
+</div></div>
+<p>They appear about 1 minute after I sent a command like pushing a button.<br/>
+Can I ignore this or could it be dangerous?</p>
+
+<p>This is the complete log file:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2013-11-29 18:10:22,286 INFO [localhost-startStop-1]: Initialized JUL to LOG4J Redirector.
+2013-11-29 18:10:22,288 INFO [localhost-startStop-1]: Programmatically set 'useParentHandlers=<span class="code-keyword">false</span>' in 'OpenRemote.Controller' log category.
+2013-11-29 18:10:23,628 INFO [Controller Auto-Discovery]: Created IP discover multicast server !
+2013-11-29 18:10:23,630 INFO [Controller Auto-Discovery]: Joined a group : 224.0.1.100:3333
+2013-11-29 18:10:23,632 INFO [Controller Auto-Discovery]: Listening on  224.0.1.100:3333
+2013-11-29 18:10:23,635 INFO [Cluster UDP]: UDP Server : Starting UDP server...
+2013-11-29 18:10:23,635 INFO [Cluster UDP]: UDP Server : Started UDP server successfully.
+2013-11-29 18:10:23,647 INFO [Cluster TCP]: TCP Server : starting <span class="code-keyword">for</span> receiving groupmember urls...
+2013-11-29 18:10:23,647 INFO [Cluster TCP]: TCP Server : started successfully <span class="code-keyword">for</span> receiving groupmember urls...
+2013-11-29 18:10:23,647 INFO [Cluster TCP]: TCP Server : Waiting <span class="code-keyword">for</span> groupmember response...
+2013-11-29 18:10:23,659 INFO [localhost-startStop-1]: 
+
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+2013-11-29 18:10:24,383 INFO [localhost-startStop-1]: No rule definitions found in '/usr/local/apache-tomcat-7.0.47/webapps/controller/rules'.
+2013-11-29 18:10:24,383 INFO [localhost-startStop-1]: Initialized event processor : Drools Rule Engine
+2013-11-29 18:10:24,964 INFO [localhost-startStop-1]: Initialized event processor : RRD4J Data Logger
+2013-11-29 18:10:24,964 INFO [localhost-startStop-1]: Initialized event processor : EmonCMS Data Logger
+2013-11-29 18:10:24,981 DEBUG [localhost-startStop-1]: A <span class="code-keyword">switch</span> sensor (Name = 'Light1', ID = 100006) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = on/&gt;.
+2013-11-29 18:10:24,981 DEBUG [localhost-startStop-1]: A <span class="code-keyword">switch</span> sensor (Name = 'Light1', ID = 100006) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = off/&gt;.
+2013-11-29 18:10:24,987 DEBUG [localhost-startStop-1]: A <span class="code-keyword">switch</span> sensor (Name = 'Light2', ID = 100007) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = on/&gt;.
+2013-11-29 18:10:24,987 DEBUG [localhost-startStop-1]: A <span class="code-keyword">switch</span> sensor (Name = 'Light2', ID = 100007) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = off/&gt;.
+2013-11-29 18:10:24,987 INFO [localhost-startStop-1]: Registered sensor : Switch Sensor (Name = 'Light1', ID = '100006')
+2013-11-29 18:10:24,987 INFO [localhost-startStop-1]: Registered sensor : Switch Sensor (Name = 'Light2', ID = '100007')
+2013-11-29 18:10:24,993 INFO [localhost-startStop-1]: Startup complete.
+2013-11-29 18:10:24,994 INFO [localhost-startStop-1]: Controller Definition File Watcher <span class="code-keyword">for</span> Default Deployer started.
+2013-11-29 18:10:25,863 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:25,864 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:25,865 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:25,865 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:25,872 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:25,872 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:27,749 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:27,749 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:27,749 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:27,750 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:27,750 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:27,750 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:29,608 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:29,608 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:29,608 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:29,609 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:29,609 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:29,609 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:31,462 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:31,462 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:31,462 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:31,463 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:31,463 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:31,464 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:33,318 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:33,318 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:33,318 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:33,318 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:33,318 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:33,319 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:35,168 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:35,168 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:35,168 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:35,183 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:35,183 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:35,183 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:37,034 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:37,034 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:37,034 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:37,034 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:37,034 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:37,034 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:38,896 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:38,897 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:38,897 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:38,897 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:38,898 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:38,898 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:40,754 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:40,754 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:40,755 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:40,755 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:40,755 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:40,755 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:42,613 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:42,614 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:42,613 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:42,614 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:42,614 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:42,614 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:44,131 ERROR [http-bio-8080-exec-8]: failed to extract panel.xml <span class="code-keyword">for</span> panel : No such Panel :NAME = 
+org.openremote.controller.exception.NoSuchPanelException: No such Panel :NAME = 
+	at org.openremote.controller.service.impl.ProfileServiceImpl.getProfileDocumentByPanelName(ProfileServiceImpl.java:192)
+	at org.openremote.controller.service.impl.ProfileServiceImpl.getProfileByPanelName(ProfileServiceImpl.java:91)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.FindPanelByID.handleRequest(FindPanelByID.java:81)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:621)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:728)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:305)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:222)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:123)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:502)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:100)
+	at org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:953)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:118)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1041)
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:603)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:312)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:895)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:918)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:695)
+2013-11-29 18:10:44,507 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:44,507 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:44,507 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:44,507 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:44,507 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:44,507 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:46,359 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:46,359 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:46,359 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:46,360 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:46,360 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:46,360 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:48,219 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:48,219 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:48,219 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:48,237 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:48,238 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:48,238 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:49,193 INFO [http-bio-8080-exec-1]: Querying changed state from ChangedStatus table...
+2013-11-29 18:10:49,193 INFO [http-bio-8080-exec-1]: Not Found: [device =&gt; 692400198402486983646713097550591166, sensorIDs =&gt; [100006, 100007]] in ChangedStatus table.
+2013-11-29 18:10:49,193 INFO [http-bio-8080-exec-1]: ChangedStatusRecord:692400198402486983646713097550591166-[100006, 100007] sensorID:[100006, 100007] statusChangedSensorID:[]Waiting...
+2013-11-29 18:10:50,084 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:50,084 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:50,085 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:50,101 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:50,101 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:50,101 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:51,945 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:51,945 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:51,945 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:51,960 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*0*11##
+2013-11-29 18:10:51,960 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:51,960 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'off', received 'off'
+2013-11-29 18:10:53,163 INFO [http-bio-8080-exec-8]: received message: *#*1##
+2013-11-29 18:10:53,817 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:53,817 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:53,817 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:53,829 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:10:53,829 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:53,829 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:10:53,829 INFO [http-bio-8080-exec-1]: Had waited the skipped sensor ids of statuses in ChangedStatusRecord:692400198402486983646713097550591166-[100006, 100007] sensorID:[100006, 100007] statusChangedSensorID:[100006]
+2013-11-29 18:10:53,829 INFO [http-bio-8080-exec-1]: Querying changed data from StatusCache...
+2013-11-29 18:10:53,969 INFO [http-bio-8080-exec-1]: Have queried changed data from StatusCache.
+2013-11-29 18:10:53,970 INFO [http-bio-8080-exec-1]: Return the polling status.
+2013-11-29 18:10:53,971 INFO [http-bio-8080-exec-1]: Finished polling at 2013-11-29 18:10:53
+
+2013-11-29 18:10:55,686 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:10:55,686 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:55,686 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:55,686 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:55,687 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:10:55,687 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:57,825 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:10:57,825 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:57,825 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:57,825 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:57,825 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:57,825 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:10:59,675 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:10:59,675 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:10:59,676 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:10:59,676 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:10:59,676 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:10:59,676 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:01,559 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:01,559 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:01,559 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:01,559 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:01,559 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:01,559 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:03,419 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:03,419 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:03,419 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:03,419 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:03,420 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:03,420 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:05,286 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:05,286 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:05,286 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:05,287 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:05,287 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:05,287 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:05,313 INFO [http-bio-8080-exec-6]: Querying changed state from ChangedStatus table...
+2013-11-29 18:11:05,314 INFO [http-bio-8080-exec-6]: Found: [device =&gt; 692400198402486983646713097550591166, sensorIDs =&gt; [100006, 100007]] in ChangedStatus table.
+2013-11-29 18:11:05,314 INFO [http-bio-8080-exec-6]: ChangedStatusRecord:692400198402486983646713097550591166-[100006, 100007] sensorID:[100006, 100007] statusChangedSensorID:[]Waiting...
+2013-11-29 18:11:07,158 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:07,158 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:07,158 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:07,158 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:07,158 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:07,158 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:09,005 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:09,005 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:09,007 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:09,007 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:09,007 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:09,007 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:10,852 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:10,852 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:10,852 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:10,852 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:10,853 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:10,853 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:12,728 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:12,728 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:12,728 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:12,728 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:12,729 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:12,729 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:14,590 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:14,590 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:14,590 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:14,590 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:14,590 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:14,590 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:16,437 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:16,438 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:16,438 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:16,468 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:16,468 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:16,468 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:18,291 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:18,291 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:18,291 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:18,303 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:18,303 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:18,304 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:20,150 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:20,150 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:20,150 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:20,165 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:20,165 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:20,165 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:22,005 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:22,005 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:22,006 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:22,022 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:22,022 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:22,022 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:23,857 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:23,858 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:23,858 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:23,887 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:23,887 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:23,887 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:25,712 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:25,712 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:25,712 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:25,744 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:25,744 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:25,744 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:27,569 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:27,569 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:27,570 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:27,584 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:27,584 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:27,584 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:29,432 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:29,432 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:29,432 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:29,447 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:29,448 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:29,448 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:31,307 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:31,307 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:31,308 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:31,320 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:31,320 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:31,320 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:33,169 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:33,169 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:33,169 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:33,195 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:33,195 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:33,196 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:35,041 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:35,041 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:35,041 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:35,057 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:35,057 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:35,057 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:36,899 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:36,899 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:36,899 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:36,924 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:36,924 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:36,924 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:38,738 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:38,738 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:38,738 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:38,777 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:38,777 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:38,777 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:40,603 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:40,603 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:40,603 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:40,619 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:40,619 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:40,620 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:42,454 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:42,454 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:42,454 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:42,474 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:42,474 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:42,474 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:44,311 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:44,311 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:44,312 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:44,326 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:44,326 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:44,326 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:46,170 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:46,170 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:46,170 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:46,184 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:46,185 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:46,185 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:48,032 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:48,032 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:48,032 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:48,047 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:48,047 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:48,047 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:49,895 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:49,895 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:49,895 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:49,912 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:49,912 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:49,912 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:51,743 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:51,743 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:51,743 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:51,770 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:51,770 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:51,770 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:53,596 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:53,596 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:53,597 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:53,614 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:53,614 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:53,614 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:55,316 INFO [http-bio-8080-exec-6]: Had timeout <span class="code-keyword">for</span> waiting status change.
+2013-11-29 18:11:55,318 INFO [http-bio-8080-exec-6]: Finished polling at 2013-11-29 18:11:55
+
+2013-11-29 18:11:55,338 INFO [http-bio-8080-exec-6]: Querying changed state from ChangedStatus table...
+2013-11-29 18:11:55,338 INFO [http-bio-8080-exec-6]: Found: [device =&gt; 692400198402486983646713097550591166, sensorIDs =&gt; [100006, 100007]] in ChangedStatus table.
+2013-11-29 18:11:55,338 INFO [http-bio-8080-exec-6]: ChangedStatusRecord:692400198402486983646713097550591166-[100006, 100007] sensorID:[100006, 100007] statusChangedSensorID:[]Waiting...
+2013-11-29 18:11:55,451 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:55,452 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:55,452 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:55,480 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:55,480 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:55,480 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:57,327 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:57,327 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:57,327 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:11:57,341 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:57,341 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:57,341 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:59,197 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:11:59,197 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:11:59,198 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:11:59,198 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:11:59,198 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:11:59,198 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:12:01,071 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:12:01,071 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:12:01,071 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:12:01,071 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:12:01,072 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:12:01,072 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:12:02,924 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:12:02,924 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:12:02,924 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:12:02,924 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:12:02,924 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:12:02,924 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:12:04,763 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:12:04,763 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:12:04,763 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:12:04,763 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:12:04,763 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:12:04,763 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:12:06,624 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:12:06,624 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:12:06,624 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:12:06,624 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:12:06,624 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:12:06,625 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:12:08,490 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:12:08,490 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:12:08,491 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:12:08,490 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:12:08,491 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:12:08,491 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:12:10,345 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:12:10,345 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:12:10,345 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:12:10,346 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:12:10,346 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:12:10,346 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:12:12,210 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:12:12,210 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:12:12,210 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:12:12,210 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:12:12,210 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:12:12,210 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:12:14,046 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:12:14,046 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:12:14,046 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:12:14,074 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:12:14,074 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:12:14,074 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+2013-11-29 18:12:15,916 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *1*0*12##
+2013-11-29 18:12:15,916 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light2]: received message: *#*1##
+2013-11-29 18:12:15,916 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light2]: Processed 'off', received 'off'
+2013-11-29 18:12:15,956 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *1*1*11##
+2013-11-29 18:12:15,956 INFO [Polling thread <span class="code-keyword">for</span> sensor: Light1]: received message: *#*1##
+2013-11-29 18:12:15,956 TRACE [Polling thread <span class="code-keyword">for</span> sensor: Light1]: Processed 'on', received 'on'
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Nov 29, 2013 17:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880512"></a>
+                                    <font class="smallfont"><p>That is fine; it comes from out pseudo server push mechanism.<br/>
+The console is asking the controller if any sensor which it is interested in were changed.<br/>
+If the console does not have anything new the connections stays open until the timeout is reached.<br/>
+After that the console is requesting again and waits again and so on.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 29, 2013 19:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880644"></a>
+                                    <font class="smallfont"><p>Well! I'm going to finish my integration work.</p>
+
+<p>Now I have a more complex question to bring to your attention, even if I'm afraid I already know the answer.</p>
+
+<p>Is it possible to do more control in the designer creation command interface?<br/>
+I'd like the possible value of some fields depends on that of some others.<br/>
+This would be wonderful!!!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Dec 03, 2013 18:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880647"></a>
+                                    <font class="smallfont"><p>Client side logic is on the wishlist but not available yet.<br/>
+You can have virtual commands and use their value in the rule engine or use other sensor and the rule engine to set virtual command which can be displayed.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 03, 2013 19:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881197"></a>
+                                    <font class="smallfont"><p>Do you think I could try to do some customization alone about this?<br/>
+If yes, could you give me any suggestions to start doing it?</p>
+
+<p>Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Dec 13, 2013 23:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881209"></a>
+                                    <font class="smallfont"><p>What exactly are you looking todo?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 14, 2013 19:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881213"></a>
+                                    <font class="smallfont"><p>Mainly two things:</p>
+<ul class="alternate" type="square">
+	<li>the possibility to show (or enable) different fields depending on the selected value of a combobox field;</li>
+	<li>the possibility to change the possible values (or the validators) of some fields depending on the value of another field.<br/>
+Is this clear?</li>
+</ul>
+
+
+<p>I'm looking for classes that generate the designer command form. I have identified these classes:</p>
+<ul class="alternate" type="square">
+	<li>org.openremote.modeler.utils.ProtocolCommandContainer</li>
+	<li>org.openremote.modeler.service.ProtocolParser</li>
+</ul>
+
+
+<p>and maybe also this:</p>
+<ul class="alternate" type="square">
+	<li>org.openremote.modeler.server.ProtocolController</li>
+</ul>
+
+
+<p>Are these right?<br/>
+I have also found this xml file:</p>
+<ul class="alternate" type="square">
+	<li>config/annomvc-servlet.xml</li>
+</ul>
+
+
+<p>Do I have to take it into account?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Dec 14, 2013 22:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881273"></a>
+                                    <font class="smallfont"><p>Hello Marco,</p>
+
+<p>I'll need to take a bit of time and see how we can update the protocol definitions to take this into account.<br/>
+IIRC, there was already discussion about this quite a while ago on the forums.<br/>
+Will do some research and post back.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 16, 2013 08:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882588"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I'm trying to customize the Designer like described above.<br/>
+I've created an xml file (similar to  the one contained in the protocol directory) that contains the dynamic values and validators of the protocol fields.<br/>
+Now, after analyzing in depth the operation of creating the insertion command form, I'm editing the file DeviceCommandWindow.java, but I'm experiencing some problems to debug my code.</p>
+
+<p>I tryed to use the Logger class (org.apache.log4j) and the LogFacade class (org.openremote.modeler.logging), but when I compile it with ant, I get an error.<br/>
+So, at the moment, I'm not able to develop with a functional debug system, and this is very unpleasant!</p>
+
+<p>Do you have any suggestions for me?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jan 11, 2014 18:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882641"></a>
+                                    <font class="smallfont"><p>It fails to compile because the DeviceCommandWindow class is run on the client. It gets compile by GWT to javascript and executed in your browser, that's why you can't use something like System.out or a log4j logger.</p>
+
+<p>You can use something like Info.debug() call, which is a GXT command that will display a message in a little popup in your browser for basic tracing.<br/>
+Or you can set-up GWT in developer mode so that you can have breakpoints and step through your java code in your IDE will running the application. You'll need to google a bit on GWT development or pick up a book on that to know how this can be setup.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 12, 2014 15:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882730"></a>
+                                    <font class="smallfont"><p>Well,<br/>
+I used the first solution proposed and it's all right, but now I have another problem.<br/>
+I tried to open my xml file from the same class and the compile process fails. I suppose it's because of the same reason of the previous problem.<br/>
+How can I fix that?</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jan 13, 2014 22:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882784"></a>
+                                    <font class="smallfont"><p>Same kind of issue, the code for this class is executed in the browser, so it won't have access to the XML file.<br/>
+You need to read the XML file with server code and make the result available through GTW-RPC or some other call to the server.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 14, 2014 11:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882801"></a>
+                                    <font class="smallfont"><p>OK!<br/>
+Can you give me any other more concrete help? For example, how can I recognize server code?<br/>
+And then, what is the exact mechanism to have the xml file contents available in the DeviceCommandWindow class?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jan 14, 2014 15:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882916"></a>
+                                    <font class="smallfont"><p>I'm trying to understand how I can do my work by myself.<br/>
+I analyzed the protocols creation process to take a cue, but I'm stuck.<br/>
+In the server side, the ProtocolParser class (org.openremote.modeler.service) takes care to read the contents of every protocol xml files, and it put this into the singleton ProtocolContainer object.<br/>
+In the client side, the DeviceCommandWindow class inserts the protocols by means of the createFields method, that has as parameter a map of strings and ProtocolDefinitions. This map is obtained by calling the getInstance static method of the Protocols class (org.openremote.modeler.client.utils).<br/>
+Correct me if I'm wrong.</p>
+
+<p>The only thing that I didn't understand is how this method works! Can I have some explanation about it?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jan 15, 2014 16:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882937"></a>
+                                    <font class="smallfont"><p>Hi Marco - looking at the thread it appears you are making some progress getting feedback from Legrand well done!  I've managed to injure my foot so I'm stuck at home for a few weeks - if you need some testing done then I'm available!</p>
+
+<p>Jules</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jan 16, 2014 10:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882975"></a>
+                                    <font class="smallfont"><p>Hi Jules!<br/>
+Thanks for your interest! I'm developing another functionality. When I finish this, I'll send you my work for some test.<br/>
+Give me a contact, email or skype ...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jan 17, 2014 09:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882979"></a>
+                                    <font class="smallfont"><p>Hi Marco I'm on Skype in the openremote contributors group if you are a member - if not search for jules_bike </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jan 17, 2014 11:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883148"></a>
+                                    <font class="smallfont"><p>Hi!<br/>
+As suggested, I used GWT-RPC to do my work. I did it exactly as the implementation to read the protocol xml files.<br/>
+It all works except one thing: the first time I open a new (or edit) command window, the function call that returns the file content doesn't run immediately, therefore I haven't the data available in that time, while the subsequent runs work without problems.<br/>
+This is false in the protocols case. The instruction:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Protocols.getInstance()
+</pre>
+</div></div>
+<p>is executed asynchronously before it actually runs. So the required data are always available.</p>
+
+<p>Why is there this difference, even if the code is basically the same?</p>
+
+<p>This is the function to have the file content:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+   <span class="code-keyword">public</span> <span class="code-keyword">static</span> <span class="code-keyword">synchronized</span> Map&lt;<span class="code-object">String</span>, OpenWebNetWho&gt; getInstance()
+   {
+      <span class="code-keyword">if</span> (instanceMap == <span class="code-keyword">null</span>)
+      {
+         openWebNetService.getOWNDefinition(<span class="code-keyword">new</span> AsyncCallback&lt;Map&lt;<span class="code-object">String</span>, OpenWebNetWho&gt;&gt;()
+         {
+            <span class="code-keyword">public</span> void onFailure(Throwable caught)
+            {
+               MessageBox.info(<span class="code-quote">"Error"</span>, <span class="code-quote">"Can't get OpenWebNet definition from xml file!"</span>, <span class="code-keyword">null</span>);
+            }
+            <span class="code-keyword">public</span> void onSuccess(Map&lt;<span class="code-object">String</span>, OpenWebNetWho&gt; whos)
+            {
+               instanceMap = whos;
+            }
+         });
+      }
+      <span class="code-keyword">return</span> instanceMap;
+   }
+</pre>
+</div></div>
+
+<p>I could solve this problem in another way, but I would understand that.<br/>
+I hope I was clear.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jan 20, 2014 19:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883168"></a>
+                                    <font class="smallfont"><p>It also does run asynchronously (which is really the only way as it's making a call to the server and should not block execution for that).<br/>
+The "hack" is that Protocols.getInstance() is called at the top of the ApplicationView.initialize() method, so basically before the information is required.<br/>
+So that when it's really required, it's already there.</p>
+
+<p>Not a big fan of the way this is done, but it'll work 99.999% of the times (connectivity would need to be behave really weirdly for a user to be able to access the new command window before the initial call to protocols finished).</p>
+
+<p>Other way is to make UI work with asynchronous data source, updating itself as data becomes available.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 21, 2014 12:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883365"></a>
+                                    <font class="smallfont"><p>Hello!<br/>
+I'm having another problem with a ComboBox (org.openremote.modeler.client.widget.ComboBoxExt).<br/>
+I would have a ComboBox with 4 possible items, but some of these should be hidden or disabled depending on another ComboBox value.<br/>
+I was able to do this by removing all the items and reinserting the ones required every time the other ComboBox value changes. Is it possible to avoid this?</p>
+
+<p>Any suggestion is very welcome!!<br/>
+Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jan 24, 2014 23:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883520"></a>
+                                    <font class="smallfont"><p>Hi!<br/>
+I've finished my work, even if I still have some problem with the asynchronous call between client and server.<br/>
+If you are interested, I could load all into your repository, but I don't have access to it.<br/>
+What about?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jan 27, 2014 16:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883595"></a>
+                                    <font class="smallfont"><p>Yes please send an email to me : juha at openremote dot org and we can set you up.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jan 29, 2014 07:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887735"></a>
+                                    <font class="smallfont"><p>Hello, did you finish the job for OWN ?<br/>
+i would be interested, even to help with the development <br/>
+Michael</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kowal2205 at Jul 27, 2014 21:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887739"></a>
+                                    <font class="smallfont"><p>Hi!<br/>
+Yes, I've finished my work!<br/>
+I loaded the code just a few days ago to this url:</p>
+
+<p><a href="https://svn.code.sf.net/p/openremote/code/workspace/gcimini/">https://svn.code.sf.net/p/openremote/code/workspace/gcimini/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jul 28, 2014 00:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887746"></a>
+                                    <font class="smallfont"><p>hello<br/>
+thanks for your answer.<br/>
+I looked at the code briefly and I see that you use an URL which indicates that you use a BTCINO Webserver ou MH200N which are on the ethernet network.<br/>
+Have you already tried your code with an USB dongle (and so a Unix Socket on raspberry)?<br/>
+Your code is on designer 2.13.9's branch but is not in the 2.13.9's version that is (as I understand) the current version of the designer. Do you know Why ? </p>
+
+<p>the last but not least <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>, I tried to compile the designer so I could try your code but it failed (JUHA's computer is needed to compile GWT ), is there any way you used to buid your own version of designer ?</p>
+
+<p>Thanks <br/>
+Michael</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kowal2205 at Jul 28, 2014 18:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887748"></a>
+                                    <font class="smallfont"><p>Hi Michael!</p>
+
+<p>1. I tried it only with the ethernet connection.</p>
+
+<p>2. I used Designer 2.14.0 as starting point, as you can read here. I don't known why they have created a 2.13.9's branch in my workspace.</p>
+
+<p>3. At the moment, the only thing that comes to mind is the version of GWT. I have used GWT 2.4.0.</p>
+
+<p>Let me known if you have other problems.</p>
+
+<p>Marco</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jul 28, 2014 22:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887749"></a>
+                                    <font class="smallfont"><p>hello marco,<br/>
+thanks for your answer.<br/>
+I'm at ease with php, python, JS and others but defintly not with java and eclipse <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+I was not able to build a local version of the designer website.<br/>
+Would it be possible to borrow your's ?<br/>
+My Legrand zigbee micromodule is arriving tomorrow.</p>
+
+<p>My Email to discuss more easily is kowal2205 (at) gmail.com</p>
+
+<p>michael</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kowal2205 at Jul 28, 2014 22:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887752"></a>
+                                    <font class="smallfont"><p>We (ICT Protege integrators) are also interested in this functionality as mentioned last month.  Have you successfully implemented it?   <br/>
+If so do you have a build / source of the modeler that I can run on my local server?</p>
+
+
+<p>Thanks,</p>
+
+<p>Tomas.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tomas.morton at Jul 29, 2014 01:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887761"></a>
+                                    <font class="smallfont"><p>Yes, I do!</p>
+
+<p><a href="http://svn.code.sf.net/p/openremote/code/workspace/gcimini/">Here</a> you can find the source code, and <a href="https://www.dropbox.com/s/1p3mv4og03xdk1k/designer.war">this</a> is the compiled archive.</p>
+
+<p>Marco</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marco.miccini at Jul 29, 2014 14:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887767"></a>
+                                    <font class="smallfont"><p>Thanks a lot!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tomas.morton at Jul 29, 2014 20:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887843"></a>
+                                    <font class="smallfont"><p>You might find this thread helpful to get the designer compiled : <a href="http://www.openremote.org/display/forums/How+to+compil+a+Full+Openremote+Setup+on+a+Linux+Server">http://www.openremote.org/display/forums/How+to+compil+a+Full+Openremote+Setup+on+a+Linux+Server</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Aug 04, 2014 15:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888016"></a>
+                                    <font class="smallfont"><p>Hi Eric/Marco,</p>
+
+<p>I've been away for a while but I am keen to get Marco's protocol working with the latest version of the controller and the online designer.   Earlier this year I worked with Marco to test the protocol on a standalone designer and controller but could not use this in my live environment because it did not have the DSC alarm protocol.   </p>
+
+<p>From my experience it works well and would be a good addition to OR.  I can test it out but unfortunately I am not a programmer so can't help with the integration.</p>
+
+<p>Cheers<br/>
+Jules</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Aug 14, 2014 13:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602004"></a>
+                                    <font class="smallfont"><p>Hi - has there been any progress on getting Marco's code merged into the live version of Openremote?   It seems a shame that so much work was done and it has never been put into production.   I tested his version and it worked fine but because it was based on a release that was not DSC enabled it was not useable for me.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Nov 03, 2015 10:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602471"></a>
+                                    <font class="smallfont"><p>&lt;P&gt;&lt;/P&gt;<br/>
+&lt;P&gt;Good classic sleeping area 2012 Nike Free come 2 Azul Negro Mujeres disadvantage Descuento Grande y simplymca El E. (A adult size) Nike Free stand out Powerlines Ii Azul Blanco Hombres <span class="error">&#91;url=http://www.lygrand.com/femme/&#93;</span>bAir Max Femme<span class="error">&#91;/b&#93;</span><span class="error">&#91;/url&#93;</span> Nueva Coleccin se 'vrrle rrtre. I remember when i by mistake go to my hubby in the jaw in the the <span class="error">&#91;url=http://www.lygrand.com/&#93;</span>bNike Air<span class="error">&#91;/b&#93;</span><span class="error">&#91;/url&#93;</span> night <span class="error">&#91;url=http://www.lygrand.com/&#93;</span>bAir Max 1<span class="error">&#91;/b&#93;</span><span class="error">&#91;/url&#93;</span> after 2012 Nike Free exercise 5.0 V3 Gris Verde Azul Mujeres Venta Hogar Es Su. &lt;/P&gt;<br/>
+&lt;P&gt;&lt;/P&gt;<span class="error">&#91;url=http://www.lygrand.com/&#93;</span>bNike Air Max 90<span class="error">&#91;/b&#93;</span><span class="error">&#91;/url&#93;</span> </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by myloveryou at Dec 03, 2015 06:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

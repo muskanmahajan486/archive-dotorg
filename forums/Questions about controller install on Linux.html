@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Questions about controller install on Linux</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Questions about controller install on Linux
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 24, 2010 by <font color="#0050B2">miche</font>.
+				    </div>
+
+				    <p>Hi Guys,</p>
+
+<p>I've been working with OR a couple of weeks now and this is my first post so consider me still a newbie.</p>
+
+<p>I've successfully installed the OpenRemote-Boss-1.0.2 on my XP workstation for trying things out. I've also order my Alix3d3 board but is seems there is a backlog and long lead times in getting the parts so I decided to install Voyage Linux 0.5.2 live CD on a Geode based SBC I already have. It is based on AMD's SC2200 and is a bit slower but should work pretty well for this application.</p>
+
+<p>Successfully built a generic image and have the board booting, installed Java SDK 6 update 11 and lirc-0.8.4a. I didn't find and detailed setup docs for OR on Linux so I installed the downloaded image to /opt/OpenRemote-Boss-1.0.2 on my voyage installation.</p>
+
+<p>Set the following Environment variables in .bashrc for root:</p>
+
+<p>export JRE_HOME=/opt/jdk1.6.0_11/jre<br/>
+export PATH=$PATH:/opt/jdk1.6.0_11/bin</p>
+
+<p>Tested Java install using java -version</p>
+
+<p>Invoked OR controller using<br/>
+cd /opt/OpenRemote-Boss-1.0.2/bin<br/>
+./openremote.sh run</p>
+
+<p>OR controller started up normally with no errors</p>
+
+<p>From my XP workstation using IE7
+<a href="http://10.87.86.181:8080/controller">http://10.87.86.181:8080/controller</a> (IP address assigned to OR controller)</p>
+
+<p>So the controller page is displayed normally and I browse to my panel ZIP file previously created using the on-line UI Composer.<br/>
+The controller.xml only has a couple of simple X10 commands of address A1 On and Off.</p>
+
+<p>When I try to upload the X10Test.zip I get "upload failed" but no other information from the console on the OR controller. I checked for some errors in the logs but nothing was logged to the any of the log files. So next I used WireShark to capture the packets over the local network. Looks like there is an error during the uploadForm.</p>
+
+<p>10.87.86.129 -&gt; 10.87.86.181<br/>
+HTTP request</p>
+
+<p>POST /controller/config.htm?method=uploadZip  HTTP/1.1\r\n</p>
+
+<p>10.87.86.181 -&gt; 10.87.86.129<br/>
+Error response from Tomcat 6.0.18 server</p>
+
+<p>HTTP Status 404 - /controller/config.htm is not available</p>
+
+
+
+<p>Is there some other configuration file to set a resource path on the linux platform?</p>
+
+
+<p>Thanks in advance for any assistance you can offer.</p>
+
+<p>Miche</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-9601137"></a>
+                                    <font class="smallfont"><p>Sorry. Just realized I should have posted this on the Users Forum. Will do so in the future.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by miche at Feb 24, 2010 22:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-9601138"></a>
+                                    <font class="smallfont"><p>Since the installation worked for you on WinXP, my first hunch would be to look at the user permissions on your Voyage install.</p>
+
+<p>Does your tomcat process have rw access to all files of the OR directory, especially under the /webapps?</p>
+
+<p>Is the Voyage filesystem mounted in rw mode (remountrw) ?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 25, 2010 02:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-9601139"></a>
+                                    <font class="smallfont"><p>I have been making sure to do a remountrw after reboot. Still working on getting the persistance working between boots.</p>
+
+<p>I have changed the ACLs to r+w+x recursively on the OpenRemote-Boss-1.0.2 directory and checked that the /webapps/controller directory is indeed writeable but I still get the upload failed message.</p>
+
+<p>I've installed everything as root and I'm also running the ./openremote.sh script as root user. When I was testing on my XP workstation I was logged in as a user with admin group permissions but not as administator. Do you think using root account has something do with it on the Voyage system?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by miche at Feb 25, 2010 03:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-9601143"></a>
+                                    <font class="smallfont"><p>I don't think root user should be an issue.</p>
+
+<p>The upload feature is a bit flakey though (for example doesn't seem to work with Chrome), so should make sure that you're not getting mislead by the error message even the files are getting correctly deployed on the controller. Sounds like you may have already checked this but just double checking on that.</p>
+
+<p>I don't have other ideas at the moment. Let me know if you find any additional clues that could help tracking down the cause. I'll let you know if I can think of anything else to look at.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 25, 2010 07:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-9601150"></a>
+                                    <font class="smallfont"><p>Thanks, Juha.  Yeah I'd already tried different browsers IE7, IE8, Safari. </p>
+
+<p>I went back to basics and copied the Tomcat ROOT and examples over to the Linux box and found that I was getting errors with the Tomcat Manager app and any servlet example that I tried to load. Any of these gave an error "resource is not available" but interestingly I was able to load some of the JSP examples.</p>
+
+<p>Checked the conf files but didn't find anything that would point to the problem. Finally I installed the full Tomcat 6.0.18 distribution and the Tomcat manager and servlet examples started working. I then deployed my controller.war file and uploaded the X10Test.xml with no problems.</p>
+
+<p>I haven't had a chance to fully debug the cause of the original error. I tried installing the OpenRemote-Boss-1.0.2 files in different directories like / or /usr/local but had the same errors. I suspect that this might have something to do with a Catalina config or permissions issue.</p>
+
+<p>Will keep you posted if I figure out what was causing the original error.</p>
+
+<p>Regardless I'm up and running now.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by miche at Feb 27, 2010 00:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

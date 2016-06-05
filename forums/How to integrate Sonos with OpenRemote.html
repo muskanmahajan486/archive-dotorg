@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : How to integrate Sonos with OpenRemote</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : How to integrate Sonos with OpenRemote
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 16, 2013 by <font color="#0050B2">hank</font>.
+				    </div>
+
+				    <p>HOW TO INTEGRATE SONOS WITH OPENREMOTE </p>
+
+<p>1.	Download and Install Node.js for your OS.
+<a href="http://www.nodejs.org">http://www.nodejs.org</a></p>
+
+<p>2.	Download "Sonos HTTP API" Node server
+<a href="https://github.com/jishi/node-sonos-http-api">https://github.com/jishi/node-sonos-http-api</a></p>
+
+<p>Installation instructions</p>
+
+<p>Start by fixing your dependencies. Invoke the following command:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">npm install</pre>
+</div></div>
+<p>This will download the necessary dependencies if possible (you will need git for this)</p>
+
+<p>start the server by running</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">node server.js</pre>
+</div></div>
+
+<p>Now you can control your system by invoking the following commands:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">http:<span class="code-comment">//localhost:5005/{room name}/{action}[/{parameter}]
+</span>Example:
+http:<span class="code-comment">//localhost:5005/living room/volume/15(will set volume <span class="code-keyword">for</span> room Living Room to 15%)
+</span>http:<span class="code-comment">//localhost:5005/living room/volume/+1(will increase volume by 1%)
+</span>http:<span class="code-comment">//localhost:5005/living room/next(will skip to the next track on living room, unless it's not a coordinator)
+</span>http:<span class="code-comment">//localhost:5005/living room/pause(will pause the living room)</span></pre>
+</div></div>
+<p>The actions supported as of today:<br/>
+•	play<br/>
+•	pause<br/>
+•	volume (parameter is absolute or relative volume. Prefix +/- indicates relative volume)<br/>
+•	seek (parameter is queue index)<br/>
+•	next<br/>
+•	previous<br/>
+•	state (will return a json-representation of the current state of player)</p>
+
+<p>3.	Setup OpenRemote to handle SONOS commands<br/>
+Create HTTP commands in OR designer for all necessary controls you need like: play, pause, next, vol + etc.<br/>
+Example:<br/>
+ <div align="center"><img src="attachments/22875001/23036048.png" border="0"/></div></p>
+
+<p>These commands can now be connected to a button in Openremote.</p>
+
+<p>Please note!<br/>
+For command "state" also create a sensor and fill in JSONPath Expression to display requested info with a label in OR.</p>
+
+<p>State<br/>
+Example of a state json:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+{
+    <span class="code-quote">"currentTrack"</span>: {
+        <span class="code-quote">"artist"</span>:<span class="code-quote">"The Low Anthem"</span>,
+        <span class="code-quote">"title"</span>:<span class="code-quote">"Charlie Darwin"</span>,
+        <span class="code-quote">"album"</span>:<span class="code-quote">"Rough Trade - Counter Culture 2008"</span>,
+        <span class="code-quote">"duration"</span>:270
+    },
+    <span class="code-quote">"relTime"</span>:29,
+    <span class="code-quote">"stateTime"</span>:1363559099394,
+    <span class="code-quote">"volume"</span>:11,
+    <span class="code-quote">"currentState"</span>:<span class="code-quote">"PAUSED_PLAYBACK"</span>
+}
+</pre>
+</div></div>
+
+<p>4.	To connect physical KNX buttons with Sonos commands<br/>
+Create a command that's listening at the KNX bus for changes in the group address of that specific button, also create a sensor connected to the command.<br/>
+Example:<br/>
+ <div align="center"><img src="attachments/22875001/23036047.png" border="0"/></div></p>
+
+<p>Create a rule for each function of the button <br/>
+Example:</p>
+
+<p> <div align="center"><img src="attachments/22875001/23036046.jpg" border="0"/></div></p>
+
+
+<p>That´s it!</p>
+
+<p>Instructions made by Henrik Gjörloff</p>
+
+
+<p>Special thanks to Jimmy Shimizu (jishi) creating the SONOS HTTP API.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22875001/23036046.jpg">rule.JPG</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22875001/23036047.png">knx.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22875001/23036048.png">http.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22875022"></a>
+                                    <font class="smallfont"><p>Excellent, thanks.<br/>
+What about moving this forum page into the documentation?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Aug 17, 2013 08:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22875030"></a>
+                                    <font class="smallfont"><p>Hi Henrik, indeed great. As Yann Philippe suggests, would you be interested to creating a 'How to...Sonos' page as part of documentation?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre kil at Aug 18, 2013 11:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22875056"></a>
+                                    <font class="smallfont"><p>Hi Pierre</p>
+
+<p>Just give me the guidelines and i would be happy to do that!</p>
+
+<p>Best Regards<br/>
+Henrik Gjörloff</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by hank at Aug 19, 2013 09:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22875090"></a>
+                                    <font class="smallfont"><p>Hi Henrik, thanks for the offer! We set-up a page: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Sonos" title="OpenRemote 2.0 How To - Sonos">OpenRemote 2.0 How To &#45; Sonos</a>. It is an example of another product, but it shows the typical set-up. You should have access to edit it. So my suggestion is to just start from here and edit it. If you want to chat more about it, just e-mail me at pierreatopenremotedotorg</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre kil at Aug 19, 2013 16:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22875216"></a>
+                                    <font class="smallfont"><p>Hey Guys me Mark.Well i think that's an amazing tutorial along with coding &amp; pics about integrate sons with open remote.Thanks!!</p>
+
+
+<p><a href="http://southoceansensor.com/cross-beams/">cross bridge load cells</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by markspend01 at Aug 21, 2013 19:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

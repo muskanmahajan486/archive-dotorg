@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Need some help with watchdog in UDPListener Rule</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Need some help with watchdog in UDPListener Rule
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 25, 2016 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <p>I do need some help to add a watchdog to my UDPListener rule. <br/>
+Sometimes the data stream unexpectedly stops. Because it is a rare event, it often goes unnoticed for a day or so.</p>
+
+<p>My idea is to have one Rule named "timer" that switches a status to "off" when the pre-set time expires.<br/>
+Every time a UDP message has successfully arrived, the status is set to "on", and the timer is reset to its initial value.</p>
+
+<p>I have searched extensively in the Drools manuals an on this forum and other places to find a simple timer. </p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-comment">// Code provided by Michal Rutka 
+</span><span class="code-keyword">package</span> org.openremote.controller.protocol.preserve;
+<span class="code-keyword">import</span> java.util.*;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+global org.openremote.controller.statuscache.CommandFacade execute;
+ 
+ 
+rule <span class="code-quote">"UDPListener9192"</span>
+                                                                                      
+when
+  Event(source==<span class="code-quote">"RaZ-UDP-Status"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"\\(?(ZWay.*),([\\d\\.+|on|off]+)\\)?"</span>);
+  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+  }
+end</pre>
+</div></div>
+
+<p>Thank you for your attention</p>
+
+<p><b>UPDATE:</b> got it working:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">package</span> org.openremote.controller.protocol.preserve;
+<span class="code-keyword">import</span> java.util.*;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+rule <span class="code-quote">"UDPListener9192"</span>
+when
+  Event(source==<span class="code-quote">"RaZ-UDP-Status-9192"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"\\(?(ZWay.*),([\\d\\.+|on|off]+)\\)?"</span>);
+  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+    execute.command(<span class="code-quote">"UDP9192On"</span>);                  <span class="code-comment">//Added <span class="code-keyword">this</span>
+</span>    execute.command(<span class="code-quote">"UDP9192countdown"</span>,100);       <span class="code-comment">//Added <span class="code-keyword">this</span>
+</span>  }
+end
+
+<span class="code-comment">//Added following two rules
+</span>rule <span class="code-quote">"UDP9192SourceFailed"</span>
+    timer (<span class="code-object">int</span>: 2s)
+when
+    Event( source == <span class="code-quote">"UDP9192countdownStatus"</span>, value == <span class="code-quote">"0"</span>)
+then
+    execute.command(<span class="code-quote">"UDP9192Off"</span>);
+end
+
+rule <span class="code-quote">"UDP9192CountDown"</span>
+    timer (<span class="code-object">int</span>: 10s)
+when
+    Event( source == <span class="code-quote">"UDP9192countdownStatus"</span>, $TimeLeft : value &gt; 0 )
+then
+    <span class="code-object">Integer</span> iTl = <span class="code-object">Integer</span>.parseInt($TimeLeft.toString()) ;
+    iTl = iTl - 1 ;
+    execute.command(<span class="code-quote">"UDP9192countdown"</span>,iTl);
+end</pre>
+</div></div>
+
+<p><span class="error">Cannot resolve external resource into attachment.</span></p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23605806"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>I think this might work for you, if you invert the logic.</p>
+
+
+<p>A set of rules were written for me to use as a holiday countdown.</p>
+
+<p>Where a slider or preset buttons sets an amount of days into an in memory virtual command.</p>
+
+<p>The countdown loop will remove a day (although on the test rig it counts down in a few minutes.)</p>
+
+<p>When the countdown gets to Zero, an in memory switch is set to off. (And any reset commands sent to the Velbus networks to return the building to a live / occupied state)</p>
+
+<p>I'm sure you could do something similar, where you heartbeat resets the countdown timer to a high value?</p>
+
+
+<p>Good luck,</p>
+
+<p>Stuart</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-comment">// Block of Rules <span class="code-keyword">for</span> Holiday away days
+</span>
+rule <span class="code-quote">"Holiday_mode_Off"</span>
+    timer (<span class="code-object">int</span>: 1s)
+when
+    Event( source == <span class="code-quote">"Holiday_Days_Status"</span>, value == <span class="code-quote">"0"</span>)
+then
+    execute.command(<span class="code-quote">"HolidayVR_OFF"</span>);
+end
+
+
+
+rule <span class="code-quote">"Holiday_Mode_On"</span>
+    timer (<span class="code-object">int</span>: 1s)
+when
+    Event( source == <span class="code-quote">"Holiday_Days_Status"</span>, value &gt; 0 )
+then
+    execute.command(<span class="code-quote">"HolidayVR_ON"</span>);
+end
+
+
+
+rule <span class="code-quote">"Holiday_Mode_dec"</span>
+    timer (<span class="code-object">int</span>: 10s)
+when
+    Event( source == <span class="code-quote">"Holiday_Days_Status"</span>, $TimeLeft : value &gt; 0 )
+then
+    <span class="code-object">Integer</span> iTl = <span class="code-object">Integer</span>.parseInt($TimeLeft.toString()) ;
+    iTl = iTl - 1 ;
+    execute.command(<span class="code-quote">"Holiday_Days_set"</span>, iTl );
+end
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Feb 24, 2016 21:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605811"></a>
+                                    <font class="smallfont"><p>Thanks Stuart, this helps. I had come to the conclusion I should do something with decrementing a variable. I'll give it a try and let you know the final solution.<br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 25, 2016 10:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605817"></a>
+                                    <font class="smallfont"><p>Got it working. Updated first post</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 25, 2016 11:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605839"></a>
+                                    <font class="smallfont"><p>You can also try to declare internal facts instead of using in-memory virtual commands. Something like this should work (not tested, so spelling errors are possible):</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol.preserve;
+<span class="code-keyword">import</span> java.util.*;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+global org.openremote.controller.statuscache.CommandFacade execute;
+ 
+declare UDPevent <span class="code-comment">// Copy when event arrives
+</span>  source: <span class="code-object">String</span>
+end
+
+rule <span class="code-quote">"UDPListener9192"</span>
+                                                                                      
+when
+  Event($s: source==<span class="code-quote">"RaZ-UDP-Status"</span>, $v: value!="")
+then
+  insert(<span class="code-keyword">new</span> UDPevent($s)); <span class="code-comment">// mark the event
+</span>  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"\\(?(ZWay.*),([\\d\\.+|on|off]+)\\)?"</span>);
+  java.util.regex.Matcher matcher = regexPattern.matcher($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+  }
+end
+
+<span class="code-comment">// Expire events after timeout
+</span>rule <span class="code-quote">"Expire events"</span>
+timer(<span class="code-object">int</span>: 1h) <span class="code-comment">// at least 1 event per hour
+</span>when
+  $u: UDPevent($s: source)
+  ArrayList($size:size) from collect(UDPevent(source==$s))
+then
+  retract($u);
+  <span class="code-keyword">if</span>($size==1){ <span class="code-comment">// Only one event in memory, so must be the last one
+</span>       execute.command(<span class="code-quote">"UDP9192Off"</span>);
+  }
+end
+
+<span class="code-comment">// Add also duumy when the controller starts, so the alarm will trigger <span class="code-keyword">if</span> the sensor is dead all the time
+</span>rule <span class="code-quote">"Init event"</span>
+then
+  insert(<span class="code-keyword">new</span> UDPevent(<span class="code-quote">"RaZ-UDP-Status"</span>)); <span class="code-comment">// mark the initial event
+</span>end
+
+</pre>
+</div></div>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 25, 2016 14:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605841"></a>
+                                    <font class="smallfont"><p>Michal,<br/>
+Thanks for this feedback. I have little knowledge about Java and Drools, so I can't follow all the more advanced things you do. I do think yours formally is a better solution than the one I ended up with. <br/>
+For the time being I'll stick with mine because there are some more pressing priorities. <br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 25, 2016 15:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Using Slider in UI</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Using Slider in UI
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 06, 2010 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>As I'm writing the Lutron module, I wanted to test the dimmer functionality.<br/>
+I created a "FADE" command that will read the value of the $param value passed by the slider and will set the dimmer to that level.<br/>
+I also created a status command that will enquire about the dim level and a sensor of type level that uses this command.<br/>
+Then a slider in the model that uses the 1st command and the sensor.<br/>
+And finally a Slider on the UI side, linked to the above slider.</p>
+
+<p>With this deployed on the server, UI loads correctly in iPad simulator but as soon as it try to move the slider, iPad console crashes with message: "Terminating app due to uncaught exception 'CALayerInvalidGeometry', reason: 'CALayer position contains NaN: nan \-37'"</p>
+
+
+<p>Is this a known issue with slider ? Is there something else I should be doing ?</p>
+
+<p>Thanks,<br/>
+Eric</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-13697290"></a>
+                                    <font class="smallfont"><p>Not a known issue. I will see if I am able to reproduce it. Sliders are still somewhat under-tested although do work for some specific scenarios at least.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 07, 2010 14:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697350"></a>
+                                    <font class="smallfont"><p>I traced it down to the fact that the slider model does not have its min/max value set -&gt; span is 0 -&gt; causes a division by zero in the iOS code.<br/>
+Looking in the designer, I don't see a property to set the min/max value of a slider.<br/>
+Was this foreseen or should this automatically be derived from the model side? The later would make sense. I haven't dig too deep in that part of the code yet but there seems to be parser code to handle min / max attributes.</p>
+
+<p>Did a quick fix by "pre-initializing" the min/max to 0/100 in the iOS code to proceed with my tests.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 10, 2010 09:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697352"></a>
+                                    <font class="smallfont"><p>Should come from the model side sensor bound to the slider model (0 to 100 for 'level' sensors, or arbitrary range with 'range' sensors).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 10, 2010 12:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 11:02</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

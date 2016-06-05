@@ -1,0 +1,511 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Zwave & Raspberry Pi</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Zwave & Raspberry Pi
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 28, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Figured I'd start a new thread and not keep adding to the existing one about Zwave Beta testing thread.</p>
+
+<p>So now that I got OpenRemote to work on a netbook running Ubuntu, I finally got the chance to install it on my newly acquired Raspberry Pi.<br/>
+And a few little issues/problems have arisen.</p>
+
+<p>One of the errors I got was about the 'librxtxSerial.so' not compiled for ARM. After Mr. Marcus suggest he would look for an ARM version, I took it upon myself to see if I could find a pre-compiled version.<br/>
+So happens there's one for the Raspberry Pi Raspbian distro.
+<a href="https://blogs.oracle.com/jtc/entry/serial_port_communication_for_java">https://blogs.oracle.com/jtc/entry/serial_port_communication_for_java</a><br/>
+Now what I did, not sure if it's ok or not, I just downloaded replaced the file that was complaining. Since then, I haven't seen it complaint. Cross fingers.</p>
+
+<p>As far as OpenRemote is concerned, works fine on the Raspberry Pi. Followed the "how-to" found here and it's a snap.<br/>
+The problem is with Z-Wave, which Mr.Marcus has mentioned there were some "issues". Not knowing what those are, I'll just show the logs of what I'm having, hopefully someone out there has found a fix or maybe just for documentation's sake.</p>
+
+<p>On starting OpenRemote, I get this from the boot.log file.</p>
+<div style="max-width: 800px;"><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+root@raspberrypi:/opt/openremote/OpenRemote-Controller-2.0.1/bin# ./openremote.sh run
+Using CATALINA_BASE:   /opt/openremote/OpenRemote-Controller-2.0.1
+Using CATALINA_HOME:   /opt/openremote/OpenRemote-Controller-2.0.1
+Using CATALINA_TMPDIR: /opt/openremote/OpenRemote-Controller-2.0.1/temp
+Using JRE_HOME:       /usr
+17-Oct-2012 16:30:39 org.apache.catalina.core.AprLifecycleListener init
+INFO: The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /opt/openremote/OpenRemote-Controller-2.0.1/webapps/controller/WEB-INF/lib/<span class="code-keyword">native</span>
+17-Oct-2012 16:30:40 org.apache.coyote.http11.Http11Protocol init
+INFO: Initializing Coyote HTTP/1.1 on http-8080
+17-Oct-2012 16:30:40 org.apache.catalina.startup.Catalina load
+INFO: Initialization processed in 8339 ms
+17-Oct-2012 16:30:41 org.apache.catalina.core.StandardService start
+INFO: Starting service Catalina
+17-Oct-2012 16:30:41 org.apache.catalina.core.StandardEngine start
+INFO: Starting Servlet Engine: Apache Tomcat/6.0.18
+17-Oct-2012 16:30:41 org.apache.catalina.startup.HostConfig deployWAR
+INFO: Deploying web application archive webconsole.war
+17-Oct-2012 16:30:59 org.openremote.controller.bootstrap.Startup redirectJULtoLog4j
+INFO: Initialized JUL to LOG4J Redirector.
+INFO 2012-10-17 16:31:16,797 : 
+
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+Experimental:  JNI_OnLoad called.
+WARNING:  RXTX Version mismatch
+	Jar version = RXTX-2.2pre1
+	<span class="code-keyword">native</span> lib Version = RXTX-2.1-7
+INFO 2012-10-17 16:33:39,137 : Initialized event processor : Drools Rule Engine
+INFO 2012-10-17 16:33:42,318 : Initialized event processor : RRD4J Data Logger
+INFO 2012-10-17 16:33:47,721 : Registered sensor : Sensor (Name = 'WeatherCurrentTempSensor', ID = '220', State Mappings: {})
+INFO 2012-10-17 16:33:47,737 : Registered sensor : Sensor (Name = 'IsDaySensor', ID = '221', State Mappings: {})
+INFO 2012-10-17 16:33:47,862 : Registered sensor : Sensor (Name = 'WeatherNextDay', ID = '222', State Mappings: {})
+INFO 2012-10-17 16:33:47,888 : Registered sensor : Sensor (Name = 'DisplayTimeSensor', ID = '223', State Mappings: {})
+INFO 2012-10-17 16:33:47,927 : Registered sensor : Range Sensor (Name = 'Office Ceilling -range sensor-', ID = '218', Min: 0, Max: 99)
+INFO 2012-10-17 16:33:48,590 : Registered sensor : Switch Sensor (Name = 'Office Ceilling Sensor -on/off-', ID = '219')
+Exception in thread <span class="code-quote">"<span class="code-object">Thread</span>-4"</span> java.util.ConcurrentModificationException
+	at java.util.ArrayList$Itr.checkForComodification(ArrayList.java:782)
+	at java.util.ArrayList$Itr.next(ArrayList.java:754)
+	at org.openremote.controller.protocol.zwave.model.Switch.updateSensors(Switch.java:88)
+	at org.openremote.controller.protocol.zwave.model.Switch.handleRequestMessage(Switch.java:73)
+	at org.openremote.controller.protocol.zwave.model.ZWaveNode.handleZWaveResponseEvent(ZWaveNode.java:152)
+	at org.openremote.controller.protocol.zwave.ZWaveGateway.fireZWaveResponseEvent(ZWaveGateway.java:89)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveReaderThread.run(ZWaveGatewayRxtx.java:257)
+INFO 2012-10-17 16:33:49,123 : Registered sensor : Sensor (Name = 'WeatherCurrentCondition', ID = '229', State Mappings: {})
+INFO 2012-10-17 16:33:49,163 : Registered sensor : Sensor (Name = 'WeatherNextDayForcast', ID = '228', State Mappings: {})
+INFO 2012-10-17 16:33:49,192 : Registered sensor : Sensor (Name = 'WeatherSecondDayForcastSensor', ID = '227', State Mappings: {})
+INFO 2012-10-17 16:33:49,230 : Registered sensor : Sensor (Name = 'WeatherCurrentConditionIcon', ID = '226', State Mappings:{}
+INFO 2012-10-17 16:33:49,264 : Registered sensor : Sensor (Name = 'DispalyDateSensor', ID = '225', State Mappings: {})
+INFO 2012-10-17 16:33:49,292 : Registered sensor : Sensor (Name = 'WeatherSecondDay', ID = '224', State Mappings: {})
+ERROR [<span class="code-object">Thread</span>-5]: could not send data: 01 09 00 13 02 02 20 02 05 02 c0 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:198)
+INFO 2012-10-17 16:33:49,844 : Startup complete.
+INFO 2012-10-17 16:33:49,902 : Controller Definition File Watcher <span class="code-keyword">for</span> Default Deployer started.
+17-Oct-2012 16:34:19 org.apache.coyote.http11.Http11Protocol start
+INFO: Starting Coyote HTTP/1.1 on http-8080
+17-Oct-2012 16:34:21 org.apache.catalina.startup.Catalina start
+INFO: Server startup in 201416 ms
+</pre>
+</div></div></div>
+
+
+<p>As for as the date, time and stuff I get via HTTP for the weather all is good.<br/>
+When I try and turn on the light that's when this part comes in the zwave.log file</p>
+
+<div style="max-width: 800px;"><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+INFO 2012-10-17 17:21:07,674 (1-WIRE): Reader thread asked to start
+INFO 2012-10-17 17:21:07,711 (1-WIRE): Writer thread asked to start
+INFO 2012-10-17 17:21:07,715 (1-WIRE): Writer thread starting
+DEBUG 2012-10-17 17:21:07,725 (1-WIRE): sending: 01 03 00 02 fe 
+DEBUG 2012-10-17 17:21:07,734 (1-WIRE): received: 06 
+DEBUG 2012-10-17 17:21:07,794 (1-WIRE): received: 01 25 01 02 05 08 1d 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01 c8 
+DEBUG 2012-10-17 17:21:07,797 (1-WIRE): sending: 06 
+DEBUG 2012-10-17 17:21:07,802 (1-WIRE): Node id: 1 discovered
+DEBUG 2012-10-17 17:21:07,805 (1-WIRE): Node id: 2 discovered
+DEBUG 2012-10-17 17:21:07,813 (1-WIRE): sending: 01 04 00 41 01 bb 
+DEBUG 2012-10-17 17:21:07,819 (1-WIRE): Message lock exists. Frame waiting: 01 04 00 41 02 b8 
+DEBUG 2012-10-17 17:21:07,824 (1-WIRE): received: 06 01 09 01 41 92 16 00 02 02 01 33 
+DEBUG 2012-10-17 17:21:07,877 (1-WIRE): sending: 06 
+DEBUG 2012-10-17 17:21:07,882 (1-WIRE): sending: 01 04 00 41 02 b8 
+DEBUG 2012-10-17 17:21:07,893 (1-WIRE): received: 06 01 09 01 41 d3 9c 00 04 11 04 e8 
+DEBUG 2012-10-17 17:21:07,896 (1-WIRE): sending: 06 
+DEBUG 2012-10-17 17:21:07,945 (1-WIRE): Node: 2 created, Type: Dimmer, Listening: <span class="code-keyword">true</span>
+DEBUG 2012-10-17 17:23:10,027 (1-WIRE): Building Z-Wave command
+DEBUG 2012-10-17 17:23:10,034 (1-WIRE): Z-Wave command: nodeId = 2
+DEBUG 2012-10-17 17:23:10,038 (1-WIRE): Z-Wave command: command = status
+DEBUG 2012-10-17 17:23:10,042 (1-WIRE): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2012-10-17 17:23:10,046 (1-WIRE): Z-Wave command created successfully
+DEBUG 2012-10-17 17:23:10,593 (1-WIRE): Building Z-Wave command
+DEBUG 2012-10-17 17:23:10,597 (1-WIRE): Z-Wave command: nodeId = 2
+DEBUG 2012-10-17 17:23:10,601 (1-WIRE): Z-Wave command: command = status
+DEBUG 2012-10-17 17:23:10,605 (1-WIRE): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2012-10-17 17:23:10,609 (1-WIRE): Z-Wave command created successfully
+DEBUG 2012-10-17 17:23:14,808 (1-WIRE): *** setSensor called as part of EventListener init *** sensor is: Range Sensor (Name = 'Office Ceilling -range sensor-', ID = '218', Min: 0, Max: 99)
+DEBUG 2012-10-17 17:23:15,326 (1-WIRE): sending: 01 09 00 13 02 02 20 02 05 01 c3 
+DEBUG 2012-10-17 17:23:15,341 (1-WIRE): received: 06 
+DEBUG 2012-10-17 17:23:15,345 (1-WIRE): received: 01 04 01 13 01 e8 
+DEBUG 2012-10-17 17:23:15,359 (1-WIRE): sending: 06 
+DEBUG 2012-10-17 17:23:15,368 (1-WIRE): received: 01 05 00 13 01 00 e8 
+DEBUG 2012-10-17 17:23:15,386 (1-WIRE): sending: 06 
+DEBUG 2012-10-17 17:23:15,478 (1-WIRE): received: 01 09 00 04 00 02 03 20 03 00 d0 
+DEBUG 2012-10-17 17:23:15,483 (1-WIRE): sending: 06 
+DEBUG 2012-10-17 17:23:15,516 (1-WIRE): *** setSensor called as part of EventListener init *** sensor is: Switch Sensor (Name = 'Office Ceilling Sensor -on/off-', ID = '219')
+INFO 2012-10-17 17:23:15,589 (1-WIRE): Reader thread is dead, clean and re-<span class="code-keyword">try</span> to connect
+INFO 2012-10-17 17:23:15,632 (1-WIRE): Reader thread asked to start
+INFO 2012-10-17 17:23:15,638 (1-WIRE): Writer thread asked to start
+INFO 2012-10-17 17:23:15,644 (1-WIRE): Writer thread starting
+DEBUG 2012-10-17 17:23:16,030 (1-WIRE): sending: 01 09 00 13 02 02 20 02 05 02 c0 
+ERROR 2012-10-17 17:23:16,311 (1-WIRE): could not send data: 01 09 00 13 02 02 20 02 05 02 c0 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:198)
+DEBUG 2012-10-17 17:24:26,796 (1-WIRE): Building Z-Wave command
+DEBUG 2012-10-17 17:24:26,822 (1-WIRE): Z-Wave command: nodeId = 2
+DEBUG 2012-10-17 17:24:26,843 (1-WIRE): Z-Wave command: command = dim
+DEBUG 2012-10-17 17:24:26,861 (1-WIRE): Z-Wave command: paramValue = 17
+DEBUG 2012-10-17 17:24:26,881 (1-WIRE): Z-Wave command created successfully
+DEBUG 2012-10-17 17:24:27,696 (1-WIRE): Message lock exists. Frame waiting: 01 0a 00 13 02 03 20 01 11 05 03 d1 
+DEBUG 2012-10-17 17:24:27,776 (1-WIRE): Message lock exists. Frame waiting: 01 0a 00 13 02 03 20 01 11 05 03 d1 
+DEBUG 2012-10-17 17:24:27,862 (1-WIRE): Message lock exists. Frame waiting: 01 0a 00 13 02 03 20 01 11 05 03 d1 
+DEBUG 2012-10-17 17:24:27,928 (1-WIRE): Message lock exists. Frame waiting: 01 0a 00 13 02 03 20 01 11 05 03 d1 
+.
+.
+.
+.
+</pre>
+</div></div></div>
+
+<p>That last line goes on forever, need to shutdown the server before it fills my disk space.<br/>
+If anyone has anything to add, go right ahead.</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20452302"></a>
+                                    <font class="smallfont"><p>As you can see there are IOExceptions in the RXTX library where we don't have any influence on. I can't say if this is related to the arm based library file or anything else.<br/>
+The Z-Wave protocol wanted to send a command and the IOException occured. This means the command was never sent and not confirmed by the Z-Wave device.<br/>
+Since the first command was not confirmed, the second command cannot be sent because of the Message lock which is there because we are still waiting on an answer of the first command.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 18, 2012 08:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452316"></a>
+                                    <font class="smallfont"><p>Thanks for the input. Like I said it makes for a good reference for people in the future thinking of using the Raspberry Pi + Z-Wave usb stick.<br/>
+I'll keep playing around with different installs, and see if I can find the correct combination to get this thing working.<br/>
+Looking at the log, it is sending &amp; receiving that's a good start.</p>
+
+<p>Although this as hindered the advancement of my little home project, guess I'll take the challenge of getting this to work on the RPi.<br/>
+As long as I don't have to touch the OpenRemote install itself...  lol</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by loneferret at Oct 18, 2012 13:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452413"></a>
+                                    <font class="smallfont"><p>I just reinstalled my Pi with the latest "2012-08-08-wheezy-armel" image.<br/>
+The driver for the AEON stick was picked up correctly after inserting the stick.</p>
+
+<p>I installed "ejre-1_6_0_34-fcs-b04-linux-arm-vfp-eabi-headless-19_jul_2012" from Orcale because Java7 gives trouble with our drools version.<br/>
+Then I installed "librxtx-java" from apt and copied the file "/usr/lib/jni/librxtxSerial.so" tp OpenRemote-Controller/webapps/controller/WEB-INF/lib/native.</p>
+
+<p>After that I was able to control my Z-Wave dimmer without any problems.</p>
+
+<p>It just takes quite some time until the controller is fully started <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+INFO: Server startup in 325813 ms</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 18, 2012 23:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452414"></a>
+                                    <font class="smallfont"><p>Hmmm<br/>
+I did the same thing as you describe except installing "ejre-1_6_0_34-fcs-b04-linux-arm-vfp-eabi-headless-19_jul_2012" (facepalm)<br/>
+Guess I'll reflash my SD card and try again lol</p>
+
+<p>Yeah it does take awhile I agree, but than again in theory it's not something you turn off</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by loneferret at Oct 18, 2012 23:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452416"></a>
+                                    <font class="smallfont"><p>I'm still getting an error even with that version of Java</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+.
+.
+INFO 2012-10-18 21:34:51,279 (1-WIRE): Reader thread is dead, clean and re-<span class="code-keyword">try</span> to connect
+INFO 2012-10-18 21:34:51,341 (1-WIRE): Reader thread asked to start
+INFO 2012-10-18 21:34:51,366 (1-WIRE): Writer thread asked to start
+INFO 2012-10-18 21:34:51,375 (1-WIRE): Writer thread starting
+DEBUG 2012-10-18 21:34:51,670 (1-WIRE): sending: 01 09 00 13 02 02 20 02 05 02 c0 
+ERROR 2012-10-18 21:34:52,026 (1-WIRE): could not send data: 01 09 00 13 02 02 20 02 05 02 c0 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:198)
+DEBUG 2012-10-18 21:34:52,624 (1-WIRE): received: 01 09 00 04 00 02 03 20 03 00 d0 
+DEBUG 2012-10-18 21:34:52,642 (1-WIRE): sending: 06 
+</pre>
+</div></div>
+
+<p>But after restarting the controller:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+INFO 2012-10-18 21:41:52,690 : Controller Definition File Watcher <span class="code-keyword">for</span> Default Deployer started.
+18-Oct-2012 21:42:31 org.apache.coyote.http11.Http11Protocol start
+INFO: Starting Coyote HTTP/1.1 on http-8080
+18-Oct-2012 21:42:32 org.apache.catalina.startup.Catalina start
+INFO: Server startup in 83605 ms
+</pre>
+</div></div>
+
+<p>83605ms w00t!<br/>
+Thanks for help Mr.Marcus</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by loneferret at Oct 19, 2012 02:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452418"></a>
+                                    <font class="smallfont"><p>Your startup is much faster then mine.<br/>
+Do you already have ther Revision B of the Pi and overclocked it ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 19, 2012 07:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20452459"></a>
+                                    <font class="smallfont"><p>Model-B with 512Mb RAM, not overclocked.<br/>
+Wonder how many panels this thing can handle, since Pi splits up the memory for video.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+             total       used       free     shared    buffers     cached
+Mem:           183        170         13          0         27         21
+-/+ buffers/cache:        121         62
+Swap:           99          0         99
+</pre>
+</div></div>
+
+<p>Not much left over.</p>
+
+<p>One issue I've noticed so far, is the stopping/starting. Doesn't always work on the first try (nor the 2nd &amp; 3rd).<br/>
+May need to restart the controller once or twice to get everything going. That plus the relative slow start-up time.</p>
+
+<p>But after a few tweaks</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+             total       used       free     shared    buffers     cached
+Mem:           231        118        112          0          8         47
+-/+ buffers/cache:         62        168
+Swap:           99          0         99
+</pre>
+</div></div>
+
+<p>Too bad I had to restart the thing a few times, </p>
+
+<div style="max-width: 800px;"><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+.
+.
+--------------------------------------------------------------------------------
+FINER [OpenRemote.Controller.runtime.cache.event.processor.drools]: Inserted event org.openremote.controller.model.event.CustomState@8521feb7
+Unhandled Log Messages (may occur due to undefined or incorrect shutdown order):
+--------------------------------------------------------------------------------
+FINER [OpenRemote.Controller.runtime.cache.event.processor.drools]: Fact count: 11
+Unhandled Log Messages (may occur due to undefined or incorrect shutdown order):
+--------------------------------------------------------------------------------
+FINER [OpenRemote.Controller.runtime.cache]: Event org.openremote.controller.model.event.CustomState@8521feb7 processed by 'Drools Rule Engine'...
+Unhandled Log Messages (may occur due to undefined or incorrect shutdown order):
+--------------------------------------------------------------------------------
+FINER [OpenRemote.Controller.runtime.cache]: Processing org.openremote.controller.model.event.CustomState@8521feb7...
+Unhandled Log Messages (may occur due to undefined or incorrect shutdown order):
+--------------------------------------------------------------------------------
+FINER [OpenRemote.Controller.runtime.cache]: Event org.openremote.controller.model.event.CustomState@8521feb7 processed by 'RRD4J Data Logger'...
+Unhandled Log Messages (may occur due to undefined or incorrect shutdown order):
+--------------------------------------------------------------------------------
+FINER [OpenRemote.Controller.runtime.cache]: Processing of org.openremote.controller.model.event.CustomState@8521feb7 complete...
+.
+.
+.
+</pre>
+</div></div></div>
+
+<p>But when it does run it actually does run quite well.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by loneferret at Oct 19, 2012 11:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858265"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>thanks a lot!<br/>
+copying of "/usr/lib/jni/librxtxSerial.so" solved my problems <br/>
+with zwave controller after some long evenings <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by filze at Mar 06, 2013 22:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414584"></a>
+                                    <font class="smallfont"><p>Hi, </p>
+
+<p>Could you please tell me how you installed AEON stick in raspberry pi? Where can I find the drivers? </p>
+
+<p>And also, if you have already set up your home automation, could you tell me if the openremote z-wave controller can control dimmers and blinds? (because there was a limitation, has this been updated?)</p>
+
+<p>I thank you in advance for your response.</p>
+
+<p>D1.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by d1_sen at May 20, 2013 19:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414591"></a>
+                                    <font class="smallfont"><p>Drivers are picked up like I said earlier.<br/>
+Just the Java RXTX part and it's related lib have to be installed (see my post earlier).<br/>
+Dimmer are supported and blinds are not (unless they are recognized as GENERIC_TYPE_SWITCH_MULTILEVEL) which might have them work like a dimmer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 20, 2013 19:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414631"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>I tried with the following set up, but wasn't able to get it up: </p>
+
+<p>-RPi with 2013-02-09-wheezy-raspbian installed and the Oracle Java 8 Early Access<br/>
+-Aeon Zwave Stick 2<br/>
+-Openremote Pro Controller</p>
+
+<p>Whenever I plug the Aeon Zwave stick the RPi restarts on its own. But after the restart it remains on. </p>
+
+<p>I added the controller to OpenRemote but it didn't auto-detect any devices (even though I included them to the stick)</p>
+
+<p>If there is an obvious mistake in the above setup, please let me know. </p>
+
+<p>Thanks...</p>
+
+<p>D1. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by d1_sen at May 21, 2013 12:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414643"></a>
+                                    <font class="smallfont"><p>Hi D1,</p>
+
+<p>it is like Marcus said:</p>
+
+<p>"I just reinstalled my Pi with the latest "2012-08-08-wheezy-armel" image.<br/>
+The driver for the AEON stick was picked up correctly after inserting the stick.</p>
+
+<p>I installed "ejre-1_6_0_34-fcs-b04-linux-arm-vfp-eabi-headless-19_jul_2012" from Orcale because Java7 gives trouble with our drools version.<br/>
+Then I installed "librxtx-java" from apt and copied the file "/usr/lib/jni/librxtxSerial.so" tp OpenRemote-Controller/webapps/controller/WEB-INF/lib/native."</p>
+
+<p>Following these advices exactly, I was able to start the server and add switches, dimmers and sensors.</p>
+
+<p>Good luck! </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by filze at May 21, 2013 13:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414657"></a>
+                                    <font class="smallfont"><p>I just confirmed this setup:</p>
+
+<ul class="alternate" type="square">
+	<li>Raspberry Pi (one of the first version)</li>
+	<li>"medium" overclock</li>
+	<li>2013-02-09-wheezy-raspbian.img</li>
+	<li>jdk-8-ea-b36e-linux-arm-hflt-29_nov_2012.tar</li>
+	<li>AEON Stick</li>
+	<li>"librxtx-java" from apt</li>
+</ul>
+
+
+<p>No problems.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 21, 2013 21:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415122"></a>
+                                    <font class="smallfont"><p>Thanks, didn't have time to go on with the aeon stick. But i am making some progress with the razberry <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by d1_sen at May 28, 2013 16:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872923"></a>
+                                    <font class="smallfont"><p>I can confirm the same setup with the most recent 2013-05-25 wheezy image and jdk-8.<br/>
+However regarding the librtx-java not only the librxtxSerial.so has to be replaced but also the RXTXcomm-2.2-pre2.jar to work with the AEON stick.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dgltx at Jun 17, 2013 17:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:46</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

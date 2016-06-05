@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Check for devices online (or onlan)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Check for devices online (or onlan)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 11, 2016 by <font color="#0050B2">rich.sperrin</font>.
+				    </div>
+
+				    <p>Hi</p>
+
+<p>I have reserved IPs for a few devices and looking to test whether these devices are on-line. I can use "$sudo arp-scan IPaddr-IPaddr &gt; [filename]" to generate a file with the result and planned to interogate the content to see if the IP is repeated in the file. Depending on whether the IP is found in the file will tell whats powered and online. Probably should add that the reason for this is because IP devices tend to have one IR command that toggles on-off and never know the current state. I also prefer to power devices down and not leave them in standby - this also means the $arp result is empty when powered down and off-line.</p>
+
+<p>So 2 questions:-</p>
+
+<p>1) Is this far too complicated test for powered/connected devices and is there a simpler method?</p>
+
+<p>2) If it is feasable then can anyone one advise how to set up a shell execute command that will test the file content and return a boolean? </p>
+
+<p>An example online/offline output file looks like this:-</p>
+
+<p>$sudo arp-scan 192.168.0.5-192.168.0.5 &gt; test<br/>
+$nano test</p>
+
+<p>Interface: eth0, datalink type: EN10MB (Ethernet)<br/>
+Starting arp-scan 1.8.1 with 1 hosts (<a href="http://www.nta-monitor.com/tools/arp-scan/">http://www.nta-monitor.com/tools/arp-scan/</a>)</p>
+
+<p>0 packets received by filter, 0 packets dropped by kernel<br/>
+Ending arp-scan 1.8.1: 1 hosts scanned in 1.561 seconds (0.64 hosts/sec). 0 responded</p>
+
+<p>$sudo arp-scan 192.168.0.12-192.168.0.12 &gt; test<br/>
+$nano test</p>
+
+<p>Interface: eth0, datalink type: EN10MB (Ethernet)<br/>
+Starting arp-scan 1.8.1 with 1 hosts (<a href="http://www.nta-monitor.com/tools/arp-scan/">http://www.nta-monitor.com/tools/arp-scan/</a>)<br/>
+192.168.0.12    18:8e:d5:73:fd:f1       Philips Innovative Application NV</p>
+
+<p>2 packets received by filter, 0 packets dropped by kernel<br/>
+Ending arp-scan 1.8.1: 1 hosts scanned in 1.492 seconds (0.67 hosts/sec). 1 responded</p>
+
+<p>thanks!</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23606922"></a>
+                                    <font class="smallfont"><p>The way it works for me is to use ping shell command. More about it <a href="http://www.openremote.org/display/forums/Updates+on+ping+with+shell+command">http://www.openremote.org/display/forums/Updates+on+ping+with+shell+command</a> </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 12, 2016 10:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606951"></a>
+                                    <font class="smallfont"><p>Thanks Michal - only one issue with this is certain devices dont respond to a ping whether they are on or off - this is the case with Humax STB and AppleTV - however they do appear on ARP which i'm guessing is directed at the network/router and looking at connections information.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rich.sperrin at May 14, 2016 10:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606955"></a>
+                                    <font class="smallfont"><p>I don't know about Humax STB but Apple TV is OK. I have now APTV4 and it responds to ping when it is waked up. When it is in sleep mode then it does not, I must to wake it up with IR beforehand. The same was with my previous APTV2 device.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 14, 2016 20:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606999"></a>
+                                    <font class="smallfont"><p>Thanks Michal - had another go and making progress now. The pings from the Raspberry work fine (seems windows10 doesnt always!) and I've got a script running that returns 1 or 0 in a file so reckon that will work with a sensor control.</p>
+
+<p>....so what I've ended up with is a simple ping script that is run every 5 seconds and returns on or off. The sensor seems to like this and just have a label currently displaying the result. Eventually it will go into the rules to figure whats on and whats off and do some conditional stuff</p>
+
+<p>However <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> the label is steadily blinking between 'on' and 'N/A' in a 5 second cycle with 'N/A' appearing for about 1 second. Not sure what this is all about. The dev.log looks in order with no errors so not sure what to think at the moment. Thoughts?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rich.sperrin at May 17, 2016 20:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

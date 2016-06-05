@@ -1,0 +1,1172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Qnap TS-119 and OR works</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Qnap TS-119 and OR works
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 12, 2014 by <font color="#0050B2">aleksey_z</font>.
+				    </div>
+
+				    <p>Problem solved, thank you all for your help. The solution in the last post.</p>
+
+
+
+<p>Sorry for my English. <br/>
+Please help in launching OpenRemote on TS-119.  Ready to open access to NAS.</p>
+
+<p>Drivers installed.</p>
+
+<p>uname -a<br/>
+Linux NAS8CBFE9 3.4.6 #1 Fri Oct 3 16:06:36 CST 2014 armv5tel unknown</p>
+
+<p>insmod /usr/local/modules/usbserial.ko<br/>
+insmod /usr/local/modules/ftdi_sio.ko<br/>
+insmod /usr/local/modules/pl2303.ko<br/>
+insmod /usr/local/modules/cp210x.ko</p>
+
+<ol>
+	<li>lsusb<br/>
+Bus 001 Device 002: ID 058f:6254 Alcor Micro Corp. USB Hub<br/>
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub<br/>
+Bus 001 Device 003: ID 10c4:ea60 Cygnal Integrated Products, Inc. CP210x Composite De      vice</li>
+</ol>
+
+
+<ol>
+	<li>dmesg</li>
+</ol>
+
+
+<p>[  193.820310] usbserial: version magic '2.6.33.2 mod_unload ARMv5 ' should be '3.4.6 mod_unload ARMv5 p2v8 '<br/>
+[  193.877748] cp210x: version magic '2.6.33.2 mod_unload ARMv5 ' should be '3.4.6 mod_unload ARMv5 p2v8 '<br/>
+[ 1306.938878] usbserial: version magic '2.6.33.2 mod_unload ARMv5 ' should be '3.4.6 mod_unload ARMv5 p2v8 '<br/>
+[ 1306.968764] cp210x: version magic '2.6.33.2 mod_unload ARMv5 ' should be '3.4.6 mod_unload ARMv5 p2v8 '<br/>
+[ 2075.744743] usbcore: registered new interface driver usbserial<br/>
+[ 2075.750609] usbserial: USB Serial Driver core<br/>
+[ 2086.864664] usbcore: registered new interface driver ftdi_sio<br/>
+[ 2086.884393] USB Serial support registered for FTDI USB Serial Device<br/>
+[ 2086.890925] ftdi_sio: v1.6.0:USB FTDI Serial Converters Driver<br/>
+[ 2103.884721] usbcore: registered new interface driver pl2303<br/>
+[ 2103.914291] USB Serial support registered for pl2303<br/>
+[ 2120.584680] usbcore: registered new interface driver cp210x<br/>
+[ 2120.604458] USB Serial support registered for cp210x<br/>
+[ 2120.609523] cp210x 1-1.1:1.0: cp210x converter detected<br/>
+[ 2120.704753] usb 1-1.1: reset full-speed USB device number 3 using orion-ehci<br/>
+[ 2120.844711] usb 1-1.1: cp210x converter now attached to ttyUSB0</p>
+
+<ol>
+	<li>cat /proc/bus/usb/devices</li>
+</ol>
+
+
+<p>T:  Bus=01 Lev=02 Prnt=02 Port=00 Cnt=01 Dev#=  3 Spd=12   MxCh= 0<br/>
+D:  Ver= 1.10 Cls=00(&gt;ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1<br/>
+P:  Vendor=10c4 ProdID=ea60 Rev= 1.00<br/>
+S:  Manufacturer=Silicon Labs<br/>
+S:  Product=CP2102 USB to UART Bridge Controller<br/>
+S:  SerialNumber=0001<br/>
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=100mA<br/>
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=00 Prot=00 Driver=cp210x<br/>
+E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms<br/>
+E:  Ad=01(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms<br/>
+E:  Ad=01(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms</p>
+
+<ol>
+	<li>more /etc/group<br/>
+administrators:x:0:admin<br/>
+everyone:x:100:admin<br/>
+guest:x:65534:guest<br/>
+uucp:x:101:openremote<br/>
+dialout:x:102:openremote</li>
+</ol>
+
+
+<ol>
+	<li>ls -lh /dev/ttyUSB0<br/>
+crwxrwxrwx    1 admin    dialout   188,   0 Oct 11 11:28 /dev/ttyUSB0</li>
+</ol>
+
+
+<p>In boot.log:</p>
+
+<p>DEBUG 2014-10-11 08:47:52,649 : Deployer 'Default Deployer' initialized.<br/>
+DEBUG 2014-10-11 08:47:54,058 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2014-10-11 08:47:54,182 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2014-10-11 08:47:54,184 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2014-10-11 08:47:54,217 : Runtime object model has not been initialized. Using default configuration only.<br/>
+INFO 2014-10-11 08:47:54,244 : </p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>DEBUG 2014-10-11 08:48:06,177 : Initializing event processor: Drools Rule Engine<br/>
+INFO 2014-10-11 08:48:06,206 : No rule definitions found in '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules'.<br/>
+INFO 2014-10-11 08:48:06,207 : Initialized event processor : Drools Rule Engine<br/>
+DEBUG 2014-10-11 08:48:06,208 : Initializing event processor: RRD4J Data Logger<br/>
+INFO 2014-10-11 08:48:06,900 : Initialized event processor : RRD4J Data Logger<br/>
+DEBUG 2014-10-11 08:48:06,901 : Initializing event processor: EmonCMS Data Logger<br/>
+INFO 2014-10-11 08:48:06,901 : Initialized event processor : EmonCMS Data Logger<br/>
+INFO 2014-10-11 08:48:06,913 : Startup complete.<br/>
+INFO 2014-10-11 08:48:06,916 : Controller Definition File Watcher for Default Deployer started.<br/>
+DEBUG 2014-10-11 09:24:16,985 : Deployer 'Default Deployer' initialized.<br/>
+DEBUG 2014-10-11 09:24:18,021 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2014-10-11 09:24:18,081 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2014-10-11 09:24:18,082 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2014-10-11 09:24:18,117 : Runtime object model has not been initialized. Using default configuration only.<br/>
+INFO 2014-10-11 09:24:18,144 : </p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>DEBUG 2014-10-11 09:24:29,743 : Initializing event processor: Drools Rule Engine<br/>
+INFO 2014-10-11 09:24:29,757 : No rule definitions found in '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules'.<br/>
+INFO 2014-10-11 09:24:29,758 : Initialized event processor : Drools Rule Engine<br/>
+DEBUG 2014-10-11 09:24:29,758 : Initializing event processor: RRD4J Data Logger<br/>
+INFO 2014-10-11 09:24:30,438 : Initialized event processor : RRD4J Data Logger<br/>
+DEBUG 2014-10-11 09:24:30,439 : Initializing event processor: EmonCMS Data Logger<br/>
+INFO 2014-10-11 09:24:30,439 : Initialized event processor : EmonCMS Data Logger<br/>
+INFO 2014-10-11 09:24:30,452 : Startup complete.<br/>
+INFO 2014-10-11 09:24:30,455 : Controller Definition File Watcher for Default Deployer started.<br/>
+ERROR 2014-10-11 09:25:14,186 : Unable to store user credentials. Background API requests will not be able to authenticate: java.io.IOException: Error initialising store of key store: java.security.InvalidKeyException: Illegal key size<br/>
+org.openremote.security.KeyManager$KeyManagerException: java.io.IOException: Error initialising store of key store: java.security.InvalidKeyException: Illegal key size<br/>
+	at org.openremote.security.PasswordManager.add(PasswordManager.java:373)<br/>
+	at org.openremote.security.PasswordManager.addPassword(PasswordManager.java:185)<br/>
+	at org.openremote.controller.service.Deployer$BeehiveConnection.storeCredentials(Deployer.java:1665)<br/>
+	at org.openremote.controller.service.Deployer$BeehiveConnection.downloadZip(Deployer.java:1573)<br/>
+	at org.openremote.controller.service.Deployer$BeehiveConnection.access$200(Deployer.java:1470)<br/>
+	at org.openremote.controller.service.Deployer.deployFromOnline(Deployer.java:550)<br/>
+	at org.openremote.controller.action.ConfigManageController.syncOnline(ConfigManageController.java:140)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)<br/>
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)<br/>
+	at java.lang.reflect.Method.invoke(Method.java:606)<br/>
+	at org.springframework.web.servlet.mvc.multiaction.MultiActionController.invokeNamedMethod(MultiActionController.java:434)<br/>
+	at org.springframework.web.servlet.mvc.multiaction.MultiActionController.handleRequestInternal(MultiActionController.java:372)<br/>
+	at org.springframework.web.servlet.mvc.AbstractController.handleRequest(AbstractController.java:153)<br/>
+	at org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter.handle(SimpleControllerHandlerAdapter.java:45)<br/>
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:806)<br/>
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:736)<br/>
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:396)<br/>
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:360)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)<br/>
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)<br/>
+	at java.lang.Thread.run(Thread.java:745)<br/>
+Caused by: java.security.KeyStoreException: java.io.IOException: Error initialising store of key store: java.security.InvalidKeyException: Illegal key size<br/>
+	at org.bouncycastle.jcajce.provider.keystore.bc.BcKeyStoreSpi.engineSetKeyEntry(Unknown Source)<br/>
+	at java.security.KeyStoreSpi.engineSetEntry(KeyStoreSpi.java:549)<br/>
+	at java.security.KeyStore.setEntry(KeyStore.java:1326)<br/>
+	at org.openremote.security.PasswordManager.add(PasswordManager.java:368)<br/>
+	... 41 more<br/>
+DEBUG 2014-10-11 09:25:14,211 : Resolved URI to 'file:/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/panels.obj'<br/>
+DEBUG 2014-10-11 09:25:14,212 : Attempting to extract 'panels.obj' to '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/panels.obj'.<br/>
+DEBUG 2014-10-11 09:25:14,281 : Extraction of 'panels.obj' to '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/panels.obj' completed.<br/>
+DEBUG 2014-10-11 09:25:14,282 : Resolved URI to 'file:/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/panel.xml'<br/>
+DEBUG 2014-10-11 09:25:14,282 : Attempting to extract 'panel.xml' to '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/panel.xml'.<br/>
+DEBUG 2014-10-11 09:25:14,291 : Extraction of 'panel.xml' to '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/panel.xml' completed.<br/>
+DEBUG 2014-10-11 09:25:14,292 : Resolved URI to 'file:/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/controller.xml'<br/>
+DEBUG 2014-10-11 09:25:14,292 : Attempting to extract 'controller.xml' to '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/controller.xml'.<br/>
+DEBUG 2014-10-11 09:25:14,326 : Extraction of 'controller.xml' to '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/controller.xml' completed.<br/>
+DEBUG 2014-10-11 09:25:14,327 : Resolved URI to 'file:/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules/modeler_rules.drl'<br/>
+DEBUG 2014-10-11 09:25:14,328 : Attempting to extract 'rules/modeler_rules.drl' to '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules/modeler_rules.drl'.<br/>
+DEBUG 2014-10-11 09:25:14,329 : Extraction of 'rules/modeler_rules.drl' to '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules/modeler_rules.drl' completed.<br/>
+INFO 2014-10-11 09:25:15,159 : </p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  UNDEPLOYING CURRENT CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>DEBUG 2014-10-11 09:25:15,167 : Stopping event processor: Drools Rule Engine<br/>
+INFO 2014-10-11 09:25:15,168 : Stopped event processor : Drools Rule Engine<br/>
+DEBUG 2014-10-11 09:25:15,168 : Stopping event processor: RRD4J Data Logger<br/>
+INFO 2014-10-11 09:25:15,207 : Stopped event processor : RRD4J Data Logger<br/>
+DEBUG 2014-10-11 09:25:15,208 : Stopping event processor: EmonCMS Data Logger<br/>
+INFO 2014-10-11 09:25:15,208 : Stopped event processor : EmonCMS Data Logger<br/>
+INFO 2014-10-11 09:25:15,213 : Shutdown complete.<br/>
+INFO 2014-10-11 09:25:15,215 : </p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>DEBUG 2014-10-11 09:25:15,353 : Initializing event processor: Drools Rule Engine<br/>
+INFO 2014-10-11 09:25:15,355 : No rule definitions found in '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules'.<br/>
+INFO 2014-10-11 09:25:15,356 : Initialized event processor : Drools Rule Engine<br/>
+DEBUG 2014-10-11 09:25:15,367 : Initializing event processor: RRD4J Data Logger<br/>
+INFO 2014-10-11 09:25:15,468 : Initialized event processor : RRD4J Data Logger<br/>
+DEBUG 2014-10-11 09:25:15,469 : Initializing event processor: EmonCMS Data Logger<br/>
+INFO 2014-10-11 09:25:15,469 : Initialized event processor : EmonCMS Data Logger<br/>
+INFO 2014-10-11 09:25:15,484 : Startup complete.</p>
+
+<p>In zwave.log  0 kB</p>
+
+<p>On Synology DS-214Play able to install and works fine.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23592977/23789569.jpg">openremote.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23592977/23789570.jpg">module.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23592977/23789571.jpg">insert line.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23592977/23789572.jpg">module1.jpg</a> (image/jpeg)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23592982"></a>
+                                    <font class="smallfont"><p>Did you read this <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Controller+on+QNAP+NAS">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Controller+on+QNAP+NAS</a><br/>
+Please also note Juha's comment at the end</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 11, 2014 15:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23592983"></a>
+                                    <font class="smallfont"><p>Yes. <a href="http://forum.qnap.com/viewtopic.php?f=306&amp;t=80225">http://forum.qnap.com/viewtopic.php?f=306&amp;t=80225</a></p>
+
+<p><a href="http://www.openremote.org/display/forums/Installing+openremote+on+Qnap+TS-219+Turbonas?focusedCommentId=19435111#comment-19435111">http://www.openremote.org/display/forums/Installing+openremote+on+Qnap+TS-219+Turbonas?focusedCommentId=19435111#comment-19435111</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Oct 11, 2014 16:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23592990"></a>
+                                    <font class="smallfont"><p>What version of the controller are you using ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Oct 12, 2014 07:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23592993"></a>
+                                    <font class="smallfont"><p>Install the package OpenRemote_2.1.0.0713_arm-x19.qpkg, launched, sync wiht account, received line:</p>
+
+<p>[ 193.820310] usbserial: version magic '2.6.33.2 mod_unload ARMv5 ' should be '3.4.6 mod_unload ARMv5 p2v8 '<br/>
+[ 193.877748] cp210x: version magic '2.6.33.2 mod_unload ARMv5 ' should be '3.4.6 mod_unload ARMv5 p2v8 '</p>
+
+<p>Stop.</p>
+
+<p>Replaced in the folder /share/HDA_DATA/.qpkg/Openremote/module/misc/ files usbserial.ko and cp210x.ko (appeared after installation Openremote), on the files usbserial.ko and cp210x.ko in the folder /mnt/ext/usr/local/module/. After reboot, received line:</p>
+
+<p>[ 2075.744743] usbcore: registered new interface driver usbserial<br/>
+[ 2075.750609] usbserial: USB Serial Driver core<br/>
+[ 2120.584680] usbcore: registered new interface driver cp210x<br/>
+[ 2120.604458] USB Serial support registered for cp210x<br/>
+[ 2120.609523] cp210x 1-1.1:1.0: cp210x converter detected<br/>
+[ 2120.704753] usb 1-1.1: reset full-speed USB device number 3 using orion-ehci<br/>
+[ 2120.844711] usb 1-1.1: cp210x converter now attached to ttyUSB0</p>
+
+<p>without a team insmod, and line: <br/>
+[ 193.820310] usbserial: version magic '2.6.33.2 mod_unload ARMv5 ' should be '3.4.6 mod_unload ARMv5 p2v8 '<br/>
+[ 193.877748] cp210x: version magic '2.6.33.2 mod_unload ARMv5 ' should be '3.4.6 mod_unload ARMv5 p2v8 '</p>
+
+<p>In zwave.log 0 kB</p>
+
+<p>Then updated to OpenRemote-Controller-2.1.0_FM_SNAPSHOT-2014-09-04, In zwave.log 0 kB.</p>
+
+<p><img src="attachments/23592977/23789569.jpg" align="absmiddle" border="0"/><img src="attachments/23592977/23789570.jpg" align="absmiddle" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Oct 12, 2014 10:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23592999"></a>
+                                    <font class="smallfont"><p>Try on.<br/>
+When installed on Synology, there are options: </p>
+
+<p>4) This install will create the following files on the Synology:</p>
+
+<p> /lib/modules/usbserial.ko<br/>
+ /lib/modules/pl2303.ko<br/>
+ /lib/modules/ftdi_sio.ko<br/>
+ /lib/modules/cp210x.ko<br/>
+ /usr/syno/etc.defaults/rc.d/S99Modules.sh</p>
+
+<p>5) Must modify the load order of the drivers by modifying the 4 line in the /usr/syno/etc.defaults/rc.d/S99Modules.sh file to:</p>
+
+<p>MODULES="usbserial.ko ftdi_sio.ko pl2303.ko cp210x.ko" (usbserial.ko driver must load first)</p>
+
+<p>I did likewise, on screen.</p>
+
+<p>after reboot:</p>
+
+<ol>
+	<li>dmesg</li>
+</ol>
+
+
+<p>(on qnap TS-119)<br/>
+[  194.844730] usbcore: registered new interface driver usbserial<br/>
+[  194.850594] usbserial: USB Serial Driver core<br/>
+[  194.994720] usbcore: registered new interface driver ftdi_sio<br/>
+[  195.031289] USB Serial support registered for FTDI USB Serial Device<br/>
+[  195.037858] ftdi_sio: v1.6.0:USB FTDI Serial Converters Driver<br/>
+[  195.154015] usbcore: registered new interface driver pl2303<br/>
+[  195.180969] USB Serial support registered for pl2303<br/>
+[  195.308229] usbcore: registered new interface driver cp210x<br/>
+[  195.354469] USB Serial support registered for cp210x<br/>
+[  195.359537] cp210x 1-1.1:1.0: cp210x converter detected<br/>
+[  195.506206] usb 1-1.1: reset full-speed USB device number 3 using orion-ehci<br/>
+[  195.684754] usb 1-1.1: cp210x converter now attached to ttyUSB0</p>
+
+<p>stick out</p>
+
+<p>[  660.402837] usb 1-1.1: USB disconnect, device number 3<br/>
+[  660.409431] cp210x ttyUSB0: cp210x converter now disconnected from ttyUSB0<br/>
+[  660.434401] cp210x 1-1.1:1.0: device disconnected</p>
+
+<p>stick insert</p>
+
+<p>[  821.404507] usb 1-1.1: new full-speed USB device number 4 using orion-ehci<br/>
+[  821.555172] cp210x 1-1.1:1.0: cp210x converter detected<br/>
+[  821.664512] usb 1-1.1: reset full-speed USB device number 4 using orion-ehci<br/>
+[  821.824989] usb 1-1.1: cp210x converter now attached to ttyUSB0</p>
+
+<p>(on syno DS-214play)</p>
+
+<p>[   27.564946] usbcore: registered new interface driver usbserial<br/>
+[   27.564954] usbserial: USB Serial Driver core<br/>
+[   27.580763] USB Serial support registered for FTDI USB Serial Device<br/>
+[   27.581146] usbcore: registered new interface driver ftdi_sio<br/>
+[   27.581153] ftdi_sio: v1.6.0:USB FTDI Serial Converters Driver<br/>
+[   27.593058] USB Serial support registered for pl2303<br/>
+[   27.593290] usbcore: registered new interface driver pl2303<br/>
+[   27.593296] pl2303: Prolific PL2303 USB to serial adaptor driver<br/>
+[   27.601668] USB Serial support registered for cp210x<br/>
+[   27.603384] usbcore: registered new interface driver cp210x<br/>
+[   27.603392] cp210x: v0.09:Silicon Labs CP210x RS232 serial adaptor driver<br/>
+[   81.626499] usb 5-1: new full-speed USB device number 2 using uhci_hcd<br/>
+[   81.821725] cp210x 5-1:1.0: cp210x converter detected<br/>
+[   81.958341] usb 5-1: reset full-speed USB device number 2 using uhci_hcd<br/>
+[   82.129732] usb 5-1: cp210x converter now attached to ttyUSB0</p>
+
+<ol>
+	<li>cat /proc/bus/usb/devices</li>
+</ol>
+
+
+<p>(on qnap TS-119)</p>
+
+<p>T:  Bus=01 Lev=02 Prnt=02 Port=00 Cnt=01 Dev#=  3 Spd=12   MxCh= 0<br/>
+D:  Ver= 1.10 Cls=00(&gt;ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1<br/>
+P:  Vendor=10c4 ProdID=ea60 Rev= 1.00<br/>
+S:  Manufacturer=Silicon Labs<br/>
+S:  Product=CP2102 USB to UART Bridge Controller<br/>
+S:  SerialNumber=0001<br/>
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=100mA<br/>
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=00 Prot=00 Driver=cp210x<br/>
+E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms<br/>
+E:  Ad=01(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms</p>
+
+<p>(on syno DS-214play)</p>
+
+<p>T:  Bus=05 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  2 Spd=12   MxCh= 0<br/>
+D:  Ver= 1.10 Cls=00(&gt;ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1<br/>
+P:  Vendor=10c4 ProdID=ea60 Rev= 1.00<br/>
+S:  Manufacturer=Silicon Labs<br/>
+S:  Product=CP2102 USB to UART Bridge Controller<br/>
+S:  SerialNumber=0001<br/>
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=100mA<br/>
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=00 Prot=00 Driver=cp210x<br/>
+E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms<br/>
+E:  Ad=01(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms</p>
+
+
+<ol>
+	<li>lsmod</li>
+</ol>
+
+
+<p>(on qnap TS-119)</p>
+
+<p>Module                  Size  Used by    Tainted: P<br/>
+cp210x 11514 0 - Live 0xbf638000<br/>
+pl2303 10874 0 - Live 0xbf631000<br/>
+ftdi_sio 30155 0 - Live 0xbf620000<br/>
+usbserial 25848 3 cp210x,pl2303,ftdi_sio, Live 0xbf613000</p>
+
+<p>(on syno DS-214play)</p>
+
+<p>cp210x                 11323  0<br/>
+pl2303                 10717  0<br/>
+ftdi_sio               31703  0<br/>
+usbserial              23367  3 cp210x,pl2303,ftdi_sio</p>
+
+
+<p>change permission on /var/lock и /ttyUSB0 0777</p>
+
+<ol>
+	<li>ls -lh /dev/ttyUSB*</li>
+</ol>
+
+
+<p>(on qnap TS-119)</p>
+
+<p>crwxrwxrwx    1 admin    administ  188,   0 Oct 12 13:49 /dev/ttyUSB0<br/>
+crw-r-<del>r</del>-    1 admin    administ  188,   1 Oct 12 13:49 /dev/ttyUSB1<br/>
+crw-r-<del>r</del>-    1 admin    administ  188,   2 Oct 12 13:49 /dev/ttyUSB2</p>
+
+<p>boot.log<br/>
+--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>DEBUG 2014-10-12 11:06:01,232 : Initializing event processor: Drools Rule Engine<br/>
+INFO 2014-10-12 11:06:01,272 : No rule definitions found in '/share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules'.<br/>
+INFO 2014-10-12 11:06:01,273 : Initialized event processor : Drools Rule Engine<br/>
+DEBUG 2014-10-12 11:06:01,274 : Initializing event processor: RRD4J Data Logger<br/>
+INFO 2014-10-12 11:06:02,494 : Initialized event processor : RRD4J Data Logger<br/>
+DEBUG 2014-10-12 11:06:02,495 : Initializing event processor: EmonCMS Data Logger<br/>
+INFO 2014-10-12 11:06:02,496 : Initialized event processor : EmonCMS Data Logger<br/>
+INFO 2014-10-12 11:06:02,508 : Startup complete.<br/>
+INFO 2014-10-12 11:06:02,511 : Controller Definition File Watcher for Default Deployer started.</p>
+
+<p>zwave.log 0 kB</p>
+
+<p>(on syno DS-214play)</p>
+
+<p>DiskStation&gt; ls -lh /dev/ttyUSB*<br/>
+crwxrwxrwx    1 root     root      188,   0 Oct 12 11:17 /dev/ttyUSB0<br/>
+crw-r-<del>r</del>-    1 root     root      188,   0 Oct  4 09:11 /dev/ttyUSB2<br/>
+crw-r-<del>r</del>-    1 root     root      188,   0 Oct  4 09:11 /dev/ttyUSB3</p>
+
+<p>boot.log<br/>
+--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>INFO 2014-10-12 14:29:16,151 : No rule definitions found in '/volume1/@appstore/OpenRemote/webapps/controller/rules'.<br/>
+INFO 2014-10-12 14:29:16,152 : Initialized event processor : Drools Rule Engine<br/>
+INFO 2014-10-12 14:29:16,399 : Initialized event processor : RRD4J Data Logger<br/>
+INFO 2014-10-12 14:29:16,400 : Initialized event processor : EmonCMS Data Logger<br/>
+INFO 2014-10-12 14:29:16,404 : Startup complete.<br/>
+INFO 2014-10-12 14:29:16,405 : Controller Definition File Watcher for Default Deployer started.</p>
+
+<p>zwave.log</p>
+
+<p>INFO 2014-10-12 14:29:06,048 (Z-Wave): Reader thread asked to start<br/>
+INFO 2014-10-12 14:29:06,062 (Z-Wave): Writer thread asked to start<br/>
+INFO 2014-10-12 14:29:06,062 (Z-Wave): Writer thread starting<br/>
+DEBUG 2014-10-12 14:29:06,063 (Z-Wave): sending: 01 08 00 54 00 01 01 01 01 a3 <br/>
+DEBUG 2014-10-12 14:29:06,064 (Z-Wave): Message lock exists. Frame waiting: 01 03 00 02 fe <br/>
+DEBUG 2014-10-12 14:29:06,066 (Z-Wave): received: 06 <br/>
+DEBUG 2014-10-12 14:29:06,073 (Z-Wave): received: 01 04 01 54 00 ae <br/>
+DEBUG 2014-10-12 14:29:06,074 (Z-Wave): Controller registered as SUC/SIS<br/>
+DEBUG 2014-10-12 14:29:06,118 (Z-Wave): sending: 06 <br/>
+DEBUG 2014-10-12 14:29:06,119 (Z-Wave): sending: 01 03 00 02 fe <br/>
+DEBUG 2014-10-12 14:29:06,121 (Z-Wave): received: 06 <br/>
+DEBUG 2014-10-12 14:29:06,170 (Z-Wave): received: 01 25 01 02 05 00 1d 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01 c2 <br/>
+DEBUG 2014-10-12 14:29:06,170 (Z-Wave): sending: 06 <br/>
+DEBUG 2014-10-12 14:29:06,170 (Z-Wave): Node id: 1 discovered<br/>
+DEBUG 2014-10-12 14:29:06,171 (Z-Wave): sending: 01 04 00 41 01 bb <br/>
+DEBUG 2014-10-12 14:29:06,178 (Z-Wave): received: 06 01 09 01 41 92 16 00 02 02 01 33 <br/>
+DEBUG 2014-10-12 14:29:06,178 (Z-Wave): sending: 06 <img src="attachments/23592977/23789572.jpg" align="absmiddle" border="0"/><img src="attachments/23592977/23789571.jpg" align="absmiddle" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Oct 12, 2014 12:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593011"></a>
+                                    <font class="smallfont"><p>It is based on the article: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Synology+with+Z-Wave">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Synology+with+Z-Wave</a></p>
+
+<p>Qnap TS-119 (FW:4.1.1 last 03.10.14). </p>
+
+<p>Install Optware IPKG.</p>
+
+<p>We need a driver pl2303.ko, if it is not in /mnt/ext/usr/local/modules/, set it on the article:</p>
+
+<p><a href="http://forum.qnap.com/viewtopic.php?f=24&amp;t=97937#p439063">http://forum.qnap.com/viewtopic.php?f=24&amp;t=97937#p439063</a></p>
+
+<p>I managed to compile the module myself, here are the steps I did ... you will need to modify step 7 for the device you have </p>
+
+<p>1. Download source from <a href="http://www.sourceforge.net/projects/qosgpl">http://www.sourceforge.net/projects/qosgpl</a><br/>
+2. Copy GPL_TS-20140808-4.1.0.gz file to NAS /share/Public<br/>
+3. ssh nas login as Admin<br/>
+4. cd /share/Public<br/>
+5. gunzip GPL_TS-20140808-4.1.0.gz<br/>
+6. tar -xvf GPL_TS-20140808-4.1.0<br/>
+7. cp GPL_TS/kernel_cfg/TS-119/linux-3.4.6.cfg GPL_TS/src/linux-3.4.6/.config<br/>
+8. cd GPL_TS/src/linux-3.4.6<br/>
+9. vi .config<br/>
+ change # CONFIG_USB_SERIAL_PL2303 is not set<br/>
+ to<br/>
+ CONFIG_USB_SERIAL_PL2303=m<br/>
+&lt;ESC&gt; :wq<br/>
+10 ipkg install autoconf automake binutils gcc freetype make<br/>
+11 make oldconfig<br/>
+12 make modules<br/>
+13 cp /share/Public/GPL_TS/src/linux-3.4.6/drivers/usb/serial/pl2303.ko /mnt/ext/usr/local/modules/pl2303.ko</p>
+
+<p>Install JRE_7 (<a href="http://wiki.qnap.com/wiki/Category:JRE">http://wiki.qnap.com/wiki/Category:JRE</a>) and Openremote (<a href="http://forum.qnap.com/viewtopic.php?f=306&amp;t=80225">http://forum.qnap.com/viewtopic.php?f=306&amp;t=80225</a>)</p>
+
+<p>Do not run Openremote. Remove from folder /share/HDA_DATA/.qpkg/OpenRemote/module/misc/ files usbserial.ko and cp210x.ko (they are out of date).<br/>
+Copy the files usbserial.ko, ftdi_sio.ko, pl2303.ko, cp210x.ko from the /mnt/ext/usr/local/modules/ in /share/HDA_DATA/.qpkg/OpenRemote/module/misc/</p>
+
+<p>In file QS102Openremote in folder /etc/rcK.d to add the following lines (red):</p>
+
+<p>#!/bin/sh<br/>
+CONF=/etc/config/qpkg.conf<br/>
+QPKG_NAME="OpenRemote"<br/>
+INSTALL_PATH=`/sbin/getcfg -f $CONF $QPKG_NAME Install_Path`<br/>
+export PATH=$PATH:/opt/bin:/opt/sbin<br/>
+export JAVA_HOME=/usr/local/jre<br/>
+export PATH=$PATH:$JAVA_HOME/bin</p>
+
+<p>case "$1" in<br/>
+  start)<br/>
+    ls /dev/ttyUSB0<br/>
+    if [  $? == 1 ]; then<br/>
+        mknod /dev/ttyUSB0 c 188 0<br/>
+    fi<br/>
+    ls /dev/ttyUSB1<br/>
+    if [  $? == 1 ]; then<br/>
+        mknod /dev/ttyUSB1 c 188 1<br/>
+    fi<br/>
+    ls /dev/ttyUSB2<br/>
+    if [  $? == 1 ]; then<br/>
+        mknod /dev/ttyUSB2 c 188 2<br/>
+    fi<br/>
+    lsmod | grep cp210<br/>
+    if [ $? == 1 ]; then<br/>
+        /sbin/insmod $INSTALL_PATH/module/misc/usbserial.ko<br/>
+       /sbin/insmod $INSTALL_PATH/module/misc/ftdi_sio.ko (red)<br/>
+      /sbin/insmod $INSTALL_PATH/module/misc/pl2303.ko (red)<br/>
+     /sbin/insmod $INSTALL_PATH/module/misc/cp210x.ko<br/>
+    fi</p>
+
+<p>Reboot NAS.Insert stick.</p>
+
+<ol>
+	<li>dmesg</li>
+</ol>
+
+
+<p>(on qnap TS-119)</p>
+
+<p>[  194.844730] usbcore: registered new interface driver usbserial<br/>
+[  194.850594] usbserial: USB Serial Driver core<br/>
+[  194.994720] usbcore: registered new interface driver ftdi_sio<br/>
+[  195.031289] USB Serial support registered for FTDI USB Serial Device<br/>
+[  195.037858] ftdi_sio: v1.6.0:USB FTDI Serial Converters Driver<br/>
+[  195.154015] usbcore: registered new interface driver pl2303<br/>
+[  195.180969] USB Serial support registered for pl2303<br/>
+[  195.308229] usbcore: registered new interface driver cp210x<br/>
+[  195.354469] USB Serial support registered for cp210x<br/>
+[  195.359537] cp210x 1-1.1:1.0: cp210x converter detected<br/>
+[  195.506206] usb 1-1.1: reset full-speed USB device number 3 using orion-ehci<br/>
+[  195.684754] usb 1-1.1: cp210x converter now attached to ttyUSB0</p>
+
+<ol>
+	<li>cat /proc/bus/usb/devices</li>
+</ol>
+
+
+<p>(on qnap TS-119)</p>
+
+<p>T:  Bus=01 Lev=02 Prnt=02 Port=00 Cnt=01 Dev#=  3 Spd=12   MxCh= 0<br/>
+D:  Ver= 1.10 Cls=00(&gt;ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1<br/>
+P:  Vendor=10c4 ProdID=ea60 Rev= 1.00<br/>
+S:  Manufacturer=Silicon Labs<br/>
+S:  Product=CP2102 USB to UART Bridge Controller<br/>
+S:  SerialNumber=0001<br/>
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=100mA<br/>
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=00 Prot=00 Driver=cp210x<br/>
+E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms<br/>
+E:  Ad=01(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms</p>
+
+
+<ol>
+	<li>lsmod</li>
+</ol>
+
+
+<p>(on qnap TS-119)</p>
+
+<p>Module                  Size  Used by    Tainted: P<br/>
+cp210x 11514 0 - Live 0xbf638000<br/>
+pl2303 10874 0 - Live 0xbf631000<br/>
+ftdi_sio 30155 0 - Live 0xbf620000<br/>
+usbserial 25848 3 cp210x,pl2303,ftdi_sio, Live 0xbf613000</p>
+
+<p>The package needs to be updated. Download the latest distribution Openremote in folder Download.<br/>
+Unzip the snapshot Openremote distro using the "unzip" command on the Qnap: </p>
+
+<p>&gt; unzip /share/HDA_DATA/download/OpenRemote-Controller-2.1.0_Developer-Snapshot-20140904.zip</p>
+
+<p>##Remove the webapps folder under the OpenRemote package install </p>
+
+<p>&gt; rm -fr /share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps</p>
+
+<p>##Copy snapshot distro webapps directory into package folder </p>
+
+<p>&gt; cp -r /share/HDA_DATA/download/OpenRemote/webapps /share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/</p>
+
+<p>##Change DEBUG setting as instructed in the Configure of System Section.<br/>
+##Copy zwave.jar as instructed in the Configure of System Section.<br/>
+##Ensure permissions are set correctly </p>
+
+<p>&gt; chown -R admin.users /share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps</p>
+
+<p>OpenRemote uses a Java library to communicate via serial port to your Aeon device. For this, it uses the native libraries stored in: /share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/WEB-INF/lib/native. </p>
+
+<p>For Qnap, this will not work as it's using a RISC processor. So, you have to retrieve the ARM compiled native serial libraries. </p>
+
+<p>For this:<br/>
+##Download the librxtxSerial-2.1-7.so for ARMv5 based Plug Computers from Oracle Blog (<a href="https://blogs.oracle.com/jtc/entry/serial_port_communication_for_java">https://blogs.oracle.com/jtc/entry/serial_port_communication_for_java</a>) and copy into /share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/WEB-INF/lib/native<br/>
+##Now that you have ARM based RXTX library installed, you need to link to this library from the OpenRemote native directory: </p>
+
+<p>  &gt; cd /share/HDA_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/WEB-INF/lib/native<br/>
+  &gt; rm -fr librxtxSerial.so<br/>
+  &gt; ln -s librxtxSerial-2.1-7.so librxtxSerial.so</p>
+
+<p>Permission OpenRemote service account to allow the creation of OS locks. This will be needed to ensure a resource lock is created when communicating the serial port of the USB device. </p>
+
+<p>For this:<br/>
+##Add a new group using the standard add group admin screen in qnap. Review section of How to create user accounts and groups on Qnap NAS. Add a group called: uucp<br/>
+##Add the admin user to the newly created uucp group.</p>
+
+<p>Permission openremote to the USB port device.<br/>
+##Add a new group using the standard add group admin screen in Qnap. Review section of How to create user accounts and groups on Qnap NAS. Add a group called: dialout<br/>
+##Add the admin user to the newly created dialout group.</p>
+
+<p>change permission on /var/lock и /ttyUSB0 0777</p>
+
+<ol>
+	<li>chown -R admin.uucp /var/lock</li>
+	<li>chown -R admin.dialout /dev/ttyUSB0</li>
+</ol>
+
+
+<ol>
+	<li>more /etc/group<br/>
+administrators:x:0:admin<br/>
+everyone:x:100:admin<br/>
+guest:x:65534:guest<br/>
+uucp:x:101:admin<br/>
+dialout:x:102:admin</li>
+</ol>
+
+
+<ol>
+	<li>ls -lh /dev/ttyUSB*</li>
+</ol>
+
+
+<p>(on qnap TS-119)</p>
+
+<p>crwxrwxrwx    1 admin    administ  188,   0 Oct 12 13:49 /dev/ttyUSB0<br/>
+crw-r-<del>r</del>-    1 admin    administ  188,   1 Oct 12 13:49 /dev/ttyUSB1<br/>
+crw-r-<del>r</del>-    1 admin    administ  188,   2 Oct 12 13:49 /dev/ttyUSB2</p>
+
+<p>Start Openremote and sync with my account.</p>
+
+<p>zwave.log:</p>
+
+<p>INFO 2014-10-12 14:02:33,933 (Z-Wave): Reader thread asked to start<br/>
+INFO 2014-10-12 14:02:33,942 (Z-Wave): Writer thread asked to start<br/>
+INFO 2014-10-12 14:02:33,943 (Z-Wave): Writer thread starting<br/>
+DEBUG 2014-10-12 14:02:33,950 (Z-Wave): sending: 01 08 00 54 00 01 01 01 01 a3 <br/>
+DEBUG 2014-10-12 14:02:33,952 (Z-Wave): Message lock exists. Frame waiting: 01 03 00 02 fe <br/>
+DEBUG 2014-10-12 14:02:33,955 (Z-Wave): received: 06 01 04 01 54 00 ae <br/>
+DEBUG 2014-10-12 14:02:33,970 (Z-Wave): Controller registered as SUC/SIS<br/>
+DEBUG 2014-10-12 14:02:34,014 (Z-Wave): sending: 06 <br/>
+DEBUG 2014-10-12 14:02:34,016 (Z-Wave): sending: 01 03 00 02 fe <br/>
+DEBUG 2014-10-12 14:02:34,034 (Z-Wave): received: 06 <br/>
+DEBUG 2014-10-12 14:02:34,075 (Z-Wave): received: 01 25 01 02 05 00 1d 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 01 c2 <br/>
+DEBUG 2014-10-12 14:02:34,076 (Z-Wave): sending: 06 <br/>
+DEBUG 2014-10-12 14:02:34,077 (Z-Wave): Node id: 1 discovered<br/>
+DEBUG 2014-10-12 14:02:34,083 (Z-Wave): sending: 01 04 00 41 01 bb <br/>
+DEBUG 2014-10-12 14:02:34,104 (Z-Wave): received: 06 01 09 01 41 92 16 00 02 02 01 33 <br/>
+DEBUG 2014-10-12 14:02:34,105 (Z-Wave): sending: 06 </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Oct 12, 2014 19:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606095"></a>
+                                    <font class="smallfont"><p>Dear Aleksey,</p>
+
+<p>Thanks for the instructions. However I'm struggling with the new QTS4.2 on a QNAP TS-451 (new x86 architecture). I followed your instructions as far as possible, but I'm facing the following problems:</p>
+
+<p>1. I can actually only use entware-ng instead of optware<br/>
+2. Step 1 to 6 are executable, but in step 7 I face the following problem: There is no extinct disctinction between NAS systems. You mave only access the folder "/share/CE_CACHEDEV1_DATA/Public/GPL_TS/kernel_cfg/TAS-X68". There I can choose between the "linux-3.10.20-tas-hal.cfg" or "linux-3.10.20-tas-uas-hal.cfg". Then I may create the ".config" file myself in the folder "/share/CE_CACHEDEV1_DATA/Public/GPL_TS/src/linux-3.10.20-tas"<br/>
+3. In step 9 I searched for the term "CONFIG_USB_SERIAL" and just found "# CONFIG_USB_SERIAL is not set". So I changed it to CONFIG_USB_SERIAL_PL2303=m<br/>
+4. Step 10 doesn't work like described in entware. The command might be "# opkg install autoconf automake binutils gcc libfreetype make<br/>
+5. In step 11, I get totally lost (I'm just an linux newbie...):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+# make oldconfig
+  HOSTCC  scripts/basic/fixdep
+scripts/basic/fixdep: error <span class="code-keyword">while</span> loading shared libraries: libgcc_s.so.1: wrong ELF class: ELF                                      CLASS32
+scripts/Makefile.host:118: recipe <span class="code-keyword">for</span> target 'scripts/basic/fixdep' failed
+make[1]: *** [scripts/basic/fixdep] Error 127
+Makefile:419: recipe <span class="code-keyword">for</span> target 'scripts_basic' failed
+make: *** [scripts_basic] Error 2
+</pre>
+</div></div>
+
+<p>Does anyone know what that means?</p>
+
+<p>6. In step 12, well, I receive an error message again:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ # make modules
+  HOSTCC  scripts/basic/fixdep
+scripts/basic/fixdep: error <span class="code-keyword">while</span> loading shared libraries: libgcc_s.so.1: wrong ELF class: ELFCLASS32
+scripts/Makefile.host:118: recipe <span class="code-keyword">for</span> target 'scripts/basic/fixdep' failed
+make[2]: *** [scripts/basic/fixdep] Error 127
+/share/CE_CACHEDEV1_DATA/Public/GPL_TS/src/linux-3.10.20-tas/Makefile:419: recipe <span class="code-keyword">for</span> target 'scripts_basic' failed
+make[1]: *** [scripts_basic] Error 2
+
+The present kernel configuration has modules disabled.
+Type 'make config' and enable loadable module support.
+Then build a kernel with module support enabled.
+
+Makefile:1002: recipe <span class="code-keyword">for</span> target 'modules' failed
+make: *** [modules] Error 1
+</pre>
+</div></div>
+
+<p>7. In the end I could locate the missing driver files and could edit the file "/etc/rcK.d to" as described. Rebooting the NAS and using the lsmod command provided me the list of the four drivers to be in "LIVE" modus. So far so could. </p>
+
+<p>8. Since I have installed the most recent version of OpenRemote (as of Feb 2016, 2.1.0) on my NAS, I skipped the part with replacing the old package under webapps.</p>
+
+<p>9. JAVA could be enabled via the App-Store, so I assume that I can skip the following steps aswell.</p>
+
+<p>10. Adding the users groups was executable. The command "more /etc/group" gave me the same result as described in the intstruction. However, with "ls -lh...", I get the following reply: </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+crw-r--r--    1 admin    dialout   188,   0 Mar 18 12:24 /dev/ttyUSB0
+</pre>
+</div></div>
+
+<p>11. In the end the only text which is written in the zwave.log is the following (so it seems, something happens, but there are not log entries at all...):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+"INFO 2016-03-17 13:37:50,496 (Z-Wave): 
+
+--------------------------------------------------------------------
+
+  OpenRemote Z-Wave protocol version : '2.0.0'
+
+--------------------------------------------------------------------
+
+"
+</pre>
+</div></div>
+
+<p>Any suggestion how I can run OpenRemote on the new NAS system would be a great help! </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philip27 at Mar 18, 2016 09:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606114"></a>
+                                    <font class="smallfont"><p>Hi.<br/>
+I'm in Linux also have very little knowledge. I got a job Z-Wave stick S2 following the descriptions in the article (link in my post). But for the ARM architecture. I just followed the instructions exactly in the article.</p>
+
+<p>When a you Z-Wave stick included in Qnap, what show the command: <br/>
+ uname -a<br/>
+ dmesg</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Mar 19, 2016 08:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606116"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>Thanks for your fast reply. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#command uname -a
+#returns
+Linux qnap 3.12.6 #1 SMP Sat Jan 30 13:01:08 CST 2016 x86_64 unknown
+</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#command dmesg
+#returns <span class="code-keyword">for</span> USB
+[...]
+[  259.454161] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver cp210x
+[  259.461093] usbserial: USB Serial support registered <span class="code-keyword">for</span> cp210x
+[  259.515563] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver ftdi_sio
+[  259.522003] usbserial: USB Serial support registered <span class="code-keyword">for</span> FTDI USB Serial Device
+## plugging the stick in, add:
+[ 3197.562510] usb 1-2: USB disconnect, device number 3
+[ 3229.503490] usb 1-2: <span class="code-keyword">new</span> full-speed USB device number 5 using xhci_hcd
+
+</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[~] # lsusb
+Bus 001 Device 002: ID 1c05:2074
+Bus 001 Device 003: ID 0658:0200 Sigma Designs, Inc.
+Bus 001 Device 004: ID 1005:b155 Apacer Technology, Inc.
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 002: ID 1c05:3074
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[~] # ls -lh /dev/ttyUSB*
+crw-r--r--    1 admin    administ  188,   0 Mar 19 12:20 /dev/ttyUSB0
+</pre>
+</div></div>
+
+<p>So that's all I get as output from Putty at the moment. However, when I check the boot.log, I get the following notice, stating an error when trying to attempt to create a sensor:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+DEBUG 2016-03-19 11:23:39,177 : Created object model <span class="code-keyword">for</span> Command( ID = 29, Type = zwave, Properties : {name=Inclusion On, nodeId=1, command=INCLUSION_MODE_ON}).
+DEBUG 2016-03-19 11:23:39,177 : Created object model <span class="code-keyword">for</span> Command( ID = 30, Type = zwave, Properties : {name=Inclusion Status, nodeId=1, command=INCLUSION_MODE_STATUS}).
+DEBUG 2016-03-19 11:23:39,177 : Created object model <span class="code-keyword">for</span> Command( ID = 31, Type = zwave, Properties : {name=Inclusion OFF, nodeId=1, command=INCLUSION_MODE_OFF}).
+DEBUG 2016-03-19 11:23:39,178 : Created object model <span class="code-keyword">for</span> Command( ID = 32, Type = zwave, Properties : {name=Exclusion On, nodeId=1, command=EXCLUSION_MODE_ON}).
+DEBUG 2016-03-19 11:23:39,178 : Created object model <span class="code-keyword">for</span> Command( ID = 33, Type = zwave, Properties : {name=Exclusion Off, nodeId=1, command=EXCLUSION_MODE_OFF}).
+DEBUG 2016-03-19 11:23:39,178 : Created object model <span class="code-keyword">for</span> Command( ID = 34, Type = zwave, Properties : {name=Exclusion Status, nodeId=1, command=EXCLUSION_MODE_STATUS}).
+DEBUG 2016-03-19 11:23:39,178 : Created object model <span class="code-keyword">for</span> Command( ID = 35, Type = zwave, Properties : {name=Power On, nodeId=2, command=On}).
+DEBUG 2016-03-19 11:23:39,178 : Created object model <span class="code-keyword">for</span> Command( ID = 36, Type = zwave, Properties : {name=Power Off, nodeId=2, command=Off}).
+DEBUG 2016-03-19 11:23:39,179 : Created object model <span class="code-keyword">for</span> Command( ID = 37, Type = zwave, Properties : {name=Power Status, nodeId=2, command=Status}).
+DEBUG 2016-03-19 11:23:39,179 : Initializing event processor: Drools Rule Engine
+INFO 2016-03-19 11:23:39,180 : No rule definitions found in '/share/CE_CACHEDEV1_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules'.
+INFO 2016-03-19 11:23:39,180 : Initialized event processor : Drools Rule Engine
+DEBUG 2016-03-19 11:23:39,180 : Initializing event processor: RRD4J Data Logger
+INFO 2016-03-19 11:23:39,200 : Initialized event processor : RRD4J Data Logger
+DEBUG 2016-03-19 11:23:39,200 : Initializing event processor: EmonCMS Data Logger
+INFO 2016-03-19 11:23:39,200 : Initialized event processor : EmonCMS Data Logger
+ERROR 2016-03-19 11:23:39,209 : Creating sensor failed. Error : org/openremote/controller/ZWaveConfiguration 
+ XML Element : &lt;sensor xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> id=<span class="code-quote">"107969761"</span> name=<span class="code-quote">"InclusionSwitchSensor"</span> type=<span class="code-quote">"<span class="code-keyword">switch</span>"</span>&gt;
+</span>      &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"30"</span> /&gt;
+      &lt;state name=<span class="code-quote">"on"</span> /&gt;
+      &lt;state name=<span class="code-quote">"off"</span> /&gt;
+    &lt;/sensor&gt;
+java.lang.NoClassDefFoundError: org/openremote/controller/ZWaveConfiguration
+	at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.createZWavePortConfiguration(DefaultZWaveConfigurationManager.java:74)
+	at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.getPortConfiguration(DefaultZWaveConfigurationManager.java:47)
+	at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.initZWaveController(ZWaveCommandBuilder.java:245)
+	at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.build(ZWaveCommandBuilder.java:145)
+	at org.openremote.controller.command.CommandFactory.getCommand(CommandFactory.java:164)
+	at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:420)
+	at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:858)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)
+ERROR 2016-03-19 11:23:39,216 : Creating sensor failed. Error : org/openremote/controller/ZWaveConfiguration 
+ XML Element : &lt;sensor xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> id=<span class="code-quote">"107969780"</span> name=<span class="code-quote">"Power On/Off"</span> type=<span class="code-quote">"<span class="code-keyword">switch</span>"</span>&gt;
+</span>      &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"37"</span> /&gt;
+      &lt;state name=<span class="code-quote">"on"</span> /&gt;
+      &lt;state name=<span class="code-quote">"off"</span> /&gt;
+    &lt;/sensor&gt;
+java.lang.NoClassDefFoundError: org/openremote/controller/ZWaveConfiguration
+	at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.createZWavePortConfiguration(DefaultZWaveConfigurationManager.java:74)
+	at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.getPortConfiguration(DefaultZWaveConfigurationManager.java:47)
+	at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.initZWaveController(ZWaveCommandBuilder.java:245)
+	at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.build(ZWaveCommandBuilder.java:145)
+	at org.openremote.controller.command.CommandFactory.getCommand(CommandFactory.java:164)
+	at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:420)
+	at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:858)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)
+INFO 2016-03-19 11:23:39,220 : Startup complete.
+</pre>
+</div></div>
+
+<p>What I can confirm is that the hardware (stick and switch) work in a windows environment with OpenRemote.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philip27 at Mar 19, 2016 11:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606122"></a>
+                                    <font class="smallfont"><p>It should be:</p>
+
+<p>dmesg</p>
+
+<p>[ 194.844730] usbcore: registered new interface driver usbserial<br/>
+[ 194.850594] usbserial: USB Serial Driver core                             &lt; !<br/>
+[ 194.994720] usbcore: registered new interface driver ftdi_sio<br/>
+[ 195.031289] USB Serial support registered for FTDI USB Serial Device<br/>
+[ 195.037858] ftdi_sio: v1.6.0:USB FTDI Serial Converters Driver            &lt; !<br/>
+[ 195.154015] usbcore: registered new interface driver pl2303<br/>
+[ 195.180969] USB Serial support registered for pl2303                      &lt; !<br/>
+[ 195.308229] usbcore: registered new interface driver cp210x<br/>
+[ 195.354469] USB Serial support registered for cp210x                      &lt; !<br/>
+[ 195.359537] cp210x 1-1.1:1.0: cp210x converter detected                   &lt; !<br/>
+[ 195.506206] usb 1-1.1: reset full-speed USB device number 3 using orion-ehci<br/>
+[ 195.684754] usb 1-1.1: cp210x converter now attached to ttyUSB0           &lt; !!! </p>
+
+<p>and </p>
+
+<p>cat /proc/bus/usb/devices</p>
+
+<p>T: Bus=01 Lev=02 Prnt=02 Port=00 Cnt=01 Dev#= 3 Spd=12 MxCh= 0<br/>
+D: Ver= 1.10 Cls=00(&gt;ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs= 1<br/>
+P: Vendor=10c4 ProdID=ea60 Rev= 1.00<br/>
+S: Manufacturer=Silicon Labs<br/>
+S: Product=CP2102 USB to UART Bridge Controller<br/>
+S: SerialNumber=0001<br/>
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=100mA<br/>
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=00 Prot=00 Driver=cp210x         &lt; !<br/>
+E: Ad=81(I) Atr=02(Bulk) MxPS= 64 Ivl=0ms<br/>
+E: Ad=01(O) Atr=02(Bulk) MxPS= 64 Ivl=0ms</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Mar 19, 2016 15:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606129"></a>
+                                    <font class="smallfont"><p>True, it seems that the stick is not assigned to ttyUSB0 at all and drivers are not loaded correctly.</p>
+
+<p>Further, I figured out that I used the wrong qnap files. Now I have the right ones (the TS-X51 for the correct linux version). However, when I execute your step 11, I get the following problem:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[/share/Public/GPL_TS/src/linux-3.12.6] # make oldconfig
+  HOSTCC  scripts/basic/fixdep
+scripts/basic/fixdep: error <span class="code-keyword">while</span> loading shared libraries: libgcc_s.so.1: wrong ELF class: ELFCLASS32
+scripts/Makefile.host:118: recipe <span class="code-keyword">for</span> target 'scripts/basic/fixdep' failed
+make[1]: *** [scripts/basic/fixdep] Error 127
+Makefile:419: recipe <span class="code-keyword">for</span> target 'scripts_basic' failed
+make: *** [scripts_basic] Error 2
+</pre>
+</div></div>
+
+<p>I'm currently still looking for a solution...<br/>
+Update: solved it - replaced the old "libgcc_s.so.1" by the newer version for 64Bit architectures from entware lib.</p>
+
+<p>Also, I run in the same problem when trying to execute the make modules command</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[/share/Public/GPL_TS/src/linux-3.12.6] # make modules
+  HOSTCC  scripts/basic/fixdep
+scripts/basic/fixdep: error <span class="code-keyword">while</span> loading shared libraries: libgcc_s.so.1: wrong ELF class: ELFCLASS32
+scripts/Makefile.host:118: recipe <span class="code-keyword">for</span> target 'scripts/basic/fixdep' failed
+make[2]: *** [scripts/basic/fixdep] Error 127
+/share/CE_CACHEDEV1_DATA/Public/GPL_TS/src/linux-3.12.6/Makefile:419: recipe <span class="code-keyword">for</span> target 'scripts_basic' failed
+make[1]: *** [scripts_basic] Error 2
+
+The present kernel configuration has modules disabled.
+Type 'make config' and enable loadable module support.
+Then build a kernel with module support enabled.
+
+Makefile:1017: recipe <span class="code-keyword">for</span> target 'modules' failed
+make: *** [modules] Error 1
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philip27 at Mar 19, 2016 19:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606133"></a>
+                                    <font class="smallfont"><p>Unfortunately, I have no knowledge of Linux to supporting these errors.</p>
+
+<p>We need a man who knows the Linux to help. I think you have to write on the forum Qnap. In this forum I found a solution to their problems when installing modules on Qnap TS-119.</p>
+
+<p>Generally need 4 module for linux-3.12.6 x86_64 - usbserial.ko, ftdi_sio.ko, pl2303.ko, cp210x.ko - copy to folder /share/HDA_DATA/.qpkg/OpenRemote/module/misc/</p>
+
+
+<p>I will be interested in the final result.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Mar 20, 2016 09:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606135"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>well, I have the four modules in this folder. I made some research on the web for checking if the drivers are loaded</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> 
+[~] # lsmod
+Module                  Size  Used by    Tainted: P
+ftdi_sio 39225 0 - Live 0xffffffffa0779000
+cp210x 14702 0 - Live 0xffffffffa0770000
+usbserial 28724 3 ftdi_sio,cp210x,pl2303, Live 0xffffffffa01c0000
+pl2303 11692 0 - Live 0xffffffffa01ce000
+</pre>
+</div></div>
+
+<p>Luckily, the "make modules" command works now:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[/share/Public/GPL_TS/src/linux-3.12.6] # make modules
+scripts/kconfig/conf --silentoldconfig Kconfig
+make[1]: Nothing to be done <span class="code-keyword">for</span> 'relocs'.
+  CHK     include/config/kernel.release
+  CHK     include/generated/uapi/linux/version.h
+  CHK     include/generated/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+&lt;stdin&gt;:1244:2: warning: #warning syscall qsendfile64 not implemented [-Wcpp]
+  CC [M]  drivers/mmc/card/sdio_uart.o
+  CC [M]  drivers/usb/serial/usb-serial.o
+  CC [M]  drivers/usb/serial/<span class="code-keyword">generic</span>.o
+  CC [M]  drivers/usb/serial/bus.o
+  LD [M]  drivers/usb/serial/usbserial.o
+  CC [M]  drivers/usb/serial/cp210x.o
+  CC [M]  drivers/usb/serial/ftdi_sio.o
+  CC [M]  drivers/usb/serial/pl2303.o
+  Building modules, stage 2.
+  MODPOST 187 modules
+  CC      drivers/mmc/card/sdio_uart.mod.o
+  LD [M]  drivers/mmc/card/sdio_uart.ko
+  CC      drivers/usb/serial/cp210x.mod.o
+  LD [M]  drivers/usb/serial/cp210x.ko
+  CC      drivers/usb/serial/ftdi_sio.mod.o
+  LD [M]  drivers/usb/serial/ftdi_sio.ko
+  CC      drivers/usb/serial/pl2303.mod.o
+  LD [M]  drivers/usb/serial/pl2303.ko
+  CC      drivers/usb/serial/usbserial.mod.o
+  LD [M]  drivers/usb/serial/usbserial.ko
+</pre>
+</div></div>
+
+<p>But when I do the compilation of the modules, no *.ko files are created in the \usb\serial\ folder. Instead, the file "modules.buildin" is updated stating that the files are already there. Guess you're right that qnap forum will be a better place for now...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philip27 at Mar 20, 2016 11:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

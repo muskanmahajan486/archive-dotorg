@@ -1,0 +1,1308 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : How to compil a Full Openremote Setup on a Linux Server</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : How to compil a Full Openremote Setup on a Linux Server
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 06, 2014 by <font color="#0050B2">macfly92</font>.
+				    </div>
+
+				    <h1><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Openremote%3ATheFullCompilation"></a>Openremote : The Full Compilation</h1>
+
+<p>This howto describe how to run a full set of OpenRemote Framework in your local server. This include Beehive (Database), Designer, Controller and the Webconsole.<br/>
+It was tested on Ubuntu 12.04 LTS, Ubuntu 13.10 and Debian 7 Wheezy in January 2014.</p>
+
+
+
+
+<div style="margin: 40px;"><div class="panel" style="border-width: 1px;"><div class="panelContent">
+<div class='toc'>
+<ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Prepare%26Install'>Prepare &amp; Install</a></li>
+<ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Downloadsources'>Download sources</a></li>
+</ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Beehive'>Beehive</a></li>
+<ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Preparedatabase'>Prepare database</a></li>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Configurations'>Configurations</a></li>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Compilling'>Compilling</a></li>
+</ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Designer'>Designer</a></li>
+<ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Modifiedconfigfiles'>Modified config files</a></li>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Tomcatconfig'>Tomcat config</a></li>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Compilling'>Compilling</a></li>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Creatinganewaccount'>Creating a new account</a></li>
+</ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Controller%3A'>Controller :</a></li>
+<ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Modifiedconfigfiles'>Modified config files</a></li>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Compiling'>Compiling</a></li>
+</ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-WebConsole'>WebConsole</a></li>
+<ul>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Modifiedconfigfiles'>Modified config files</a></li>
+    <li><a href='#HowtocompilaFullOpenremoteSetuponaLinuxServer-Compiling'>Compiling</a></li>
+</ul>
+</ul></div>
+</div></div></div>
+
+<h2><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Prepare%26Install"></a>Prepare &amp; Install </h2>
+
+<p>Install the following packages to your server.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">sudo apt-get install subversion openjdk-6-jdk ant1.7 tomcat7 mysql-server</pre>
+</div></div>
+
+<p>Stop Tomcat server for the moment.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">sudo service tomcat7 stop</pre>
+</div></div>
+
+<div class = "info">
+  <img class = "infoimage" src = "http://openremote.org/download/attachments/11960350/Info_64x60.png"/>This document assume that you're starting in your user home directory (/home/&lt;user&gt; in this case). You MUST replace &lt;user&gt; with your actual username.
+</div>
+
+
+
+<p>Download &amp; unzip Google Web Toolkit 2.4.0 <br/>
+(<a href="https://code.google.com/p/google-web-toolkit/downloads/detail?name=gwt-2.4.0.zip&amp;can=2&amp;q=">https://code.google.com/p/google-web-toolkit/downloads/detail?name=gwt-2.4.0.zip&amp;can=2&amp;q=</a>)</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget https:<span class="code-comment">//google-web-toolkit.googlecode.com/files/gwt-2.4.0.zip
+</span>unzip gwt-2.4.0.zip
+</pre>
+</div></div>
+
+<p>Create the Download directory</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+mkdir openremote_sources
+cd openremote_sources
+</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Downloadsources"></a>Download sources </h3>
+<p>with the following commands :</p>
+
+<ul class="alternate" type="square">
+	<li>Beehive :
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">svn co http:<span class="code-comment">//svn.code.sf.net/p/openremote/code/tags/project/Beehive/Beehive_3_0_0_Beta1</span></pre>
+</div></div></li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>Designer :
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">svn co http:<span class="code-comment">//svn.code.sf.net/p/openremote/code/tags/snapshot/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly</span></pre>
+</div></div></li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>Controller :
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">svn co http:<span class="code-comment">//svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617</span></pre>
+</div></div></li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>WebConsole :
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">svn co http:<span class="code-comment">//svn.code.sf.net/p/openremote/code/tags/project/WebConsole/WebConsole_2_1_2</span></pre>
+</div></div></li>
+</ul>
+
+
+<p>Create Logs directories and set permissions :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+sudo mkdir -p /<span class="code-keyword">var</span>/log/openremote/beehive
+sudo mkdir -p /<span class="code-keyword">var</span>/log/openremote/designer
+sudo mkdir -p /<span class="code-keyword">var</span>/log/openremote/controller
+sudo chown -R tomcat7:tomcat7 /<span class="code-keyword">var</span>/log/openremote
+</pre>
+</div></div>
+
+<h2><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Beehive"></a>Beehive </h2>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">cd Beehive_3_0_0_Beta1</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Preparedatabase"></a>Prepare database </h3>
+
+<p>Create DB :</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+mysql -u root -p 
+mysql&gt; CREATE DATABASE beehive DEFAULT CHARACTER SET utf8;
+exit
+</pre>
+</div></div>
+
+<p>Import sql template into the db :</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+mysql -u root -p beehive &lt; ./sql/<span class="code-keyword">import</span>.sql
+</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Configurations"></a>Configurations</h3>
+<p>Here is the lines froms configs file you must modify with your text editor (nano in this case):</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+nano ./build.properties
+
+tomcatconfig.dir=/<span class="code-keyword">var</span>/lib/tomcat7/conf
+tomcatlog.dir=/<span class="code-keyword">var</span>/lib/tomcat7/logs
+tomcat.home=/<span class="code-keyword">var</span>/lib/tomcat7
+# deploy.dir=/<span class="code-keyword">var</span>/lib/tomcat7/webapps
+</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+nano ./config/config.properties
+
+jdbc.url=jdbc:mysql:<span class="code-comment">//localhost:3306/beehive?autoReconnect=<span class="code-keyword">true</span>&amp;useUnicode=<span class="code-keyword">true</span>&amp;characterEncoding=UTF-8
+</span>jdbc.username = root
+jdbc.password = yourDBpassword
+work.dir = /<span class="code-keyword">var</span>/lib/tomcat7/webapps/beehive
+icons.dir = /<span class="code-keyword">var</span>/lib/tomcat7/webapps/icons/    # Don't know what it is <span class="code-keyword">for</span> ?!
+</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+nano ./config/log4j.properties
+
+log4j.appender.errors.File = /<span class="code-keyword">var</span>/log/openremote/beehive/errors.log
+log4j.appender.errorshtml.File = /<span class="code-keyword">var</span>/log/openremote/beehive/errors.html
+log4j.appender.beehive.File = /<span class="code-keyword">var</span>/log/openremote/beehive/beehive.log
+log4j.appender.beehivehtml.File = /<span class="code-keyword">var</span>/log/openremote/beehive/beehive.html
+log4j.appender.hibernate.File = /<span class="code-keyword">var</span>/log/openremote/beehive/hibernate.log
+log4j.appender.hibernatehtml.File = /<span class="code-keyword">var</span>/log/openremote/beehive/hibernate.html
+log4j.appender.spring.File = /<span class="code-keyword">var</span>/log/openremote/beehive/spring.log
+log4j.appender.springhtml.File = /<span class="code-keyword">var</span>/log/openremote/beehive/spring.html
+</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Compilling"></a>Compilling </h3>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">ant war</pre>
+</div></div>
+
+<p>Copying the output .war file to Tomcat directory :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+sudo cp ./output/beehive.war /<span class="code-keyword">var</span>/lib/tomcat7/webapps/
+sudo service tomcat7 start
+</pre>
+</div></div>
+
+<p>You can test now with your web browser : <a href="http://IP_SERVER:8080/beehive">http://IP_SERVER:8080/beehive</a></p>
+
+<ul class="alternate" type="square">
+	<li>Tomcat LogFile : /var/log/tomcat7/catalina.out and other</li>
+	<li>OpenRemote LogFile : /var/log/openremote/beehive/*</li>
+</ul>
+
+
+<div class = "info">
+  <img class = "infoimage" src = "http://openremote.org/download/attachments/11960350/Info_64x60.png"/>The default Beehive admin GUI login is admin without password.<br/>
+You can set this password  in  /var/lib/tomcat7/webapps/beehive/WEB-INF/classes/applicationContext-security.xml
+</div>
+
+
+
+<h2><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Designer"></a>Designer </h2>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+cd /home/&lt;user&gt;/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/
+</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Modifiedconfigfiles"></a>Modified config files </h3>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+nano ./build.properties
+
+gwt.sdk = /home/&lt;user&gt;/gwt-2.4.0/
+version = 2.14.0
+build.date = 2014-01-16
+version.name = HomeMade
+# deploy.dir = /designer 
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+nano ./config/config.properties
+
+jdbc.url=jdbc:mysql:<span class="code-comment">//localhost:3306/beehive?autoReconnect=<span class="code-keyword">true</span>&amp;useUnicode=<span class="code-keyword">true</span>&amp;characterEncoding=UTF-8
+</span>jdbc.username = root
+jdbc.password = yourDBpassword
+beehive.REST.Root.Url = http:<span class="code-comment">//IP_SERVER:8080/beehive/<span class="code-keyword">rest</span>/
+</span>webapp.server.root = http:<span class="code-comment">//IP_SERVER:8080
+</span>mail.sender.host=
+mail.sender.port=25 
+mail.sender.username=
+mail.sender.password=
+mail.smtp.auth.on=<span class="code-keyword">false</span>
+</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+nano ./config/log4j.properties 
+
+log4j.appender.user-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/users.log
+log4j.appender.cache-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/cache.log
+log4j.appender.cache-debug-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/cache-debug.log
+log4j.appender.state-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/state.log
+log4j.appender.state-debug-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/state-debug.log
+log4j.appender.save-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/save.log
+log4j.appender.save-debug-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/save-debug.log
+log4j.appender.restore-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/restore.log
+log4j.appender.restore-debug-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/restore-debug.log
+log4j.appender.mail-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/mail.log
+log4j.appender.resourceservice-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/resourceservice.log
+log4j.appender.resourceservice-debug-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/resourceservice-debug.log
+log4j.appender.beehive-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/beehive.log
+log4j.appender.beehive-debug-log.File = /<span class="code-keyword">var</span>/log/openremote/designer/beehive-debug.log
+log4j.appender.errors.File = /<span class="code-keyword">var</span>/log/openremote/designer/errors.log
+log4j.appender.designer.File = /<span class="code-keyword">var</span>/log/openremote/designer/designer.log
+log4j.appender.hibernate.File = /<span class="code-keyword">var</span>/log/openremote/designer/hibernate.log
+log4j.appender.spring.File = /<span class="code-keyword">var</span>/log/openremote/designer/spring.log
+</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Tomcatconfig"></a>Tomcat config </h3>
+
+<p>You must modifying Tomcat7 config to prevent JasperException (backward compatibility with Tomcat6), append this at the end of the file :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+sudo nano /etc/tomcat7/catalina.properties  
+
+org.apache.jasper.compiler.Parser.STRICT_WHITESPACE=<span class="code-keyword">false</span>
+</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+sudo service tomcat7 restart
+</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Compilling"></a>Compilling </h3>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ant war
+</pre>
+</div></div>
+
+<p>Copy &amp; rename :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+sudo cp ./output/Designer-2.14.0-2014-01-16-HomeMade.war /<span class="code-keyword">var</span>/lib/tomcat7/webapps/designer.war
+</pre>
+</div></div>
+
+<p>You can test now with your web browser : <a href="http://IP_SERVER:8080/designer">http://IP_SERVER:8080/designer</a></p>
+
+<ul class="alternate" type="square">
+	<li>Tomcat LogFile : /var/log/tomcat7/catalina.out and other</li>
+	<li>OpenRemote LogFile : /var/log/openremote/designer/*</li>
+</ul>
+
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Creatinganewaccount"></a>Creating a new account </h3>
+
+<ul class="alternate" type="square">
+	<li>If you set the mail server : Create an account and just check your mailbox to click on the link to validate the user.</li>
+	<li>If not, it will say that the username is not available, but in fact, it was created but not validated. To validate it, modify into beehive database, table user and set "valid" to 1 onto your user line.</li>
+</ul>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+mysql -u root -p beehive 
+mysql&gt; UPDATE `user` SET `valid` = 1 WHERE `username` = 'yourUsername';
+exit
+</pre>
+</div></div>
+<h2><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Controller%3A"></a>Controller :</h2>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+cd /home/&lt;user&gt;/openremote_sources/Controller_2_1_0_FM_SNAPSHOT-20130617/
+</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Modifiedconfigfiles"></a>Modified config files </h3>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+nano ./config/config.properties
+
+resource.path=webapps/controller
+beehive.REST.Root.Url = http:<span class="code-comment">//IP_SERVER:8080/beehive/<span class="code-keyword">rest</span>/</span>
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+nano ./config/log4j.properties
+
+log4j.appender.file.File = /<span class="code-keyword">var</span>/log/openremote/controller/dev.log
+log4j.appender.boot-log.File = /<span class="code-keyword">var</span>/log/openremote/controller/boot.log
+log4j.appender.knx-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/knx.log
+log4j.appender.knx-debug-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/knx-debug.log
+log4j.appender.onewire-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/onewire.log
+log4j.appender.isy99-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/isy99.log
+log4j.appender.telnet-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/telnet.log
+log4j.appender.telnet-debug-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/telnet-debug.log
+log4j.appender.zwave-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/zwave.log
+log4j.appender.zwave-debug-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/zwave-debug.log
+log4j.appender.http-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/http.log
+log4j.appender.lagarto-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/lagarto.log
+log4j.appender.vera-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/vera.log
+log4j.appender.enocean-file.File = /<span class="code-keyword">var</span>/log/openremote/controller/enocean.log
+log4j.appender.xml-parser.File = /<span class="code-keyword">var</span>/log/openremote/controller/xml-parser.log
+log4j.appender.sensor-dev.File = /<span class="code-keyword">var</span>/log/openremote/controller/sensors.log
+</pre>
+</div></div>
+
+<div class = "info">
+  <img class = "infoimage" src = "http://openremote.org/download/attachments/11960350/Info_64x60.png"/>The war destination is commented in build.xml (don't know why), so you must edit the build.xml file and remove the " &lt;!-- " at line 406 (the line before &lt;target name = "war"....... ) and the " --&gt; " at line 428 just after the &lt;/target&gt; label.
+</div>
+
+
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Compiling"></a>Compiling </h3>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ant war
+</pre>
+</div></div>
+
+<p>Copy &amp; rename :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+sudo cp ./output/controller.war /<span class="code-keyword">var</span>/lib/tomcat7/webapps/
+</pre>
+</div></div>
+
+<p>You can test now with your web browser : <a href="http://IP_SERVER:8080/controller">http://IP_SERVER:8080/controller</a></p>
+
+<ul class="alternate" type="square">
+	<li>Tomcat LogFile : /var/log/tomcat7/catalina.out and other</li>
+	<li>OpenRemote LogFile : /var/log/openremote/controller/*</li>
+</ul>
+
+
+<h2><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-WebConsole"></a>WebConsole </h2>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+cd /home/&lt;user&gt;/openremote_sources/WebConsole_2_1_2
+</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Modifiedconfigfiles"></a>Modified config files </h3>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+nano ./build.properties
+
+gwt.sdk=/home/&lt;user&gt;/gwt-2.4.0
+	(Just add a comment to the line below.)
+#deploy.dir=C:/Users/R5ch/AppData/Roaming/OpenRemoteInc/OpenRemoteController/controller/webapps
+</pre>
+</div></div>
+
+<h3><a name="HowtocompilaFullOpenremoteSetuponaLinuxServer-Compiling"></a>Compiling </h3>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ant war
+</pre>
+</div></div>
+
+<p>Copy &amp; rename :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+sudo cp ./output/webconsole.war /<span class="code-keyword">var</span>/lib/tomcat7/webapps/
+</pre>
+</div></div>
+
+<p>You can test now with your web browser : <a href="http://IP_SERVER:8080/webconsole">http://IP_SERVER:8080/webconsole</a></p>
+
+<ul class="alternate" type="square">
+	<li>Tomcat LogFile : /var/log/tomcat7/catalina.out and other</li>
+</ul>
+
+
+
+<p>That's all, you can now enjoy a fully Openremote Setup on your local server !</p>
+
+
+<ul class="alternate" type="square">
+	<li>Usefull links who help me to write this HowTo :</li>
+</ul>
+
+
+<p>Beehive &amp; Designer : 
+<a href="http://www.openremote.org/pages/viewpage.action?pageId=19435267">http://www.openremote.org/pages/viewpage.action?pageId=19435267</a>
+<a href="http://www.openremote.org/pages/viewpage.action?pageId=22873567&amp;focusedCommentId=22873623">http://www.openremote.org/pages/viewpage.action?pageId=22873567&amp;focusedCommentId=22873623</a>
+<a href="http://www.openremote.org/display/forums/OpenRemote+to+control+Siemens+PLC+-+500+error+when+saving+design">http://www.openremote.org/display/forums/OpenRemote+to+control+Siemens+PLC+-+500+error+when+saving+design</a>
+<a href="http://www.openremote.org/pages/viewpage.action?pageId=19440007">http://www.openremote.org/pages/viewpage.action?pageId=19440007</a></p>
+
+<p>Controller :
+<a href="http://www.openremote.org/display/docs/Building+OpenRemote+2.0+Developer+Releases">http://www.openremote.org/display/docs/Building+OpenRemote+2.0+Developer+Releases</a></p>
+
+<p>Webconsole : 
+<a href="http://www.openremote.org/display/docs/Building+OpenRemote+2.0+Web+Console">http://www.openremote.org/display/docs/Building+OpenRemote+2.0+Web+Console</a></p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22883635"></a>
+                                    <font class="smallfont"><p>Can someone please confirm that the sources I used for this Howto are the right ones ?? (It is difficult to know ...)</p>
+
+<ul class="alternate" type="square">
+	<li>Beehive :
+<a href="http://svn.code.sf.net/p/openremote/code/tags/project/Beehive/Beehive_3_0_0_Beta1">http://svn.code.sf.net/p/openremote/code/tags/project/Beehive/Beehive_3_0_0_Beta1</a></li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>Designer :
+<a href="http://svn.code.sf.net/p/openremote/code/workspace/juha/Designer_2_14_0_Preview-MODELER-453-413-470-416-448-456-435-513-528-530">http://svn.code.sf.net/p/openremote/code/workspace/juha/Designer_2_14_0_Preview-MODELER-453-413-470-416-448-456-435-513-528-530</a></li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>Controller :
+<a href="http://svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617">http://svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617</a></li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>WebConsole :
+<a href="http://svn.code.sf.net/p/openremote/code/tags/project/WebConsole/WebConsole_2_1_2">http://svn.code.sf.net/p/openremote/code/tags/project/WebConsole/WebConsole_2_1_2</a></li>
+</ul>
+
+
+
+
+<p>Thanks you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by macfly92 at Jan 29, 2014 15:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883656"></a>
+                                    <font class="smallfont"><p>I agree very much that the situation with the software repository is a tragedy. It is very hard to know where to pull a stable and full-featured version. It would be extremely helpful if every half a year - year someone took responsibility for building a stable version and merge this source onto trunk. I think the project needs a configuration manager. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Jan 30, 2014 06:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883657"></a>
+                                    <font class="smallfont"><p>Many thanks for this documentation. I hope this will inspire more community members to contribute!<br/>
+I hope to find some time soon to give it a try on my Vbox Ubuntu.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 30, 2014 07:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883660"></a>
+                                    <font class="smallfont"><p>I do agree that it's very though to find your way around the repository if you want to have specific or latest features. It's something we're working on but takes time given the available resources.</p>
+
+<p>However, there's a difference between stable and full-featured. If you want stable, the source under tags/project/... should give you what you're looking for (pick the latest non Pro tag and you should be fine). This however will mean you will not get the latest fixes / features until somebody from the core team reviews, integrates and performs basic QA on them so a new tag can be created.</p>
+
+<p>Anyway, thanks a lot for this documentation, I think it'll reduce the pain of getting a local install quite a bit.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 30, 2014 08:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883661"></a>
+                                    <font class="smallfont"><p>Beehive and WebConsole are OK.<br/>
+For Designer, latest stable would be 2_13_9 tag, but that one is lacking quite a bit of features (such as web view).<br/>
+For Controller, the latest stable is 2_0_2 tag, but the 2.1 integration branch should be fine also.</p>
+
+<p>In general:</p>
+<ul class="alternate" type="square">
+	<li>tag is stable and tested and what is used for binary release or deployment in the cloud</li>
+	<li>snapshot is some form of integration that reached a "supposed to be more or less stable" milestone but that has not yet gone through much testing</li>
+	<li>workspace is just that, branches for individual people working on a specific topic, so work in progress</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 30, 2014 08:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883687"></a>
+                                    <font class="smallfont"><p>Yes you're right, I've try to uses as much tags branch as I can and I forgot to mention why I took these sources :</p>
+
+<p>My goal was to have these particulars features :</p>
+
+<ul class="alternate" type="square">
+	<li>Web View in designer : For me the best way to easily improve features of openremote with web parts. (Javascript &amp; other)</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li>Vera protocol implementation : needed by my setup, and I love the new implementation way that save lot of Vera's resources and provide a immediate feedback.</li>
+</ul>
+
+
+
+<p>Glad to bring a little pebble to this great project.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by macfly92 at Jan 30, 2014 14:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883738"></a>
+                                    <font class="smallfont"><p>Thanks, the tags look fine.</p>
+
+<p>I've created a snapshot for the Designer at <a href="http://svn.code.sf.net/p/openremote/code/tags/snapshot/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/">http://svn.code.sf.net/p/openremote/code/tags/snapshot/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/</a> so you don't need to link to my workspace. It's better to use the tag, the workspace directory name is a temporary one.</p>
+
+<p>The controller tag contains a webconsole binary that has been tested with that version of the controller. So the webconsole tag/compile is optional.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jan 31, 2014 15:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883901"></a>
+                                    <font class="smallfont"><p>Hello !</p>
+
+<p>Thanks you very much for the Snapshot and for the tribute <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> More "Static" now.</p>
+
+<p>I tested it and it seem to compile and work perfectly, so I've updated the How To.</p>
+
+<p>Best regards</p>
+
+<p>Mac_Fly</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by macfly92 at Feb 04, 2014 00:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883929"></a>
+                                    <font class="smallfont"><p>Sorry, haven't been able to test yet. I thought it was a good idea to bring my Vbox Ubuntu 12.04 LTS uptodate. Apparantly not. Can't get it working again. Complaining about bios things. I'll keep trying</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 04, 2014 15:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883933"></a>
+                                    <font class="smallfont"><p>Got stuck at download Beehive sources:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">svn: access to 'http:<span class="code-comment">//svn.code.sf.net/p/openremote/code/tags/project/Beehive/Beehive_3_0_0_Beta1' forbidden</span></pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 04, 2014 19:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883938"></a>
+                                    <font class="smallfont"><p>Very strange, I just tested again right now and it work from my home...</p>
+
+<ul class="alternate" type="square">
+	<li>svn co <a href="http://svn.code.sf.net/p/openremote/code/tags/project/Beehive/Beehive_3_0_0_Beta1">http://svn.code.sf.net/p/openremote/code/tags/project/Beehive/Beehive_3_0_0_Beta1</a></li>
+</ul>
+
+
+<p>Do you have the right to write to your destination folder ? Did you create the target folder with sudo command ? (maybe owned by root or something else...)</p>
+
+<p>Can you create a empty file in this folder ? (try : touch test.txt)</p>
+
+<p>Or maybe Firewall restriction in OUTPUT Chain ?</p>
+
+<p>Sorry if those questions seem silly, I don't want to hurt your Linux knowledge <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Just trying to help.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by macfly92 at Feb 04, 2014 20:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883946"></a>
+                                    <font class="smallfont"><p>Sorry, my *nix knowledge dates back to PDP 9 several decades ago. So I am a total noob.</p>
+<ul class="alternate" type="square">
+	<li>I run this Ubunto in Vbox installed on Windows XP/</li>
+	<li>I did not make the directory with sudo, but I was able to create the test.txt as you instructed.</li>
+	<li>I did re-create the directory with sudo, but still got the same error.</li>
+	<li>I can get at the Beehive source with Firefox on my XP, but not with FF in my Ubuntu.</li>
+</ul>
+
+
+<p>It might be a firewall issue, but at the moment I have no idea how to tackle that. Will look into that tomorrow.</p>
+
+<p><b>edit:</b> Found two problems-</p>
+<ul class="alternate" type="square">
+	<li>there was a part missing in the string that I typed</li>
+	<li>the svn also needed a <b>sudo</b> (maybe because I created the diretory with a sudo?)</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 04, 2014 22:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883951"></a>
+                                    <font class="smallfont"><p>Yes, you don't have to create the directory with sudo because in this case the owner of the directory will be root, so you will need to run svn with sudo to be able to write in it. And you don't need it because you create this directory in your user home.</p>
+
+<p>But I thought this was maybe a mistake that cause your problem.</p>
+
+<blockquote><p>I can get at the Beehive source with Firefox on my XP, but not with FF in my Ubuntu.</p></blockquote>
+
+<p>Strange, this might be the culprit... You have Internet acces in Ubuntu FF ?<br/>
+What kind of network configuration you used in VBox ? Bridge ? Nat ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by macfly92 at Feb 04, 2014 23:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883955"></a>
+                                    <font class="smallfont"><p>I have come to the point where I have to test the Beehive. Two things I noted:</p>
+<ul class="alternate" type="square">
+	<li>The mysql installation prompts for a password</li>
+	<li>My virgin Ubuntu did not know <b>vim</b>. I did use nano. I suggest to change that in the instruction</li>
+</ul>
+
+
+<p>Because I am on a virtual box I tried Beehive with <a href="http://localhost:8080/beehive">http://localhost:8080/beehive</a>. That failed. The errors.log said:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">Beehive 3.0 Beta1 | 2014-02-05 10:14:06,944 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> org.hibernate.SessionFactory org.springframework.orm.hibernate3.support.HibernateDaoSupport.getSessionFactory()] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.
+Beehive 3.0 Beta1 | 2014-02-05 10:14:06,945 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> org.springframework.orm.hibernate3.HibernateTemplate org.springframework.orm.hibernate3.support.HibernateDaoSupport.getHibernateTemplate()] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.
+Beehive 3.0 Beta1 | 2014-02-05 10:14:06,945 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> void org.springframework.orm.hibernate3.support.HibernateDaoSupport.setSessionFactory(org.hibernate.SessionFactory)] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.
+Beehive 3.0 Beta1 | 2014-02-05 10:14:06,945 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> void org.springframework.orm.hibernate3.support.HibernateDaoSupport.setHibernateTemplate(org.springframework.orm.hibernate3.HibernateTemplate)] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.
+Beehive 3.0 Beta1 | 2014-02-05 10:14:06,946 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> void org.springframework.dao.support.DaoSupport.afterPropertiesSet() <span class="code-keyword">throws</span> java.lang.IllegalArgumentException,org.springframework.beans.factory.BeanInitializationException] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.
+Beehive 3.0 Beta1 | 2014-02-05 10:14:51,659 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> org.hibernate.SessionFactory org.springframework.orm.hibernate3.support.HibernateDaoSupport.getSessionFactory()] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.
+Beehive 3.0 Beta1 | 2014-02-05 10:14:51,660 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> org.springframework.orm.hibernate3.HibernateTemplate org.springframework.orm.hibernate3.support.HibernateDaoSupport.getHibernateTemplate()] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.
+Beehive 3.0 Beta1 | 2014-02-05 10:14:51,660 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> void org.springframework.orm.hibernate3.support.HibernateDaoSupport.setSessionFactory(org.hibernate.SessionFactory)] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.
+Beehive 3.0 Beta1 | 2014-02-05 10:14:51,660 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> void org.springframework.orm.hibernate3.support.HibernateDaoSupport.setHibernateTemplate(org.springframework.orm.hibernate3.HibernateTemplate)] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.
+Beehive 3.0 Beta1 | 2014-02-05 10:14:51,661 WARN
+[org.springframework.aop.framework.Cglib2AopProxy] : Unable to proxy method [<span class="code-keyword">public</span> <span class="code-keyword">final</span> void org.springframework.dao.support.DaoSupport.afterPropertiesSet() <span class="code-keyword">throws</span> java.lang.IllegalArgumentException,org.springframework.beans.factory.BeanInitializationException] because it is <span class="code-keyword">final</span>: All calls to <span class="code-keyword">this</span> method via a proxy will be routed directly to the proxy.</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 05, 2014 09:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883956"></a>
+                                    <font class="smallfont"><p>It works after a Ubuntu restart. A screen with title <em>Beehive Database</em> appears. Subtitle is <em>Browse LIRC database</em></p>
+
+<p>I'll continue with the next steps later today</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 05, 2014 11:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883960"></a>
+                                    <font class="smallfont"><p>Glad to read it.</p>
+
+<p>I've edited the "How To" to use nano instead of vim, to fit best with a fresh install and because is more user friendly.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by macfly92 at Feb 05, 2014 11:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884010"></a>
+                                    <font class="smallfont"><p>This morning I have done the Designer section:</p>
+<ul class="alternate" type="square">
+	<li>Again after the compilation, just as with Beehive, I had to restart Ubuntu to get <a href="http://localhost:8080/designer">http://localhost:8080/designer</a> to properly open.</li>
+</ul>
+
+
+<p>I have a few questions/remarks about the tuto</p>
+<ul class="alternate" type="square">
+	<li>Why did you add the <em># deploy.dir = /designer</em> to the bottom of ./build.properties (it was not in the original)</li>
+	<li>I assume that in ./config/config.properties the <em>mail.xxxx.yyyy=</em>  are deliberately empty?</li>
+</ul>
+
+
+<p>At first I was confused about the instruction <em>cd /home/<b>user</b>/...</em>, and also the <b>user</b> appearing in the configuration file itself. On my installation this user is <b>pz</b><br/>
+May I suggest to change this in something like <em>cd /home/<b>&lt;user&gt;</b>/...</em> to stress this has to be personalised? Would also apply for the blue section where you introduce "/home/user"</p>
+
+<p>I did notice a few errors while compiling. Don't know if they hurt:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">pz@pz-VUbuntu:~/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly$ ant war
+Buildfile: build.xml
+
+clean:
+
+libs:
+    [mkdir] Created dir: /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/output
+    [mkdir] Created dir: /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/war/WEB-INF/lib
+     [copy] Copying 56 files to /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/war/WEB-INF/lib
+
+javac:
+     [echo] --------------------------------------------------------------------
+     [echo]  Compiling Java classes...
+     [echo] --------------------------------------------------------------------
+     [echo] 
+    [mkdir] Created dir: /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/war/WEB-INF/classes
+    [javac] Compiling 231 source files to /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/war/WEB-INF/classes
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation <span class="code-keyword">for</span> details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked <span class="code-keyword">for</span> details.
+     [copy] Copying 126 files to /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/war/WEB-INF/classes
+     [copy] Copied 9 empty directories to 6 empty directories under /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/war/WEB-INF/classes
+
+compile:
+     [copy] Copying 1 file to /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/src/org/openremote/modeler
+     [java] Feb 6, 2014 9:53:41 AM java.util.prefs.FileSystemPreferences$2 run
+     [java] INFO: Created user preferences directory.
+     [java] Compiling module org.openremote.modeler.Modeler
+     [java]    Validating newly compiled units
+     [java]       Ignored 2 units with compilation errors in first pass.
+     [java] Compile with -strict or with -logLevel set to TRACE or DEBUG to see all errors.
+     [java]    Compiling 6 permutations
+     [java]       Compiling permutation 0...
+     [java]       <span class="code-object">Process</span> output
+     [java]          Compiling
+     [java]             Compiling permutation 1...
+     [java]          Compiling
+     [java]             Compiling permutation 2...
+     [java]       Compiling permutation 3...
+     [java]          Compiling
+     [java]             Compiling permutation 4...
+     [java]          Compiling
+     [java]             Compiling permutation 5...
+     [java]    Compile of permutations succeeded
+     [java] Linking into /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/war/modeler
+     [java]    Link succeeded
+     [java]    Compilation succeeded -- 2209.616s
+
+war:
+     [echo] --------------------------------------------------------------------
+     [echo]  Packing Designer-2.14.0-2014-01-16-HomeMade...       
+     [echo] --------------------------------------------------------------------
+     [echo] 
+     [copy] Copying 1432 files to /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/output
+     [copy] Copied 135 empty directories to 6 empty directories under /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/output
+     [copy] Copying 6 files to /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/output
+      [zip] Building zip: /home/pz/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/output/Designer-2.14.0-2014-01-16-HomeMade.war
+
+BUILD SUCCESSFUL
+Total time: 38 minutes 41 seconds
+</pre>
+</div></div>
+
+<p>Has indeed taken a long time, as this virtual machine is quite demanding on my old hardware...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 06, 2014 10:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884036"></a>
+                                    <font class="smallfont"><blockquote><p>Again after the compilation, just as with Beehive, I had to restart Ubuntu to get <a href="http://localhost:8080/designer">http://localhost:8080/designer</a> to properly open.</p></blockquote>
+
+<p>This is very strange... Maybe just a tomcat restart would be enough but not sure (sudo /etc/init.d/tomcat7 restart)... maybe related to Vbox but it is not a normal behavior.</p>
+
+<blockquote><p>Why did you add the # deploy.dir = /designer to the bottom of ./build.properties (it was not in the original)</p></blockquote>
+
+<p>In my original file, it was present, the line is just here to add a comment's character (#) before.<br/>
+This line automatically pushes the compiled output to this directory, but I prefer to do it myself and to avoid right problems.<br/>
+The fact to adding this line instead of modifying simply does nothing because it was commented by #.</p>
+
+<blockquote><p>I assume that in ./config/config.properties the mail.xxxx.yyyy= are deliberately empty?</p></blockquote>
+
+<p>At this point you have the choice to specify a Mail server or not. Without mail server, you must do a little trick to validate user in Beehive as I describe in the "How To".</p>
+
+<blockquote><p>At first I was confused about the instruction cd /home/user/..., and also the user appearing in the configuration file itself. On my installation this user is pz<br/>
+May I suggest to change this in something like cd /home/&lt;user&gt;/... to stress this has to be personalised? Would also apply for the blue section where you introduce "/home/user"</p></blockquote>
+
+<p>You're right, &lt;user&gt; will be more remarkable. I changed it and updated the Blue section too to be more complete.</p>
+
+<blockquote><p>I did notice a few errors while compiling. Don't know if they hurt:</p></blockquote>
+
+<p>There are just few warnings because Openremote uses a deprecated API, but It should not bring problems.</p>
+
+<blockquote><p>BUILD SUCCESSFUL<br/>
+Total time: 38 minutes 41 seconds</p></blockquote>
+
+<p>OMG, you are very patient ! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by macfly92 at Feb 06, 2014 18:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884038"></a>
+                                    <font class="smallfont"><blockquote><p>OMG, you are very patient ! </p></blockquote>
+<p>This machine is so slow that it has taken over two hours to complete the action. That's why I do take my time getting the whole thing done <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+I hope to finish the remainder in the weekend. </p>
+
+<p>Thanks for the explanations. I was aware of some of them, but mentioned it just for the record.<br/>
+I do appreciate the time you have spent on putting this together. So you deserve that someone seriously looks at it.</p>
+
+<p>I think the Openremote team should copy your document to the public documentation.</p>
+
+<p>Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 06, 2014 18:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884084"></a>
+                                    <font class="smallfont"><p>Thanks you very much for the time you spent to test it.</p>
+
+<p>If only I have more Java programing skill, I could help more with my bunch of ideas to improve this great project.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by macfly92 at Feb 07, 2014 14:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886167"></a>
+                                    <font class="smallfont">
+<p>Trying to do this on Windows XP, but the deployment designer fails:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+     [java] Compiling module org.openremote.modeler.Modeler
+     [java]    Validating newly compiled units
+     [java]       Ignored 2 units with compilation errors in first pass.
+     [java] Compile with -strict or with -logLevel set to TRACE or DEBUG to see all errors.
+     [java]    Compiling 6 permutations
+     [java] Exception in thread <span class="code-quote">"main"</span> java.lang.OutOfMemoryError: unable to create <span class="code-keyword">new</span> <span class="code-keyword">native</span> thread
+     [java]     at java.lang.<span class="code-object">Thread</span>.start0(Native Method)
+     [java]     at java.lang.<span class="code-object">Thread</span>.start(<span class="code-object">Thread</span>.java:640)
+     [java]     at com.google.gwt.dev.PermutationWorkerFactory$Manager.doRun(PermutationWorkerFactory.java:132)
+     [java]     at com.google.gwt.dev.PermutationWorkerFactory$Manager.run(PermutationWorkerFactory.java:104)
+     [java]     at com.google.gwt.dev.PermutationWorkerFactory.compilePermutations(PermutationWorkerFactory.java:271)
+     [java]     at com.google.gwt.dev.CompilePerms.compile(CompilePerms.java:207)
+     [java]     at com.google.gwt.dev.<span class="code-object">Compiler</span>.run(<span class="code-object">Compiler</span>.java:242)
+     [java]     at com.google.gwt.dev.<span class="code-object">Compiler</span>.run(<span class="code-object">Compiler</span>.java:198)
+     [java]     at com.google.gwt.dev.<span class="code-object">Compiler</span>$1.run(<span class="code-object">Compiler</span>.java:170)
+     [java]     at com.google.gwt.dev.CompileTaskRunner.doRun(CompileTaskRunner.java:88)
+     [java]     at com.google.gwt.dev.CompileTaskRunner.runWithAppropriateLogger(CompileTaskRunner.java:82)
+     [java]     at com.google.gwt.dev.<span class="code-object">Compiler</span>.main(<span class="code-object">Compiler</span>.java:177)
+     [java]       <span class="code-object">Process</span> output
+     [java]          [ERROR] Communication error
+     [java]          java.net.ConnectException: Connection refused: connect
+     [java]             at java.net.PlainSocketImpl.socketConnect(Native Method)
+     [java]             at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:351)
+     [java]             at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:213)
+     [java]             at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:200)
+     [java]             at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:366)
+     [java]             at java.net.Socket.connect(Socket.java:529)
+     [java]             at java.net.Socket.connect(Socket.java:478)
+     [java]             at java.net.Socket.&lt;init&gt;(Socket.java:375)
+     [java]             at java.net.Socket.&lt;init&gt;(Socket.java:189)
+     [java]             at com.google.gwt.dev.CompilePermsServer.run(CompilePermsServer.java:248)
+     [java]             at com.google.gwt.dev.CompilePermsServer.main(CompilePermsServer.java:237)
+
+BUILD FAILED
+D:\FullOR\source\Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly\build.xml:185: Java returned: 1
+        at org.apache.tools.ant.taskdefs.Java.execute(Java.java:111)
+        at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:292)
+        at sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+        at java.lang.reflect.Method.invoke(Method.java:597)
+        at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:106)
+        at org.apache.tools.ant.Task.perform(Task.java:348)
+        at org.apache.tools.ant.taskdefs.Sequential.execute(Sequential.java:68)
+        at net.sf.antcontrib.logic.IfTask.execute(IfTask.java:217)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+        at java.lang.reflect.Method.invoke(Method.java:597)
+        at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:106)
+        at org.apache.tools.ant.TaskAdapter.execute(TaskAdapter.java:154)
+        at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:292)
+        at sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+        at java.lang.reflect.Method.invoke(Method.java:597)
+        at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:106)
+        at org.apache.tools.ant.Task.perform(Task.java:348)
+        at org.apache.tools.ant.Target.execute(Target.java:435)
+        at org.apache.tools.ant.Target.performTasks(Target.java:456)
+        at org.apache.tools.ant.Project.executeSortedTargets(Project.java:1393)
+        at org.apache.tools.ant.Project.executeTarget(Project.java:1364)
+        at org.apache.tools.ant.helper.DefaultExecutor.executeTargets(DefaultExecutor.java:41)
+        at org.apache.tools.ant.Project.executeTargets(Project.java:1248)
+        at org.apache.tools.ant.Main.runBuild(Main.java:851)
+        at org.apache.tools.ant.Main.startAnt(Main.java:235)
+        at org.apache.tools.ant.launch.Launcher.run(Launcher.java:280)
+        at org.apache.tools.ant.launch.Launcher.main(Launcher.java:109)
+
+Total time: 1 minute 33 seconds
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by preston at Apr 29, 2014 11:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886189"></a>
+                                    <font class="smallfont"><p>Tried to deploy by HOW TO on OpenSuse 12 and 13, were compile errors. Deployed on Ubuntu 12.04, and moved  .war files on Windows. Changed paths to logs folder in files <b>config.properties, log4j.properties</b>. Now It works on Windows.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by preston at Apr 30, 2014 13:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886224"></a>
+                                    <font class="smallfont">
+<p>The error occurs when exporting "Export as zip" in the local Designer:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+WARN [Cache] : Unable to close resource archive cache stream : Failed to replace existing Beehive archive 'C:\OR20140227\webapps\designer\modeler_tmp\1\openremote.zip' with 'C:\OR20140227\webapps\designer\modeler_tmp\1\openremote.zip.e2269fa2-9cf7-4113-ab33-b2917af839be.download'
+java.io.IOException: Failed to replace existing Beehive archive 'C:\OR20140227\webapps\designer\modeler_tmp\1\openremote.zip' with 'C:\OR20140227\webapps\designer\modeler_tmp\1\openremote.zip.e2269fa2-9cf7-4113-ab33-b2917af839be.download'
+	at org.openremote.modeler.cache.LocalFileCache$FileCacheWriteStream.afterClose(LocalFileCache.java:1710)
+	at org.openremote.modeler.cache.CacheWriteStream.close(CacheWriteStream.java:88)
+	at org.openremote.modeler.cache.LocalFileCache$FileCacheWriteStream.close(LocalFileCache.java:1734)
+	at org.openremote.modeler.beehive.Beehive30API.downloadResources(Beehive30API.java:273)
+	at org.openremote.modeler.cache.LocalFileCache.update(LocalFileCache.java:343)
+	at org.openremote.modeler.server.UtilsController.exportFiles(UtilsController.java:111)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at com.google.gwt.user.server.rpc.RPC.invokeAndEncodeResponse(RPC.java:569)
+	at com.google.gwt.user.server.rpc.RemoteServiceServlet.processCall(RemoteServiceServlet.java:208)
+	at com.google.gwt.user.server.rpc.RemoteServiceServlet.processPost(RemoteServiceServlet.java:248)
+	at com.google.gwt.user.server.rpc.AbstractRemoteServiceServlet.doPost(AbstractRemoteServiceServlet.java:62)
+	at org.openremote.modeler.server.BaseGWTSpringController.handleRequest(BaseGWTSpringController.java:67)
+	at org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter.handle(SimpleControllerHandlerAdapter.java:48)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:859)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:793)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:476)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:441)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:378)
+	at org.springframework.security.intercept.web.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:109)
+	at org.springframework.security.intercept.web.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:83)
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)
+	at org.springframework.security.ui.SessionFixationProtectionFilter.doFilterHttp(SessionFixationProtectionFilter.java:67)
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)
+	at org.springframework.security.ui.ExceptionTranslationFilter.doFilterHttp(ExceptionTranslationFilter.java:101)
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)
+	at org.springframework.security.ui.rememberme.RememberMeProcessingFilter.doFilterHttp(RememberMeProcessingFilter.java:116)
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)
+	at org.springframework.security.wrapper.SecurityContextHolderAwareRequestFilter.doFilterHttp(SecurityContextHolderAwareRequestFilter.java:91)
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)
+	at org.springframework.security.ui.AbstractProcessingFilter.doFilterHttp(AbstractProcessingFilter.java:277)
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)
+	at org.springframework.security.ui.logout.LogoutFilter.doFilterHttp(LogoutFilter.java:89)
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)
+	at org.springframework.security.context.HttpSessionContextIntegrationFilter.doFilterHttp(HttpSessionContextIntegrationFilter.java:235)
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)
+	at org.springframework.security.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:390)
+	at org.springframework.security.util.FilterChainProxy.doFilter(FilterChainProxy.java:175)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:183)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:138)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.codehaus.groovy.grails.plugins.gwt.GwtCacheControlFilter.doFilter(GwtCacheControlFilter.java:57)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.orm.hibernate3.support.OpenSessionInViewFilter.doFilterInternal(OpenSessionInViewFilter.java:198)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:75)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.modeler.filter.UserTimeoutFilter.doFilter(UserTimeoutFilter.java:61)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.<span class="code-object">Thread</span>.run(Unknown Source)
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by preston at May 01, 2014 20:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886301"></a>
+                                    <font class="smallfont"><p>Did the C:\OR20140227\webapps\designer\modeler_tmp\1\ directory exist ??</p>
+
+<p>Is there a openremote.zip inside ?</p>
+
+<p>If yes to both, maybe try to delete the openremote.zip ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by macfly92 at May 06, 2014 11:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886638"></a>
+                                    <font class="smallfont"><p>Yes directory exist. Tried to delete openremote.zip same error.<br/>
+In this case, the designer gives the wrong link to the archive <b>localhost:8080/modeler_tmp/1/openremote.zip</b> instead <b>localhost:8080/designer/modeler_tmp/1/openremote.zip</b></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by preston at May 22, 2014 21:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887937"></a>
+                                    <font class="smallfont">
+<p>Dear MacFly,</p>
+
+<p>Thank you very for putting this "How to" together. It made it very easy to install it. Great work.<br/>
+Everything worked fine straight away apart from "exporting to zip file".</p>
+
+<p>When I changed the following in config.properties for designer:</p>
+
+<p>webapp.server.root = <a href="http://IP_SERVER:8080">http://IP_SERVER:8080</a><br/>
+to<br/>
+webapp.server.root = <a href="http://IP_SERVER:8080/designer">http://IP_SERVER:8080/designer</a></p>
+
+<p>then the "exporting to zip file" function worked as well.</p>
+
+<p>Thank you very much for this</p>
+
+<p>Gideon</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gheinert at Aug 10, 2014 13:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593913"></a>
+                                    <font class="smallfont"><p>THis week I am trying to setup Designer on LINUX, but the deployment fail. </p>
+
+<p>javac /home/abb/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/src/org/openremote/modeler/domain/component/UIComponent.java:185: error: name clash: createModels(Collection&lt;? extends UIComponent&gt;) in UIComponent and createModels(Collection&lt;? extends BusinessEntity&gt;) in BusinessEntity have the same erasure, yet neither hides the other<br/>
+    javac    public static List&lt;BeanModel&gt; createModels(Collection&lt;? extends UIComponent&gt; list) {<br/>
+    javac                                  ^<br/>
+    javac Note: Some input files use or override a deprecated API.<br/>
+    javac Note: Recompile with -Xlint:deprecation for details.<br/>
+    javac Note: Some input files use unchecked or unsafe operations.<br/>
+    javac Note: Recompile with -Xlint:unchecked for details.<br/>
+    javac 1 error</p>
+
+<p>BUILD FAILED<br/>
+/home/abb/openremote_sources/Designer_2_14_0_SNAPSHOT-2014-01-31_MacFly/build.xml:135: Compile failed; see the compiler error output for details.<br/>
+	at org.apache.tools.ant.taskdefs.Javac.compile(Javac.java:1174)<br/>
+	at org.apache.tools.ant.taskdefs.Javac.execute(Javac.java:930)<br/>
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:292)<br/>
+	at sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)<br/>
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)<br/>
+	at java.lang.reflect.Method.invoke(Method.java:606)<br/>
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:106)<br/>
+	at org.apache.tools.ant.Task.perform(Task.java:348)<br/>
+	at org.apache.tools.ant.Target.execute(Target.java:435)<br/>
+	at org.apache.tools.ant.Target.performTasks(Target.java:456)<br/>
+	at org.apache.tools.ant.Project.executeSortedTargets(Project.java:1393)<br/>
+	at org.apache.tools.ant.Project.executeTarget(Project.java:1364)<br/>
+	at org.apache.tools.ant.helper.DefaultExecutor.executeTargets(DefaultExecutor.java:41)<br/>
+	at org.apache.tools.ant.Project.executeTargets(Project.java:1248)<br/>
+	at org.apache.tools.ant.Main.runBuild(Main.java:851)<br/>
+	at org.apache.tools.ant.Main.startAnt(Main.java:235)<br/>
+	at org.apache.tools.ant.launch.Launcher.run(Launcher.java:280)<br/>
+	at org.apache.tools.ant.launch.Launcher.main(Launcher.java:109)</p>
+
+<p>Total time: 4 seconds</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by wangjia at Nov 21, 2014 10:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593935"></a>
+                                    <font class="smallfont"><p>You need to use JDK 6 to compile the designer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Nov 22, 2014 09:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595485"></a>
+                                    <font class="smallfont"><p>Excellent tutorial!</p>
+
+<p>I had trouble with the "Create New Account" section. Your code did not work for me, but I found the following in another forum post and it worked:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+mysql -u root -p beehive
+mysql&gt; update user set valid = <span class="code-keyword">true</span>;
+exit
+</pre>
+</div></div>
+
+<p>Also, you mention that the war destination of the controller is commented out in the file build.xml, and you don't know why this is. My guess is that if you build the package with just "ant", you will end up using the tomcat is bundled with the source code. If you want to use the Tomcat from the Ubuntu repositories, then follow your instructions</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by desertdog at Jan 16, 2015 15:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606603"></a>
+                                    <font class="smallfont"><p>looking to update this to work on ubuntu 16.04 LTS Server in a virtualbox.  Could i compile with the java version i have now, or does it need to be a specific version?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nickbrookes76 at Apr 24, 2016 21:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:36</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

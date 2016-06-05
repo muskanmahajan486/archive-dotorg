@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Attempting to display DirecTV channel information - JSONPath Expression not working (FIXED)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Attempting to display DirecTV channel information - JSONPath Expression not working (FIXED)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 09, 2012 by <font color="#0050B2">picklz</font>.
+				    </div>
+
+				    <p>So I'm kind of stuck hoping some of the OpenRemote experts can help me. I recently installed Open Remote 2.0.0-005 on my Synology NAS, and have been going through a sort of proof of concept before I deploy this to control my home theater to start with then eventually the rest of the rooms in my home (hopefully). Right now I'm trying to pull the title of the current program playing on a few channels from my DirecTV receiver to display on my control layout. </p>
+
+<p>This is the command I'm running against my DirecTV receiver - http://&lt;ip&gt;:8080/tv/getProgInfo?major=245</p>
+
+<p>which returns the following information:</p>
+
+
+<p>  "callsign": "TNTHD",<br/>
+  "date": "20071106",<br/>
+  "duration": 3600,<br/>
+  "episodeTitle": "Intern in the Incinerator",<br/>
+  "isOffAir": false,<br/>
+  "isPclocked": 3,<br/>
+  "isPpv": false,<br/>
+  "isRecording": false,<br/>
+  "isVod": false,<br/>
+  "major": 245,<br/>
+  "minor": 65535,<br/>
+  "programId": "5082014",<br/>
+  "rating": "TV-14-D-L-V",<br/>
+  "startTime": 1349794800,<br/>
+  "stationId": 2220257,<br/>
+  "status": <br/>
+    "code": 200,<br/>
+    "commandResult": 0,<br/>
+    "msg": "OK.",<br/>
+    "query": "/tv/getProgInfo?major=245"<br/>
+  ,<br/>
+  "title": "Bones"</p>
+
+<p>I've created a command with the HTTP protocol, the URL as above, HTTP GET as the method, polling interval of 1m and I've been trying various JSONPath Expressions. I used an expression test website and when I put in $.title it should display only the title, however no matter what I've tried I get all of the information being displayed, from what I gather that means the command is working properly but the filter is not. My sensor is setup as a custom type, I tried changing the JSON expression to $.duration to make sure it was not an issue with integers, etc but I get the same result (all information displayed).</p>
+
+<p>Are there any logs I can look through for some details as to why my filter is not matching (where?), or does anyone know what might be causing this / what the correct filter might be? </p>
+
+<p>Any help is greatly appreciated. </p>
+
+
+<p>A little bit about my deployment:</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20451637"></a>
+                                    <font class="smallfont"><p>One other tidbit - I was viewing the dev.log file and when I have the JSONPath expression in I see this:</p>
+
+<p>2012-10-09 14:15:08,552 DEBUG Controller Definition File Watcher for Default Deployer: Created object model for Command( ID = 283, Type = http, Properties : name=DTV_Check_229, pollingInterval=1m, method=GET, url=<a href="http://172.16.1.20:8080/tv/getProgInfo?major=229">http://172.16.1.20:8080/tv/getProgInfo?major=229</a>, jsonpath=$.title).</p>
+
+<p>Then the information is returned from the HTTP Get (as above), and I don't see anything suggesting the jsonpath is trying to match and succeeding or failing.</p>
+
+<p>If I put in a regex value it specifically shows it running and matching(or not) after the url retrieval. Not sure if that is normal behavior or not. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by picklz at Oct 09, 2012 21:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451641"></a>
+                                    <font class="smallfont"><p>Well after much hair pulling I finally came across this thread:</p>
+
+<p><a href="http://openremote.org/pages/viewpage.action?pageId=20451362&amp;focusedCommentId=20451410">http://openremote.org/pages/viewpage.action?pageId=20451362&amp;focusedCommentId=20451410</a></p>
+
+<p>suggesting that the XML and possibly JSON filtering wasn't working and that the 2.1 developers release fixed it, installed that release and Viola! I now can display current program name for a given channel pulled from the DirecTV box.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by picklz at Oct 09, 2012 22:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

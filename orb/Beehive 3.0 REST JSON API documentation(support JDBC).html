@@ -1,0 +1,3759 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>OpenRemote Box : Beehive 3.0 REST JSON API documentation(support JDBC)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            OpenRemote Box : Beehive 3.0 REST JSON API documentation(support JDBC)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 28, 2011 by <font color="#0050B2">tomsky.wang</font>.
+				    </div>
+
+				    <p>The following document describes the Beehive 3.0 REST/JSON API(support JDBC) which supports JSON client. For the new REST/JDBC API feature, we recommand to use JSON data.</p>
+
+<p>By default the response format is XML, you can also use JSON. You should to specify 'Accept' type in HTTP header, if you want to use JSONP, see how to 'Use JSONP format' in this document.The JSON format is different with the previous Beehive REST API, because the JSON provider changed(from jettison to jackson).</p>
+
+<p>For verifying authentication by crowd, so modified  the HTTP basic header Authorization, from "Basic base64(username:md5(password,username))" to "Basic base64(username:password)"</p>
+
+<p>New feature:</p>
+
+<ul>
+	<li>JSON format changed(from jettison to jackson)</li>
+	<li>user save/query/delete</li>
+	<li>device save/query/delete</li>
+	<li>device command save/query/delete</li>
+	<li>sensor save/query/delete</li>
+	<li>switch save/query/delete</li>
+	<li>slider save/query/delete</li>
+	<li>device macro save/query/delete</li>
+	<li>controller config save/query/delete</li>
+</ul>
+
+
+<p>Index:</p>
+
+<div>
+<ul>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%281%29ExportaLIRCconfigurationasatextfile%2CconcatenatedifferentRemoteSection.'>(1) Export a LIRC configuration as a text file, concatenate different RemoteSection.</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%282%29Listallhardwarevendorsinthedatabase'>(2) List all hardware vendors in the database</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%283%29Listallmodelsofavendorinthedatabase'>(3) List all models of a vendor in the database</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%284%29ListallRemoteSectionsofamodelinthedatabase'>(4) List all RemoteSections of a model in the database</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%285%29ListallRemoteOptionsofaRemoteSectioninthedatabase'>(5) List all RemoteOptions of a RemoteSection in the database</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%286%29ListallCodesofaSectioninthedatabase'>(6) List all Codes of a Section in the database</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%287%29Listalliconsidentifiedbybuttoncommandname%28IncludedinM2%29'>(7) List all icons identified by button command name (Included in M2)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%288%29Listallicons%28IncludedinM2%29'>(8) List all icons (Included in M2)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%289%29Getalltemplatesfromaccount%28IncludedinM7%29'>(9) Get all templates from account (Included in M7)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2810%29Saveatemplateintoaccount%28IncludedinM7%29'>(10) Save a template into account (Included in M7)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2811%29Updateatemplateintoaccount%28IncludedinM7%29'>(11) Update a template into account (Included in M7)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2812%29Deleteatemplatefromaccount%28IncludedinM7%29'>(12) Delete a template from account (Included in M7)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2813%29Uploadtemplateresource%28imagesetc%29intoaccount%28IncludedinM7%29'>(13) Upload template resource(images etc) into account (Included in M7)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2814%29Downloadtemplateresource%28imagesetc%29fromaccount%28IncludedinM7%29'>(14) Download template resource(images etc) from account (Included in M7)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2815%29Uploadaccountresource%28openremote.zipforcontroller%29intoaccount%28IncludedinM7%29'>(15) Upload account resource(openremote.zip for controller) into account (Included in M7)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2816%29Downloadaccountresource%28openremote.zipforcontroller%29fromaccount%28IncludedinM7%29'>(16) Download account resource(openremote.zip for controller) from account (Included in M7)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2817%29Searchpublictemplatesbykeywordsfromothers%28IncludedinM7%29'>(17) Search public templates by keywords from others (Included in M7)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2818%29CreateanewuserwiththeAdminrole%2Citwillcreateanewaccountalso%28supportJDBC%29'>(18) Create a new user with the Admin role, it will create a new account also(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2819%29Showuserbyuserid%28supportJDBC%29'>(19) Show user by user id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2820%29Showuserbyusername%28supportJDBC%29'>(20) Show user by user name(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2821%29UpdateUsertokenandpendingRoleNamebypostedUserDTO%28supportJDBC%29'>(21) Update User token and pendingRoleName by posted UserDTO(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2822%29Deleteauserbyuserid%28supportJDBC%29'>(22) Delete a user by user id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2823%29CreateaninviteebypostedUserDTOunderthespecifiedAccount%28supportJDBC%29'>(23) Create an invitee by posted UserDTO under the specified Account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2824%29ShowallusersunderanAccount.%28supportJDBC%29'>(24) Show all users under an Account.(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2825%29Createannewsimpledeviceunderanaccount%2Citjustincludesname%2Cvendorandmodel%28supportJDBC%29'>(25) Create an new simple device under an account, it just includes name,vendor and model(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2826%29Createannewdevicewithcontents%2Cthecontentsincludescommands%2Csensors%2Cswitchsandsliders%28supportJDBC%29'>(26) Create an new device with contents, the contents includes commands, sensors, switchs and sliders(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2827%29Showalistofdeviceswithsimplepropertiesunderanaccount%2Ceachdeviceincludesid%2Cname%2Cvendorandmodel%28supportJDBC%29'>(27) Show a list of devices with simple properties under an account, each device includes id, name, vendor and model(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2828%29Showadevicebydeviceid%2Citincludescommands%2Csensors%2Cslidersandswitchs%28supportJDBC%29'>(28) Show a device by device id, it includes commands,sensors,sliders and switchs(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2829%29UpdateDevicename%2Cvendorandmodel%28supportJDBC%29'>(29) Update Device name,vendor and model(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2830%29Deleteadevicebydeviceid%28supportJDBC%29'>(30) Delete a device by device id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2831%29ShowalistofdeviceswithsamecontentsexceptidunderanAccount%28supportJDBC%29'>(31) Show a list of devices with same contents except id under an Account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2832%29Createannewdevicecommand%28supportJDBC%29'>(32) Create an new device command(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2833%29Showadevicecommandbycommandid%28supportJDBC%29'>(33) Show a device command by command id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2834%29Updateadevicecommand%28supportJDBC%29'>(34) Update a device command(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2835%29Deleteadevicecommandbycommandid%28supportJDBC%29'>(35) Delete a device command by command id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2836%29Createalistofdevicecommands%28supportJDBC%29'>(36) Create a list of device commands(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2837%29ShowalistofDeviceCommandsunderadevicebybydeviceid%28supportJDBC%29'>(37) Show a list of DeviceCommands under a device by by device id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2838%29ShowalistofdeviceCommandDTOs%2CeachofthemhasthesamepropertieswiththespecifieddeviceCommandDTO%28supportJDBC%29'>(38) Show a list of deviceCommandDTOs, each of them has the same properties with the specified deviceCommandDTO(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2839%29Createanewsensorunderanaccount%28supportJDBC%29'>(39) Create a new sensor under an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2840%29Updateasensor%28supportJDBC%29'>(40) Update a sensor(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2841%29Deleteasensorbysensorid%28supportJDBC%29'>(41) Delete a sensor by sensor id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2842%29Showalistofsensorsunderanaccount%28supportJDBC%29'>(42) Show a list of sensors under an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2843%29Showasensorbysensorid%28supportJDBC%29'>(43) Show a sensor by sensor id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2844%29Showalistofsensors%2Ceachofthemhasthesamepropertieswiththespecifiedsensor%28supportJDBC%29'>(44) Show a list of sensors, each of them has the same properties with the specified sensor(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2845%29Createanewswitchunderanaccount%28supportJDBC%29'>(45) Create a new switch under an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2846%29Updateaswitch%28supportJDBC%29'>(46) Update a switch(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2847%29Deleteaswitchbyswitchid%28supportJDBC%29'>(47) Delete a switch by switch id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2848%29Showalistofswitchsunderanaccount%28supportJDBC%29'>(48) Show a list of switchs under an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2849%29Showalistofswitchs%2Ceachofthemhasthesamepropertieswiththespecifiedswitch%28supportJDBC%29'>(49) Show a list of switchs, each of them has the same properties with the specified switch(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2850%29Createanewsliderunderanaccount%28supportJDBC%29'>(50) Create a new slider under an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2851%29Updateaslider%28supportJDBC%29'>(51) Update a slider(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2852%29Deleteasliderbysliderid%28supportJDBC%29'>(52) Delete a slider by slider id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2853%29Showalistofslidersunderanaccount%28supportJDBC%29'>(53) Show a list of sliders under an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2854%29Showalistofsliders%2Ceachofthemhasthesamepropertieswiththespecifiedslider%28supportJDBC%29'>(54) Show a list of sliders, each of them has the same properties with the specified slider(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2855%29CreateanewdeviceMacrounderanaccount%28supportJDBC%29'>(55) Create a new deviceMacro under an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2856%29Updateadevicemacro%28supportJDBC%29'>(56) Update a devicemacro(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2857%29Deleteadevicemacrobymacroid%28supportJDBC%29'>(57) Delete a devicemacro by macro id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2858%29ShowdeviceMacroItemsunderadeviceMacrobymacroid%28supportJDBC%29'>(58) Show deviceMacroItems under a deviceMacro by macro id(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2859%29ShowdeviceMacrosunderanaccount%28supportJDBC%29'>(59) Show deviceMacros under an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2860%29Showalistofdevicemacros%2Ceachofthemhasthesamepropertieswiththespecifieddevicemacaro%28supportJDBC%29'>(60) Show a list of devicemacros, each of them has the same properties with the specified devicemacaro(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2861%29SavedefaultcontrollerConfigsunderanaccount%2CitwillbecallwhencreatethenewAccount%28supportJDBC%29'>(61) Save default controllerConfigs under an account, it will be call when create the new Account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2862%29ShowalistofcontrollerConfigsunderanaccountbycategoryName%28supportJDBC%29'>(62) Show a list of controllerConfigs under an account by categoryName(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2863%29SaveorupdatealistofcontrollerConfigsintoanaccount%28supportJDBC%29'>(63) Save or update a list of controllerConfigs into an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2864%29ShowallcontrollerConfigsunderanaccount%28supportJDBC%29'>(64) Show all controllerConfigs under an account(support JDBC)</a></li>
+    <li><a href='#Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-UseJSONPformat'>Use JSONP format</a></li>
+</ul></div>
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%281%29ExportaLIRCconfigurationasatextfile%2CconcatenatedifferentRemoteSection."></a>(1) Export a LIRC configuration as a text file, concatenate different RemoteSection.</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>/lirc.conf</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+</ul>
+
+
+<ul>
+	<li>Parameters: ids (RemoteSection ids, separate by comma)</li>
+</ul>
+
+
+<ul>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/lirc.conf?ids=1,2">http://localhost:8080/beehive/rest/lirc.conf?ids=1,2</a></li>
+</ul>
+
+
+<ul>
+	<li>Output:Combined Configuration files content as String.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>#
+# This config file has been automatically converted from a device file
+# found in the 06/26/00 release of the Windows Slink-e software
+# package.
+#
+# Many thanks to Colby Boles of Nirvis Systems Inc. for allowing us to
+# use these files.
+#
+# The original filename was: "3m mp8640 3m lcd projector.cde"
+#
+# The original description for this device was:
+#
+# 3m mp8640 3m lcd projector
+#
+
+
+
+begin remote
+  name                    MP8640
+  bits                    32
+  flags                   SPACE_ENC
+  eps                     20
+  aeps                    200
+
+  header                  8800 4400
+  one                     550 1650
+  zero                    550 550
+  ptrail                  550
+  repeat                  8800 2200
+  gap                     38500
+  toggle_bit              0
+
+  frequency               38000
+
+      begin codes
+          STANDBY/ON              0x000000000AF5E817
+          VOLUME'/\'              0x000000000AF548B7
+          ...
+
+      end codes
+
+end remote
+
+
+
+#
+# this config file was automatically generated
+# using lirc-0.6.6(serial) on Sat May 24 18:35:13 2003
+#
+# contributed by
+#
+# brand:                       Abit
+# model no. of remote control: ?
+# devices being controlled by this remote: AU10 audio card / windvd
+#
+
+
+begin remote
+
+  name                    ABIT_WINDVD
+  bits                    16
+  flags                   SPACE_ENC|CONST_LENGTH
+  eps                     30
+  aeps                    100
+
+  header                  9149 4422
+  one                     666 1569
+  zero                    666 474
+  ptrail                  666
+  pre_data_bits           16
+  pre_data                0x807F
+  gap                     108554
+  toggle_bit              0
+
+      begin codes
+          OnOff                   0x000000000000E01F
+          Mute                    0x00000000000010EF
+          Title                   0x000000000000906F
+          Screen                  0x00000000000050AF
+          eject                   0x000000000000D02F
+          ...
+      end codes
+
+
+end remote
+
+</pre>
+</div></div></li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%282%29Listallhardwarevendorsinthedatabase"></a>(2) List all hardware vendors in the database</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>/lirc</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+</ul>
+
+
+<ul>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/lirc">http://localhost:8080/beehive/rest/lirc</a></li>
+</ul>
+
+
+<ul>
+	<li>Output:json of a vendors list.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"vendors":
+          [
+             {"id":1,
+              "name":"3m"
+             },
+             {"id":2,
+              "name":"abit"},
+             ...
+           ]
+ }</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:204, No Content. See HTTP/1.1 documentation.If  system has no Vendor at all.</li>
+	</ul>
+	</li>
+</ul>
+
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%283%29Listallmodelsofavendorinthedatabase"></a>(3) List all models of a vendor in the database</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>/lirc/{vendor_name}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+</ul>
+
+
+<ul>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/lirc/3m">http://localhost:8080/beehive/rest/lirc/3m</a>.</li>
+	<li>Output:json of a Model list of a Vendor.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"models":
+         [
+               {
+                 "id":1,
+                 "name":"MP8640"}
+         ]
+} </pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:404, Not Found. See  HTTP/1.1 documentation.  If  system can't  find such a Vendor .</li>
+		<li>Error Code:204, No Content. See  HTTP/1.1 documentation.  If  this Vendor  has no Model at all .</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%284%29ListallRemoteSectionsofamodelinthedatabase"></a>(4) List all RemoteSections of a model in the database</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>/lirc/{vendor_name}/{model_name}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+</ul>
+
+
+<ul>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/lirc/3m/MP8640">http://localhost:8080/beehive/rest/lirc/3m/MP8640</a>.</li>
+	<li>Output:json of a RemoteSection list of a Model.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"sections":
+    [
+        {"id":1,
+          "comment":"#\r\n# This config file has been automatically converted from a device file\r\n#...",
+          "name":"MP8640",
+          "raw":false
+        }
+    ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:404, Not Found. See  HTTP/1.1 documentation.  If  system can't  find such a RemoteSection .</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%285%29ListallRemoteOptionsofaRemoteSectioninthedatabase"></a>(5) List all RemoteOptions of a RemoteSection in the database</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /lirc/{vendor_name}/{model_name}/{section_id}/options</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+</ul>
+
+
+<ul>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/lirc/3m/MP8640/1/options">http://localhost:8080/beehive/rest/lirc/3m/MP8640/1/options</a></li>
+	<li>Output:json of a RemoteOption list of a section.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"options":
+                [
+                  {"id":1,
+                   "comment":"",
+                   "name":"name",
+                   "value":"MP8640"},
+                   ...
+                ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:204, No Content. See  HTTP/1.1 documentation.  If  this RemoteSection  has no RemoteOption at all .</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%286%29ListallCodesofaSectioninthedatabase"></a>(6) List all Codes of a Section in the database</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /lirc/{vendor_name}/{model_name}/{section_id}/codes</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+</ul>
+
+
+<ul>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/lirc/3m/MP8640/1/codes">http://localhost:8080/beehive/rest/lirc/3m/MP8640/1/codes</a></li>
+	<li>Output:json of a Code list of a RemoteSection.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"codes":
+              [
+                  {"id":1,
+                   "comment":"",
+                   "name":"STANDBY\/ON",
+                   "remoteName":"MP8640",
+                   "value":"0x000000000AF5E817"
+                   },
+                   ...
+               ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:204, No Content. See  HTTP/1.1 documentation.  If  this RemoteSection  has no Code at all .</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%287%29Listalliconsidentifiedbybuttoncommandname%28IncludedinM2%29"></a>(7) List all icons identified by button command name (Included in M2)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /icons/{icon_name}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+</ul>
+
+
+<ul>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/icons/menu">http://localhost:8080/beehive/rest/icons/menu</a></li>
+	<li>Output:json of a Icon list of a button command name.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"icons":
+            [
+              {"id":21,
+               "fileName":"http:\/\/localhost:8080\/beehive\/icons\/menu.png",
+               "name":"menu"},
+              ...
+            ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:404, Not Found. See  HTTP/1.1 documentation.  If  system can't  find any icons.</li>
+		<li>Error Code:204, No Content. See  HTTP/1.1 documentation.  If  this button has no icons at all .</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%288%29Listallicons%28IncludedinM2%29"></a>(8) List all icons (Included in M2)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /icons</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+</ul>
+
+
+<ul>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/icons">http://localhost:8080/beehive/rest/icons</a></li>
+	<li>Output:json of a Icon list of all button command.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"icons":
+           [
+              {"id":1,
+               "fileName":"http:\/\/localhost:8080\/beehive\/icons\/power.png",
+               "name":"power"},
+               {"id":2,
+               "fileName":"http:\/\/localhost:8080\/beehive\/icons\/home.png",
+               "name":"home"},
+              ...
+            ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:404, Not Found. See  HTTP/1.1 documentation.  If  system can't  find any icons.</li>
+		<li>Error Code:204, No Content. See  HTTP/1.1 documentation.  If  this button has no icons at all .</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%289%29Getalltemplatesfromaccount%28IncludedinM7%29"></a>(9) Get all templates from account (Included in M7)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /account/{account_id}/templates/{share_scope}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id), share_scope(public, private)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/account/1/templates/public">http://localhost:8080/beehive/rest/account/1/templates/public</a></li>
+	<li>Output:json of a template list in account.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+    "templates":
+     [
+       {
+            "id":3,
+            "content":"content...",
+            "keywords":"sony,tv",
+            "name":"t3"
+        }
+        ...
+     ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:401, unauthorized. See  HTTP/1.1 documentation.</li>
+		<li>Error Code:404, Not Found. See  HTTP/1.1 documentation. If can't find any template.</li>
+	</ul>
+	</li>
+</ul>
+
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2810%29Saveatemplateintoaccount%28IncludedinM7%29"></a>(10) Save a template into account (Included in M7)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /account/{account_id}/template</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/account/1/template">http://localhost:8080/beehive/rest/account/1/template</a></li>
+	<li>Output:json of the new template in account.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>    {
+        "template":
+        {
+            "id":3,
+            "content":"content...",
+            "keywords":"sony,tv",
+            "name":"t3"
+        }
+
+    }
+
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:401, unauthorized. See  HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2811%29Updateatemplateintoaccount%28IncludedinM7%29"></a>(11) Update a template into account (Included in M7)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /account/{account_id}/template/{template_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: PUT</li>
+	<li>Parameters: account_id(account id), template_id (template id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/account/1/template/1">http://localhost:8080/beehive/rest/account/1/template/1</a></li>
+	<li>Output:json of the updated template in account.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>    {
+        "template":
+        {
+            "id":3,
+            "content":"content...",
+            "keywords":"sony,tv",
+            "name":"t3"
+        }
+
+    }
+
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:401, unauthorized. See  HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2812%29Deleteatemplatefromaccount%28IncludedinM7%29"></a>(12) Delete a template from account (Included in M7)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /account/{account_id}/template/{template_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: DELETE</li>
+	<li>Parameters: account_id(account id), template_id (template id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/account/1/template/1">http://localhost:8080/beehive/rest/account/1/template/1</a></li>
+	<li>Output: boolean result string.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>if success :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>	true
+</pre>
+</div></div></li>
+		<li>if fail :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>        false
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:401, unauthorized. See  HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2813%29Uploadtemplateresource%28imagesetc%29intoaccount%28IncludedinM7%29"></a>(13) Upload template resource(images etc) into account (Included in M7)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /account/{account_id}/template/{template_id}/resource</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: account_id(account id), template_id (template id), zip file (in MultipartForm)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/account/1/template/1/resource">http://localhost:8080/beehive/rest/account/1/template/1/resource</a></li>
+	<li>Output: boolean result string.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>if success :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>	true
+</pre>
+</div></div></li>
+		<li>if fail :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>        false
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:401, unauthorized. See  HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2814%29Downloadtemplateresource%28imagesetc%29fromaccount%28IncludedinM7%29"></a>(14) Download template resource(images etc) from account (Included in M7)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /account/{account_id}/template/{template_id}/resource</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id), template_id (template id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/account/1/template/1/resource">http://localhost:8080/beehive/rest/account/1/template/1/resource</a></li>
+	<li>Accept-Type: application/zip</li>
+	<li>Output: zip file stream.</li>
+</ul>
+
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:401, unauthorized. See  HTTP/1.1 documentation.</li>
+		<li>Error Code:404, openremote.zip not found. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2815%29Uploadaccountresource%28openremote.zipforcontroller%29intoaccount%28IncludedinM7%29"></a>(15) Upload account resource(openremote.zip for controller) into account (Included in M7)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /account/{account_id}/openremote.zip</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: account_id(account id), template_id (template id), zip file (in MultipartForm)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/account/1/openremote.zip">http://localhost:8080/beehive/rest/account/1/openremote.zip</a></li>
+	<li>Output: boolean result string.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>if success :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>	true
+</pre>
+</div></div></li>
+		<li>if fail :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>        false
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:401, unauthorized. See  HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2816%29Downloadaccountresource%28openremote.zipforcontroller%29fromaccount%28IncludedinM7%29"></a>(16) Download account resource(openremote.zip for controller) from account (Included in M7)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /user/{username}/openremote.zip</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: username(username of account)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/account/1/openremote.zip">http://localhost:8080/beehive/rest/account/1/openremote.zip</a></li>
+	<li>Accept-Type: application/zip</li>
+	<li>Output: zip file stream.</li>
+</ul>
+
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:401, unauthorized. See  HTTP/1.1 documentation.</li>
+		<li>Error Code:404, openremote.zip not found. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2817%29Searchpublictemplatesbykeywordsfromothers%28IncludedinM7%29"></a>(17) Search public templates by keywords from others (Included in M7)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /templates/keywords/{keywords}/page/{page}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: keywords(keywords for search), page(page number)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/templates/keywords/sony,tv/page/1">http://localhost:8080/beehive/rest/templates/keywords/sony,tv/page/1</a></li>
+	<li>Output:json of a template list by keywords.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+    "templates":
+       [
+           {
+            "id":3,
+            "content":"content...",
+            "keywords":"sony,tv",
+            "name":"t3"
+           }
+           ...
+       ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:401, unauthorized. See  HTTP/1.1 documentation.</li>
+		<li>Error Code:404, Not Found. See  HTTP/1.1 documentation. If can't find any template.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2818%29CreateanewuserwiththeAdminrole%2Citwillcreateanewaccountalso%28supportJDBC%29"></a>(18) Create a new user with the Admin role, it will create a new account also(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /manageuser/create</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: userDTO(the received UserDTO Object, in post content)</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/manageuser/create">http://localhost:8080/beehive/rest/manageuser/create</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"id":0,"username":"macuser5"}</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the new user.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+     "username":"macuser5",
+     "account":{"id":2},
+     "token":null,
+     "pendingRoleName":null,
+     "id":2
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2819%29Showuserbyuserid%28supportJDBC%29"></a>(19) Show user by user id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /manageuser/get/{user_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: user_id(userId)</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/manageuser/get/1">http://localhost:8080/beehive/rest/manageuser/get/1</a></li>
+	<li>Output:json of the user.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>        
+{
+      "username":"dan",
+      "account":{"id":1},
+      "token":null,
+      "pendingRoleName":null,
+      "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:404, No user found.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2820%29Showuserbyusername%28supportJDBC%29"></a>(20) Show user by user name(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /manageuser/getbyname/{username}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: username(the username)</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/manageuser/getbyname/dan">http://localhost:8080/beehive/rest/manageuser/getbyname/dan</a></li>
+	<li>Output:json of the user.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>        
+{
+      "username":"dan",
+      "account":{"id":1},
+      "token":null,
+      "pendingRoleName":null,
+      "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:404, No user found.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2821%29UpdateUsertokenandpendingRoleNamebypostedUserDTO%28supportJDBC%29"></a>(21) Update User token and pendingRoleName by posted UserDTO(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /manageuser/update</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: userDTO(the received UserDTO Object, in post content)</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/manageuser/update">http://localhost:8080/beehive/rest/manageuser/update</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+      "username":"tomsky",
+      "account":{"id":2},
+      "token":null,
+      "pendingRoleName":"Admin",
+      "id":2
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:true.</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2822%29Deleteauserbyuserid%28supportJDBC%29"></a>(22) Delete a user by user id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /manageuser/delete/{user_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: DELETE</li>
+	<li>Parameters: user_id(user id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/manageuser/delete/1">http://localhost:8080/beehive/rest/manageuser/delete/1</a></li>
+	<li>Output: true.</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2823%29CreateaninviteebypostedUserDTOunderthespecifiedAccount%28supportJDBC%29"></a>(23) Create an invitee by posted UserDTO under the specified Account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /manageuser/createinvitee/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: userDTO(the received UserDTO Object, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/manageuser/createinvitee/1">http://localhost:8080/beehive/rest/manageuser/createinvitee/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"id":0,"pendingRoleName":"Admin","token":null,"username":"tomsky.wang@finalist.hk"}</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the new invitee.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+     "username":"tomsky.wang@finalist.hk",
+     "account":{"id":1},
+     "token":null,
+     "pendingRoleName":"Admin",
+     "id":2
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2824%29ShowallusersunderanAccount.%28supportJDBC%29"></a>(24) Show all users under an Account.(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /manageuser/loadall/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/manageuser/loadall/1">http://localhost:8080/beehive/rest/manageuser/loadall/1</a></li>
+	<li>Output:json of a list of users.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "users":
+   [
+      {"username":"dan",
+       "account":{"id":1},
+       "token":null,
+       "pendingRoleName":null,
+       "id":1},
+      {"username":"tomsky.wang@finalist.hk",
+       "account":{"id":1},
+       "token":null,
+       "pendingRoleName":"Admin",
+       "id":2}
+   ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any users.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2825%29Createannewsimpledeviceunderanaccount%2Citjustincludesname%2Cvendorandmodel%28supportJDBC%29"></a>(25) Create an new simple device under an account, it just includes name,vendor and model(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /device/save/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: deviceDTO(the received DeviceDTO Object, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/device/save/1">http://localhost:8080/beehive/rest/device/save/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"id":0,"model":"dev","name":"device1","vendor":"dev"}</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the new device.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "name":"device1",
+   "model":"dev",
+   "vendor":"dev",
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2826%29Createannewdevicewithcontents%2Cthecontentsincludescommands%2Csensors%2Cswitchsandsliders%28supportJDBC%29"></a>(26) Create an new device with contents, the contents includes commands, sensors, switchs and sliders(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /device/savewithcontent/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: deviceDTO(the received DeviceDTO Object, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/device/savewithcontent/1">http://localhost:8080/beehive/rest/device/savewithcontent/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"deviceAttrs":null,"deviceCommands":[{"id":0,"name":"cmd1","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd1.com"}],"id":0,"type":"HTTP"},"sectionId":null},{"id":0,"name":"cmd2","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd2.com"}],"id":0,"type":"HTTP"},"sectionId":null},{"id":0,"name":"cmd3","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd3.com"}],"id":0,"type":"HTTP"},"sectionId":null},{"id":0,"name":"cmd4","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd4.com"}],"id":0,"type":"HTTP"},"sectionId":null},{"id":0,"name":"cmd5","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd5.com"}],"id":0,"type":"HTTP"},"sectionId":null},{"id":0,"name":"cmd6","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd6.com"}],"id":0,"type":"HTTP"},"sectionId":null}],"id":0,"model":"devc","name":"DeviceWithContent","sensors":
+[{"classType":"Sensor","id":0,"name":"switchsensor","sensorCommandRef":{"deviceCommand":{"id":0,"name":"cmd3","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd3.com"}],"id":0,"type":"HTTP"},"sectionId":null},"id":0},"type":"SWITCH"},{"classType":"RangeSensor","id":0,"max":100,"min":1,"name":"slidersensor","sensorCommandRef":
+{"deviceCommand":{"id":0,"name":"cmd5","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd5.com"}],"id":0,"type":"HTTP"},"sectionId":null},"id":0},"type":"RANGE"}],"sliders":[{"id":0,"name":"slider1","setValueCmd":{"deviceCommand":
+{"id":0,"name":"cmd6","protocol":{"attributes":[{"id":0,"name":"url","value":"http://cmd6.com"}],"id":0,"type":"HTTP"},"sectionId":null},"id":0},"sliderSensorRef":
+{"id":0,"sensor":{"classType":"RangeSensor","id":0,"max":100,"min":1,"name":"slidersensor","sensorCommandRef":{"deviceCommand":{"id":0,"name":"cmd5","protocol":{"attributes":
+[{"id":0,"name":"url","value":"http://cmd5.com"}],"id":0,"type":"HTTP"},"sectionId":null},"id":0},"type":"RANGE"}}}],"switchs":
+[{"id":0,"name":"switch1","switchCommandOffRef":{"deviceCommand":{"id":0,"name":"cmd2","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd2.com"}],"id":0,"type":"HTTP"},"sectionId":null},"id":0},"switchCommandOnRef":{"deviceCommand":{"id":0,"name":"cmd1","protocol":{"attributes":
+[{"id":0,"name":"url","value":"http://cmd1.com"}],"id":0,"type":"HTTP"},"sectionId":null},"id":0},"switchSensorRef":{"id":0,"sensor":
+{"classType":"Sensor","id":0,"name":"switchsensor","sensorCommandRef":{"deviceCommand":{"id":0,"name":"cmd3","protocol":{"attributes":[{"id":0,"name":"url","value":"http://
+cmd3.com"}],"id":0,"type":"HTTP"},"sectionId":null},"id":0},"type":"SWITCH"}}}],"vendor":"devc"}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the new device.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"name":"DeviceWithContent","account":{"id":1},"model":"devc","sensors":[{"classType":"Sensor","name":"switchsensor","type":"SWITCH","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sensorCommandRef":
+{"sensor":null,"deviceCommand":{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":3},"deviceName":"DeviceWithContent","id":1},"id":1},
+{"classType":"RangeSensor","min":1,"max":100,"name":"slidersensor","type":"RANGE","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sensorCommandRef":
+{"sensor":null,"deviceCommand":{"name":"cmd5","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd5.com","id":5}],"id":5},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":5},"deviceName":"DeviceWithContent","id":2},"id":2}],"switchs":
+[{"name":"switch1","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"switchCommandOffRef":
+{"offSwitch":null,"deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd2.com","id":2}],"id":2},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":2},"deviceName":"DeviceWithContent","id":4},"switchCommandOnRef":
+{"onSwitch":null,"deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd1.com","id":1}],"id":1},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":1},"deviceName":"DeviceWithContent","id":5},"switchSensorRef":
+{"switchToggle":null,"sensor":{"classType":"Sensor","name":"switchsensor","type":"SWITCH","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sensorCommandRef":
+{"sensor":null,"deviceCommand":{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":3},"deviceName":"DeviceWithContent","id":1},"id":1},"id":0},"id":1}],"deviceCommands":
+[{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd1.com","id":1}],"id":1},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":1},
+{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd2.com","id":2}],"id":2},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":2},
+{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":3},
+{"name":"cmd4","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd4.com","id":4}],"id":4},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":4},
+{"name":"cmd5","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd5.com","id":5}],"id":5},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":5},
+{"name":"cmd6","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd6.com","id":6}],"id":6},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":6}],"sliders":
+[{"name":"slider1","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sliderSensorRef":
+{"slider":null,"sensor":{"classType":"RangeSensor","min":1,"max":100,"name":"slidersensor","type":"RANGE","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sensorCommandRef":
+{"sensor":null,"deviceCommand":{"name":"cmd5","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd5.com","id":5}],"id":5},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":5},"deviceName":"DeviceWithContent","id":2},"id":2},"id":0},"setValueCmd":
+{"slider":null,"deviceCommand":{"name":"cmd6","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd6.com","id":6}],"id":6},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":6},"deviceName":"DeviceWithContent","id":3},"id":1}],"vendor":"devc","id":2}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2827%29Showalistofdeviceswithsimplepropertiesunderanaccount%2Ceachdeviceincludesid%2Cname%2Cvendorandmodel%28supportJDBC%29"></a>(27) Show a list of devices with simple properties under an account, each device includes id, name, vendor and model(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /device/loadall/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/device/loadall/1">http://localhost:8080/beehive/rest/device/loadall/1</a></li>
+	<li>Output:json of a list of devices.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "devices":
+   [
+      {
+       "name":"device1",
+       "model":"dev",
+       "vendor":"dev",
+       "id":1
+      }
+   ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any devices.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2828%29Showadevicebydeviceid%2Citincludescommands%2Csensors%2Cslidersandswitchs%28supportJDBC%29"></a>(28) Show a device by device id, it includes commands,sensors,sliders and switchs(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /device/load/{device_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: device_id(device id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/device/load/2">http://localhost:8080/beehive/rest/device/load/2</a></li>
+	<li>Output:json of a device.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"name":"DeviceWithContent","account":{"id":1},"model":"devc","sensors":[{"classType":"Sensor","name":"switchsensor","type":"SWITCH","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sensorCommandRef":
+{"sensor":null,"deviceCommand":{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":3},"deviceName":"DeviceWithContent","id":1},"id":1},
+{"classType":"RangeSensor","min":1,"max":100,"name":"slidersensor","type":"RANGE","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sensorCommandRef":
+{"sensor":null,"deviceCommand":{"name":"cmd5","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd5.com","id":5}],"id":5},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":5},"deviceName":"DeviceWithContent","id":2},"id":2}],"switchs":
+[{"name":"switch1","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"switchCommandOffRef":
+{"offSwitch":null,"deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd2.com","id":2}],"id":2},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":2},"deviceName":"DeviceWithContent","id":4},"switchCommandOnRef":
+{"onSwitch":null,"deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd1.com","id":1}],"id":1},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":1},"deviceName":"DeviceWithContent","id":5},"switchSensorRef":
+{"switchToggle":null,"sensor":{"classType":"Sensor","name":"switchsensor","type":"SWITCH","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sensorCommandRef":
+{"sensor":null,"deviceCommand":{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":3},"deviceName":"DeviceWithContent","id":1},"id":1},"id":0},"id":1}],"deviceCommands":
+[{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd1.com","id":1}],"id":1},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":1},
+{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd2.com","id":2}],"id":2},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":2},
+{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":3},
+{"name":"cmd4","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd4.com","id":4}],"id":4},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":4},
+{"name":"cmd5","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd5.com","id":5}],"id":5},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":5},
+{"name":"cmd6","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd6.com","id":6}],"id":6},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":6}],"sliders":
+[{"name":"slider1","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sliderSensorRef":
+{"slider":null,"sensor":{"classType":"RangeSensor","min":1,"max":100,"name":"slidersensor","type":"RANGE","device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sensorCommandRef":
+{"sensor":null,"deviceCommand":{"name":"cmd5","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd5.com","id":5}],"id":5},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":5},"deviceName":"DeviceWithContent","id":2},"id":2},"id":0},"setValueCmd":
+{"slider":null,"deviceCommand":{"name":"cmd6","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd6.com","id":6}],"id":6},"device":
+{"name":"DeviceWithContent","account":null,"model":"devc","sensors":null,"switchs":null,"deviceCommands":null,"sliders":null,"vendor":"devc","id":2},"sectionId":null,"id":6},"deviceName":"DeviceWithContent","id":3},"id":1}],"vendor":"devc","id":2}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2829%29UpdateDevicename%2Cvendorandmodel%28supportJDBC%29"></a>(29) Update Device name,vendor and model(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /device/update</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: deviceDTO(the received DeviceDTO Object, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/device/update">http://localhost:8080/beehive/rest/device/update</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"name":"Update device","model":"update","vendor":"update","id":1}</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:true.</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2830%29Deleteadevicebydeviceid%28supportJDBC%29"></a>(30) Delete a device by device id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /device/delete/{device_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: DELETE</li>
+	<li>Parameters: device_id(device id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/device/delete/1">http://localhost:8080/beehive/rest/device/delete/1</a></li>
+	<li>Output: true.</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2831%29ShowalistofdeviceswithsamecontentsexceptidunderanAccount%28supportJDBC%29"></a>(31) Show a list of devices with same contents except id under an Account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /device/loadsamedevices/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: deviceDTO(the device to be compared, its not specified id, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/device/loadsamedevices/1">http://localhost:8080/beehive/rest/device/loadsamedevices/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"name":"device1","model":"dev","vendor":"dev","id":0}</pre>
+</div></div></li>
+	</ul>
+	</li>
+	<li>Output:json of a list of devices.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "devices":
+   [
+      {
+       "name":"device1",
+       "model":"dev",
+       "vendor":"dev",
+       "id":1
+      }
+   ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any devices.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2832%29Createannewdevicecommand%28supportJDBC%29"></a>(32) Create an new device command(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicecommand/save</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: deviceCommandDTO(the received DeviceCommandDTO Object, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicecommand/save">http://localhost:8080/beehive/rest/devicecommand/save</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+    "device":{"id":1,"model":"dev","name":"device1","vendor":"dev"},
+    "id":0,
+    "name":"command1",
+    "protocol":{"attributes":[{"id":0,"name":"url","value":"http://command1.com"}],"id":0,"type":"HTTP"},
+    "sectionId":null
+}</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the new device command, it has the specified id.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "name":"command1",
+   "protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://command1.com","id":1}],"id":1},
+   "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+   "sectionId":null,
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2833%29Showadevicecommandbycommandid%28supportJDBC%29"></a>(33) Show a device command by command id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicecommand/load/{command_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: command_id(command id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicecommand/load/1">http://localhost:8080/beehive/rest/devicecommand/load/1</a></li>
+	<li>Output:json of a device command.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "name":"command1",
+   "protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://command1.com","id":1}],"id":1},
+   "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+   "sectionId":null,
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2834%29Updateadevicecommand%28supportJDBC%29"></a>(34) Update a device command(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicecommand/update</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: deviceCommandDTO(the received DeviceCommandDTO Object, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicecommand/update">http://localhost:8080/beehive/rest/devicecommand/update</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+   "name":"update command",
+   "protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://update.command.com","id":1}],"id":1},
+   "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+   "sectionId":null,
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the updated device command.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "name":"update command",
+   "protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://update.command.com","id":0}],"id":0},
+   "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+   "sectionId":null,
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2835%29Deleteadevicecommandbycommandid%28supportJDBC%29"></a>(35) Delete a device command by command id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicecommand/delete/{command_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: DELETE</li>
+	<li>Parameters: command_id(command id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicecommand/delete/1">http://localhost:8080/beehive/rest/devicecommand/delete/1</a></li>
+	<li>Output: boolean result string</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>If success:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> true</pre>
+</div></div></li>
+		<li>If fail:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> false</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2836%29Createalistofdevicecommands%28supportJDBC%29"></a>(36) Create a list of device commands(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicecommand/saveall</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: deviceCommandListing(includes a list of deviceCommandDTOs, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicecommand/save">http://localhost:8080/beehive/rest/devicecommand/save</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"deviceCommands":[{"device":{"id":2,"model":"dev","name":"device1","vendor":"dev"},"id":0,"name":"STANDBY/ON","protocol":{"attributes":
+[{"id":0,"name":"name","value":"MP8640"},{"id":0,"name":"command","value":"STANDBY/ON"}],"id":0,"type":"Infrared"},"sectionId":"1"},{"device":
+{"id":2,"model":"dev","name":"device1","vendor":"dev"},"id":0,"name":"VOLUME'\\/'","protocol":{"attributes":[{"id":0,"name":"name","value":"MP8640"},
+{"id":0,"name":"command","value":"VOLUME'\\/'"}],"id":0,"type":"Infrared"},"sectionId":"1"},{"device":
+{"id":2,"model":"dev","name":"device1","vendor":"dev"},"id":0,"name":"POSITION","protocol":{"attributes":[{"id":0,"name":"name","value":"MP8640"},
+{"id":0,"name":"command","value":"POSITION"}],"id":0,"type":"Infrared"},"sectionId":"1"},{"device":
+{"id":2,"model":"dev","name":"device1","vendor":"dev"},"id":0,"name":"LEFT_MOUSE","protocol":{"attributes":[{"id":0,"name":"name","value":"MP8640"},
+{"id":0,"name":"command","value":"LEFT_MOUSE"}],"id":0,"type":"Infrared"},"sectionId":"1"}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of a deviceCommandListing(includes a list of deviceCommandDTOs), each deviceCommandDTO has the specified id.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"deviceCommands":[{"name":"STANDBY/ON","protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":3},{"name":"command","value":"STANDBY/
+ON","id":4}],"id":3},"device":{"name":"device1","model":"dev","vendor":"dev","id":2},"sectionId":"1","id":2},
+{"name":"VOLUME'/\\'","protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":5},{"name":"command","value":"VOLUME'/\\'","id":6}],"id":4},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":2},"sectionId":"1","id":3},
+{"name":"VOLUME'\\/'","protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":7},{"name":"command","value":"VOLUME'\\/'","id":8}],"id":5},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":2},"sectionId":"1","id":4},
+{"name":"MUTE","protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":9},{"name":"command","value":"MUTE","id":10}],"id":6},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":2},"sectionId":"1","id":5}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2837%29ShowalistofDeviceCommandsunderadevicebybydeviceid%28supportJDBC%29"></a>(37) Show a list of DeviceCommands under a device by by device id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicecommand/loadbydevice/{device_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: device_id(device id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicecommand/loadbydevice/2">http://localhost:8080/beehive/rest/devicecommand/loadbydevice/2</a></li>
+	<li>Output:json of a list of device commands.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"deviceCommands":[{"name":"STANDBY/ON","protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":3},{"name":"command","value":"STANDBY/
+ON","id":4}],"id":3},"device":{"name":"device1","model":"dev","vendor":"dev","id":2},"sectionId":"1","id":2},
+{"name":"VOLUME'/\\'","protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":5},{"name":"command","value":"VOLUME'/\\'","id":6}],"id":4},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":2},"sectionId":"1","id":3},
+{"name":"VOLUME'\\/'","protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":7},{"name":"command","value":"VOLUME'\\/'","id":8}],"id":5},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":2},"sectionId":"1","id":4},
+{"name":"MUTE","protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":9},{"name":"command","value":"MUTE","id":10}],"id":6},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":2},"sectionId":"1","id":5}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2838%29ShowalistofdeviceCommandDTOs%2CeachofthemhasthesamepropertieswiththespecifieddeviceCommandDTO%28supportJDBC%29"></a>(38) Show a list of deviceCommandDTOs, each of them has the same properties with the specified deviceCommandDTO(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicecommand/loadsamecommands</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: deviceCommandDTO(the device command to be compared, its not specified id, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicecommand/loadsamecommands">http://localhost:8080/beehive/rest/devicecommand/loadsamecommands</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"name":"STANDBY/ON","protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":0},{"name":"command","value":"STANDBY/ON","id":0}],"id":0},"device":{"name":"device1","model":"dev","vendor":"dev","id":0},"sectionId":"1","id":0}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+	<li>Output:json of a list of device commands.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+"deviceCommands":[
+   {"name":"STANDBY/ON",
+    "protocol":{"type":"Infrared","attributes":[{"name":"name","value":"MP8640","id":3},{"name":"command","value":"STANDBY/ON","id":4}],"id":3},
+    "device":{"name":"device1","deviceCommands":null,"account":null,"model":"dev","sensors":null,"switchs":null,"sliders":null,"vendor":"dev","id":2},"sectionId":"1","id":2
+   }
+]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2839%29Createanewsensorunderanaccount%28supportJDBC%29"></a>(39) Create a new sensor under an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /sensor/save/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: sensorDTO(the received SensorDTO Object, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/sensor/save/1">http://localhost:8080/beehive/rest/sensor/save/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+   "classType":"Sensor",
+   "device":{"id":1,"model":"dev","name":"device1","vendor":"dev"},
+   "id":0,
+   "name":"switchsensor",
+   "sensorCommandRef":{"deviceCommand":{"id":1,"name":"command1","sectionId":null},"id":0},
+   "type":"SWITCH"
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the new sensor, it has the specified id.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "classType":"Sensor",
+   "name":"switchsensor",
+   "type":"SWITCH",
+   "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+   "sensorCommandRef":{"sensor":null,"deviceCommand":{"name":"command1","protocol":null,"device":
+        {"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","id":1},
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2840%29Updateasensor%28supportJDBC%29"></a>(40) Update a sensor(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /sensor/update</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: sensorDTO(the received SensorDTO Object, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/sensor/update">http://localhost:8080/beehive/rest/sensor/update</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+   "classType":"Sensor",
+   "name":"update switchsensor",
+   "type":"SWITCH",
+   "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+   "sensorCommandRef":{"sensor":null,"deviceCommand":{"name":"command1","protocol":null,"device":
+        {"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","id":1},
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the updated sensor.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "classType":"Sensor",
+   "name":"update switchsensor",
+   "type":"SWITCH",
+   "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+   "sensorCommandRef":{"sensor":null,"deviceCommand":{"name":"command1","protocol":null,"device":
+        {"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","id":1},
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2841%29Deleteasensorbysensorid%28supportJDBC%29"></a>(41) Delete a sensor by sensor id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /sensor/delete/{sensor_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: DELETE</li>
+	<li>Parameters: sensor_id(sensor id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/sensor/delete/1">http://localhost:8080/beehive/rest/sensor/delete/1</a></li>
+	<li>Output: boolean result string</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>If success:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> true</pre>
+</div></div></li>
+		<li>If fail:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> false</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2842%29Showalistofsensorsunderanaccount%28supportJDBC%29"></a>(42) Show a list of sensors under an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /sensor/loadall/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/sensor/loadall/1">http://localhost:8080/beehive/rest/sensor/loadall/1</a></li>
+	<li>Output:json of a list of sensors.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+  "sensors":[
+       {"classType":"Sensor",
+        "name":"update switchsensor",
+        "type":"SWITCH",
+        "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+        "sensorCommandRef":{"sensor":null,
+            "deviceCommand":{"name":"command1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://command1.com","id":1}],"id":1},
+            "device":{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","id":2},
+        "id":1}
+]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any sensors.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2843%29Showasensorbysensorid%28supportJDBC%29"></a>(43) Show a sensor by sensor id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /sensor/load/{sensor_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: sensor_id(sensor id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/sensor/load/1">http://localhost:8080/beehive/rest/sensor/load/1</a></li>
+	<li>Output:json of a sensor.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "classType":"RangeSensor",
+   "min":1,
+   "max":100,
+   "name":"rangesensor",
+   "type":"RANGE",
+   "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+   "sensorCommandRef":{"sensor":null,
+          "deviceCommand":{"name":"command2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://command2.com","id":2}],"id":2},
+          "device":{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"device1","id":1},
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2844%29Showalistofsensors%2Ceachofthemhasthesamepropertieswiththespecifiedsensor%28supportJDBC%29"></a>(44) Show a list of sensors, each of them has the same properties with the specified sensor(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /sensor/loadsamesensors</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: sensorDTO(the sensor to be compared, its not specified id, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/sensor/loadsamesensors">http://localhost:8080/beehive/rest/sensor/loadsamesensors</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+   "classType":"RangeSensor",
+   "min":1,
+   "max":100,
+   "name":"rangesensor",
+   "type":"RANGE",
+   "device":{"name":"device1","model":"dev","vendor":"dev","id":0},
+   "sensorCommandRef":{"sensor":null,
+          "deviceCommand":{"name":"command2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://command2.com","id":0}],"id":0},
+          "device":{"name":"device1","model":"dev","vendor":"dev","id":0},"sectionId":null,"id":0},"deviceName":"device1","id":0},
+   "id":0
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+	<li>Output:json of a list of sensors.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+ "sensors":[
+    {"classType":"RangeSensor",
+     "min":1,
+     "max":100,
+     "name":"rangesensor",
+     "type":"RANGE",
+     "device":{"name":"device1","model":"dev","vendor":"dev","id":1},
+     "sensorCommandRef":{"sensor":null,
+     "deviceCommand":{"name":"command2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://command2.com","id":2}],"id":2},
+     "device":{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"device1","id":1},
+     "id":1}
+  ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any sensors.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2845%29Createanewswitchunderanaccount%28supportJDBC%29"></a>(45) Create a new switch under an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /switch/save/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: switchDTO(the received SwitchDTO Object, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/switch/save/1">http://localhost:8080/beehive/rest/switch/save/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+   "device":{"id":1,"model":"dev","name":"light","vendor":"dev"},
+   "id":0,
+   "name":"lightswitch",
+   "switchCommandOffRef":{"deviceCommand":{"id":2,"name":"off","sectionId":null},"id":0},
+   "switchCommandOnRef":{"deviceCommand":{"id":1,"name":"on","sectionId":null},"id":0},
+   "switchSensorRef":{"id":0,"sensor":
+         {"classType":"Sensor","id":1,"name":"lightsensor",
+        "sensorCommandRef":{"deviceCommand":{"id":3,"name":"status","sectionId":null},"id":90,"sensor":null},"type":"SWITCH"}}
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the new switch, it has the specified id.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "name":"lightswitch",
+   "device":{"name":"light","model":"dev","sliders":null,"vendor":"dev","id":1},
+   "switchCommandOffRef":{"offSwitch":null,"deviceCommand":{"name":"off","protocol":null,"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"light","id":2},
+   "switchCommandOnRef":{"onSwitch":null,"deviceCommand":{"name":"on","protocol":null,"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"light","id":3},
+   "switchSensorRef":{"switchToggle":null,"sensor":{"classType":"Sensor","name":"lightsensor","type":"SWITCH","sensorCommandRef":{"sensor":null,"deviceCommand":
+        {"name":"status","protocol":null,"device":null,"sectionId":null,"id":3},"deviceName":null,"id":0},"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"id":1},"id":1},
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2846%29Updateaswitch%28supportJDBC%29"></a>(46) Update a switch(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /switch/update</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: switchDTO(the received SwitchDTO Object, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/switch/update">http://localhost:8080/beehive/rest/switch/update</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+   "name":"update lightswitch",
+   "device":{"name":"light","model":"dev","sliders":null,"vendor":"dev","id":1},
+   "switchCommandOffRef":{"offSwitch":null,"deviceCommand":{"name":"off","protocol":null,"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"light","id":2},
+   "switchCommandOnRef":{"onSwitch":null,"deviceCommand":{"name":"on","protocol":null,"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"light","id":3},
+   "switchSensorRef":{"switchToggle":null,"sensor":{"classType":"Sensor","name":"lightsensor","type":"SWITCH","sensorCommandRef":{"sensor":null,"deviceCommand":
+        {"name":"status","protocol":null,"device":null,"sectionId":null,"id":3},"deviceName":null,"id":0},"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"id":1},"id":1},
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the updated switch.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "name":"update lightswitch",
+   "device":{"name":"light","model":"dev","sliders":null,"vendor":"dev","id":1},
+   "switchCommandOffRef":{"offSwitch":null,"deviceCommand":{"name":"off","protocol":null,"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"light","id":2},
+   "switchCommandOnRef":{"onSwitch":null,"deviceCommand":{"name":"on","protocol":null,"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"light","id":3},
+   "switchSensorRef":{"switchToggle":null,"sensor":{"classType":"Sensor","name":"lightsensor","type":"SWITCH","sensorCommandRef":{"sensor":null,"deviceCommand":
+        {"name":"status","protocol":null,"device":null,"sectionId":null,"id":3},"deviceName":null,"id":0},"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"id":1},"id":1},
+   "id":1
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2847%29Deleteaswitchbyswitchid%28supportJDBC%29"></a>(47) Delete a switch by switch id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /switch/delete/{switch_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: DELETE</li>
+	<li>Parameters: switch_id(switch id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/switch/delete/1">http://localhost:8080/beehive/rest/switch/delete/1</a></li>
+	<li>Output: true</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2848%29Showalistofswitchsunderanaccount%28supportJDBC%29"></a>(48) Show a list of switchs under an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /switch/loadall/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/switch/loadall/1">http://localhost:8080/beehive/rest/switch/loadall/1</a></li>
+	<li>Output:json of a list of switchs.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+"switchs":[
+   {"name":"switch1",
+    "device":{"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},
+    "switchCommandOffRef":{"offSwitch":null,
+        "deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd2.com","id":2}],"id":2},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"sectionId":null,"id":2},"deviceName":"DeviceWithContent","id":4},
+    "switchCommandOnRef":{"onSwitch":null,
+        "deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd1.com","id":1}],"id":1},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"sectionId":null,"id":1},"deviceName":"DeviceWithContent","id":5},
+    "switchSensorRef":{"switchToggle":null,
+        "sensor":{"classType":"Sensor","name":"switchsensor","type":"SWITCH","sensorCommandRef":{"sensor":null,"deviceCommand":{"name":"cmd3","protocol":
+        {"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"sectionId":null,"id":3},"deviceName":"DeviceWithContent","id":1},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"id":1},"id":1},
+    "id":1}
+  ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any switchs.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2849%29Showalistofswitchs%2Ceachofthemhasthesamepropertieswiththespecifiedswitch%28supportJDBC%29"></a>(49) Show a list of switchs, each of them has the same properties with the specified switch(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /switch/loadsameswitchs</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: switchDTO(the switch to be compared, its not specified id, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/switch/loadsameswitchs">http://localhost:8080/beehive/rest/switch/loadsameswitchs</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"name":"switch1",
+    "device":{"name":"DeviceWithContent","model":"devc","vendor":"devc","id":0},
+    "switchCommandOffRef":{"offSwitch":null,
+        "deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd2.com","id":0}],"id":0},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":0},"sectionId":null,"id":0},"deviceName":"DeviceWithContent","id":0},
+    "switchCommandOnRef":{"onSwitch":null,
+        "deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd1.com","id":0}],"id":0},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":0},"sectionId":null,"id":0},"deviceName":"DeviceWithContent","id":0},
+    "switchSensorRef":{"switchToggle":null,
+        "sensor":{"classType":"Sensor","name":"switchsensor","type":"SWITCH","sensorCommandRef":{"sensor":null,"deviceCommand":{"name":"cmd3","protocol":
+        {"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":0}],"id":0},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":0},"sectionId":null,"id":0},"deviceName":"DeviceWithContent","id":0},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":0},"id":0},"id":0},
+    "id":0
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+	<li>Output:json of a list of switchs.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+"switchs":[
+   {"name":"switch1",
+    "device":{"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},
+    "switchCommandOffRef":{"offSwitch":null,
+        "deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd2.com","id":2}],"id":2},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"sectionId":null,"id":2},"deviceName":"DeviceWithContent","id":4},
+    "switchCommandOnRef":{"onSwitch":null,
+        "deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd1.com","id":1}],"id":1},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"sectionId":null,"id":1},"deviceName":"DeviceWithContent","id":5},
+    "switchSensorRef":{"switchToggle":null,
+        "sensor":{"classType":"Sensor","name":"switchsensor","type":"SWITCH","sensorCommandRef":{"sensor":null,"deviceCommand":{"name":"cmd3","protocol":
+        {"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"sectionId":null,"id":3},"deviceName":"DeviceWithContent","id":1},"device":
+        {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"id":1},"id":1},
+    "id":1}
+  ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any switchs.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2850%29Createanewsliderunderanaccount%28supportJDBC%29"></a>(50) Create a new slider under an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /slider/save/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: sliderDTO(the received SliderDTO Object, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/slider/save/1">http://localhost:8080/beehive/rest/slider/save/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+   "device":{"id":1,"model":"dev","name":"light","vendor":"dev"},
+   "id":0,
+   "name":"lightcolor",
+   "setValueCmd":{"deviceCommand":{"id":1,"name":"setcolor","sectionId":null},"id":0},
+   "sliderSensorRef":{"id":0,"sensor":{"classType":"Sensor","id":1,"name":"colorsensor",
+         "sensorCommandRef":{"deviceCommand":{"id":2,"name":"colorstatus","sectionId":null},"id":1,"sensor":null},"type":"COLOR"}}
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the new slider, it has the specified id.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "device":{"id":1,"model":"dev","name":"light","vendor":"dev"},
+   "id":1,
+   "name":"lightcolor",
+   "setValueCmd":{"deviceCommand":{"id":1,"name":"setcolor","sectionId":null},"id":1},
+   "sliderSensorRef":{"id":1,"sensor":{"classType":"Sensor","id":1,"name":"colorsensor",
+         "sensorCommandRef":{"deviceCommand":{"id":2,"name":"colorstatus","sectionId":null},"id":1,"sensor":null},"type":"COLOR"}}
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2851%29Updateaslider%28supportJDBC%29"></a>(51) Update a slider(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /slider/update</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: sliderDTO(the received SliderDTO Object, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/slider/update">http://localhost:8080/beehive/rest/slider/update</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+   "device":{"id":1,"model":"dev","name":"light","vendor":"dev"},
+   "id":1,
+   "name":"update lightcolor",
+   "setValueCmd":{"deviceCommand":{"id":1,"name":"setcolor","sectionId":null},"id":1},
+   "sliderSensorRef":{"id":1,"sensor":{"classType":"Sensor","id":1,"name":"colorsensor",
+         "sensorCommandRef":{"deviceCommand":{"id":2,"name":"colorstatus","sectionId":null},"id":1,"sensor":null},"type":"COLOR"}}
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the updated slider.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+   "device":{"id":1,"model":"dev","name":"light","vendor":"dev"},
+   "id":1,
+   "name":"update lightcolor",
+   "setValueCmd":{"deviceCommand":{"id":1,"name":"setcolor","sectionId":null},"id":1},
+   "sliderSensorRef":{"id":1,"sensor":{"classType":"Sensor","id":1,"name":"colorsensor",
+         "sensorCommandRef":{"deviceCommand":{"id":2,"name":"colorstatus","sectionId":null},"id":1,"sensor":null},"type":"COLOR"}}
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2852%29Deleteasliderbysliderid%28supportJDBC%29"></a>(52) Delete a slider by slider id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /slider/delete/{slider_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: DELETE</li>
+	<li>Parameters: slider_id(slider id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/slider/delete/1">http://localhost:8080/beehive/rest/slider/delete/1</a></li>
+	<li>Output: true</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2853%29Showalistofslidersunderanaccount%28supportJDBC%29"></a>(53) Show a list of sliders under an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /slider/loadall/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/slider/loadall/1">http://localhost:8080/beehive/rest/slider/loadall/1</a></li>
+	<li>Output:json of a list of sliders.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+ "sliders":[
+  {"name":"slider1",
+   "device":{"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},
+   "sliderSensorRef":{"slider":null,
+      "sensor":{"classType":"RangeSensor","min":1,"max":100,"name":"slidersensor","type":"RANGE","sensorCommandRef":{"sensor":null,"deviceCommand":
+      {"name":"cmd5","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd5.com","id":5}],"id":5},"device":
+      {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"sectionId":null,"id":5},"deviceName":"DeviceWithContent","id":2},"device":
+      {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"id":2},"id":1},
+   "setValueCmd":{"slider":null,"deviceCommand":{"name":"cmd6","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd6.com","id":6}],"id":6},"device":
+      {"name":"DeviceWithContent","model":"devc","vendor":"devc","id":1},"sectionId":null,"id":6},"deviceName":"DeviceWithContent","id":3},
+   "id":1}
+ ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any sliders.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2854%29Showalistofsliders%2Ceachofthemhasthesamepropertieswiththespecifiedslider%28supportJDBC%29"></a>(54) Show a list of sliders, each of them has the same properties with the specified slider(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /slider/loadsamesliders</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: switchDTO(the switch to be compared, its not specified id, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/slider/loadsamesliders">http://localhost:8080/beehive/rest/slider/loadsamesliders</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{
+   "device":{"id":0,"model":"dev","name":"light","vendor":"dev"},
+   "id":0,
+   "name":"lightcolor",
+   "setValueCmd":{"deviceCommand":{"id":0,"name":"setcolor","sectionId":null},"id":0},
+   "sliderSensorRef":{"id":0,"sensor":{"classType":"Sensor","id":1,"name":"colorsensor",
+         "sensorCommandRef":{"deviceCommand":{"id":0,"name":"colorstatus","sectionId":null},"id":0,"sensor":null},"type":"COLOR"}}
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+	<li>Output:json of a list of sliders.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{
+"sliders":[
+  {"name":"lightcolor",
+   "device":{"name":"light","model":"dev","vendor":"dev","id":1},
+   "sliderSensorRef":{"slider":null,"sensor":{"classType":"Sensor","name":"colorsensor","type":"COLOR","sensorCommandRef":{"sensor":null,"deviceCommand":
+        {"name":"colorstatus","id":2},"deviceName":"light","id":0},"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"id":1},"id":1},
+   "setValueCmd":{"slider":null,"deviceCommand":{"name":"setcolor","protocol":null,"device":
+        {"name":"light","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"light","id":3},
+   "id":1}
+ ]
+}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any sliders.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2855%29CreateanewdeviceMacrounderanaccount%28supportJDBC%29"></a>(55) Create a new deviceMacro under an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicemacro/save/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: deviceMacroDTO(the received DeviceMacroDTO Object, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/slider/save/1">http://localhost:8080/beehive/rest/slider/save/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"deviceMacroItems":[{"classType":"DeviceCommandRef","deviceCommand":{"id":1,"name":"cmd1","sectionId":null},"id":0},{"classType":"CommandDelay","delaySecond":"3","id":0},{"classType":"DeviceCommandRef","deviceCommand":{"id":2,"name":"cmd2","sectionId":null},"id":0},{"classType":"CommandDelay","delaySecond":"2","id":0},{"classType":"DeviceCommandRef","deviceCommand":{"id":3,"name":"cmd3","sectionId":null},"id":0}],"id":0,"name":"macro1"}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the new devicemacro, it has the specified id.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"name":"macro1","deviceMacroItems":[{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd1.com","id":1}],"id":1},"device":{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":1},{"classType":"CommandDelay","delaySecond":"3","parentDeviceMacro":{"name":"macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":2},{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd2.com","id":2}],"id":2},"device":{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":3},{"classType":"CommandDelay","delaySecond":"2","parentDeviceMacro":{"name":"macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":4},{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd3.com","id":3}],"id":3},"device":{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":3},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":5}],"account":{"id":1},"id":1}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2856%29Updateadevicemacro%28supportJDBC%29"></a>(56) Update a devicemacro(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicemacro/update</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: deviceMacroDTO(the received DeviceMacroDTO Object, in post content)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicemacro/update">http://localhost:8080/beehive/rest/devicemacro/update</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"name":"update macro1","deviceMacroItems":[{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":
+[{"name":"url","value":"http://cmd1.com","id":1}],"id":1},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":1},{"classType":"CommandDelay","delaySecond":"3","parentDeviceMacro":{"name":"macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":2},{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd2.com","id":2}],"id":2},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":3},{"classType":"CommandDelay","delaySecond":"2","parentDeviceMacro":{"name":"macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":4},{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd3.com","id":3}],"id":3},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":3},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":5}],"account":{"id":1},"id":1}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the updated devicemacro.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"name":"update macro1","deviceMacroItems":[{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":
+[{"name":"url","value":"http://cmd1.com","id":1}],"id":1},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":1},{"classType":"CommandDelay","delaySecond":"3","parentDeviceMacro":{"name":"macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":2},{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd2.com","id":2}],"id":2},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":3},{"classType":"CommandDelay","delaySecond":"2","parentDeviceMacro":{"name":"macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":4},{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd3.com","id":3}],"id":3},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":3},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":5}],"account":{"id":1},"id":1}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2857%29Deleteadevicemacrobymacroid%28supportJDBC%29"></a>(57) Delete a devicemacro by macro id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicemacro/delete/{macro_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: DELETE</li>
+	<li>Parameters: macro_id(macro id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password,username)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicemacro/delete/1">http://localhost:8080/beehive/rest/devicemacro/delete/1</a></li>
+	<li>Output: true</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2858%29ShowdeviceMacroItemsunderadeviceMacrobymacroid%28supportJDBC%29"></a>(58) Show deviceMacroItems under a deviceMacro by macro id(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicemacro/loaditemsbyid/{macro_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: macro_id(macro id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicemacro/loaditemsbyid/1">http://localhost:8080/beehive/rest/devicemacro/loaditemsbyid/1</a></li>
+	<li>Output:json of a list of devicemacro items.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"deviceMacroItems":[{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd1.com","id":1}],"id":1},"device":{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","parentDeviceMacro":
+{"name":"update macro1","deviceMacroItems":[],"account":null,"id":1},"id":6},{"classType":"CommandDelay","delaySecond":"3","parentDeviceMacro":{"name":"update 
+macro1","deviceMacroItems":[],"account":null,"id":1},"id":7},{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":
+[{"name":"url","value":"http://cmd2.com","id":2}],"id":2},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"device1","parentDeviceMacro":{"name":"update macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":8},{"classType":"CommandDelay","delaySecond":"2","parentDeviceMacro":{"name":"update macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":9},{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd3.com","id":3}],"id":3},"device":{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":3},"deviceName":"device1","parentDeviceMacro":
+{"name":"update macro1","deviceMacroItems":[],"account":null,"id":1},"id":10}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any macro items.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2859%29ShowdeviceMacrosunderanaccount%28supportJDBC%29"></a>(59) Show deviceMacros under an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicemacro/loadall/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicemacro/loadall/1">http://localhost:8080/beehive/rest/devicemacro/loadall/1</a></li>
+	<li>Output:json of a list of devicemacros.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"deviceMacros":[{"name":"macro1","deviceMacroItems":[{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":
+[{"name":"url","value":"http://cmd1.com","id":1}],"id":1},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","parentDeviceMacro":{"name":"macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":1},{"classType":"CommandDelay","delaySecond":"3","parentDeviceMacro":{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":2},
+{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd2.com","id":2}],"id":2},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"device1","parentDeviceMacro":{"name":"macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":3},{"classType":"CommandDelay","delaySecond":"2","parentDeviceMacro":{"name":"macro1","deviceMacroItems":[],"account":null,"id":1},"id":4},
+{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd3","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":3},"deviceName":"device1","parentDeviceMacro":{"name":"macro1","deviceMacroItems":
+[],"account":null,"id":1},"id":5}],"account":{"id":1},"id":1}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any macros.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2860%29Showalistofdevicemacros%2Ceachofthemhasthesamepropertieswiththespecifieddevicemacaro%28supportJDBC%29"></a>(60) Show a list of devicemacros, each of them has the same properties with the specified devicemacaro(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /devicemacro/loadsamemacros/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: deviceMacroDTO(the deviceMacro to be compared, its not specified id, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/devicemacro/loadsamemacros/1">http://localhost:8080/beehive/rest/devicemacro/loadsamemacros/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"name":"macro1","deviceMacroItems":[{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd1","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://
+cmd1.com","id":1}],"id":1},"device":{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":1},"deviceName":"device1","parentDeviceMacro":
+{"name":"macro1","id":1},"id":1},{"classType":"CommandDelay","delaySecond":"3","parentDeviceMacro":{"name":"macro1","id":1},"id":2},
+{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd2","protocol":{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd2.com","id":2}],"id":2},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":2},"deviceName":"device1","parentDeviceMacro":{"name":"macro1","id":1},"id":3},
+{"classType":"CommandDelay","delaySecond":"2","parentDeviceMacro":{"name":"macro1","id":1},"id":4},{"classType":"DeviceCommandRef","deviceCommand":{"name":"cmd3","protocol":
+{"type":"HTTP","attributes":[{"name":"url","value":"http://cmd3.com","id":3}],"id":3},"device":
+{"name":"device1","model":"dev","vendor":"dev","id":1},"sectionId":null,"id":3},"deviceName":"device1","parentDeviceMacro":{"name":"macro1","id":1},"id":5}],"account":
+{"id":1},"id":1}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+	<li>Output:json of a list of devicemacros.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"deviceMacros":[{"name":"macro1","deviceMacroItems":[],"account":null,"id":1}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error code:404, Not Found. See HTTP/1.1 documentation. If can't find any devicemacros.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2861%29SavedefaultcontrollerConfigsunderanaccount%2CitwillbecallwhencreatethenewAccount%28supportJDBC%29"></a>(61) Save default controllerConfigs under an account, it will be call when create the new Account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /controllerconfig/savedefault/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: controllerListing(include a list of controllerConfigs, in post content), account_id(account id)</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/controllerconfig/savedefault/1">http://localhost:8080/beehive/rest/controllerconfig/savedefault/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"controllerConfigs":[{"category":"roundrobin","id":0,"name":"controller.roundrobin.tcpserver.port","value":"20000"},
+{"category":"advance","id":0,"name":"multicast.address","value":"224.0.1.100"},
+{"category":"roundrobin","id":0,"name":"controller.roundrobin.multicast.port","value":"10000"},
+{"category":"advance","id":0,"name":"multicast.port","value":"3333"},{"category":"roundrobin","id":0,"name":"controller.groupname","value":"floor20"},
+{"category":"macro","id":0,"name":"Macro.IR.Execution.Delay","value":"500"},
+{"category":"roundrobin","id":0,"name":"controller.roundrobin.multicast.address","value":"224.0.1.200"},{"category":"infrared","id":0,"name":"lircd.conf.path","value":"/etc/
+lircd.conf"},{"category":"roundrobin","id":0,"name":"controller.groupmember.autodetect.on","value":"true"},
+{"category":"discovery","id":0,"name":"webapp.port","value":"8080"},{"category":"infrared","id":0,"name":"copy.lircd.conf.on","value":"true"},
+{"category":"infrared","id":0,"name":"irsend.path","value":"/usr/local/bin/irsend"},{"category":"security","id":0,"name":"resource.upload.enable","value":"true"},
+{"category":"advance","id":0,"name":"controller.applicationname","value":"controller"}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:true.</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2862%29ShowalistofcontrollerConfigsunderanaccountbycategoryName%28supportJDBC%29"></a>(62) Show a list of controllerConfigs under an account by categoryName(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /controllerconfig/load/{account_id}/{catagory_name}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id), catagory_name(catagory name)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/controllerconfig/load/1/roundrobin">http://localhost:8080/beehive/rest/controllerconfig/load/1/roundrobin</a></li>
+	<li>Output:json of a list of controllerConfigs.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"controllerConfigs":[{"name":"controller.roundrobin.tcpserver.port","value":"20000","category":"roundrobin","id":1},
+{"name":"controller.roundrobin.multicast.port","value":"10000","category":"roundrobin","id":3},
+{"name":"controller.groupname","value":"floor20","category":"roundrobin","id":5},
+{"name":"controller.roundrobin.multicast.address","value":"224.0.1.200","category":"roundrobin","id":7},
+{"name":"controller.groupmember.autodetect.on","value":"true","category":"roundrobin","id":9}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2863%29SaveorupdatealistofcontrollerConfigsintoanaccount%28supportJDBC%29"></a>(63) Save or update a list of controllerConfigs into an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /controllerconfig/saveall/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: POST</li>
+	<li>Parameters: controllerListing(include a list of controllerConfigs, in post content), account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/controllerconfig/saveall/1">http://localhost:8080/beehive/rest/controllerconfig/saveall/1</a>
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>{"controllerConfigs":[{"category":"roundrobin","id":1,"name":"controller.roundrobin.tcpserver.port","value":"20000"},
+{"category":"roundrobin","id":3,"name":"controller.roundrobin.multicast.port","value":"10000"},
+{"category":"roundrobin","id":5,"name":"controller.groupname","value":"floor20"},
+{"category":"roundrobin","id":7,"name":"controller.roundrobin.multicast.address","value":"224.0.1.200"},
+{"category":"roundrobin","id":9,"name":"controller.groupmember.autodetect.on","value":"false"}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Output:json of the controllerConfigs, it has the specified id.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"controllerConfigs":[{"name":"controller.roundrobin.tcpserver.port","value":"20000","category":"roundrobin","id":1},
+{"name":"controller.roundrobin.multicast.port","value":"10000","category":"roundrobin","id":3},
+{"name":"controller.groupname","value":"floor20","category":"roundrobin","id":5},
+{"name":"controller.roundrobin.multicast.address","value":"224.0.1.200","category":"roundrobin","id":7},
+{"name":"controller.groupmember.autodetect.on","value":"false","category":"roundrobin","id":9}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-%2864%29ShowallcontrollerConfigsunderanaccount%28supportJDBC%29"></a>(64) Show all controllerConfigs under an account(support JDBC)</h3>
+
+<ul>
+	<li>Request URL:
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre> /controllerconfig/loadall/{account_id}</pre>
+</div></div></li>
+</ul>
+
+
+<ul>
+	<li>Request Method: GET</li>
+	<li>Parameters: account_id(account id)</li>
+	<li>HTTP basic header Authorization : "Basic base64(username:password)"</li>
+	<li>Sample Request Url:<a href="http://localhost:8080/beehive/rest/controllerconfig/loadall/1">http://localhost:8080/beehive/rest/controllerconfig/loadall/1</a></li>
+	<li>Output:json of a list of controllerConfigs.</li>
+</ul>
+
+
+<ul>
+	<li>Sample Response:
+	<ul>
+		<li>content-type:application/json :
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>     
+{"controllerConfigs":[{"name":"controller.roundrobin.tcpserver.port","value":"20000","category":"roundrobin","id":1},
+{"name":"multicast.address","value":"224.0.1.100","category":"advance","id":2},{"name":"controller.roundrobin.multicast.port","value":"10000","category":"roundrobin","id":3},
+{"name":"multicast.port","value":"3333","category":"advance","id":4},{"name":"controller.groupname","value":"floor20","category":"roundrobin","id":5},
+{"name":"Macro.IR.Execution.Delay","value":"500","category":"macro","id":6},
+{"name":"controller.roundrobin.multicast.address","value":"224.0.1.200","category":"roundrobin","id":7},{"name":"lircd.conf.path","value":"/etc/
+lircd.conf","category":"infrared","id":8},{"name":"controller.groupmember.autodetect.on","value":"true","category":"roundrobin","id":9},
+{"name":"webapp.port","value":"8080","category":"discovery","id":10},{"name":"copy.lircd.conf.on","value":"true","category":"infrared","id":11},
+{"name":"irsend.path","value":"/usr/local/bin/irsend","category":"infrared","id":12},{"name":"resource.upload.enable","value":"true","category":"security","id":13},
+{"name":"controller.applicationname","value":"controller","category":"advance","id":14}]}
+</pre>
+</div></div></li>
+	</ul>
+	</li>
+</ul>
+
+
+<ul>
+	<li>Errors:
+	<ul>
+		<li>Error code:401, unauthorized. See HTTP/1.1 documentation.</li>
+		<li>Error Code:500, Server error. See  HTTP/1.1 documentation.</li>
+	</ul>
+	</li>
+</ul>
+
+
+<h3><a name="Beehive3.0RESTJSONAPIdocumentation%28supportJDBC%29-UseJSONPformat"></a>Use JSONP format</h3>
+
+<p>JSON-P is a method of wrapping the JSON output of API calls to allow other developers to call cross site. To use JSON-P, developer should include a 'callback' as request parameter like this: <a href="http://localhost:8080/beehive/rest/lirc?callback=aaa">http://localhost:8080/beehive/rest/lirc?callback=aaa</a><br/>
+then response will be :</p>
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>aaa &amp;&amp; aaa({"vendors":[{"id":1,"name":"3m"},{"id":2,"name":"abit"}]})
+</pre>
+</div></div>
+
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:23</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

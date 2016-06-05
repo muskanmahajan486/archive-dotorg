@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : A note an rotation implementation on iOS</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : A note an rotation implementation on iOS
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 05, 2011 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>Reviewing the implementation of the rotation management code on iOS took me quite a bit of time (and I still need to fix a couple of issues).<br/>
+The end code is pretty simple but getting there was a bit involved, so I thought I would share it here (also in case somebody has a better idea, I'm all ears).</p>
+
+<h6><a name="AnoteanrotationimplementationoniOS-Whyisitsohard%3F"></a>Why is it so hard ?</h6>
+
+<p>Rotation management is nicely handled by iOS, who mostly does all the work for you. So why is it so hard in OpenRemote?</p>
+
+<p>The issue is that once you are using the UIViewController class and its mechanisms, you need to follow the guidelines setup by Apple, which means:</p>
+<ul class="alternate" type="square">
+	<li>for a given view controller class, you need to define if you want to have the system do the rotation or not. It</li>
+	<li>if you do, the system will make the appropriate transformations automatically for you (i.e. change transform matrix to apply rotation and change your bounds to match new orientation)</li>
+	<li>and the system will only perform those operations when the device orientation actually changes</li>
+</ul>
+
+
+<p>While the last point makes sense for most applications, this is where the issue comes in for OpenRemote.<br/>
+In OR, we can have one screen designed for portrait orientation that navigates to one screen designed for landscape orientation. But the device did not rotate when this navigation occurs, so the above system do not work.</p>
+
+<h6><a name="AnoteanrotationimplementationoniOS-Solutions"></a>Solutions</h6>
+
+<p>The existing implementation did try to mix both the automatic rotation code provided by iOS and custom rotation code. More precisely, it would decide to let or forbid the system from auto-rotating the interface based in the available OR screens. From what I saw, this lead both to complex code and to the fact that in some edge cases, the automatic / manual mechanism would get "out of sync" and the display would get screwed.</p>
+
+<p>Another solution I did explore is to tell iOS to never managed the rotation for OR screens and to manage it manually in our code. While this does work fine for all OR screens, once you want to pop-up an "application screen" (like settings or login) and you use the iOS standard mechanism to do so (e.g. presentModalViewController: ), the system is lost because of the custom transform in place, resulting in the default animations not being correct (e.g. slide from side instead of bottom) and the OR screen getting screwed on dismiss (because iOS tries to restore you to the state it thought you were in before).<br/>
+A fix for this would be to not use any of the default iOS mechanism but this means re-implementing a lot of things provided by UIViewController for free.</p>
+
+<p>The solution I finally settled for is to always let the system perform the rotation on a top level view and embed our own child view in it. Then, depending on the OR screen that needs to be displayed, I "correct" the rotation on the child view. This seems to work great so far but has one draw back. As the system does the rotation for us, the UI does rotate with an animation, then "jumps" back to what it should be. I'm not sure I'll be able to fix that (I might be when talking to CoreAnimation directly, but not sure).</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19432735"></a>
+                                    <font class="smallfont"><p>I guess there is no "switch" in the API that allows the system todo the rotation but without animation ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 06, 2011 09:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432742"></a>
+                                    <font class="smallfont"><p>Not really a switch. You can interfere with that by going to CoreAnimation and control the implicit animations (get access to the layers under the view and change the action performed when animatable properties are being modified).<br/>
+I did try that and could get rid of the animations, but still the UI would flash in one orientation, then back to the next.</p>
+
+<p>What I ended up doing is:</p>
+<ul class="alternate" type="square">
+	<li>before rotation, take a capture of the screen and install that image at the top of the window. It sits above the view that gets rotated, so hides it and is not rotated</li>
+	<li>after rotation and our "geometry fix", remove the screen capture from screen</li>
+</ul>
+
+
+<p>This seems to work great so far in my tests (at least with simple UI). This might become an issue with videos and such but we'll see.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Oct 06, 2011 11:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

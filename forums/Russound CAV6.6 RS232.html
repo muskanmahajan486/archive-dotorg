@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Russound CAV6.6 RS232</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Russound CAV6.6 RS232
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 16, 2014 by <font color="#0050B2">sdavies</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>I've created a very simple remote to test the abilities of openremote which contains only zone 1 on/off, zone 1 volume slider and source set.<br/>
+The RS232 connection between the PC and Russound has been verified by PC Tools; I've been able to read and write to the amp.<br/>
+Unfortunately after going through extensive trouble shooting I've hit one roadblock too many.</p>
+
+<p>Currently when pressing buttons on the remote I receive the following error: Send Request Error - Command not found.</p>
+
+<p>The PC runs 64 bit Win 7; I understand that this has be known to conflict with the rxtx dll's, so I updated these based on some other posts I came across.</p>
+
+<p>The Serial Port is set to:<br/>
+Baud 19200<br/>
+Bits 8<br/>
+Stop Bits 1<br/>
+Parity &amp; Flow Control - None</p>
+
+<p>Updated the config.properties to:<br/>
+#-----------------------------------------------------------------------<br/>
+#</p>
+<ol>
+	<li>RUSSOUND CONFIGURATION:</li>
+	<li></li>
+	<li>Configuration related to Russound amplifier</li>
+</ol>
+
+
+<p>##</p>
+<ol>
+	<li>IP-Address of the RS232 Serial gateway if used. The gateway has to support TCP mode<br/>
+russound.ip=192.168.0.109</li>
+</ol>
+
+
+<p>##</p>
+<ol>
+	<li>Port of RS232 Serial gateway to use<br/>
+russound.port=1234</li>
+</ol>
+
+
+<p>##</p>
+<ol>
+	<li>KeypadId IF NOT 0x70 (default). Specify as Hex without leading "0x" eg. "71"<br/>
+russound.keypadId=</li>
+</ol>
+
+
+<p>##</p>
+<ol>
+	<li>If the Russound is connected directly to a serial port of controller use device name here eg. /dev/ttyS0</li>
+	<li>If a serial device is specified the IP settings are ignored<br/>
+russound.serialDevice=COM1</li>
+</ol>
+
+
+<p>##</p>
+<ol>
+	<li>If a pollingInterval is given, that means an extra thread is started which polls the device for the status</li>
+	<li>valid values: 5000, 5s, 1m, 2h  (no letter=milliseconds, s=seconds, m=minute, h=hour)<br/>
+russound.statusPollingInterval=</li>
+</ol>
+
+
+<p>and finally here's an excerpt from the log file:</p>
+
+<p>ERROR 2014-02-15 19:25:30,182 : Creating sensor failed. Error : Could not start Russound ip connection <br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="250" name="Zone6 Power" type="switch"&gt;<br/>
+      &lt;include type="command" ref="144" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+org.openremote.controller.exception.NoSuchCommandException: Could not start Russound ip connection<br/>
+	at org.openremote.controller.protocol.russound.RussoundCommandBuilder.build(RussoundCommandBuilder.java:78)<br/>
+	at org.openremote.controller.command.CommandFactory.getCommand(CommandFactory.java:164)<br/>
+	at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:420)<br/>
+	at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)<br/>
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)<br/>
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)<br/>
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:858)<br/>
+	at org.openremote.controller.service.Deployer.startController(Deployer.java:336)<br/>
+	at org.openremote.controller.spring.SpringContext.initializeController(SpringContext.java:109)<br/>
+	at org.openremote.controller.service.ServiceContext.init(ServiceContext.java:383)<br/>
+	at org.openremote.controller.bootstrap.Startup.loadServiceContext(Startup.java:85)<br/>
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.initializeServiceContext(ServletStartup.java:190)<br/>
+	at org.openremote.controller.bootstrap.servlet.ServletStartup.contextInitialized(ServletStartup.java:109)<br/>
+	at org.apache.catalina.core.StandardContext.listenerStart(StandardContext.java:3843)<br/>
+	at org.apache.catalina.core.StandardContext.start(StandardContext.java:4342)<br/>
+	at org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:791)<br/>
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:771)<br/>
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:525)<br/>
+	at org.apache.catalina.startup.HostConfig.deployDirectory(HostConfig.java:926)<br/>
+	at org.apache.catalina.startup.HostConfig.deployDirectories(HostConfig.java:889)<br/>
+	at org.apache.catalina.startup.HostConfig.deployApps(HostConfig.java:492)<br/>
+	at org.apache.catalina.startup.HostConfig.start(HostConfig.java:1149)<br/>
+	at org.apache.catalina.startup.HostConfig.lifecycleEvent(HostConfig.java:311)<br/>
+	at org.apache.catalina.util.LifecycleSupport.fireLifecycleEvent(LifecycleSupport.java:117)<br/>
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1053)<br/>
+	at org.apache.catalina.core.StandardHost.start(StandardHost.java:719)<br/>
+	at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1045)<br/>
+	at org.apache.catalina.core.StandardEngine.start(StandardEngine.java:443)<br/>
+	at org.apache.catalina.core.StandardService.start(StandardService.java:516)<br/>
+	at org.apache.catalina.core.StandardServer.start(StandardServer.java:710)<br/>
+	at org.apache.catalina.startup.Catalina.start(Catalina.java:578)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)<br/>
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)<br/>
+	at java.lang.reflect.Method.invoke(Method.java:606)<br/>
+	at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:288)<br/>
+	at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:413)<br/>
+Caused by: gnu.io.PortInUseException: Unknown Application<br/>
+	at gnu.io.CommPortIdentifier.open(CommPortIdentifier.java:467)<br/>
+	at org.openremote.controller.protocol.russound.RussoundClient.&lt;init&gt;(RussoundClient.java:71)<br/>
+	at org.openremote.controller.protocol.russound.RussoundCommandBuilder.build(RussoundCommandBuilder.java:76)<br/>
+	... 38 more<br/>
+INFO 2014-02-15 19:25:30,417 : Startup complete.<br/>
+INFO 2014-02-15 19:25:30,417 : Controller Definition File Watcher for Default Deployer started.</p>
+
+
+<p>One thing I don't understand is why it is quoting Zone 6, when I'm using Zone 1</p>
+
+<p>Anyhow, I'm not pulling much in the way of searches on this error so thought I'd resort to making my first post. Thanks in advance!</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22884363"></a>
+                                    <font class="smallfont"><p>As it turns out my issue was strictly related to an instance of EventGhost that was running and interfering... now to figure out how to select different sources for each Zone.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sdavies at Feb 16, 2014 05:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884408"></a>
+                                    <font class="smallfont"><p>The Russound command can connect to an RS232 port on the computer, or via a IP bridge. From the error message it looks like it is trying to use the IP bridge. Try with commenting out the IP address configuration and see if it defaults back to open the com port on the computer instead. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Feb 17, 2014 07:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884428"></a>
+                                    <font class="smallfont"><p>Thanks Torbjorn - After uninstalling the plugin for EventGhost which was occupying the RS232 my issue was resolved. Interesting point on the IP address, Perhaps I'll try this tonight to avoid any potential issues down the road.<br/>
+Great piece of software, was up and running in no time after this initial hiccup.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sdavies at Feb 17, 2014 20:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,448 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Rules and Virtual Commands for Switch</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Rules and Virtual Commands for Switch
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 30, 2012 by <font color="#0050B2">crawf</font>.
+				    </div>
+
+				    <p>I'm trying to get a timer rule working using Virtual Commands, but struggling with getting it to work (nothing happens).</p>
+
+<p>In my UI, I have two switches ("Switch" and "Timer Switch").</p>
+
+<p>"Switch" toggles a light at address 0/0/12 (KNX in case you were wondering) on and off. </p>
+
+<p>"Timer Switch" uses In-memory Virtual Commands, which aims to toggle a timer for 'Turn off at midnight', which when switched ON, will switch the 0/0/12 switch OFF if &gt;= midnight. If switched to OFF, will do nothing.</p>
+
+<p>Below is my code for the Rules, which runs at midnight and switches the "Switch" OFF if it's midnight AND the "Timer Switch" is set to ON.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+rule <span class="code-quote">"Auto-<span class="code-keyword">switch</span> 0/0/12 OFF at Midnight"</span>
+    timer (cron: 0 0 0 * * ?)
+when
+    Switch(source == <span class="code-quote">"Timer Switch"</span>, value == <span class="code-quote">"ON"</span>)
+then
+    execute.command(<span class="code-quote">"0/0/12 OFF"</span>); <span class="code-comment">// <span class="code-keyword">this</span> is the name of my KNX Command (works fine)
+</span>end
+</pre>
+</div></div>
+
+
+<p>And just for the extra help, below are commands/sensors for the Timer Switch.</p>
+
+<p><b>Timer ON (Command)</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Protocol - In-memory Virtual Command
+Command - ON
+Address - Dummy
+</pre>
+</div></div>
+
+<p><b>Timer OFF (Command)</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Protocol - In-memory Virtual Command
+Command - OFF
+Address - Dummy
+</pre>
+</div></div>
+
+<p><b>Timer STATUS (Command)</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Protocol - In-memory Virtual Command
+Command - STATUS
+Address - Dummy
+</pre>
+</div></div>
+
+<p><b>Timer ON/OFF (Sensor)</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Command - Timer STATUS
+Type: Switch
+</pre>
+</div></div>
+
+<p><b>Timer Switch (Switch)</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Sensor - Timer ON/OFF
+Command On - Timer ON
+Command Off - Timer OFF
+</pre>
+</div></div>
+
+<p>Running the above code shows nothing happens. I've also tried changing the timer to "timer (cron: 0 * * * * ?)", which runs every minute (on the minute), but still nothing happens</p>
+
+<p>Any ideas?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21037141"></a>
+                                    <font class="smallfont"><p>The execute should be</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+execute.command(<span class="code-quote">"0/0/12"</span>, <span class="code-quote">"off"</span>);
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 31, 2012 21:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037143"></a>
+                                    <font class="smallfont"><p>It shouldn't matter if I have a command already in use called "0/0/12 OFF" should it? My understanding is it does essentially the same thing - the below code works just fine...</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Auto-<span class="code-keyword">switch</span> 0/0/12 OFF at Midnight"</span>
+    timer (cron: 0 0 0 * * ?)
+when
+    eval(<span class="code-keyword">true</span>)
+then
+    execute.command(<span class="code-quote">"0/0/12 OFF"</span>); <span class="code-comment">// <span class="code-keyword">this</span> is the name of my KNX Command (works fine)
+</span>end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by crawf at Oct 31, 2012 21:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037144"></a>
+                                    <font class="smallfont"><p>That's true.<br/>
+You can try add a "System.out.println("rule executed");" to see if the rule triggers.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 31, 2012 21:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037145"></a>
+                                    <font class="smallfont"><p>Yeah, doesn't seem to print, even when changing the timer to "timer (cron: 0 * * * * ?)", which runs every minute (on the minute).</p>
+
+<p>I assume that "Switch(source == "Timer Switch", value == "ON")" should just read the status of the Timer Switch? An event isn't actually occurring (say flicking the switch from off to on) - I just want to check what state the Timer Switch is on (at midnight) to see if I need to switch off a switch.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by crawf at Oct 31, 2012 22:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037146"></a>
+                                    <font class="smallfont"><p>I think you will need 2 rules.<br/>
+1) When Timer-Switch turns on -&gt; set a rule engine variable<br/>
+2) A timer which has a check in the when clause to see if that variable is true. If that is the case turn off the light and remove variable.</p>
+
+<p>Here is an example with variables:
+<a href="http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/mredeker/Controller_2_0_1/test/org/openremote/controller/fixture/statuscache/rules/holiday-example/rules/Holidays.drl?revision=7028&amp;view=markup">http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/mredeker/Controller_2_0_1/test/org/openremote/controller/fixture/statuscache/rules/holiday-example/rules/Holidays.drl?revision=7028&amp;view=markup</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 31, 2012 22:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037149"></a>
+                                    <font class="smallfont"><p>D'OH! Just realised I'm using the actual Switch's name, NOT the Sensor's name. Below is the working code if anyone else is interested.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Auto-<span class="code-keyword">switch</span> 0/0/12 OFF at Midnight - only <span class="code-keyword">if</span> Auto-<span class="code-keyword">switch</span> <span class="code-keyword">switch</span> set to ON"</span>
+    timer (cron: 0 0 0 * * ?)
+when
+    Switch(source == <span class="code-quote">"0/0/12 Timer ON/OFF"</span>, value == <span class="code-quote">"on"</span>) <span class="code-comment">// use the name of the Sensor not the Switch
+</span>then
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Midnight Auto-<span class="code-keyword">switch</span> off - 0/0/12"</span>);
+    execute.command(<span class="code-quote">"0/0/12 OFF"</span>); <span class="code-comment">// <span class="code-keyword">this</span> is the name of my KNX Command <span class="code-keyword">for</span> switching 0/0/12 to off
+</span>end
+</pre>
+</div></div>
+
+<p>Thanks for your help regardless Marcus <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by crawf at Oct 31, 2012 23:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882445"></a>
+                                    <font class="smallfont"><p>Hey everyone,<br/>
+The below command didn't work for me.</p>
+
+<p>Switch(source == "0/0/12 Timer ON/OFF", value == "on")</p>
+
+<p>I had to change it to</p>
+
+<p>Event (source == "0/0/12 Timer ON/OFF", value == "on")</p>
+
+<p>Don't ask me why.</p>
+
+<p>Stijn</p>
+
+<p>PS: "on" needed to be in lower case.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 08, 2014 22:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882451"></a>
+                                    <font class="smallfont"><blockquote><p>Don't ask me why</p></blockquote>
+<p>Did you define your switch sensor as type:<b>switch</b> ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 09, 2014 07:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882474"></a>
+                                    <font class="smallfont"><p>Hey Pieter,<br/>
+Yes it is set to type switch.<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 09, 2014 12:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882478"></a>
+                                    <font class="smallfont"><p>hmm, it works for me. Just tested it again yesterday as part of my writing of a <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+In-memory+Virtual+Command+Protocol" title="OpenRemote 2.0 How To - In-memory Virtual Command Protocol">OpenRemote 2.0 How To &#45; In&#45;memory Virtual Command Protocol</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 09, 2014 12:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882481"></a>
+                                    <font class="smallfont"><p>Hmm very strange.<br/>
+Well it doesn't work for me, are you running the free controller or the pro controller?<br/>
+Good "How-To" by the way.<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 09, 2014 12:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882495"></a>
+                                    <font class="smallfont"><p>I use PRO controller</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 09, 2014 13:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882497"></a>
+                                    <font class="smallfont"><p>Same as me then</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 09, 2014 13:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882498"></a>
+                                    <font class="smallfont"><p>What do you have as header in your rule file (package, import etc)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 09, 2014 13:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882499"></a>
+                                    <font class="smallfont"><p>I have</p>
+
+<p>package org.openremote.controller.protocol</p>
+
+<p>global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+global org.openremote.controller.statuscache.SwitchFacade switches;</p>
+
+<p>import org.openremote.controller.protocol.*;</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 09, 2014 14:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882500"></a>
+                                    <font class="smallfont"><p>This is my complete code:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+rule <span class="code-quote">"Set DeadlineHour"</span>
+when
+  Switch(source == <span class="code-quote">"SensorVirtualSwitch1"</span>, value == <span class="code-quote">"on"</span>)
+then
+  execute.command(<span class="code-quote">"DeadlineHourValue"</span>, 17);
+end
+</pre>
+</div></div>
+<p>The LevelFacade is not necessary for this rule I think. Your header does not have the <em>event</em> thing which I guessed you would need.</p>
+
+<p>I remain puzzled with Drools..</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 09, 2014 14:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882502"></a>
+                                    <font class="smallfont"><p>You are not the only one and I'm not a programmer so for me it's really a proper nightmare.<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 09, 2014 15:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882681"></a>
+                                    <font class="smallfont"><p>I think i found the issue Pieter.<br/>
+I haven't tested it yet but I was working on another piece of code and the Range command didn't work.<br/>
+After figuring out that I could find drools errors in the boot.log file I notice OR dismissed the Range command as non existent.<br/>
+So I changed the package I was using (package org.openremote.controller.protocol) to package org.openremote.controller.model.event which I had found in one of Juha's posts and now when I look at it is also in your commands here above.<br/>
+Maybe it would be wise to put a warning in your tutorial to make sure the correct package is imported.<br/>
+Cheers<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 13, 2014 10:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882685"></a>
+                                    <font class="smallfont"><blockquote><p>Maybe it would be wise to put a warning in your tutorial to make sure the correct package is imported.</p></blockquote>
+<p>Imho that should be in the introductory page to Rules along with some more on the "glue" between OpenRemote and Drools. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 13, 2014 10:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882686"></a>
+                                    <font class="smallfont"><p>I agree, but is there such a page, because if there is I would like to read it <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>.<br/>
+Stijn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 13, 2014 10:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882688"></a>
+                                    <font class="smallfont"><p><a href="http://www.openremote.org/display/docs/Designer+2.0+-+Controller+Rules" title="Designer 2.0 - Controller Rules">Designer 2.0 &#45; Controller Rules</a> is the top page.<br/>
+I am collecting some rule related links and texts on <a href="http://www.openremote.org/display/~pz1/My+Pages">my private pages</a> under heading Scratch pads. Be warned those are not intended as authorative, nor will the document be permanent.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 13, 2014 10:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882689"></a>
+                                    <font class="smallfont"><p>Yeah I've seen that page.<br/>
+That's where I got that "wrong" package org.openremote.controller.protocol package command in the first place.<br/>
+If you use that page and then use your code it won't work because the package doesn't have the Switch code defined.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by garfield.arbuckle at Jan 13, 2014 10:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882690"></a>
+                                    <font class="smallfont"><p>Well I leave this confusion to the OpenRemote core team to answer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 13, 2014 11:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

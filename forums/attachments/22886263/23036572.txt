@@ -1,0 +1,77 @@
+private String readReply(java.net.Socket socket) throws IOException 
+{
+  BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+  char[] buffer = new char[200];
+     
+  int len;
+  int offset = 0;
+     
+  while (true)
+  {
+    len = bufferedReader.read(buffer, offset, 200-offset);  
+    offset += len;
+    logger.info("offset: " + offset);  
+ //   if (len == -1 || offset >= 200)
+ //   {
+ //     break;
+ //   }
+  
+     
+  if (offset >= 32) 
+  {
+    String reply = new String(buffer, 0, offset);
+    return reply;
+  } 
+}
+//  else 
+//  {
+//    return "";
+//  }
+}
+
+	
+   public void run() {
+      
+      while (doPoll) {
+         // Strip response from control characters (non-ASCII)...
+         // Patch provided by Phillip Lavender
+         String rawResult = this.requestSocket();
+         Pattern p = Pattern.compile("\\p{Cntrl}");
+         Matcher m = p.matcher(rawResult);
+         String readValue = m.replaceAll("");
+
+         if (regex != null) {
+           Pattern regexPattern = Pattern.compile(regex);
+           Matcher matcher = regexPattern.matcher(readValue);
+           if (matcher.find()) {
+             String result = matcher.group();
+             logger.info("result of regex evaluation: " + result);
+             sensor.update(result);
+           } else {
+             logger.info("regex evaluation did not find a match");
+             sensor.update("N/A");
+           }
+         } else {
+		String s = rawResult;
+		int len = s.length();
+		logger.info("rawresult: " + rawResult);
+		logger.info("Lunghezza s: " + len);
+		if (len == 32){
+		String g = s.substring(10,23);	//extract 13 CHRS ASCII 
+		readValue = g;
+		} else {
+			readValue = "No data";
+			}
+           sensor.update(readValue);
+         }
+         try {
+            Thread.sleep(pollingInterval); // We wait for the given pollingInterval before reading socket again
+         } catch (InterruptedException e) {
+            doPoll = false;
+            pollingThread.interrupt();
+         }
+      }
+      logger.debug("*** Out of run method: " + sensor);
+   }
+
+}

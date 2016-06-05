@@ -1,0 +1,800 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OpenRemote Controller crash on raspberry pi 2</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OpenRemote Controller crash on raspberry pi 2
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 28, 2015 by <font color="#0050B2">yomgdf</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+
+<p>I moved all my home automation from rpi (domoticz) and Eee Pc (openremote) to rpi2 (domoticz+openremote).<br/>
+Everything's fine with installation and configuration. <br/>
+It works great and the load average of the rpi2 is about 30% CPU and 300-400Mb of memory.</p>
+
+<p>After a few hours openremote controllers crashes. I tried the 6 and the 7 version of java (icedtea-6-jre-cacao and icedtea-7-jre-cacao). Nothing changes.</p>
+
+<p>Do you have any idea of log files from which I could read and learn ?<br/>
+Syslog says nothing and boot.log from openremote controller don't report anything.</p>
+
+<p>Regards,</p>
+
+<p>Guillaume</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23597997"></a>
+                                    <font class="smallfont"><p>Hi Guillaume,</p>
+
+<p>which version of controller are you using? Free, pro, version number?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Apr 29, 2015 09:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597998"></a>
+                                    <font class="smallfont"><p>Hi Michal,</p>
+
+<p>I'm using the free version of openremote controller which is on version 2.1.0.<br/>
+By the way, I'm using raspbian on the rpi2 which has 3.18.11-v7+ kernel version.</p>
+
+<p>I created a script that check the status of ps and netstat, if there's something wrong, it kills java processes and (re)launch openremote service.<br/>
+Since yesterday it crashes 2 times :<br/>
+Apr 29 13:09:01 raps2 logger: Something wrong with OpenRemote, killing java processes<br/>
+Apr 29 04:36:01 raps2 logger: Something wrong with OpenRemote, killing java processes</p>
+
+<p>One more thing all my openremote configuration is based on http request to domoticz server who is installed on the same rpi2.</p>
+
+<p>I Hope this help.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yomgdf at Apr 29, 2015 12:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598000"></a>
+                                    <font class="smallfont"><p>So in fact the Openremote does not crashes but it is killed by your custom script. I'm afraid that this is outside the scope of this group as we cannot possibly know why your script is killing Openremote process and whether this action is justified.</p>
+<blockquote>
+<p>Something wrong with OpenRemote, killing java processes</p></blockquote>
+<p>is very ambiguous.</p>
+
+<p>Tip: on the professional eBox controller, we are using <a href="http://sourceforge.net/projects/yajsw/">yajsw-stable-11.03</a> wrapper to watch the openremote process. IMHO, it would do a better job than custom scripting, at least in messaging why the process is being killed.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Apr 29, 2015 13:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598002"></a>
+                                    <font class="smallfont"><p>In fact, as you can read, I am not an english native ... That's why you find the message ambiguous <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Here is my script :</p>
+
+<p>#!/bin/bash</p>
+
+<p>#count java process<br/>
+ps_res=`ps faux | fgrep java | fgrep -v grep | wc -l`</p>
+
+<p>if [ $ps_res = "1" ]<br/>
+then<br/>
+        logger "OpenRemote is runing good, nothing to do"<br/>
+else<br/>
+        logger "Something wrong with OpenRemote, killing java processes"<br/>
+        #kill every java process to be sure<br/>
+        /usr/bin/killall java<br/>
+        sleep 10<br/>
+        /usr/sbin/service openremote start<br/>
+fi</p>
+
+<p>I cron this script every minute and as you can see, I'm afraid that Openremote really crash. This script is just a palliative way to keep home automation services up and running.</p>
+
+<p>Is there any log file to watch or debug mode I can do ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yomgdf at Apr 29, 2015 13:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598008"></a>
+                                    <font class="smallfont"><p>I see... Anyway, my educational guess is that you are running out of memory, but there can be other reasons. Look at logs/dev/dev.log. You can always increase logging sensitivity in webapps/controller/WEB-INF/classes/log4j.properties</p>
+
+<p>Also, if there is something wrong then dmesg should show something.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Apr 29, 2015 15:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598010"></a>
+                                    <font class="smallfont"><p>Thank you.<br/>
+I willll take a look on log files, increase logging severity and let you know.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yomgdf at Apr 29, 2015 15:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598025"></a>
+                                    <font class="smallfont"><p>Have you tried using Oracle Java 8. It would always crash for me using OpenJDK 6 but using Oracle Java 8 it seems to stabilize.</p>
+
+<p>The only problem is I can't compile the designer for Java 8</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glennl at Apr 30, 2015 03:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598515"></a>
+                                    <font class="smallfont"><p>hello<br/>
+I have exactly the same problem as you. I was starting to wonder if I was not the only one to have installed OpenRemote on Raspi 2.<br/>
+Here are my tests:<br/>
+migration Raspi 1 to 2 Raspi -&gt; crash after few hours<br/>
+new instalation on Raspi 2 -&gt; -&gt; crash after few hours<br/>
+deactivation of OpenRemote -&gt; no more crach (1 week test)<br/>
+test on java8, java java 6 and 7 -&gt; no change, always crash<br/>
+test with 2 different raspberry PI 2 -&gt; always crash<br/>
+No problem with raspberry PI 1</p>
+
+<p>someone happens to run OpenRemote on the Raspberry PI 2  ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moebius912 at May 07, 2015 10:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598516"></a>
+                                    <font class="smallfont"><p>Hello,</p>
+
+<p>I'm running java 8 since 36 hours and openremote crash no more.<br/>
+Thanks Glenn for the trick.</p>
+
+<p>MOEBIUS911, <br/>
+What distribution are you using ?<br/>
+In my case, it's a classical raspbian, up-to-date (apt + rpi-update).<br/>
+Before installing java8, I removed all the package related to java in the system to be sure using the 8th version.<br/>
+To be sure about the java version : <br/>
+root@rpi2# java -version<br/>
+java version "1.8.0"<br/>
+Java(TM) SE Runtime Environment (build 1.8.0-b132)<br/>
+Java HotSpot(TM) Client VM (build 25.0-b70, mixed mode)</p>
+
+<p>Another idea, maybe OpenRemote crash because of lake of memory in the rpi2. How many MB did you assign to memory video ?<br/>
+In my case, I want to try to use it for KODI too so I assign 256 MB for Video memory. That means that 750 MB are free to be used by home automation application or anyhting else.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yomgdf at May 07, 2015 10:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598530"></a>
+                                    <font class="smallfont"><p>I have the latest version of Raspbian . Kernel version : 3.18<br/>
+I 128MB video memory. I will try with 256. I'm not sure it changes the problem because the GUI is disabled. I only work in console mode.<br/>
+I have the same version of java as you. this is the version java installed by default with the latest Raspbian .<br/>
+pi@domotique ~ $ java -version<br/>
+java version " 1.8.0 "<br/>
+Java (TM) SE Runtime Environment (build 1.8.0 - B132 )<br/>
+Java HotSpot (TM ) Client VM (build 25.0 - b70 , mixed mode)</p>
+
+<p>I will try to reinstall java8<br/>
+Can you explain your procedure to remove the entire package related to Java in the system<br/>
+thank you</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moebius912 at May 07, 2015 13:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598532"></a>
+                                    <font class="smallfont"><p>I do not know if I explained but it's the rapsberry that crash .<br/>
+I have to restart electrically .<br/>
+As explained above the problem disappears when I turn off OpenRemote</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moebius912 at May 07, 2015 14:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598582"></a>
+                                    <font class="smallfont"><p>I think about power supply issues. Java is demanding some power that you can't deliver.<br/>
+With rpi 1, 750mA power can be used but 1A is recommanded.<br/>
+With rapi2 I used a 2A power. Try this.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yomgdf at May 08, 2015 18:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598598"></a>
+                                    <font class="smallfont"><p>Interesting, I guess that explains why I don't have issues as I use a 2A power adapter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glennl at May 09, 2015 02:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598617"></a>
+                                    <font class="smallfont"><p>I change the supply devices and I get you informed<br/>
+thank</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moebius912 at May 09, 2015 09:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598626"></a>
+                                    <font class="smallfont"><p>unfortunately raspiberry planted again .<br/>
+last 10 sec before the crash, the syslog :</p>
+
+
+<p>May  9 11:17:09 Domotique kernel: imklog 5.8.11, log source = /proc/kmsg started.<br/>
+May  9 11:17:09 Domotique rsyslogd: <span class="error">&#91;origin software=&quot;rsyslogd&quot; swVersion=&quot;5.8.11&quot; x-pid=&quot;1839&quot; x-info=&quot;http://www.rsyslog.com&quot;&#93;</span> start<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Booting Linux on physical CPU 0xf00<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Initializing cgroup subsys cpu<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Initializing cgroup subsys cpuacct<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Linux version 3.18.12-v7+ (dc4@dc4-XPS13-9333) (gcc version 4.8.3 20140303 (prerelease) (crosstool-NG linaro-1.13.1+bzr2650 - Linaro GCC 2014.03) ) #783 SMP PREEMPT Tue May 5 22:48:52 BST 2015<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] CPU: ARMv7 Processor 410fc075 revision 5 (ARMv7), cr=10c5387d<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Machine model: Raspberry Pi 2 Model B<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] cma: Reserved 8 MiB at 0x2e800000<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Memory policy: Data cache writealloc<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] On node 0 totalpages: 192512<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] free_area_init_node: node 0, pgdat 8080f480, node_mem_map ae213000<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]   Normal zone: 1504 pages used for memmap<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]   Normal zone: 0 pages reserved<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]   Normal zone: 192512 pages, LIFO batch:31<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] bcm2709\_smp\_init\_cpus enter (8620-&gt;f3003010)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] bcm2709\_smp\_init\_cpus ncores=4<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] PERCPU: Embedded 10 pages/cpu @ae1e1000 s11456 r8192 d21312 u40960<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] pcpu-alloc: s11456 r8192 d21312 u40960 alloc=10*4096<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] pcpu-alloc: 0 0 0 1 0 2 0 3 <br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 191008<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Kernel command line: dma.dmachans=0x7f35 bcm2708_fb.fbwidth=656 bcm2708_fb.fbheight=416 bcm2709.boardrev=0xa01041 bcm2709.serial=0x38c6c4a9 smsc95xx.macaddr=B8:27:EB:C6:C4:A9 bcm2708_fb.fbswap=1 bcm2709.disk_led_gpio=47 bcm2709.disk_led_active_low=0 sdhci-bcm2708.emmc_clock_freq=250000000 vc_mem.mem_base=0x3dc00000 vc_mem.mem_size=0x3f000000  dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline rootwait<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] PID hash table entries: 4096 (order: 2, 16384 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Memory: 745760K/770048K available (5722K kernel code, 397K rwdata, 1748K rodata, 384K init, 763K bss, 24288K reserved)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Virtual kernel memory layout:<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]     fixmap  : 0xffc00000 - 0xffe00000   (2048 kB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]     vmalloc : 0xaf800000 - 0xff000000   (1272 MB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]     lowmem  : 0x80000000 - 0xaf000000   ( 752 MB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]     modules : 0x7f000000 - 0x80000000   (  16 MB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]       .text : 0x80008000 - 0x80753a5c   (7471 kB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]       .init : 0x80754000 - 0x807b4000   ( 384 kB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]       .data : 0x807b4000 - 0x808174bc   ( 398 kB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000]        .bss : 0x808174bc - 0x808d6254   ( 764 kB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Preemptible hierarchical RCU implementation.<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] NR_IRQS:608<br/>
+May  9 11:17:09 Domotique kernel: [    0.000000] Architected cp15 timer(s) running at 19.20MHz (virt).<br/>
+May  9 11:17:09 Domotique kernel: [    0.000014] sched_clock: 56 bits at 19MHz, resolution 52ns, wraps every 3579139424256ns<br/>
+May  9 11:17:09 Domotique kernel: [    0.000037] Switching to timer-based delay loop, resolution 52ns<br/>
+May  9 11:17:09 Domotique kernel: [    0.000335] Console: colour dummy device 80x30<br/>
+May  9 11:17:09 Domotique kernel: [    0.001754] console tty1 enabled<br/>
+May  9 11:17:09 Domotique kernel: [    0.001806] Calibrating delay loop (skipped), value calculated using timer frequency.. 38.40 BogoMIPS (lpj=192000)<br/>
+May  9 11:17:09 Domotique kernel: [    0.001888] pid_max: default: 32768 minimum: 301<br/>
+May  9 11:17:09 Domotique kernel: [    0.002291] Mount-cache hash table entries: 2048 (order: 1, 8192 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.002351] Mountpoint-cache hash table entries: 2048 (order: 1, 8192 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.003624] Initializing cgroup subsys memory<br/>
+May  9 11:17:09 Domotique kernel: [    0.003709] Initializing cgroup subsys devices<br/>
+May  9 11:17:09 Domotique kernel: [    0.003764] Initializing cgroup subsys freezer<br/>
+May  9 11:17:09 Domotique kernel: [    0.003814] Initializing cgroup subsys net_cls<br/>
+May  9 11:17:09 Domotique kernel: [    0.003877] Initializing cgroup subsys blkio<br/>
+May  9 11:17:09 Domotique kernel: [    0.003983] CPU: Testing write buffer coherency: ok<br/>
+May  9 11:17:09 Domotique kernel: [    0.004103] ftrace: allocating 19615 entries in 58 pages<br/>
+May  9 11:17:09 Domotique kernel: [    0.052727] CPU0: update cpu_capacity 1024<br/>
+May  9 11:17:09 Domotique kernel: [    0.052802] CPU0: thread -1, cpu 0, socket 15, mpidr 80000f00<br/>
+May  9 11:17:09 Domotique kernel: [    0.052842] bcm2709\_smp\_prepare\_cpus enter<br/>
+May  9 11:17:09 Domotique kernel: [    0.052995] Setting up static identity map for 0x528738 - 0x52876c<br/>
+May  9 11:17:09 Domotique kernel: [    0.112627] bcm2709\_boot\_secondary cpu:1 started (0) 18<br/>
+May  9 11:17:09 Domotique kernel: [    0.112937] CPU1: Booted secondary processor<br/>
+May  9 11:17:09 Domotique kernel: [    0.112945] bcm2709\_secondary\_init enter cpu:1<br/>
+May  9 11:17:09 Domotique kernel: [    0.112998] CPU1: update cpu_capacity 1024<br/>
+May  9 11:17:09 Domotique kernel: [    0.113007] CPU1: thread -1, cpu 1, socket 15, mpidr 80000f01<br/>
+May  9 11:17:09 Domotique kernel: [    0.132589] bcm2709\_boot\_secondary cpu:2 started (0) 16<br/>
+May  9 11:17:09 Domotique kernel: [    0.132846] CPU2: Booted secondary processor<br/>
+May  9 11:17:09 Domotique kernel: [    0.132853] bcm2709\_secondary\_init enter cpu:2<br/>
+May  9 11:17:09 Domotique kernel: [    0.132883] CPU2: update cpu_capacity 1024<br/>
+May  9 11:17:09 Domotique kernel: [    0.132892] CPU2: thread -1, cpu 2, socket 15, mpidr 80000f02<br/>
+May  9 11:17:09 Domotique kernel: [    0.152672] bcm2709\_boot\_secondary cpu:3 started (0) 17<br/>
+May  9 11:17:09 Domotique kernel: [    0.152909] CPU3: Booted secondary processor<br/>
+May  9 11:17:09 Domotique kernel: [    0.152916] bcm2709\_secondary\_init enter cpu:3<br/>
+May  9 11:17:09 Domotique kernel: [    0.152944] CPU3: update cpu_capacity 1024<br/>
+May  9 11:17:09 Domotique kernel: [    0.152953] CPU3: thread -1, cpu 3, socket 15, mpidr 80000f03<br/>
+May  9 11:17:09 Domotique kernel: [    0.153046] Brought up 4 CPUs<br/>
+May  9 11:17:09 Domotique kernel: [    0.153174] SMP: Total of 4 processors activated (153.60 BogoMIPS).<br/>
+May  9 11:17:09 Domotique kernel: [    0.153208] CPU: All CPU(s) started in SVC mode.<br/>
+May  9 11:17:09 Domotique kernel: [    0.154220] devtmpfs: initialized<br/>
+May  9 11:17:09 Domotique kernel: [    0.178954] VFP support v0.3: implementor 41 architecture 2 part 30 variant 7 rev 5<br/>
+May  9 11:17:09 Domotique kernel: [    0.180917] pinctrl core: initialized pinctrl subsystem<br/>
+May  9 11:17:09 Domotique kernel: [    0.184134] NET: Registered protocol family 16<br/>
+May  9 11:17:09 Domotique kernel: [    0.189731] DMA: preallocated 4096 KiB pool for atomic coherent allocations<br/>
+May  9 11:17:09 Domotique kernel: [    0.190885] bcm2709.uart_clock = 3000000<br/>
+May  9 11:17:09 Domotique kernel: [    0.193747] hw-breakpoint: found 5 (+1 reserved) breakpoint and 4 watchpoint registers.<br/>
+May  9 11:17:09 Domotique kernel: [    0.193802] hw-breakpoint: maximum watchpoint size is 8 bytes.<br/>
+May  9 11:17:09 Domotique kernel: [    0.193857] mailbox: Broadcom VideoCore Mailbox driver<br/>
+May  9 11:17:09 Domotique kernel: [    0.193990] bcm2708_vcio: mailbox at f300b880<br/>
+May  9 11:17:09 Domotique kernel: [    0.194358] bcm_power: Broadcom power driver<br/>
+May  9 11:17:09 Domotique kernel: [    0.194395] bcm_power_open() -&gt; 0<br/>
+May  9 11:17:09 Domotique kernel: [    0.194420] bcm_power_request(0, 8)<br/>
+May  9 11:17:09 Domotique kernel: [    0.695099] bcm_mailbox_read -&gt; 00000080, 0<br/>
+May  9 11:17:09 Domotique kernel: [    0.695130] bcm_power_request -&gt; 0<br/>
+May  9 11:17:09 Domotique kernel: [    0.695275] Serial: AMBA PL011 UART driver<br/>
+May  9 11:17:09 Domotique kernel: [    0.695427] dev:f1: ttyAMA0 at MMIO 0x3f201000 (irq = 83, base_baud = 0) is a PL011 rev3<br/>
+May  9 11:17:09 Domotique kernel: [    0.765265] SCSI subsystem initialized<br/>
+May  9 11:17:09 Domotique kernel: [    0.765546] usbcore: registered new interface driver usbfs<br/>
+May  9 11:17:09 Domotique kernel: [    0.765678] usbcore: registered new interface driver hub<br/>
+May  9 11:17:09 Domotique kernel: [    0.765847] usbcore: registered new device driver usb<br/>
+May  9 11:17:09 Domotique kernel: [    0.767686] Switched to clocksource arch_sys_counter<br/>
+May  9 11:17:09 Domotique kernel: [    0.798475] FS-Cache: Loaded<br/>
+May  9 11:17:09 Domotique kernel: [    0.798814] CacheFiles: Loaded<br/>
+May  9 11:17:09 Domotique kernel: [    0.810102] NET: Registered protocol family 2<br/>
+May  9 11:17:09 Domotique kernel: [    0.811525] TCP established hash table entries: 8192 (order: 3, 32768 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.811714] TCP bind hash table entries: 8192 (order: 4, 65536 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.811948] TCP: Hash tables configured (established 8192 bind 8192)<br/>
+May  9 11:17:09 Domotique kernel: [    0.812087] TCP: reno registered<br/>
+May  9 11:17:09 Domotique kernel: [    0.812125] UDP hash table entries: 512 (order: 2, 16384 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.812210] UDP-Lite hash table entries: 512 (order: 2, 16384 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.812581] NET: Registered protocol family 1<br/>
+May  9 11:17:09 Domotique kernel: [    0.813214] RPC: Registered named UNIX socket transport module.<br/>
+May  9 11:17:09 Domotique kernel: [    0.813261] RPC: Registered udp transport module.<br/>
+May  9 11:17:09 Domotique kernel: [    0.813291] RPC: Registered tcp transport module.<br/>
+May  9 11:17:09 Domotique kernel: [    0.813320] RPC: Registered tcp NFSv4.1 backchannel transport module.<br/>
+May  9 11:17:09 Domotique kernel: [    0.814299] hw perfevents: enabled with armv7_cortex_a7 PMU driver, 5 counters available<br/>
+May  9 11:17:09 Domotique kernel: [    0.814578] bcm2708_dma: DMA manager at f3007000<br/>
+May  9 11:17:09 Domotique kernel: [    0.814766] vc-mem: phys_addr:0x00000000 mem_base=0x3dc00000 mem_size:0x3f000000(1008 MiB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.816375] futex hash table entries: 1024 (order: 4, 65536 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.816629] audit: initializing netlink subsys (disabled)<br/>
+May  9 11:17:09 Domotique kernel: [    0.816714] audit: type=2000 audit(0.789:1): initialized<br/>
+May  9 11:17:09 Domotique kernel: [    0.833170] VFS: Disk quotas dquot_6.5.2<br/>
+May  9 11:17:09 Domotique kernel: [    0.833554] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)<br/>
+May  9 11:17:09 Domotique kernel: [    0.836579] FS-Cache: Netfs 'nfs' registered for caching<br/>
+May  9 11:17:09 Domotique kernel: [    0.837648] NFS: Registering the id_resolver key type<br/>
+May  9 11:17:09 Domotique kernel: [    0.837841] Key type id_resolver registered<br/>
+May  9 11:17:09 Domotique kernel: [    0.837874] Key type id_legacy registered<br/>
+May  9 11:17:09 Domotique kernel: [    0.839053] msgmni has been set to 1472<br/>
+May  9 11:17:09 Domotique kernel: [    0.840875] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 252)<br/>
+May  9 11:17:09 Domotique kernel: [    0.841103] io scheduler noop registered<br/>
+May  9 11:17:09 Domotique kernel: [    0.841145] io scheduler deadline registered (default)<br/>
+May  9 11:17:09 Domotique kernel: [    0.841502] io scheduler cfq registered<br/>
+May  9 11:17:09 Domotique kernel: [    0.844101] BCM2708FB: allocated DMA memory eec00000<br/>
+May  9 11:17:09 Domotique kernel: [    0.844169] BCM2708FB: allocated DMA channel 0 @ f3007000<br/>
+May  9 11:17:09 Domotique kernel: [    0.849808] Console: switching to colour frame buffer device 82x26<br/>
+May  9 11:17:09 Domotique kernel: [    0.855552] bcm2708-dmaengine bcm2708-dmaengine: Load BCM2835 DMA engine driver<br/>
+May  9 11:17:09 Domotique kernel: [    0.857500] uart-pl011 dev:f1: no DMA platform data<br/>
+May  9 11:17:09 Domotique kernel: [    0.859698] vc-cma: Videocore CMA driver<br/>
+May  9 11:17:09 Domotique kernel: [    0.861270] vc-cma: vc_cma_base      = 0x00000000<br/>
+May  9 11:17:09 Domotique kernel: [    0.862811] vc-cma: vc_cma_size      = 0x00000000 (0 MiB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.864331] vc-cma: vc_cma_initial   = 0x00000000 (0 MiB)<br/>
+May  9 11:17:09 Domotique kernel: [    0.877409] brd: module loaded<br/>
+May  9 11:17:09 Domotique kernel: [    0.884643] loop: module loaded<br/>
+May  9 11:17:09 Domotique kernel: [    0.886821] vchiq: vchiq_init_state: slot_zero = 0xaec80000, is_master = 0<br/>
+May  9 11:17:09 Domotique kernel: [    0.889046] Loading iSCSI transport class v2.0-870.<br/>
+May  9 11:17:09 Domotique kernel: [    0.891457] usbcore: registered new interface driver smsc95xx<br/>
+May  9 11:17:09 Domotique kernel: [    0.893047] dwc_otg: version 3.00a 10-AUG-2012 (platform bus)<br/>
+May  9 11:17:09 Domotique kernel: [    1.094949] Core Release: 2.80a<br/>
+May  9 11:17:09 Domotique kernel: [    1.096435] Setting default values for core params<br/>
+May  9 11:17:09 Domotique kernel: [    1.097946] Finished setting default values for core params<br/>
+May  9 11:17:09 Domotique kernel: [    1.299806] Using Buffer DMA mode<br/>
+May  9 11:17:09 Domotique kernel: [    1.301274] Periodic Transfer Interrupt Enhancement - disabled<br/>
+May  9 11:17:09 Domotique kernel: [    1.302805] Multiprocessor Interrupt Enhancement - disabled<br/>
+May  9 11:17:09 Domotique kernel: [    1.304343] OTG VER PARAM: 0, OTG VER FLAG: 0<br/>
+May  9 11:17:09 Domotique kernel: [    1.305903] Dedicated Tx FIFOs mode<br/>
+May  9 11:17:09 Domotique kernel: [    1.307766] WARN::dwc_otg_hcd_init:1047: FIQ DMA bounce buffers: virt = 0xaec14000 dma = 0xeec14000 len=9024<br/>
+May  9 11:17:09 Domotique kernel: [    1.310869] FIQ FSM acceleration enabled for :<br/>
+May  9 11:17:09 Domotique kernel: [    1.310869] Non-periodic Split Transactions<br/>
+May  9 11:17:09 Domotique kernel: [    1.310869] Periodic Split Transactions<br/>
+May  9 11:17:09 Domotique kernel: [    1.310869] High-Speed Isochronous Endpoints<br/>
+May  9 11:17:09 Domotique kernel: [    1.317041] dwc_otg: Microframe scheduler enabled<br/>
+May  9 11:17:09 Domotique kernel: [    1.317116] WARN::hcd_init_fiq:412: FIQ on core 1 at 0x803d9b60<br/>
+May  9 11:17:09 Domotique kernel: [    1.318762] WARN::hcd_init_fiq:413: FIQ ASM at 0x803d9ebc length 36<br/>
+May  9 11:17:09 Domotique kernel: [    1.320416] WARN::hcd_init_fiq:438: MPHI regs_base at 0xaf80a000<br/>
+May  9 11:17:09 Domotique kernel: [    1.322036] dwc_otg bcm2708_usb: DWC OTG Controller<br/>
+May  9 11:17:09 Domotique kernel: [    1.323652] dwc_otg bcm2708_usb: new USB bus registered, assigned bus number 1<br/>
+May  9 11:17:09 Domotique kernel: [    1.325295] dwc_otg bcm2708_usb: irq 32, io mem 0x00000000<br/>
+May  9 11:17:09 Domotique kernel: [    1.326917] Init: Port Power? op_state=1<br/>
+May  9 11:17:09 Domotique kernel: [    1.328481] Init: Power Port (0)<br/>
+May  9 11:17:09 Domotique kernel: [    1.330276] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002<br/>
+May  9 11:17:09 Domotique kernel: [    1.331877] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1<br/>
+May  9 11:17:09 Domotique kernel: [    1.333458] usb usb1: Product: DWC OTG Controller<br/>
+May  9 11:17:09 Domotique kernel: [    1.335001] usb usb1: Manufacturer: Linux 3.18.12-v7+ dwc_otg_hcd<br/>
+May  9 11:17:09 Domotique kernel: [    1.336558] usb usb1: SerialNumber: bcm2708_usb<br/>
+May  9 11:17:09 Domotique kernel: [    1.338984] hub 1-0:1.0: USB hub found<br/>
+May  9 11:17:09 Domotique kernel: [    1.340572] hub 1-0:1.0: 1 port detected<br/>
+May  9 11:17:09 Domotique kernel: [    1.342506] dwc_otg: FIQ enabled<br/>
+May  9 11:17:09 Domotique kernel: [    1.342520] dwc_otg: NAK holdoff enabled<br/>
+May  9 11:17:09 Domotique kernel: [    1.342531] dwc_otg: FIQ split-transaction FSM enabled<br/>
+May  9 11:17:09 Domotique kernel: [    1.342570] Module dwc_common_port init<br/>
+May  9 11:17:09 Domotique kernel: [    1.342964] usbcore: registered new interface driver usb-storage<br/>
+May  9 11:17:09 Domotique kernel: [    1.344692] mousedev: PS/2 mouse device common for all mice<br/>
+May  9 11:17:09 Domotique kernel: [    1.346769] bcm2835-cpufreq: min=600000 max=700000<br/>
+May  9 11:17:09 Domotique kernel: [    1.348631] sdhci: Secure Digital Host Controller Interface driver<br/>
+May  9 11:17:09 Domotique kernel: [    1.350161] sdhci: Copyright(c) Pierre Ossman<br/>
+May  9 11:17:09 Domotique kernel: [    1.351871] DMA channels allocated for the MMC driver<br/>
+May  9 11:17:09 Domotique kernel: [    1.387733] Load BCM2835 MMC driver<br/>
+May  9 11:17:09 Domotique kernel: [    1.390968] sdhci-pltfm: SDHCI platform and OF driver helper<br/>
+May  9 11:17:09 Domotique kernel: [    1.397594] ledtrig-cpu: registered to indicate activity on CPUs<br/>
+May  9 11:17:09 Domotique kernel: [    1.399494] hidraw: raw HID events driver (C) Jiri Kosina<br/>
+May  9 11:17:09 Domotique kernel: [    1.402398] usbcore: registered new interface driver usbhid<br/>
+May  9 11:17:09 Domotique kernel: [    1.404046] usbhid: USB HID core driver<br/>
+May  9 11:17:09 Domotique kernel: [    1.405937] TCP: cubic registered<br/>
+May  9 11:17:09 Domotique kernel: [    1.407573] Initializing XFRM netlink socket<br/>
+May  9 11:17:09 Domotique kernel: [    1.409240] NET: Registered protocol family 17<br/>
+May  9 11:17:09 Domotique kernel: [    1.414241] Key type dns_resolver registered<br/>
+May  9 11:17:09 Domotique kernel: [    1.416231] Registering SWP/SWPB emulation handler<br/>
+May  9 11:17:09 Domotique kernel: [    1.418697] registered taskstats version 1<br/>
+May  9 11:17:09 Domotique kernel: [    1.420446] vc-sm: Videocore shared memory driver<br/>
+May  9 11:17:09 Domotique kernel: [    1.421930] vc\_sm\_connected\_init: start<br/>
+May  9 11:17:09 Domotique kernel: [    1.424145] vc\_sm\_connected\_init: end - returning 0<br/>
+May  9 11:17:09 Domotique kernel: [    1.426763] Waiting for root device /dev/mmcblk0p2...<br/>
+May  9 11:17:09 Domotique kernel: [    1.445470] mmc0: host does not support reading read-only switch, assuming write-enable<br/>
+May  9 11:17:09 Domotique kernel: [    1.450727] mmc0: new high speed SDHC card at address 59b4<br/>
+May  9 11:17:09 Domotique kernel: [    1.452851] mmcblk0: mmc0:59b4 NCard 29.5 GiB <br/>
+May  9 11:17:09 Domotique kernel: [    1.455858]  mmcblk0: p1 p2<br/>
+May  9 11:17:09 Domotique kernel: [    1.537835] Indeed it is in host mode hprt0 = 00021501<br/>
+May  9 11:17:09 Domotique kernel: [    1.560411] EXT4-fs (mmcblk0p2): INFO: recovery required on readonly filesystem<br/>
+May  9 11:17:09 Domotique kernel: [    1.561999] EXT4-fs (mmcblk0p2): write access will be enabled during recovery<br/>
+May  9 11:17:09 Domotique kernel: [    1.717785] usb 1-1: new high-speed USB device number 2 using dwc_otg<br/>
+May  9 11:17:09 Domotique kernel: [    1.719547] Indeed it is in host mode hprt0 = 00001101<br/>
+May  9 11:17:09 Domotique kernel: [    1.918092] usb 1-1: New USB device found, idVendor=0424, idProduct=9514<br/>
+May  9 11:17:09 Domotique kernel: [    1.919834] usb 1-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0<br/>
+May  9 11:17:09 Domotique kernel: [    1.922426] hub 1-1:1.0: USB hub found<br/>
+May  9 11:17:09 Domotique kernel: [    1.924176] hub 1-1:1.0: 5 ports detected<br/>
+May  9 11:17:09 Domotique kernel: [    2.197816] usb 1-1.1: new high-speed USB device number 3 using dwc_otg<br/>
+May  9 11:17:09 Domotique kernel: [    2.298021] usb 1-1.1: New USB device found, idVendor=0424, idProduct=ec00<br/>
+May  9 11:17:09 Domotique kernel: [    2.299817] usb 1-1.1: New USB device strings: Mfr=0, Product=0, SerialNumber=0<br/>
+May  9 11:17:09 Domotique kernel: [    2.304501] smsc95xx v1.0.4<br/>
+May  9 11:17:09 Domotique kernel: [    2.361448] smsc95xx 1-1.1:1.0 eth0: register 'smsc95xx' at usb-bcm2708_usb-1.1, smsc95xx USB 2.0 Ethernet, b8:27:eb:c6:c4:a9<br/>
+May  9 11:17:09 Domotique kernel: [    2.903724] EXT4-fs (mmcblk0p2): orphan cleanup on readonly fs<br/>
+May  9 11:17:09 Domotique kernel: [    2.906072] EXT4-fs (mmcblk0p2): 5 orphan inodes deleted<br/>
+May  9 11:17:09 Domotique kernel: [    2.907947] EXT4-fs (mmcblk0p2): recovery complete<br/>
+May  9 11:17:09 Domotique kernel: [    2.959507] EXT4-fs (mmcblk0p2): mounted filesystem with ordered data mode. Opts: (null)<br/>
+May  9 11:17:09 Domotique kernel: [    2.963043] VFS: Mounted root (ext4 filesystem) readonly on device 179:2.<br/>
+May  9 11:17:09 Domotique kernel: [    2.967659] devtmpfs: mounted<br/>
+May  9 11:17:09 Domotique kernel: [    2.970136] Freeing unused kernel memory: 384K (80754000 - 807b4000)<br/>
+May  9 11:17:09 Domotique kernel: [    4.461826] Driver for 1-wire Dallas network protocol.<br/>
+May  9 11:17:09 Domotique kernel: [    4.472484] w1-gpio onewire@0: gpio pin 4, external pullup pin -1, parasitic power 0<br/>
+May  9 11:17:09 Domotique kernel: [    4.489758] w1_add_master_device: set_pullup requires write_byte or touch_bit, disabling<br/>
+May  9 11:17:09 Domotique kernel: [    4.953592] random: nonblocking pool is initialized<br/>
+May  9 11:17:09 Domotique kernel: [    6.331677] EXT4-fs (mmcblk0p2): re-mounted. Opts: (null)<br/>
+May  9 11:17:09 Domotique kernel: [    6.423174] w1_master_driver w1_bus_master1: w1_search: max_slave_count 64 reached, will continue next search.<br/>
+May  9 11:17:09 Domotique kernel: [    6.633365] EXT4-fs (mmcblk0p2): re-mounted. Opts: (null)<br/>
+May  9 11:17:09 Domotique kernel: [   10.931686] smsc95xx 1-1.1:1.0 eth0: hardware isn't capable of remote wakeup<br/>
+May  9 11:17:09 Domotique kernel: [   12.536376] smsc95xx 1-1.1:1.0 eth0: link up, 100Mbps, full-duplex, lpa 0xC5E1<br/>
+May  9 11:17:09 Domotique dhclient: Internet Systems Consortium DHCP Client 4.2.2<br/>
+May  9 11:17:09 Domotique dhclient: Copyright 2004-2011 Internet Systems Consortium.<br/>
+May  9 11:17:09 Domotique dhclient: All rights reserved.<br/>
+May  9 11:17:09 Domotique dhclient: For info, please visit <a href="https://www.isc.org/software/dhcp/">https://www.isc.org/software/dhcp/</a><br/>
+May  9 11:17:09 Domotique dhclient: <br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: Internet Systems Consortium DHCP Client 4.2.2<br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: Copyright 2004-2011 Internet Systems Consortium.<br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: All rights reserved.<br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: For info, please visit <a href="https://www.isc.org/software/dhcp/">https://www.isc.org/software/dhcp/</a><br/>
+May  9 11:17:09 Domotique dhclient: Listening on LPF/eth0/b8:27:eb:c6:c4:a9<br/>
+May  9 11:17:09 Domotique dhclient: Sending on   LPF/eth0/b8:27:eb:c6:c4:a9<br/>
+May  9 11:17:09 Domotique dhclient: Sending on   Socket/fallback<br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: Listening on LPF/eth0/b8:27:eb:c6:c4:a9<br/>
+May  9 11:17:09 Domotique dhclient: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 7<br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: Sending on   LPF/eth0/b8:27:eb:c6:c4:a9<br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: Sending on   Socket/fallback<br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 7<br/>
+May  9 11:17:09 Domotique dhclient: DHCPREQUEST on eth0 to 255.255.255.255 port 67<br/>
+May  9 11:17:09 Domotique dhclient: DHCPOFFER from 192.168.1.254<br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: DHCPREQUEST on eth0 to 255.255.255.255 port 67<br/>
+May  9 11:17:09 Domotique ifplugd(eth0)1507: client: DHCPOFFER from 192.168.1.254<br/>
+May  9 11:17:10 Domotique ntpd2018: ntpd 4.2.6p5@1.2349-o Sun Apr 12 22:37:22 UTC 2015 (1)<br/>
+May  9 11:17:10 Domotique /usr/sbin/cron2032: (CRON) INFO (pidfile fd = 3)<br/>
+May  9 11:17:10 Domotique /usr/sbin/cron2040: (CRON) STARTUP (fork ok)<br/>
+May  9 11:17:10 Domotique kernel: [   14.752393] Adding 102396k swap on /var/swap.  Priority:-1 extents:2 across:2134012k SSFS<br/>
+May  9 11:17:10 Domotique ntpd2043: proto: precision = 1.094 usec<br/>
+May  9 11:17:10 Domotique ntpd2043: Listen and drop on 0 v4wildcard 0.0.0.0 UDP 123<br/>
+May  9 11:17:10 Domotique ntpd2043: Listen normally on 1 lo 127.0.0.1 UDP 123<br/>
+May  9 11:17:10 Domotique ntpd2043: peers refreshed<br/>
+May  9 11:17:10 Domotique ntpd2043: Listening on routing socket on fd #18 for interface updates<br/>
+May  9 11:17:10 Domotique ntpd2043: restrict: error in address '::' on line 38. Ignoring...<br/>
+May  9 11:17:10 Domotique ntpd2043: restrict: error in address '::1' on line 42. Ignoring...<br/>
+May  9 11:17:10 Domotique ntpd2043: Deferring DNS for 0.debian.pool.ntp.org 1<br/>
+May  9 11:17:10 Domotique ntpd2043: Deferring DNS for 1.debian.pool.ntp.org 1<br/>
+May  9 11:17:10 Domotique ntpd2043: Deferring DNS for 2.debian.pool.ntp.org 1<br/>
+May  9 11:17:10 Domotique ntpd2043: Deferring DNS for 3.debian.pool.ntp.org 1<br/>
+May  9 11:17:10 Domotique ntpd2067: signal_no_reset: signal 17 had flags 4000000<br/>
+May  9 11:17:10 Domotique /usr/sbin/cron2040: (CRON) INFO (Running @reboot jobs)<br/>
+May  9 11:17:11 Domotique dhclient: DHCPACK from 192.168.1.254<br/>
+May  9 11:17:11 Domotique ifplugd(eth0)1507: client: DHCPACK from 192.168.1.254<br/>
+May  9 11:17:11 Domotique dhclient: bound to 192.168.1.14 &#8211; renewal in 18946 seconds.<br/>
+May  9 11:17:11 Domotique ifplugd(eth0)1507: client: bound to 192.168.1.14 &#8211; renewal in 18946 seconds.<br/>
+May  9 11:17:11 Domotique ifplugd(eth0)1507: client: Missing required variable: address<br/>
+May  9 11:17:11 Domotique ifplugd(eth0)1507: client: Missing required configuration variables for interface eth0/inet.<br/>
+May  9 11:17:11 Domotique ifplugd(eth0)1507: client: Failed to bring up eth0.<br/>
+May  9 11:17:12 Domotique ifplugd(eth0)1507: Program executed successfully.<br/>
+May  9 11:17:12 Domotique ntpd_intres2067: DNS 0.debian.pool.ntp.org -&gt; 195.154.108.164<br/>
+May  9 11:17:12 Domotique ntpd_intres2067: DNS 1.debian.pool.ntp.org -&gt; 193.52.137.193<br/>
+May  9 11:17:12 Domotique ntpd_intres2067: DNS 2.debian.pool.ntp.org -&gt; 91.121.169.20<br/>
+May  9 11:17:12 Domotique mysqld_safe: Starting mysqld daemon with databases from /var/lib/mysql<br/>
+May  9 11:17:12 Domotique ntpd_intres2067: DNS 3.debian.pool.ntp.org -&gt; 195.154.216.35<br/>
+May  9 11:17:12 Domotique mysqld: 150509 11:17:12 Warning Using unique option prefix key_buffer instead of key_buffer_size is deprecated and will be removed in a future release. Please use the full name instead.<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 Note /usr/sbin/mysqld (mysqld 5.5.43-0+deb7u1) starting as process 2512 ...<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 Warning Using unique option prefix myisam-recover instead of myisam-recover-options is deprecated and will be removed in a future release. Please use the full name instead.<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 Note Plugin 'FEDERATED' is disabled.<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 InnoDB: The InnoDB memory heap is disabled<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 InnoDB: Mutexes and rw_locks use GCC atomic builtins<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 InnoDB: Compressed tables use zlib 1.2.7<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 InnoDB: Using Linux native AIO<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 InnoDB: Initializing buffer pool, size = 128.0M<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 InnoDB: Completed initialization of buffer pool<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13 InnoDB: highest supported file format is Barracuda.<br/>
+May  9 11:17:13 Domotique ntpd2043: Listen normally on 2 eth0 192.168.1.14 UDP 123<br/>
+May  9 11:17:13 Domotique ntpd2043: peers refreshed<br/>
+May  9 11:17:13 Domotique mysqld: 150509 11:17:13  InnoDB: Waiting for the background threads to start<br/>
+May  9 11:17:14 Domotique mysqld: 150509 11:17:14 InnoDB: 5.5.43 started; log sequence number 1595695<br/>
+May  9 11:17:14 Domotique mysqld: 150509 11:17:14 Note Server hostname (bind-address): '127.0.0.1'; port: 3306<br/>
+May  9 11:17:14 Domotique mysqld: 150509 11:17:14 Note   - '127.0.0.1' resolves to '127.0.0.1';<br/>
+May  9 11:17:14 Domotique mysqld: 150509 11:17:14 Note Server socket created on IP: '127.0.0.1'.<br/>
+May  9 11:17:14 Domotique mysqld: 150509 11:17:14 Note Event Scheduler: Loaded 0 events<br/>
+May  9 11:17:14 Domotique mysqld: 150509 11:17:14 Note /usr/sbin/mysqld: ready for connections.<br/>
+May  9 11:17:14 Domotique mysqld: Version: '5.5.43-0+deb7u1'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  (Debian)<br/>
+May  9 11:17:15 Domotique /etc/mysql/debian-start2590: Upgrading MySQL tables if necessary.<br/>
+May  9 11:17:15 Domotique /etc/mysql/debian-start2594: /usr/bin/mysql_upgrade: the '--basedir' option is always ignored<br/>
+May  9 11:17:15 Domotique /etc/mysql/debian-start2594: Looking for 'mysql' as: /usr/bin/mysql<br/>
+May  9 11:17:15 Domotique /etc/mysql/debian-start2594: Looking for 'mysqlcheck' as: /usr/bin/mysqlcheck<br/>
+May  9 11:17:15 Domotique /etc/mysql/debian-start2594: This installation of MySQL is already upgraded to 5.5.43, use --force if you still need to run mysql_upgrade<br/>
+May  9 11:17:15 Domotique /etc/mysql/debian-start2620: Checking for insecure root accounts.<br/>
+May  9 11:17:15 Domotique /etc/mysql/debian-start2625: Triggering myisam-recover for all MyISAM tables<br/>
+May  9 11:17:19 Domotique postfix/master2876: daemon started &#8211; version 2.9.6, configuration /etc/postfix</p>
+
+<p>syslog is the same before every crash.<br/>
+Do you can help me watching these log ?</p>
+
+<p>when OpenRemote is not running , no crash</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moebius912 at May 09, 2015 12:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599297"></a>
+                                    <font class="smallfont"><p>These logs are'nt really helpfull for me.</p>
+
+<p>On a rpi1 I tried to install openremote with a lot of other application. Rpi crashed a lot and I had to cron a daily reboot... As soon as I stop openremote the rpi were stable.<br/>
+So I take a look on the files opened by the whole system with and without java. Java open a lot a files/sockets and monopolize system to open and close this files.</p>
+
+<p>Could you do an "lsof | wc -l" and "lsof | fgrep java | wc -l" while openremote running ?<br/>
+Did you try with another SD Card with a better quality (class 10) ?<br/>
+Maybe you could try to reduce the polling interval in the openremote configuration to reduce the number of files opened.</p>
+
+<hr />
+
+<p>Another feedback with the main issue of this thread : java stability with openremote on the rpi2 <br/>
+I confirm that with java 8 (oracle-java8-jdk on raspbian) installed, the rpi and openremote are stable and working perfectly ! </p>
+
+<p>"Openremote teams", I think you could update your documentation about that <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Tell me if I can help !</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yomgdf at May 26, 2015 18:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599318"></a>
+                                    <font class="smallfont"><p>thank you for your help<br/>
+here's what I get</p>
+
+<p>RASPI1 <br/>
+lsof | wc -l = 1195<br/>
+lsof | fgrep java | wc -l = 324</p>
+
+<p>RASPI2<br/>
+lsof | wc -l = 244<br/>
+lsof | fgrep java | wc -l = 741</p>
+
+
+<p>thank</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moebius912 at May 27, 2015 18:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599327"></a>
+                                    <font class="smallfont"><p>I think there something wrong with the rpi2 result. lsof|wc should be bigger than lsof|fgrep java.</p>
+
+<p>Anyway with your result, my idea should have been a wrong one.</p>
+
+<p>--&gt;Did you try with another SD Card with a better quality (class 10) ?<br/>
+--&gt;Maybe you could try to reduce the polling interval in the openremote configuration to reduce the number of files opened.</p>
+
+<p>Did you try this already ?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yomgdf at May 27, 2015 23:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599334"></a>
+                                    <font class="smallfont"><p>I use a micro SD card verbatim calss 10 32G .<br/>
+I try with another and the problem is identical.<br/>
+I was also trying with 2 other RASPI2 . <br/>
+I will apply your method and decrease the polling.<br/>
+What I 'm struggling to understand is how this configuration can run on RASP1 and not on the RASPI2 as he is more powerful .....<br/>
+I will keep you posted</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moebius912 at May 28, 2015 09:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599349"></a>
+                                    <font class="smallfont"><p>hello</p>
+
+<p>I have two raspberry pi 2, each of a raspberry OpenRemote and z-way installed, I no problems.</p>
+
+<p>I have one that works for more than a week the other I use for testing. I use Raspbian of February 2015 with Java 8 installed by default, overclocked to 1000Mhz  and a 2A power</p>
+
+<p>SanDisk SD Card 8GB Class 10</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre2302 at May 28, 2015 14:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599358"></a>
+                                    <font class="smallfont"><p>To this last point, note that the recent RPi firmware updates made BIG improvements on the reliability of most of the new/modern MicroSD cards. I thought I had java version issues until they finally hit on some reliable firmware. My crashes stopped. "sudo rpi-update"</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gregoryx at May 29, 2015 02:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599638"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I got my rpi2 2 weeks ago. I could run OpenRemote on Raspbian in combination with Java 8, but the drools rule engine (5.1.1) did not start and also when I wanted to display a sensor (e.g. time) I just got "N/A". <br/>
+As far as I know there's not yet an OpenRemote version for drools 5.5?<br/>
+On my old rpi 1 I was using debian-wheezy soft float with Java 6.</p>
+
+<p>Because I am using drools and displaying sensor content I started a search for a softfloat Linux version for the rpi 2.<br/>
+There are not that many. The one that I tested so far is Slackware ARM (<a href="http://rpi2.fatdog.eu/">http://rpi2.fatdog.eu/</a>).<br/>
+I could install java 6. I am now testing it in combination with FHEM (for Enocean control) and Mochad (to control some old X10 components). There's a big difference in performance between the rpi1 and rpi2. On the rpi1 I had to stop FHEM when my android phone needed to load the panels otherwise I got the error "Controller is not available"<br/>
+The rpi2 has kernel version 3.18.16-v7+.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by patrickvandenbergen at Jun 18, 2015 21:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599640"></a>
+                                    <font class="smallfont"><p>I finally found the problem.<br/>
+I activated my scripts one by one in every 24 hours waiting to see one that is problematic.<br/>
+In the end this is the next command that crashes the raspberry if I call too often :<br/>
+/home/pi/wiringPi/gpio/gpio mode $gpio down</p>
+
+<p>more no problem since I have deleted it from the script</p>
+
+<p>thank you for your help</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moebius912 at Jun 19, 2015 07:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599642"></a>
+                                    <font class="smallfont"><p>Interesting, I am using a <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Control+Sunshades+-+Somfy+with+Raspberry+Pi">similar command</a>. How often do you make that call?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jun 19, 2015 08:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599643"></a>
+                                    <font class="smallfont"><p>double post deleted</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jun 19, 2015 08:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599650"></a>
+                                    <font class="smallfont"><p>every 5 sec In my scenario Who Gets the state of my entries</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moebius912 at Jun 19, 2015 15:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599651"></a>
+                                    <font class="smallfont"><p>Thanks; In my app it is only a handful of GPIO operations per day</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jun 19, 2015 15:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

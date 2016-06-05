@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Tutorial-Installing OpenRemote on Solid Run CuboxTV running Openelec</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Tutorial-Installing OpenRemote on Solid Run CuboxTV running Openelec
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 04, 2015 by <font color="#0050B2">desertdog</font>.
+				    </div>
+
+				    <p>I recently purchased a CuboxTV by SolidRun. This is a tiny, low power ARM computer. It comes with a power adapter and a micro SD card with OpenElec OS preinstalled. It is slightly over $100 and took about 3 weeks to arrive by mail from Israel.  OpenElec is a stripped down linux OS and boots directly into Kodi (the new name for XBMC). OpenElec is headless, meaning you have to ssh into it from another computer. Other linux and android packages exist for the Cubox. I have been trying to install OpenRemote and will try to summarize what I have done through trial and error. </p>
+
+<p>INSTALL JAVA<br/>
+Java is required for OR. I read somewhere in the OR forums that you should avoid Java 7, because of a conflict with Drools. I also read that the proprietery drivers work better than the opensource versions. So I downloaded a java jdk8 for arm from the oracle website.<br/>
+1. Google for java jdk8 for arm and download to your Windows computer from the Oracle website.<br/>
+2. Using Putty, establish ssh connection to Cubox. The default username and password are root and openelec.<br/>
+3. Create directory to install java</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+mkdir /storage/java
+</pre>
+</div></div>
+<p>4. Copy java from your Windows machine to the /storage/java folder on the Cubox, using WinSCP.<br/>
+5. Unpack the java package</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+cd /storage/java
+tar -zxvf jdk-8u6-linux-arm-vfp-hflt.gz
+</pre>
+</div></div>
+<p>6. Add the java folder to your PATH</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+PATH=$PATH:/storage/java/jdk1.8.0_06
+which java
+
+/storage/java/jdk1.8.0_06/bin/java
+java -version
+
+Java (TM) SE <span class="code-object">Runtime</span> Environment (build 1.8.0)06-b23)
+Java HotSpot (TM) Client VM (buile 25.6-b23, mixed mode)
+</pre>
+</div></div>
+<div class = "info">
+  <img class = "infoimage" src = "http://openremote.org/download/attachments/11960350/Info_64x60.png"/> Note:This won't persist after a reboot. We will fix this below in the autostart script. 
+</div>
+
+
+
+
+<p>INSTALL OPENREMOTE</p>
+
+<p>1. Download  controller .zip to your Windows machine.<br/>
+2. Unzip OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17.zip<br/>
+Right click and then click extract all.</p>
+
+<p>3. Create directory on cubox for openremote<br/>
+establish ssh connection using Putty.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+mkdir /storage/openremote
+</pre>
+</div></div>
+<p>4. Move extracted openremote from Windows computer to Cubox using WinSCP<br/>
+5. Make openremote.sh file executable</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+cd /storage/openremote/OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17/bin
+chmod +x openremote.sh
+</pre>
+</div></div>
+<p>6. Make openremote.sh start automatically on reboot<br/>
+check to /storage/.config to see if already have autostart.sh script<br/>
+If not then</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+echo <span class="code-quote">"#!/bin/sh"</span> &gt; /storage/.config/autostart.sh &amp;&amp; chmod +x /storage/.config/autostart.sh
+nano /storage/.config/autostart.sh
+</pre>
+</div></div>
+<p>below #!/bin/sh add</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+export JAVA_HOME=/storage/java/jdk1.8.0_06
+/storage/openremote/OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17/bin/openremote.sh start
+</pre>
+</div></div>
+
+<p>7. Test to see if working using browser on windows machine</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+cd /storage/.config
+./autostart
+</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+http:<span class="code-comment">//192.168.50.33:8080/controller/</span>
+</pre>
+</div></div>
+<p>An OpenRemote webpage should open.</p>
+
+<p>8. Reboot the Cubox and test again.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+reboot
+</pre>
+</div></div>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23595135"></a>
+                                    <font class="smallfont"><p>When I log into the Controller on my CuboxTV, I get the "Welcome to OpenRemote Controller" webpage. But when I to sync with online designer, I get the following message </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+The path 'file:/../webapps/controller' doesnt exist.
+</pre>
+</div></div>
+
+<p>I tried pressing "Reload configuration and clear cache" but nothing happens after 15 minutes of waiting.</p>
+
+<p>Any suggestions? </p>
+
+<p>Edit: I found the answer in another forum post <a href="http://www.openremote.org/display/forums/%28%28MAC-OS%29%29+The+path+file+...+doesnt+exist">http://www.openremote.org/display/forums/%28%28MAC-OS%29%29+The+path+file+...+doesnt+exist</a>.</p>
+
+<p>I had to edit the resource.path line in config.properties file.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by desertdog at Jan 04, 2015 18:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

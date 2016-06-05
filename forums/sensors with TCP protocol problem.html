@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : sensors with TCP protocol problem</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : sensors with TCP protocol problem
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jun 21, 2011 by <font color="#0050B2">michal</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm new on OR. I can not find answer for my questions on forum....<br/>
+1) I know how to send command or slider value to TCP device, but I can't not send feedback value from TCP device to OR controller. How should looks sensor command for read slider and switch.  What I should send from TCP device to controller.<br/>
+2) How to control Label widget? How to configure sensor for it?</p>
+
+<p>Best Regards<br/>
+Michal</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-17039599"></a>
+                                    <font class="smallfont"><p>Your command has to extend "ReadCommand" and implement ExecutableCommand. The send() method is used to send a command to your device and you have to implement a read(sensor) method. Depending on the sensor which you define in the modeller (switch, range, ...) you have to return the coresponding value. So your read method will check what sensor it is and perform the actually request on the device.</p>
+
+<p>The label field in the modellet depends on the sensor you create. The switch sensor for example returns "on" or "off" and you can assign a text for each status.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 22, 2011 09:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039601"></a>
+                                    <font class="smallfont"><p>Thanks,</p>
+
+<p>I've designed simple panel with switch button with configuration:</p>
+
+<p>&lt;components&gt;<br/>
+    &lt;switch id="42"&gt;<br/>
+      &lt;on&gt;<br/>
+        &lt;include type="command" ref="44" /&gt;<br/>
+      &lt;/on&gt;<br/>
+      &lt;off&gt;<br/>
+        &lt;include type="command" ref="45" /&gt;<br/>
+      &lt;/off&gt;<br/>
+      &lt;include type="sensor" ref="43" /&gt;<br/>
+    &lt;/switch&gt;<br/>
+  &lt;/components&gt;<br/>
+  &lt;sensors&gt;<br/>
+    &lt;sensor id="43" name="switchsens" type="switch"&gt;<br/>
+      &lt;include type="command" ref="46" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+  &lt;/sensors&gt;<br/>
+  &lt;commands&gt;<br/>
+    &lt;command id="44" protocol="socket"&gt;<br/>
+      &lt;property name="port" value="5000" /&gt;<br/>
+      &lt;property name="command" value="set Light1 on" /&gt;<br/>
+      &lt;property name="ipAddress" value="10.0.0.120" /&gt;<br/>
+    &lt;/command&gt;<br/>
+    &lt;command id="45" protocol="socket"&gt;<br/>
+      &lt;property name="port" value="5000" /&gt;<br/>
+      &lt;property name="command" value="set Light1 off" /&gt;<br/>
+      &lt;property name="ipAddress" value="10.0.0.120" /&gt;<br/>
+    &lt;/command&gt;<br/>
+    &lt;command id="46" protocol="socket"&gt;<br/>
+      &lt;property name="port" value="5000" /&gt;<br/>
+      &lt;property name="command" value="{ $value{Light1}}" /&gt;<br/>
+      &lt;property name="ipAddress" value="10.0.0.120" /&gt;<br/>
+    &lt;/command&gt;<br/>
+  &lt;/commands&gt;</p>
+
+<p>when I click on button, I've got <br/>
+set Light1 on<br/>
+string on TCP socket. When I've answered sending<br/>
+on<br/>
+string to TCP socket, button is still in 'off' state. I can see that action in log file:</p>
+
+<p>Controller2011-06-21 12:40:29,983 INFO Thread\-5 org.openremote.controller.protocol.socket.TCPSocketCommand.requestSocket(153) | received message: on<br/>
+Controller2011-06-21 12:40:29,983 INFO HTTP\-Thread\-4 org.openremote.controller.protocol.socket.TCPSocketCommand.requestSocket(153) | received message: on<br/>
+Controller2011-06-21 12:40:29,986 INFO HTTP\-Thread\-8 org.openremote.controller.protocol.socket.TCPSocketCommand.requestSocket(153) | received message: on</p>
+
+<p>I don't know where is a problem...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by michal at Jun 22, 2011 11:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039602"></a>
+                                    <font class="smallfont"><p>The controller should ask your device in an extra thread where the sensor is executed for the status. So answering directly on your "on" command will not reflect the status. Also, older version from TCPSocketCommand did not implment the read(). I don't know which version you have.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 22, 2011 14:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039626"></a>
+                                    <font class="smallfont"><p>Hi, I've just submitted a patch to Juha for the TCPSocketCommand to implement the regex StatusFilter that Richard Turner added to the Telnet implementation.  You need to compile the source for the controller (not hard.. I did it) and then manually add the StatusFilter/StatusFilterGroup and StatusDefault commands to the controller.xml (it can't yet be done from the online designer) All the instructions are in in Richards telnet post in the design forum.</p>
+
+<p>This should allow you to write regex filters that look for specific things in your tcp responses (anything that you can write a regex filter for) and link them to switches/levels/ranges etc.</p>
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Jun 24, 2011 10:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039630"></a>
+                                    <font class="smallfont"><p>Thanks a lot,<br/>
+I can see sensor extra thread, where controller is sending { $value{Light1}}, but when I reply "on" for this socket, there is no reaction on panel.</p>
+
+<p>I have Controller-2.0.0_SNAPSHOT_20110611 at revision 4162. It is possible to send simply status like 'on', 'off' to sensors in this revision? Regular expression is not neccessary for me at this moment.</p>
+
+<p>I've tried to compile controller under win32, but i can not find com.io.* package. </p>
+
+<p>Best Regards<br/>
+Michal</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by michal at Jun 24, 2011 12:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039644"></a>
+                                    <font class="smallfont"><p>It should work, it was added in revision 3615, all be it limited (only Custom Senors and Level Sensors are really defined, Ranges will no work)</p>
+
+<p>For a custom sensor you need to map the 'raw' return values (what your socket responds with minus any control characters, since the code revision removes these i.e. \r\n ) to the 'wanted' return values in the online Designer- Box labeled: Custom State Items - Name/Values. </p>
+
+<p>I think I your case it should probably be:</p>
+
+<p>on - on<br/>
+off - off</p>
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Jun 25, 2011 12:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17629188"></a>
+                                    <font class="smallfont"><p>Thank you,</p>
+
+<p>With custom sensor type switch is working!!! But I still have a problem with sensor of slider. I use 'level' sensor type for it. I've tried to send slider position with ascii and as a 1 byte - no reaction. From time to time, web application response : "The returned format of polling value n/a for slider is wrong". Additionally, I can't move slider, it's still at 0 position and when I click on it, it sends 0 to socket.  Any ideas?</p>
+
+<p>Thanks<br/>
+Michal</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by michal at Jun 28, 2011 13:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17629190"></a>
+                                    <font class="smallfont"><p>Sounds like your socket doesn't respond with a value between 0 and 100. It's the same issue I had, which is why I moved to the Regex filters.</p>
+
+<p>Example: I have a amp connected to a RS232-TCP converter which for volume query expects !1MVLQSTN, which is fine for the query, but responds with !1MVLxx where xx is 00-99. The 'level' code expects only values from 0-99 in the response or it fails.</p>
+
+<p>The regex filters allow me to pick out the 'xx' value and pass this to the 'level' code.</p>
+
+<p>BTW. Quote "I've tried to compile controller under win32, but i can not find com.io.* package "... </p>
+
+<p>Did you follow these instructions , right ?</p>
+
+<p><a href="http://openremote.org/display/docs/OpenRemote+2.0+How+To+-+Controller+Installation#OpenRemote2.0HowTo-ControllerInstallation-WindowsXP">http://openremote.org/display/docs/OpenRemote+2.0+How+To+-+Controller+Installation#OpenRemote2.0HowTo-ControllerInstallation-WindowsXP</a> </p>
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Jun 28, 2011 16:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956896"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I'm sure, that socket is sending correct data to controller, log below. I think difference is that you are using telnet protocol but I'm using TCP protocol. </p>
+
+<p>Controller2011-06-28 16:10:21,767 INFO Thread\-4 org.openremote.controller.protocol.socket.TCPSocketCommand.requestSocket(153) | received message: 36<br/>
+Controller2011-06-28 16:10:21,848 INFO Thread\-3 org.openremote.controller.protocol.socket.TCPSocketCommand.requestSocket(153) | received message: off</p>
+
+<p>Phillip, I've installed controller under WIN32 without any problem, but I have a problem with compile sources under WIN32. Many missing packages like "org.io.*", "org.jdom" - i'm not java programmer</p>
+
+<p>Best Regards<br/>
+Michal</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by michal at Jun 30, 2011 11:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

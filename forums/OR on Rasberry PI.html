@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OR on Rasberry PI</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OR on Rasberry PI
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 03, 2013 by <font color="#0050B2">acd</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>I just installing OR on a Raspberry Pi and the server block on the info server startup in 54218 ms.<br/>
+The web page of the OR is not available.</p>
+
+<p>Any idea ?<br/>
+Thanks</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22874342"></a>
+                                    <font class="smallfont"><p>1) Which JVM are you using?<br/>
+2) Is the startup time without any sensor or rule deployments or do you have a design deployed already?<br/>
+3) Do you have the 512MB version of RPi?<br/>
+4) Which version of Controller are you using?</p>
+
+<p>With the latest hard float JVM from Oracle on ARM (Java 8 early access) and no sensor or rules deployments the startup should be down to something around 30s. It is also possible the web console times out if there isn't a fast enough response. Or the reason could be something else altogether.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 03, 2013 19:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874351"></a>
+                                    <font class="smallfont"><p>@Marc,</p>
+
+<p>Which URL did you use?</p>
+
+
+<p>@Juha,</p>
+
+<p>Interesting startup time.</p>
+
+<p>I have a 512MB version, hard float, Java 8 and the following times are logged:</p>
+<ul class="alternate" type="square">
+	<li>Aug 03, 2013 10:06:14 PM org.apache.catalina.startup.Catalina load</li>
+	<li>INFO: Initialization processed in 7972 ms</li>
+	<li>INFO: Server startup in 96701 ms<br/>
+--&gt; 4 Zwave devices having 11 sensors (1 virtual sensor) with 2 rules. Would that take an extra 60 seconds?</li>
+</ul>
+
+
+<p>Do you know whether there is a 'benchmark' config somewhere?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by eivwer at Aug 03, 2013 21:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874358"></a>
+                                    <font class="smallfont"><p>Robert,</p>
+
+<p>1) Can you try for comparison the startup time with a vanilla install that has no design included? That should give a better idea what we are comparing against.</p>
+
+<p>2) Reviewing some of the Z-Wave code earlier this week I spotted a potential issue there that might impact startup times &#8211; it looks similar to the ORCJAVA-294 issue for KNX discussed in this thread:  <a href="http://www.openremote.org/display/forums/Signed+8Bit+integers+for+KNX+%28DPT+6.xxx%29?focusedCommentId=22873479#comment-22873479">Signed 8Bit integers for KNX  6.xxx</a>. If the fix over there is verified, I can apply to Z-Wave as well if you volunteer to test it. The issue is that the current ZW initialization introduces network latency into startup times which seems not such a great idea given that networks can fail and lag in so many wonderful ways. So would seem prudent to separate network related operations out of the startup thread.</p>
+
+<p>3) Rules should also add a little to startup time, but the network latency might have a larger impact (to be discovered)</p>
+
+
+<p>Let me know if you'd be available to test patches.</p>
+
+<p>Best regards,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 03, 2013 23:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874363"></a>
+                                    <font class="smallfont"><p>BTW, the z-wave discussion above was related to using Aeon Labs Z-stick, not Razberry.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 04, 2013 08:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874389"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>1) Vanilla startup is faster indeed<br/>
+INFO: Initialization processed in 9717 ms<br/>
+INFO: Server startup in 53532 ms</p>
+
+<p>2) Sure, let me know and I'll run it.</p>
+
+<p>3) Maybe this helps a bit?<br/>
+--&gt; 4 Zwave devices having 12 sensors (2 virtual) with 4 rules:  INFO: Server startup in 115503 ms<br/>
+--&gt; 4 Zwave devices having 12 sensors (2 virtual) without rules: INFO: Server startup in 70992 ms</p>
+
+
+<p>Note that starting up doesn't happen that often, so if that is a bit slower it's not an issue for me.<br/>
+If the performance for normal operations is affected as well, it does seem interesting to pursue <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by eivwer at Aug 04, 2013 18:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874419"></a>
+                                    <font class="smallfont"><p>Thanks for the numbers.</p>
+
+<p>1) I don't think it necessarily affects the normal operations. On the other hand, you never know. In some cases on the KNX side in a larger installation (100+ sensors) the startup time creeped to over 5 minutes. That's a bit too much at least when still in development mode trying things out which may require more restarts. Granted, once things are up and running in the ideal situation the restarts would be rare.</p>
+
+<p>2) I can check the Z-Wave implementation to improve startup time (the fix is not difficult). But are you using Z-Wave with the Aeon Labs Z-stick, or Razberry?</p>
+
+<p>3) Looks like quite some time still spent on compiling rules. It does make sense in that the rule files do need to be compiled so running on a lower end system like RPi that does seem to have noticeable impact. There's a way to pre-compile the rules which would speed things up at startup. Not something that we'll address immediately but good to keep in mind when going through that part of the code next time.</p>
+
+<p>Best regards,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 05, 2013 10:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

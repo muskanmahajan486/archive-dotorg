@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Sony VPL-HW40ES Serial Control Example</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Sony VPL-HW40ES Serial Control Example
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 03, 2015 by <font color="#0050B2">frand</font>.
+				    </div>
+
+				    <p>Hi everyone,</p>
+
+<p>I struggled a few days in setting this up, so I thought to spare some of the pain from anyone else looking to do the same.<br/>
+The installed projector used to be a Sanyo Z2000, and while it was somewhat straightforward to control using OpenRemote Telnet commands piped through a utility called <em>socat</em>, I was not so lucky with the HW40ES because it was far pickier with its serial port settings, and my expertise was not sufficient to insure the control codes passed through TCP/IP -&gt; Serial conversion without being corrupted.</p>
+
+<p>The new solution is technically simpler.</p>
+
+<p><em>Please note the caveat that while the solution works, it's the result of a few days of trial and error, so people who actually know what they're doing are welcome to chip in!</em></p>
+
+<h3><a name="SonyVPL-HW40ESSerialControlExample-TheHardware"></a>The Hardware</h3>
+
+<ul>
+	<li>Sony VPL-HW40ES projector</li>
+	<li>Raspberry Pi 2 running OpenRemote 2.1.1</li>
+	<li>No-name USB-to-Serial adapter (identified by the OS as a pl2303 converter)</li>
+</ul>
+
+
+<h3><a name="SonyVPL-HW40ESSerialControlExample-TheSetupOverview"></a>The Setup Overview</h3>
+
+<ol>
+	<li>Configure your USB Serial port in rc.local</li>
+	<li>Create shell scripts for individual projector commands</li>
+	<li>Set up <em>Shell Execution Protocol</em> commands in OpenRemote designer</li>
+	<li>Sync and enjoy</li>
+</ol>
+
+
+<h3><a name="SonyVPL-HW40ESSerialControlExample-1%29Serialportsetup"></a>1) Serial port setup</h3>
+
+<p>Add the following line to your /etc/init.d/rc.local</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">stty -F /dev/ttyUSB0 38400 min 1 time 5 parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke</pre>
+</div></div>
+
+<p>This configures your USB serial port at boot for the projector's protocol: 38400 bps, even parity, one stop bit etc.</p>
+
+<h3><a name="SonyVPL-HW40ESSerialControlExample-2%29ProjectorControlCommands"></a>2) Projector Control Commands</h3>
+
+<p>Here is at least one document for the control codes, check with your retailer if they can provide an excel sheet with these in a more legible form.
+<a href="https://docs.sony.com/release/VPLVW60_protocol.pdf">https://docs.sony.com/release/VPLVW60_protocol.pdf</a></p>
+
+<p>For this example, there'll be just two control codes, <em>Power On</em> and <em>Power Off</em>.</p>
+
+<p>Create a file by the name <tt>sony_on.sh</tt> and type in the following:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#!/bin/bash
+echo -en '\xA9\x17\x2E\x00\x00\x00\x3F\x9A' &gt; /dev/ttyUSB0
+echo -en '\xA9\x17\x2E\x00\x00\x00\x3F\x9A' &gt; /dev/ttyUSB0
+echo <span class="code-quote">"OK"</span>
+</pre>
+</div></div>
+
+<p>Remember to set the shell script to be executable by: <tt>chmod +x ./sony_on.sh</tt></p>
+
+<p>Note, the Power On -command is special in that the projector requires the command to be sent twice.</p>
+
+<p><tt>sony_off.sh</tt></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#!/bin/bash
+echo -en '\xA9\x17\x2F\x00\x00\x00\x3F\x9A' &gt; /dev/ttyUSB0
+echo <span class="code-quote">"OK"</span>
+</pre>
+</div></div>
+
+<p>I've added the OK echo for debugging purposes.</p>
+
+<p>At this point you can test your serial connection by running the scripts from the command line. If your projector turns of when you execute sony_on.sh then everything's good so far.</p>
+
+<h3><a name="SonyVPL-HW40ESSerialControlExample-3%29CommandsinOpenRemote"></a>3) Commands in OpenRemote</h3>
+
+<p>The only thing to concern about is just the location of your shell scripts. For this example they're located in the pi default user home folder.<br/>
+So then:</p>
+
+<ul>
+	<li>Create a new device for your projector, then add a new command</li>
+	<li>Name: Sony Power On</li>
+	<li>Choose <em>Shell execution protocol</em> from the protocol pull-down tab</li>
+	<li>Path: /home/pi/sony_on.sh</li>
+</ul>
+
+
+<p>Followed by a second command for Sony Power Off.<br/>
+Next up is setting up buttons for the commands, but I won't go through that here.</p>
+
+<p>And that should be it. </p>
+
+
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

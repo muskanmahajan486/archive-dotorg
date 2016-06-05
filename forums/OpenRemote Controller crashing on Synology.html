@@ -1,0 +1,466 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OpenRemote Controller crashing on Synology</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OpenRemote Controller crashing on Synology
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 17, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>Thank you for your great work putting together OpenRemote!</p>
+
+<p>When I try to run the Controller on a Synology, it unfortunately crashes after a couple of hours with the exception below. I don't manage to figure out what the issue is. My IP/KNX gateway is a Siemens N148/22.</p>
+
+<p>Thanks for your help!</p>
+
+<p>Guillaume.</p>
+
+<p>ERROR [KNX IP reconnector]: Disconnect failed<br/>
+org.openremote.controller.protocol.knx.ip.KnxIpException: Disconnect failed<br/>
+        at org.openremote.controller.protocol.knx.ip.IpTunnelClient.disconnect(IpTunnelClient.java:146)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager$KNXConnectionImpl.stop(KNXIpConnectionManager.java:816)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager$KNXConnectionImpl.access$000(KNXIpConnectionManager.java:636)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager.stop(KNXIpConnectionManager.java:209)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager$ConnectionTask.removeConnection(KNXIpConnectionManager.java:990)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager$ConnectionTask.run(KNXIpConnectionManager.java:977)<br/>
+        at java.util.TimerThread.mainLoop(Timer.java:512)<br/>
+        at java.util.TimerThread.run(Timer.java:462)<br/>
+Exception in thread "KNX IP reconnector" java.lang.IllegalStateException: Shutdown in progress<br/>
+        at java.lang.ApplicationShutdownHooks.add(ApplicationShutdownHooks.java:39)<br/>
+        at java.lang.Runtime.addShutdownHook(Runtime.java:192)<br/>
+        at org.openremote.controller.protocol.knx.ip.IpTunnelClient.connect(IpTunnelClient.java:128)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager$KNXConnectionImpl.connect(KNXIpConnectionManager.java:704)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager.getConnection(KNXIpConnectionManager.java:224)<br/>
+        at org.openremote.controller.protocol.knx.KNXIpConnectionManager$ConnectionTask.run(KNXIpConnectionManager.java:980)<br/>
+        at java.util.TimerThread.mainLoop(Timer.java:512)<br/>
+        at java.util.TimerThread.run(Timer.java:462)<br/>
+Apr 16, 2013 2:41:18 AM org.apache.catalina.core.StandardService stop<br/>
+INFO: Stopping service Catalina<br/>
+Apr 16, 2013 2:41:20 AM org.apache.coyote.http11.Http11Protocol destroy<br/>
+INFO: Stopping Coyote HTTP/1.1 on http-18581</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/21860405/23036189.png">Skjermbilde 2013-10-14 kl. 19.16.02.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21860410"></a>
+                                    <font class="smallfont"><p>Judging by the log snippet, the controller is in the shutdown sequence. That is, someone or something has sent the controller process a kill signal (assuming it wasn't you). Most likely this is then something the operating system is doing.</p>
+
+<p>These can be difficult to track down sometimes. Try to dig into the operating system logs to see what's happening (sorry can't point you to the right ones, others with more experience with Linux may be able to give more specifics). One example we've seen before is if the system is running low on memory, the operating system starts killing processes to ensure the kernel and core services can continue to run or can be closed down cleanly. Maybe that's the case here too?</p>
+
+<p>But if you shut down the controller process by yourself then the error you showed is not the main cause, just due to unclean shutdown sequence in the controller implementation itself.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 17, 2013 04:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860419"></a>
+                                    <font class="smallfont"><p>Hi guillaume, <br/>
+I've experimented the same behavior on Synology.<br/>
+I haven't found the reason, but now, it's stable.<br/>
+What I have done?<br/>
+Remove the openremote package from pcloader and its java package.<br/>
+Remove the usage of RRD graph<br/>
+Install DSM 4.2, with synology java wrapper and tomcat package.<br/>
+Deploy a build war file of the r4783 checkin version of controller.<br/>
+And now it's working.<br/>
+What is your configuration?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 17, 2013 07:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860425"></a>
+                                    <font class="smallfont"><p>@Guillaume, @Yann<br/>
+To get a better insight could you both specify the type of synology box and DSM release you were using?<br/>
+@Yann, do you also use KNX? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 17, 2013 08:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860428"></a>
+                                    <font class="smallfont"><p>Thank you for your feedback.</p>
+
+<p>I am using DSM 4.2-3161 on a DS209. I don't think the issue is related to a memory problem since the memory usage is around 35%.</p>
+
+<p>@Yann, I will try to deploy the war package as you suggested and update you.</p>
+
+<p>Thanks for your support.</p>
+
+<p>Guillaume.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by guillaume at Apr 17, 2013 08:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860437"></a>
+                                    <font class="smallfont"><p>Yes I'm a KNX adept with RRD and emonCMS energy monitoring graph<br/>
+DSM 4.2 on syno 1512+</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 17, 2013 09:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860445"></a>
+                                    <font class="smallfont"><p>So the common denominator is KNX and Patters package for Synology? The CPU's are ARM and x86.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 17, 2013 11:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878165"></a>
+                                    <font class="smallfont"><p>Is this due to the same reasons or is there a different reason why this is happening?<br/>
+I am running the package from PCLOADER on a Synology DS412+.<br/>
+Not running the java from PDLOADER, installed java manager and installed a java jdk-6u45.</p>
+
+<p><img src="attachments/21860405/23036189.png" align="absmiddle" border="0"/></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 14, 2013 18:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878173"></a>
+                                    <font class="smallfont"><p>I have Tomcat and java installed, but how do I use this to install the OR Controller on the NAS?<br/>
+Does anybody know how to do this?</p>
+
+<p>The controller running with the PCLOADER is not running as it should and is giving me problems.<br/>
+If somebody in here can help me set this up on my synology DS 412+ using Tomcat and Java I would<br/>
+be very greatful! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 14, 2013 22:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878187"></a>
+                                    <font class="smallfont"><p>OR consists of two WARs - webconsole and controller - which are deployed in tomcat. Get a stable version of these two and copy them to tomcat webapps directory.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 15, 2013 04:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878193"></a>
+                                    <font class="smallfont"><p>I downloaded the OpenRemote (OpenRemote-Controller-2.1.1.0_Snapshot-2013-06-17)<br/>
+After extracting the folder I managed to find only 1 war file, this under Webapps and filename webconsole.war.<br/>
+Therefore I am lacking the controller war. I have searched the folder, but the only .war file is the webconsole.war.</p>
+
+<p>Where do I find the controller war file?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 15, 2013 10:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878194"></a>
+                                    <font class="smallfont"><p>The error shown here is related to not receiving an acknowledgement frame to an KNX IP tunneling request (looks like a read request? Which would only be made at startup to retrieve the device state). </p>
+
+<p>It is a bit odd. Haven't seen that error before. There's something not right with the setup but the error logs don't reveal the reason. Can you get any functionality working on this system, or does everything fail with this same error?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 15, 2013 11:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878195"></a>
+                                    <font class="smallfont"><p>The war file is unpacked so it is the webapps/controller directory as a whole that you would need to copy to Tomcat's webapps directory, next to the webconsole.war.</p>
+
+<p><b>However</b>, the OR distribution you downloaded already includes Tomcat, so a separate Tomcat install on your Synology is really not necessary. You just need the Java package and then the OR binary extracted on the system. I don't know the details of the Synology system but I would imagine doing the latter is a bit of a less effort than trying to build your own custom install of Tomcat for OR.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 15, 2013 11:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878204"></a>
+                                    <font class="smallfont"><p>That is what makes this the biggest issue.<br/>
+Everytime I get this kind of error, the functionality that stops working is different.<br/>
+The functionality connected to the iPhone app, switches, sliders, buttons etc always work.<br/>
+The functionality that is damaged are rules, especially rules connected to change in status off a<br/>
+sensor, and when a time delay is involved.</p>
+
+<p>For instance, I have rule stating that when off signal is recevied, then dim down light with a delay stated at 45 min.<br/>
+Some of these rules stops working, but not all of them. So basically the whole setup up becomes very untrustworthy in<br/>
+terms of timebased rules ang logical functionality.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 15, 2013 12:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878212"></a>
+                                    <font class="smallfont"><p>I have installed java jdk-6u45, and extracted the OR folder (OpenRemote-Controller-2.1.1.0_Snapshot-2013-06-17).<br/>
+When I go to the bin folder and type ./openremote.sh run, i get the message -ash: ./openremote.sh: Permission denied.<br/>
+I have also tried typing start instead of run, with same result.</p>
+
+<p>I am logged in via ssh, and logged inn as ROOT user.</p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 15, 2013 13:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878214"></a>
+                                    <font class="smallfont"><p>Try:</p>
+
+<p>&gt; sh openremote.sh run </p>
+
+
+<p>Alternatively, do</p>
+
+<p>&gt; cd bin<br/>
+&gt; chmod a+x *.sh</p>
+
+<p>After which you can do:</p>
+
+<p>&gt; ./openremote.sh run</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 15, 2013 13:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878216"></a>
+                                    <font class="smallfont"><p>sh openremote.sh run worked like a charm <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Thanks <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>How do Sync this with the WEB Design UI when running this on my NAS?<br/>
+Figured this out.</p>
+
+<p>This still remains:<br/>
+How do I stop/reboot the controller?</p>
+
+<p>Edit:<br/>
+When I close my terminal on my Mac, the Controller shuts down....<br/>
+How do I keep it running?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 15, 2013 13:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878282"></a>
+                                    <font class="smallfont"><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">sh openremote.sh run &amp; </pre>
+</div></div>
+<p>Run the process in background.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 16, 2013 05:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878285"></a>
+                                    <font class="smallfont"><p>I have now installed the latest version of the controller on my Synology DS412+.<br/>
+(The way you described below)</p>
+
+<p>Even with the new controller I get this error.<br/>
+I am however starting to see a trend. It is always a motion sensor that starts the error.<br/>
+And the error do crash some of my rules, but not all of them, but so far I have not seen a trend<br/>
+in what type of rules that crash. </p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 16, 2013 07:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878288"></a>
+                                    <font class="smallfont"><p>I tried to run your command, but as soon as I closed the Terminal window on my Mac, the Controller stopped running.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 16, 2013 08:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878548"></a>
+                                    <font class="smallfont"><p>I keep getting this on a daily basis now. The sensors the always triggers the error are motion sensors.<br/>
+Because of this error many of my rules stops working, making the whole setup "untrusworthy" and making power saving functions obsolete.</p>
+
+<p>Do you have any idea of what could be the problem, or how to fix it?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Oct 21, 2013 09:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878673"></a>
+                                    <font class="smallfont"><p>I have an idea I can try in the code, it's a bit of a long shot but may be worth a try. I won't be able to look at it in the next few days though. Please ping back to me next week if I haven't come back then. At least I can give an update on when I might be able to try something.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 22, 2013 20:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879352"></a>
+                                    <font class="smallfont"><p>Any new status on this issue?</p>
+
+<p>Some additional information. I have since last time added new sensors (currenctly expanding my KNX system).<br/>
+The sensors copied in my screendump above no longer seems to experience the issue. <br/>
+However, the newly added sensors are now experience this issue.</p>
+
+<p>The error seems to only effect the latest added sensors.<br/>
+There are occasions that older sensors still experience this issue, but the majority of the time it is only the new ones.</p>
+
+<p>Also, stopping the controller and then restarting it, for then to sync multiple times before actually starting to use the system helps to reduce the<br/>
+chance of this error occouring.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Nov 04, 2013 10:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879477"></a>
+                                    <font class="smallfont"><p>Will get to it after working on a few documents first and getting a pile of paperwork done. Might even be this week if I get lucky.</p>
+
+<p>As I said, it's bit of a long shot so it may have no impact. Reviewing the code, when no ACK is received our client side does a bit of a drastic measure and attempts to close the connection (and then hopefully re-open it). I can try to change this behavior a bit to not completely kill and rebuild the connection but it may not make a difference, or even make things worse depending how the ACK matching is done, something else I need to check....</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 06, 2013 02:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879478"></a>
+                                    <font class="smallfont"><p>Not sure if this is supported in Mac, but linux would allow you to run OR as a <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Install+Controller+on+Raspberry+Pi">service.</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Nov 06, 2013 03:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880847"></a>
+                                    <font class="smallfont"><p>Tracking similar issue here: <a href="Controller Ok on 2.0.2, not working on 2.1 or 2.2.html" title="Controller Ok on 2.0.2, not working on 2.1 or 2.2">Controller Ok on 2.0.2, not working on 2.1 or 2.2</a>. Need to add more details on the ACK failures.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 07, 2013 11:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883811"></a>
+                                    <font class="smallfont"><p>This continues to be an issue for me, but today I noticed something that might be the reason why it crashes...<br/>
+Many of my sensors, rules, commands and so on includes letters æ, å and æ. <br/>
+I have been playing with an old lap top (Usually i use my synology and Mac Mini). <br/>
+I tried to run the controller from the laptop, and I started to get invalid characters when the rule engine was starting up. When chaining the name of my rules that included æ,å ø the error went away.<br/>
+I have never gotten that message when running on Mac or Synology. <br/>
+Could this be the cause of this error?<br/>
+If so, I will take the time to change all my rules, sensors and command.... <br/>
+Your opinion would be good before I start the work <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by istian at Feb 02, 2014 14:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

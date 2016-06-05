@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : X10 CM15A interface with OR in Linux</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : X10 CM15A interface with OR in Linux
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 14, 2014 by <font color="#0050B2">gadgetguy</font>.
+				    </div>
+
+				    <p>Good afternoon all! Hopefully someone can help me out with this configuration issue. My end goal is to be able to use OR with my X10 CM15A device.</p>
+
+<p>First, some background: OR has been configured on under Ubuntu 14 following the instructions on openremote.org. I can successfully get the server started within Terminal. I have designed an interface with OpenRemote Designer with a couple of X10 devices in my home for testing purposes. I have installed mochad so the CM15A will interface with the computer and OR. Using</p>
+
+<p>cd ~/Downloads/mochad<br/>
+sudo ./mochad<br/>
+nc localhost 1099<br/>
+pl b3 on</p>
+
+<p>I am able to get a light to turn on. However, as soon as I use the OR app on my iPhone to attempt to turn on B3, Terminal spits out:</p>
+
+<p>Experimental: JNI_OnLoad called.<br/>
+WARNING: RXTX Version mismatch<br/>
+Jar version = RXTX-2.2pre1<br/>
+native lib Version = RXTX-2.1-7<br/>
+ERROR HTTP\-Thread\-1: com.jpeterson.x10.GatewayException: Requested com port /dev/ttyS0 does not exist.</p>
+
+<p>I've tried going in to webapps/controller/WEB-INF/classes/config.properties and changing com.port= to the USB device ID I found to be the X10 device through lsusb, which happens to be Bus 003 Device 006. I've tried a variety of formats for this, including com.port=003,006 and com.port=003 - perhaps I don't have the correct format for a USB devices?</p>
+
+<p>I've googled what I can think is nearly every possible answer to get my solution and still can't figure it out. I'm sorry if this has already been covered somewhere but I certainly cannot find it! Thanks in advance.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22888971"></a>
+                                    <font class="smallfont"><p>Joel,<br/>
+It seems like you've got two things going on.<br/>
+ WARNING: RXTX Version mismatch<br/>
+ Jar version = RXTX-2.2pre1<br/>
+ native lib Version = RXTX-2.1-7<br/>
+which implies that the OS (ubuntu) has an older version of RXTX installed (2.1.7) and OR is using and expecting 2.2pre1. This may or may not matter.</p>
+
+<p>With regards to the error for the com port I suspect that you may have created a device command in OR to use X10 protocol which is for the CM11A (serial port interface). As you probably know the CM15A uses USB.</p>
+
+<p>mochad provides the interface to the CM15A using the TCP/IP protocol.<br/>
+Commands can be sent to devices to the CM15A through mochad by creating a Device Command as follows:<br/>
+  Name: Turn On Light<br/>
+  Protocol: TCP/IP<br/>
+  IP Address: 127.0.0.1<br/>
+  Port: 1099<br/>
+  Command: rf b5 on</p>
+
+<p>I too have been trying to get OR to interface with the CM15A but my focus has been to listen to the incoming signals received by the CM15A using the UDP Listener so I can have sensors trigger rules. Here is a link to my posting in the thread <a href="http://www.openremote.org/display/forums/UDP+Listener+Questions?focusedCommentId=22888128#comment-22888128">http://www.openremote.org/display/forums/UDP+Listener+Questions?focusedCommentId=22888128#comment-22888128</a></p>
+
+<p>References that you probably read:
+<a href="http://openremote.org/display/docs/OpenRemote+2.0+How+To+-+X10+Devices">http://openremote.org/display/docs/OpenRemote+2.0+How+To+-+X10+Devices</a></p>
+
+
+<p>I hope this helps.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by devodl at Sep 24, 2014 03:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22889046"></a>
+                                    <font class="smallfont"><p>Thank you so much Steve! I knew it was something so simple that I was just glossing over. I did read that page but the links to the details lead to mochad's project page on Sourceforge that gives precisely zero details, as far as I could find. Again, thank you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gadgetguy at Sep 28, 2014 01:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

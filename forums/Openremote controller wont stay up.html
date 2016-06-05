@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Openremote controller wont stay up</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Openremote controller wont stay up
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 15, 2015 by <font color="#0050B2">jsanjur</font>.
+				    </div>
+
+				    <p>Hi all, </p>
+
+<p>Hopefully you will be able to assist me.</p>
+
+<p>I installed OR on a Raspberry Pi.  </p>
+
+<p>To start the controller i used ./openremote.sh run and it works fine with no problem.</p>
+
+<p>I start having problems when i try to set it up to start automatically.</p>
+
+<p>Ive tried the two methods from the installation guide for Pi</p>
+
+<p>First - Editing the rc.local file <br/>
+cd /home/pi/OpenRemote-Controller-2.1.0/bin/<br/>
+./openremote.sh start</p>
+
+
+<p>Second - placing a script on the init.d folder and using the update-rc.d (script below)<br/>
+#!/bin/sh</p>
+<ol>
+	<li>
+	<ol>
+		<li>
+		<ol>
+			<li>BEGIN INIT INFO</li>
+		</ol>
+		</li>
+	</ol>
+	</li>
+	<li>Provides:          openremote</li>
+	<li>Required-Start:    $remote_fs $syslog</li>
+	<li>Required-Stop:     $remote_fs $syslog</li>
+	<li>Default-Start:     2 3 4 5</li>
+	<li>Default-Stop:      0 1 6</li>
+	<li>Short-Description: Start daemon at boot time</li>
+	<li>Description:       Enable service provided by daemon.
+	<ol>
+		<li>
+		<ol>
+			<li>END INIT INFO</li>
+		</ol>
+		</li>
+	</ol>
+	</li>
+</ol>
+
+
+<p>cd /home/pi/OpenRemote-Controller-2.1.0/bin  # Modify this line to your OpenRemote Controller installation path</p>
+
+<p>case "$1" in</p>
+
+<p>stop)<br/>
+        echo "Stopping OpenRemote Controller..."<br/>
+        sudo /home/pi/OpenRemote-Controller-2.1.0/bin/openremote.sh stop &gt; /dev/null 2&gt;&amp;1 &amp;<br/>
+        ;;</p>
+
+<p>start)</p>
+<ol>
+	<li>start OpenRemote in background mode<br/>
+        sudo /home/pi/OpenRemote-Controller-2.1.0/bin/openremote.sh start &gt; /dev/null 2&gt;&amp;1 &amp;<br/>
+        echo "OpenRemote Controller started..."<br/>
+        ;;</li>
+</ol>
+
+
+<p>restart)<br/>
+        $0 stop<br/>
+        sleep 5<br/>
+        $0 start<br/>
+        ;;<br/>
+*)<br/>
+        echo "usage: $0 <div class="error"><span class="error">Unknown macro: { start | stop | restart}</span> </div>" &gt;&amp;2<br/>
+        exit 1<br/>
+        ;;</p>
+
+<p>esac</p>
+
+
+<p>With BOTH methods, the controller starts when the raspberry boots up BUT after about 30 seconds, it just stop responding.  Ive tried with both methods adding sudo but still the same.   If i do it manually then it works fine.   </p>
+
+<p>What could the problem be or how can i take a look at what might be the problem?  </p>
+
+<p>Thanks</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23597642"></a>
+                                    <font class="smallfont"><p>Hi Juan,</p>
+
+<p>does your openremote process still stays in memory but stops responding or does it quit completely?</p>
+
+<p>For me a crontab entry works fine:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+@reboot    /home/openremote/controller_start.sh
+</pre>
+</div></div>
+
+<p>and in controller_start.sh I have</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#!/bin/sh
+cd /opt/OpenRemote-Controller/bin; sh openremote.sh start
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Apr 15, 2015 10:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597652"></a>
+                                    <font class="smallfont"><p>Its weird how its acting.</p>
+
+<p>When i start the RPi, i run   <br/>
+ps -axu | grep -i openremote  and i get this:<br/>
+root      2041 88.3  4.0 625368 38608 ?        Sl   19:54   0:15 /usr/bin/java -Dcatalina.home=/home/pi/OpenRemote-Controller-2.1.0 -Dcatalina.base=/home/pi/OpenRemote-Controller-2.1.0 -Djava.io.tmpdir=/home/pi/OpenRemote-Controller-2.1.0/temp -Dtomcat.server.console.log.level=OFF -Dopenremote.controller.startup.log.level=INFO -Dopenremote.controller.console.threshold=OFF -Djava.library.path=/home/pi/OpenRemot -Controller-2.1.0/webapps/controller/WEB-INF/lib/native -Djava.util.logging.config.file=/home/pi/OpenRemote-Controller-2.1.0/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -classpath :/home/pi/OpenRemote-Controller-2.1.0/bin/tomcat/bootstrap.jar org.apache.catalina.startup.Bootstrap start<br/>
+pi        2184  0.0  0.1   3552  1792 pts/0    S+   19:54   0:00 grep --color=auto -i openremote</p>
+
+<p>I go to the controller page  <a href="http://ip:8080/controller">http://ip:8080/controller</a> and the page is up ... if i refresh a couple of times with F5... the page is still there  BUT as soon as i try to log in to sync the controller then page goes down.</p>
+
+<p>ps... i tried the contrab,  with the pi and root user and its not working,not even starting the service</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jsanjur at Apr 15, 2015 21:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597654"></a>
+                                    <font class="smallfont"><p>What do the logs say, not sure how yours is setup but when i look at my tomcat logs there is usually something crashing it.</p>
+
+<p>So try and find the catalina.out file and it should show your error. It could be an out of memory issue. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glennl at Apr 16, 2015 02:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

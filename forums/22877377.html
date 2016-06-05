@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : denon 2310ci rs232 debugging ?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : denon 2310ci rs232 debugging ?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 03, 2013 by <font color="#0050B2">nbewhm4</font>.
+				    </div>
+
+				    <p>I've followed the denon help and created a simple remote, and have zipped and downloaded the code. In a browser, when I go to <a href="http://localhost:8080/webconsole/#main">http://localhost:8080/webconsole/#main</a> I see my remote, but when I click the buttons, the denon does absolutely nothing. I've edited the denonAVRSerial.properties file, and set COM2 as the port (I've tried COM1 and COM2 but it makes no difference!) and restarted the OpenRemote. Have I missed a step? Is there an RS232 debugger so I can see if anything is even being sent to the denon box ?<br/>
+Thanks in advance ! I'm running on Windows xp, the denon model is 2310CI.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22877539"></a>
+                                    <font class="smallfont"><p>DenonAVRSerialCommand is logging sent messages on the info level. You need to make sure that you capture this logging. </p>
+
+<p>Edit webapps/controller/WEB-INF/classes/log4j.properties to add the following line. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+log4j.logger.org.openremote.controller.protocol.denonavrserial.DenonAVRSerialCommand = ALL, console, file
+</pre>
+</div></div>
+
+<ul>
+	<li><b>'org.openremote.controller.protocol.denonavrserial'</b> is the log catagory   created by the DenonAVRSerial logger</li>
+	<li><b>ALL</b> is the log level (everything)</li>
+	<li><b>console, file</b> is your appenders (console, which corresponds to catalina.log, and file which is controller.log)</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Oct 05, 2013 06:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877563"></a>
+                                    <font class="smallfont"><p>I tried what was suggested, now (after some code corrections) in the main console &amp; log files I get:</p>
+
+<p>Read: Not implemented, return an empty message</p>
+
+<p>I also see:<br/>
+INFO 2013-10-07 09:50:42,062 : CommPortIdentifiers :gnu.io.CommPortEnumerator@1fcf790<br/>
+INFO 2013-10-07 09:50:42,062 : CommPortIdentfier: gnu.io.CommPortIdentifier@e14d81<br/>
+INFO 2013-10-07 09:50:42,078 : CommPortIdentfier: gnu.io.CommPortIdentifier@1a7789c<br/>
+INFO 2013-10-07 09:50:42,094 : CommPortIdentfier: gnu.io.CommPortIdentifier@1df5f21<br/>
+INFO 2013-10-07 09:50:42,219 : CommPortIdentifiers :gnu.io.CommPortEnumerator@158689a<br/>
+INFO 2013-10-07 09:50:42,234 : CommPortIdentfier: gnu.io.CommPortIdentifier@e14d81<br/>
+INFO 2013-10-07 09:50:42,234 : CommPortIdentfier: gnu.io.CommPortIdentifier@1a7789c<br/>
+INFO 2013-10-07 09:50:42,250 : CommPortIdentfier: gnu.io.CommPortIdentifier@1df5f21</p>
+
+<p>And when I slide the volume to zero:<br/>
+INFO 2013-10-07 09:52:24,973 : CommPortIdentifiers :gnu.io.CommPortEnumerator@11a5fd0<br/>
+INFO 2013-10-07 09:52:24,973 : CommPortIdentfier: gnu.io.CommPortIdentifier@e14d81<br/>
+INFO 2013-10-07 09:52:24,973 : CommPortIdentfier: gnu.io.CommPortIdentifier@1a7789c<br/>
+INFO 2013-10-07 09:52:24,973 : CommPortIdentfier: gnu.io.CommPortIdentifier@1df5f21<br/>
+INFO 2013-10-07 09:52:24,973 : Command: MV0 DataBytes: 110, 117, 108, 108, 13</p>
+
+<p>Why is null and cr sent to the Denon (110 = n, 117 = u, 108 = l, 13 = carriage return ?</p>
+
+<p>Anyone any ideas as to what I have missed, or is it looking like the Denon 2310CI is not compatible/responding ?</p>
+
+<p>I bought a new cable, this time USB to serial (in case the cable was faulty). Now the power on and standby work <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Unfortunately, the volume slider is still sending null - any thoughts ?</p>
+
+
+
+<p>This thread has the details of the fixes needed......
+<a href="http://openremote.org/pages/viewpage.action?pageId=22877755&amp;focusedCommentId=22877812#comment-22877812">http://openremote.org/pages/viewpage.action?pageId=22877755&amp;focusedCommentId=22877812#comment-22877812</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nbewhm4 at Oct 06, 2013 02:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:40</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

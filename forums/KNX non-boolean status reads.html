@@ -1,0 +1,924 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNX non-boolean status reads</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNX non-boolean status reads
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 26, 2011 by <font color="#0050B2">josep</font>.
+				    </div>
+
+				    <p>A couple of days ago, I tried to create a model with a KNX slider, which apparently requires a sensor. The application was to be able to control (and get feedback) on a variable intensity light.</p>
+
+<p>Well, after trying several "command" words for reading the status with no results, I finally decided to access the source code to figure out what the right command was for level-type sensors to use.</p>
+
+<p>Well, if I read the source correctly, it seems to me that this cannot be done in the current code base. However, the way I am reading the code it seems a simple matter of defining a new verb (instead of STATUS) which actually sets up the proper APDU ... This would solve my immediate problem, although I am not sure it would be the right solution long term, as the mechanism being used to resolve the name is a simple dictionary lookup...</p>
+
+<p>In any case, after this, I would have a couple of questions:<br/>
+1. Is there a deep reason why there is only the "STATUS" entry for read commands? If not, is there a work item in place to fix this situation? If not, what is the procedure to get <br/>
+   such work item in place, even to resolve it? (sorry if this is discussed somewhere else in the site, have not had time to browse through everything)</p>
+
+<p>2. Besides "fixing" the above missing feature, is there a way in which I can fruitfully implement a slider control for a variable light in a KNX system with the current code base?</p>
+
+
+<p>Thanks,</p>
+
+<p>Josep</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-15533233"></a>
+                                    <font class="smallfont"><p>Status reads for DPT 5.xxx should be in, and I seem to recall some users setting up their sliders so it should work (don't have any DPT 5.xxx gear to test with personally)</p>
+
+<p>The command is still 'STATUS', your sensor needs to be RANGE or LEVEL type to indicate it returns integer values.</p>
+
+<p>See here: <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/GroupValueRead.java">https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/GroupValueRead.java</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 27, 2011 10:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533236"></a>
+                                    <font class="smallfont"><p>This part of the code is very confusing though:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  /*
+   * IMPLEMENTATION NOTE:
+   *
+   *   <span class="code-keyword">if</span> <span class="code-keyword">new</span> valid values <span class="code-keyword">for</span> command names are added, the unit tests should be added
+   *   accordingly into KNXCommandBuilderTest
+   */
+  <span class="code-keyword">static</span>
+  {
+    booleanCommandLookup.put(<span class="code-quote">"STATUS"</span>, ApplicationProtocolDataUnit.READ_SWITCH_STATE);
+  }
+
+</pre>
+</div></div>
+
+<p>As it implies it only reads switch DPT &#8211; where in fact the read request payload is the same regardless of the datatype.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 27, 2011 11:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533238"></a>
+                                    <font class="smallfont"><p>Juha,<br/>
+ thanks for answering.</p>
+
+<p> I believe that was the intention, as you say, to provide one command (STATUS) for both data types. You mention other users have been able to set up sliders for KNX with the current code base unmodified. I would love to see those solutions, as I certainly am not able to do so, and looking at the code, it would greatly surprise me if others were able to achieve it.</p>
+
+<p>  Let me explain.</p>
+
+<p>   The above code snippet is not that confusing, it sets up the </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+   ApplicationProtocolDataUnit.READ_SWITCH_STATE 
+</pre>
+</div></div>
+
+<p>as the APDU associated with the <span style="color: green">STATUS</span> command. This has consequences in the Read method, where the following line:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    DataPointType dpt = getAPDU().getDataPointType();
+</pre>
+</div></div>
+
+<p>makes dpt satisfy the following relationship:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+   dpt == ApplicationProtocolDataUnit.READ_SWITCH_STATE.getDataPointType();
+</pre>
+</div></div>
+
+<p>But from the definition of the above constant in <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/ApplicationProtocolDataUnit.java" title="https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/ApplicationProtocolDataUnit.java">ApplicationProtocolDataUnit.java</a></p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  /**
+   * Represents the full APDU (APCI bits) <span class="code-keyword">for</span> Group Value Read request <span class="code-keyword">for</span> data points with
+   * DPT 1.001 (Switch) type.
+   *
+   * @see ApplicationLayer.Service#GROUPVALUE_READ
+   * @see org.openremote.controller.protocol.knx.datatype.Bool#READ_SWITCH
+   */
+  <span class="code-keyword">final</span> <span class="code-keyword">static</span> ApplicationProtocolDataUnit READ_SWITCH_STATE = <span class="code-keyword">new</span> ApplicationProtocolDataUnit
+  (
+      ApplicationLayer.Service.GROUPVALUE_READ,
+      Bool.READ_SWITCH
+  );
+</pre>
+</div></div>
+
+<p>will ensure that the following holds:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ApplicationProtocolDataUnit.READ_SWITCH_STATE.getDataPointType() == Bool.READ_SWITCH.getDataPointType();
+</pre>
+</div></div>
+
+<p>which, after inspecting the relevant code in <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/datatype/Bool.java" title="https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/datatype/Bool.java">Bool.java</a>:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  /**
+   * Datatype used <span class="code-keyword">for</span> Group Value Read service with 'SWITCH' device.
+   *
+   * @see org.openremote.controller.protocol.knx.datatype.DataPointType.BooleanDataPointType#SWITCH
+   */
+  <span class="code-keyword">public</span> <span class="code-keyword">final</span> <span class="code-keyword">static</span> DataType READ_SWITCH = <span class="code-keyword">new</span> DataType()
+  {
+    <span class="code-keyword">public</span> <span class="code-object">int</span> getDataLength()
+    {
+      <span class="code-keyword">return</span> 1;
+    }
+
+    <span class="code-keyword">public</span> <span class="code-object">byte</span>[] getData()
+    {
+      <span class="code-keyword">return</span> <span class="code-keyword">new</span> <span class="code-object">byte</span>[] { 0x00 };
+    }
+
+    <span class="code-keyword">public</span> DataPointType getDataPointType()
+    {
+      <span class="code-keyword">return</span> DataPointType.BooleanDataPointType.SWITCH;
+    }
+  };
+</pre>
+</div></div>
+
+<p>tells us that the following relationship holds:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+dtp == DataPointType.BooleanDataPointType.SWITCH
+</pre>
+</div></div>
+
+<p>Now, going back to the Read method in the file you pointed me to above, we find the relevant branch of the if statement (for a LEVEL sensor):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    <span class="code-keyword">else</span> <span class="code-keyword">if</span> (sensorType == EnumSensorType.LEVEL)
+    {
+      <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.SCALING)
+      {
+        Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+
+        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString(valueDPT.resolve());
+      }
+
+      <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.ANGLE)
+      {
+        Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+
+        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString((<span class="code-object">int</span>)(valueDPT.resolve() / 3.6));
+      }
+
+      <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.RELPOS_VALVE)
+      {
+        Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+
+        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString((<span class="code-object">int</span>)(valueDPT.resolve() / 2.55));
+      }
+
+      <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.VALUE_1_UCOUNT)
+      {
+        Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+
+        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString((<span class="code-object">int</span>)(valueDPT.resolve() / 2.55));
+      }
+
+      <span class="code-keyword">else</span>
+      {
+        <span class="code-keyword">throw</span> <span class="code-keyword">new</span> Error(<span class="code-quote">"Unrecognized datatype <span class="code-keyword">for</span> LEVEL sensor: "</span> + dpt);
+      }
+    }
+</pre>
+</div></div>
+
+<p>Inspection of this code seems to indicate that dpt is not equal to any of the DataPoinType(s) it is checked against, which results in the code taking the default (else) branch, and throwing the exception that appears in there.<br/>
+This, BTW, is consistent with the output I see in the console from which I launch the controller:</p>
+
+<blockquote>
+<p>Exception in thread "Thread-12" java.lang.Error: Unrecognized datatype for LEVEL sensor: 1.001</p></blockquote>
+
+<p>Given the above, I can see two approaches:</p>
+
+<p>1. Introduce a new command, different from <span style="color: green">STATUS</span>, and associate it with the right APDU<br/>
+2. Extend the above if statement to also contemplate the datatype 1.001 (DataPointType.BooleanDataPointType.SWITCH). Given what you say about the frame being the same, this approach would work</p>
+
+<p>Does it make sense?</p>
+
+<p>Thanks again,</p>
+
+<p>Josep<br/>
+(I edited my post)<br/>
+With the proposed option 2, the code would read as follows:</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    <span class="code-keyword">else</span> <span class="code-keyword">if</span> (sensorType == EnumSensorType.LEVEL)
+    {
+      <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.SCALING || dpt == DataPointType.BooleanDataPointType.SWITCH)
+      {
+        Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+
+        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString(valueDPT.resolve());
+      }
+
+      <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.ANGLE)
+      {
+        Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+
+        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString((<span class="code-object">int</span>)(valueDPT.resolve() / 3.6));
+      }
+
+      <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.RELPOS_VALVE)
+      {
+        Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+
+        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString((<span class="code-object">int</span>)(valueDPT.resolve() / 2.55));
+      }
+
+      <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.VALUE_1_UCOUNT)
+      {
+        Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+
+        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString((<span class="code-object">int</span>)(valueDPT.resolve() / 2.55));
+      }
+
+      <span class="code-keyword">else</span>
+      {
+        <span class="code-keyword">throw</span> <span class="code-keyword">new</span> Error(<span class="code-quote">"Unrecognized datatype <span class="code-keyword">for</span> LEVEL sensor: "</span> + dpt);
+      }
+    }
+</pre>
+</div></div>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 27, 2011 12:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533249"></a>
+                                    <font class="smallfont"><p>Thanks for the post and analyzing it &#8211; will need to look at it again. Do note that the sent APDU and the response APDU are not the same instances but it is possible the response APDU gets incorrectly initialized due to the datatype in the group read request being inappropriate in the first place.</p>
+
+<p>The fix as you propose is not the correct one though &#8211; SCALING, ANGLE, RELPOS_VALVE and VALUE_1_UCOUNT are all same basic datatype (8-bit values) so would suffer from the same issue, and logically comparing to SWITCH on something that is an 8-bit integer wouldn't be correct (rather, the APDU would need to contain the right datatype in the first place).</p>
+
+<p>However, before going futher, can you please post the XML snippet of your STATUS command from controller.xml just to ensure that it in fact defines the DPT correctly (5.xxx) rather than uses the 1.001 which the exception reports. It should contain a property</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;property name = <span class="code-quote">"dpt"</span> value = <span class="code-quote">"5.001"</span>/&gt;</span>
+</pre>
+</div></div>
+
+<p>somewhere in your controller.xml</p>
+
+<p>Thanks again for digging deep into this.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 27, 2011 17:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533250"></a>
+                                    <font class="smallfont"><p>Just wanted to add:</p>
+
+<p>In principal your first solution is correct &#8211; adding new keywords, been on my TODO for a very long time. Mainly it serves to make the DPT's in the commands implicit, ie. 'READ SWITCH' automatically means 1.001 where as 'READ SCALE' becomes 5.001 automatically. And therefore we can drop the requirement of feeding in DPT from the user altogether.</p>
+
+<p>If you're able to send a patch to that effect, would be welcome (you uncovered most of the code already).</p>
+
+<p>PS. the coupling of DPT to <b>response APDU</b> is in the KNXConnectionManager, through KNXCommand.getDataType() call. Didn't check yet whether that gets set through the controller.xml DPT property, or somehow gets linked to the group read command's DPT (which is the incorrect 1.001 one). One a quick glance it looks like it <b>should</b> be the DPT you specify in controller.xml file.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+    <span class="code-keyword">public</span> ApplicationProtocolDataUnit read(GroupValueRead command)
+    {
+      <span class="code-keyword">this</span>.sendInternal(command);
+
+      ApplicationProtocolDataUnit.ResponseAPDU response = busListener.internalState.get(command.getAddress());
+
+      <span class="code-keyword">if</span> (response == <span class="code-keyword">null</span>)
+      {
+        <span class="code-keyword">return</span> <span class="code-keyword">null</span>;
+      }
+
+      DataPointType dpt = command.getDataPointType();
+
+      <span class="code-keyword">return</span> response.resolve(dpt);
+    }
+
+</pre>
+</div></div>
+
+<p>However, more unit tests are needed in this area.</p>
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 27, 2011 18:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533253"></a>
+                                    <font class="smallfont"><p>Juha, </p>
+
+<p>   the relevant XML is this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    &lt;command id=<span class="code-quote">"208"</span> protocol=<span class="code-quote">"knx"</span>&gt;
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"status"</span> /&gt;
+      &lt;property name=<span class="code-quote">"groupAddress"</span> value=<span class="code-quote">"2/1/6"</span> /&gt;
+      &lt;property name=<span class="code-quote">"DPT"</span> value=<span class="code-quote">"5.001"</span> /&gt;
+    &lt;/command&gt;
+
+...
+
+    &lt;sensor id=<span class="code-quote">"190"</span> name=<span class="code-quote">"Salon Mesa Nivel"</span> type=<span class="code-quote">"level"</span>&gt;
+      &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"208"</span> /&gt;
+    &lt;/sensor&gt;
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 27, 2011 18:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533254"></a>
+                                    <font class="smallfont"><p>Thanks,</p>
+
+<p>That looks correct. The original DPT from the config doesn't make it to the response APDU then.</p>
+
+<p>Think the best way is to add the new mapping to replace 'STATUS'.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 27, 2011 18:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533255"></a>
+                                    <font class="smallfont"><p>Sure, I believe the change is relatively straightforward. <br/>
+My only problem is that I am not familiar with the toolset you guys are using (sorry, never contributed to sourceforge projects), never used svn, and do not know which other toolsets you are using, or what yor standards for code review are.</p>
+
+<p>So, if you point me to somewhere where I can be educated  about the above questions, I will spend the time to submit the short-term patch.</p>
+
+<p>Jose</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 27, 2011 18:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533256"></a>
+                                    <font class="smallfont"><p>Building the controller, you can follow the instructions here: <a href="http://www.openremote.org/display/docs/Building+OpenRemote+2.0+Developer+Releases" title="Building OpenRemote 2.0 Developer Releases">Building OpenRemote 2.0 Developer Releases</a></p>
+
+<p>Once you have a version that works for you, you can either send the diff output ('svn diff' command) or if by that time you're more comfortable with svn, you can create a sourceforge account and apply the patch yourself.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 27, 2011 18:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533257"></a>
+                                    <font class="smallfont"><p>OK,</p>
+
+<p>  will get to it eventually.</p>
+
+<p>  Thanks</p>
+
+<p>Jose</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 27, 2011 18:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15533266"></a>
+                                    <font class="smallfont"><p>Well,</p>
+
+<p>  I may have some incompatibility, as after following the steps i get an exception like this:</p>
+
+<blockquote>
+<p>correcaminos:bin josep$ sh openremote.sh  run<br/>
+Using CATALINA_BASE:   /Users/josep/Develop/openremote (trunk)/Runtime/apache-tomcat-6.0.18<br/>
+Using CATALINA_HOME:   /Users/josep/Develop/openremote (trunk)/Runtime/apache-tomcat-6.0.18<br/>
+Using CATALINA_TMPDIR: /Users/josep/Develop/openremote (trunk)/Runtime/apache-tomcat-6.0.18/temp<br/>
+Using JRE_HOME:       /System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home<br/>
+Exception in thread "main" java.lang.NoClassDefFoundError: (trunk)/Runtime/apache-tomcat-6/0/18/webapps/controller/WEB-INF/lib/native<br/>
+Caused by: java.lang.ClassNotFoundException: (trunk).Runtime.apache-tomcat-6.0.18.webapps.controller.WEB-INF.lib.native<br/>
+	at java.net.URLClassLoader$1.run(URLClassLoader.java:202)<br/>
+	at java.security.AccessController.doPrivileged(Native Method)<br/>
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:190)<br/>
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:307)<br/>
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:301)<br/>
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:248)</p>
+</blockquote>
+
+<p>Any obvious thing you think I am doing wrong?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 28, 2011 00:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023554"></a>
+                                    <font class="smallfont"><p>At a guess Josep it looks like you might not have the full JDK installed on your box; not sure what distro you're running but make sure you install full jdk from the repositories (think it's java-1.6...), on debian: -</p>
+
+<p>sudo apt-cache search java</p>
+
+<p>Hope this helps,</p>
+
+<p>Rich</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Mar 28, 2011 12:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023560"></a>
+                                    <font class="smallfont"><p>Thanks Richard,</p>
+
+<p>   I am running this on MacosX snow leopard, with the stock JRE. It is enough to run<br/>
+the openremote binaries, and to build (apparently), but does not seem enough to run the build controller.</p>
+
+<p>   I will try and download a full JDK</p>
+
+<p>Regards,</p>
+
+<p>Josep</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 28, 2011 15:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023562"></a>
+                                    <font class="smallfont"><p>Well,</p>
+
+<p>   the jdk is already installed in my system, it turns out, so this may not be the reason.</p>
+
+<p>   Juha, I seem to remember reading somewhere around here that you worked on a Snow Leopard system. I will appreciate any hints you may have as to what may be wrong.</p>
+
+<p>   Thanks,</p>
+
+<p>josep</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 28, 2011 16:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023563"></a>
+                                    <font class="smallfont"><p>Yeah I do. Try without the whitespace and (trunk) in the path, and see if that helps.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 28, 2011 18:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023564"></a>
+                                    <font class="smallfont"><p>This did it, thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 28, 2011 19:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023570"></a>
+                                    <font class="smallfont"><p>OK,</p>
+
+<p>   well, the change was easy enough, as suspected. However, I uncovered a few other difficulties, like the wrong conversion from a signed byte to its unsigned equivalent (in Unsigned8bit.java, which was originally giving me an exception), and, then, finally, total unresponsiveness from the slider, with some funny behavior (read ahead)</p>
+
+<p>   Looking at the logs, what I believe I have seen is this: I can set the dimmed light to maximum (via a dedicated button, there to test). Afterwards, I can read the status level from the right group address, however this does not seem to affect the slider position, which remains at 0.</p>
+
+<p>  When I try to use the slider, apparently it sends the "0" value to the group address which sets the scale/dim, taking the dimmed light to obscurity... As the slider does not respond to the touch gesture (I am using an iPod touch), it remains at 0 all the time, and it can only send a "0" as the value to be set...</p>
+
+<p>   Sooo...</p>
+
+<p>   Has the slider feature been tested on KNX? if not on KNX, has it been tested on anything else? I would like to know, to have more data trying to figure out why the slider does not seem to respond.</p>
+
+<p>  Regards,</p>
+
+<p>josep</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 28, 2011 22:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023577"></a>
+                                    <font class="smallfont"><p>Hi Josep,</p>
+
+<p>I have seen similar issues before and I believe it occurs because the your composer account has got itself into trouble and your controller.xml and panel.xml are out of sync. There are other discussions about this on the forum and I believe Juha can sort this out for you. I have resorted to making a new designer account before or try removing all the devices, commands, sensors and screens from your existing account and then start again.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Mar 29, 2011 07:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023579"></a>
+                                    <font class="smallfont"><p>Thanks for the hint.</p>
+
+<p>Well, I sanitized and simplified fully my project. Did not have to go back to the designer, as the XML format seems simple enough.</p>
+
+<p>I had gestures which were interfering with the "slider gesture". Got rid of them. No behavior change.<br/>
+I had spurious buttons, remnants fo defunct decisions in the designer. Got rid of them. No behavior change.<br/>
+I eliminated everything, except having ONe group with ONE screen with ONE slider, and the corresponding sensor, and commands. No behavior change.</p>
+
+<p>  Using directly restful calls from my browser I can set the dimmer, and get the state, but the slider on the ipod GUI does not work for me (it does not move, only seems to send writes of zeroes to the dimmer)</p>
+
+<p>   So, in sum, at this point I am ready to believe something is wrong with the iphone panel.</p>
+
+<p>   For reference I am including the simplified controler.xml and panel.xml files I am using, just in case I got them wrong, and that explains the effects. </p>
+
+<p>  Regards,</p>
+
+<p>Josep</p>
+
+
+<p>controller.xml:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;openremote xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> xmlns:xsi=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span> xsi:schemaLocation=<span class="code-quote">"http://www.openremote.org http://www.openremote.org/schemas/controller.xsd"</span>&gt;
+</span>  &lt;components&gt;
+    &lt;slider id=<span class="code-quote">"77"</span>&gt;
+      &lt;setValue&gt;
+        &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"253"</span> /&gt;
+      &lt;/setValue&gt;
+      &lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"238"</span> /&gt;
+    &lt;/slider&gt;
+  &lt;/components&gt;
+  &lt;sensors&gt;
+    &lt;sensor id=<span class="code-quote">"238"</span> name=<span class="code-quote">"Salon Mesa Nivel"</span> type=<span class="code-quote">"level"</span>&gt;
+      &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"257"</span> /&gt;
+    &lt;/sensor&gt;
+  &lt;/sensors&gt;
+  &lt;commands&gt;
+    &lt;command id=<span class="code-quote">"253"</span> protocol=<span class="code-quote">"knx"</span>&gt;
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"scale"</span> /&gt;
+      &lt;property name=<span class="code-quote">"groupAddress"</span> value=<span class="code-quote">"2/0/9"</span> /&gt;
+      &lt;property name=<span class="code-quote">"DPT"</span> value=<span class="code-quote">"5.001"</span> /&gt;
+    &lt;/command&gt;
+
+    &lt;command id=<span class="code-quote">"257"</span> protocol=<span class="code-quote">"knx"</span>&gt;
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"status"</span> /&gt;
+      &lt;property name=<span class="code-quote">"groupAddress"</span> value=<span class="code-quote">"2/0/2"</span> /&gt;
+      &lt;property name=<span class="code-quote">"DPT"</span> value=<span class="code-quote">"5.001"</span> /&gt;
+    &lt;/command&gt;
+  &lt;/commands&gt;
+  &lt;config&gt;
+    &lt;property name=<span class="code-quote">"controller.roundrobin.tcpserver.port"</span> value=<span class="code-quote">"20000"</span> /&gt;
+    &lt;property name=<span class="code-quote">"multicast.address"</span> value=<span class="code-quote">"224.0.1.100"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.roundrobin.multicast.port"</span> value=<span class="code-quote">"10000"</span> /&gt;
+    &lt;property name=<span class="code-quote">"multicast.port"</span> value=<span class="code-quote">"3333"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.groupname"</span> value=<span class="code-quote">"floor20"</span> /&gt;
+    &lt;property name=<span class="code-quote">"Macro.IR.Execution.Delay"</span> value=<span class="code-quote">"500"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.roundrobin.multicast.address"</span> value=<span class="code-quote">"224.0.1.200"</span> /&gt;
+    &lt;property name=<span class="code-quote">"lircd.conf.path"</span> value=<span class="code-quote">"/etc/lircd.conf"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.groupmember.autodetect.on"</span> value=<span class="code-quote">"<span class="code-keyword">true</span>"</span> /&gt;
+    &lt;property name=<span class="code-quote">"webapp.port"</span> value=<span class="code-quote">"8080"</span> /&gt;
+    &lt;property name=<span class="code-quote">"copy.lircd.conf.on"</span> value=<span class="code-quote">"<span class="code-keyword">true</span>"</span> /&gt;
+    &lt;property name=<span class="code-quote">"irsend.path"</span> value=<span class="code-quote">"/usr/local/bin/irsend"</span> /&gt;
+    &lt;property name=<span class="code-quote">"resource.upload.enable"</span> value=<span class="code-quote">"<span class="code-keyword">true</span>"</span> /&gt;
+    &lt;property name=<span class="code-quote">"controller.applicationname"</span> value=<span class="code-quote">"controller"</span> /&gt;
+  &lt;/config&gt;
+&lt;/openremote&gt;
+
+
+</pre>
+</div></div>
+
+<p>panel.xml:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;openremote xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> xmlns:xsi=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span> xsi:schemaLocation=<span class="code-quote">"http://www.openremote.org http://www.openremote.org/schemas/panel.xsd"</span>&gt;
+</span>  &lt;panels&gt;
+    &lt;panel id=<span class="code-quote">"1"</span> name=<span class="code-quote">"Seattle"</span>&gt;
+      &lt;include type=<span class="code-quote">"group"</span> ref=<span class="code-quote">"140"</span> /&gt;
+    &lt;/panel&gt;
+  &lt;/panels&gt;
+  &lt;screens&gt;
+    &lt;screen id=<span class="code-quote">"40"</span> name=<span class="code-quote">"Comedor"</span>&gt;
+      &lt;absolute left=<span class="code-quote">"55"</span> top=<span class="code-quote">"40"</span> width=<span class="code-quote">"198"</span> height=<span class="code-quote">"44"</span>&gt;
+        &lt;slider id=<span class="code-quote">"77"</span> vertical=<span class="code-quote">"<span class="code-keyword">false</span>"</span> passive=<span class="code-quote">"<span class="code-keyword">false</span>"</span>&gt;
+          &lt;link type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"238"</span> /&gt;
+        &lt;/slider&gt;
+      &lt;/absolute&gt;
+    &lt;/screen&gt;
+  &lt;/screens&gt;
+  &lt;groups&gt;
+    &lt;group id=<span class="code-quote">"140"</span> name=<span class="code-quote">"Salon"</span>&gt;
+      &lt;include type=<span class="code-quote">"screen"</span> ref=<span class="code-quote">"40"</span> /&gt;
+    &lt;/group&gt;
+  &lt;/groups&gt;
+&lt;/openremote&gt;
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 29, 2011 08:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023590"></a>
+                                    <font class="smallfont"><p>Juha,</p>
+
+<p>  can you take a look at the xmls in my last post, let me know if you think they are correct.</p>
+
+<p>  I cannot test with anything but an iPod (I am not sure how to set up the web interface), so I do not know if this is a problem of the controller<br/>
+or of the panel. It seems to me like the panel is the one to blame.</p>
+
+<p>   Thanks,</p>
+
+<p>Josep</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 29, 2011 16:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023593"></a>
+                                    <font class="smallfont"><p>Yep, thanks.</p>
+
+<p>Eric will track down the slider issue on iOS panel.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 29, 2011 17:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023594"></a>
+                                    <font class="smallfont"><p>OK,</p>
+
+<p>   I will check-in my small fixes, so that he can better track the issue.</p>
+
+<p>   Regards,</p>
+
+<p>Josep</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 29, 2011 18:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023597"></a>
+                                    <font class="smallfont"><p>Obviously, if you're able to track it down on your own, please feel free to continue to do so. The more eye-balls the better. One of the benefits of Open Source <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+<p>If you do find issues, or produce a patch, we'll be more than happy to apply it and produce a bug-fox release.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 29, 2011 19:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023598"></a>
+                                    <font class="smallfont"><p>Well,</p>
+
+<p>  I have fixed two issues, and, as I told you in a sourceforge email, was getting ready to check-in the modified sourcefiles (two of them) using svn, as <br/>
+you suggested in an earlier post, however I need to be added to the project by the admin (you) in order to do so.</p>
+
+<p>  These modifications fix the problem I started discussing in this thread, plus a related one I found later. The solution is easier than what I suggested initially. The related problem is related with the signed nature of integers in Java, and the fact that the constructor for Unsigned8bit did not take proper care of this.</p>
+
+<p>   Else, let me know how you want me to send you the modifications.</p>
+
+<p>Josep</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 29, 2011 19:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023599"></a>
+                                    <font class="smallfont"><p>Ok, I may have missed the email from SF (nothing popped out from my INBOX on a quick glance at least).</p>
+
+<p>Sounds like they're small patches so feel free to email me the 'svn diff' output and I will apply them, please send to juha at openremote org</p>
+
+<p>Thanks!</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 29, 2011 19:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023616"></a>
+                                    <font class="smallfont"><p>Eric reports the issue may be due to a missing &lt;min&gt; and &lt;max&gt; elements in panel.xml for slider &#8211; iOS code expects them to be present, but current iteration of modeler does not add them &#8211; mismatch between controller which does not require &lt;min&gt; and &lt;max&gt; for 'LEVEL' type of sensors (range 0-100 is implied) but does always require them for custom 'range' sensors, whereas iOS panel expects them always for slider components  regardless of sensor type they're bound to (as per the panel XML schema).</p>
+
+<p>Quick fix is to add them manually to your panel.xml until online designer is fixed to produce correct XML document instances that adhere to the schema. Eric will also provide a patch for iOS which defaults the slider min-max values to 0-100 if no XML elements are present in panel.xml</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 30, 2011 16:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023635"></a>
+                                    <font class="smallfont"><p>OK, thanks.</p>
+
+<p>  That makes sense.<br/>
+  I will act on Panel.xml, it has a simple format.</p>
+
+<p>Jose</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 31, 2011 16:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023645"></a>
+                                    <font class="smallfont"><p>Hello Josep,</p>
+
+<p>If you read this post before my edit, just forget what I said.<br/>
+Indeed, adding a min/max element to the slider in panel.xml did fix the issue for me.<br/>
+My slider definition now looks like this:<br/>
+        &lt;slider id="30" vertical="false" passive="false"&gt;<br/>
+          &lt;link type="sensor" ref="36" /&gt;<br/>
+          &lt;min value="0"/&gt;<br/>
+          &lt;max value="100"/&gt;<br/>
+        &lt;/slider&gt;</p>
+
+<p>Eric</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Mar 31, 2011 19:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023647"></a>
+                                    <font class="smallfont"><p>I also committed a quick fix that sets the sliders min/max to 0/100 if no value is present in the panel.xml file.<br/>
+This is on the branches/project/iPad_Console_2_0_0_Betas branch in svn.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Mar 31, 2011 20:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023654"></a>
+                                    <font class="smallfont"><p>Thanks Eric,</p>
+
+<p>   I tried setting the range explicitly and that works fine,..., except for a slight strangeness which you may be able to "fix".</p>
+
+<p>   The dimmer I have has slow action, that is, it takes a while to reach the goal level set, so it creates a "nice" sense of progression.</p>
+
+<p>   The problem with the sensors the way they are right now is that they read info from the level group, and what they get is, of course, not yet the target value set. The result is that the slider in the UI jumps to another position jerking to the goal position as it gets values from the bus. The effect is strange... (I do not know how to fix this, other than to provide some "hosteresis" right after the slider is moved by the user, so that it allows the dimmer to settle. </p>
+
+<p>   Another problem I have detected is that when there is a gesture on the screen, moving along the same edge as the slider, moving the slider can set off the gesture... two for the price of one <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>   I am not sure how easy/difficult it is to allow the gestures only outside problematic areas (like sliders). It certainly seems easier to forbid gestures on screens with sliders, so that this effect does not happen.</p>
+
+<p>   Thanks,</p>
+
+<p>Josep</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 31, 2011 23:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023676"></a>
+                                    <font class="smallfont"><p>Similar gesture behaviour is exhibited on the Android panels as well, when you try and adjust the slider too quickly the screen change gesture overrules it and you suddenly change screens and then slider value goes back to how it was before the action.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Apr 01, 2011 07:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023727"></a>
+                                    <font class="smallfont"><p>Hi Josep,</p>
+
+<p>Sorry for the late reply.<br/>
+I'll take a look at both issues and see how I can improve that.</p>
+
+<p>Eric</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Apr 04, 2011 18:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

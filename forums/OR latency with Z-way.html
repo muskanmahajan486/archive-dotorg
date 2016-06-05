@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OR latency with Z-way</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OR latency with Z-way
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 22, 2014 by <font color="#0050B2">mcfanda</font>.
+				    </div>
+
+				    <p>Hi,<br/>
+I've been using Openremote with Z-way (from z-ware.me) on raspberry for more than a year without a hitch. The system was updated several times and now runs OpenRemote-Controller-2.0.2, and z-way-server_2014-07-19-08-33-48. The openremote switches are all implemented using http protocol, pointing to the raspberry that holds the z-way server. For instance</p>
+
+<p><a href="http://10.0.0.3:8083/ZWaveAPI/Run/devices%5B5%5D.instances%5B0%5D.commandClasses%5B0x26%5D.Set%28255%29">http://10.0.0.3:8083/ZWaveAPI/Run/devices%5B5%5D.instances%5B0%5D.commandClasses%5B0x26%5D.Set%28255%29</a></p>
+
+<p>It uses to work like a charm.</p>
+
+<p>Sometimes ago I noticed that the response time of the OpenRemote switches associated with z-ware actuators became slower and slower. The exact symptom is that every now and then one command takes up to 20 seconds to apply (for instance light up a light from the Openremote interface). This happens mostly randomly, but it is more likely when I issue several commands in a row (like switching three lights off, the third takes 20 secs to switch off). </p>
+
+<p>To debug I've tried several things and I can say that:<br/>
+1) When the command issued by openremote switch is sent by firefox, also several times in a few seconds, not problem arises.<br/>
+2) z-way web interface shows no problem, as I can switch stuff on and off very quickly from there.<br/>
+3) If openremote and z-way are on the same raspberry or on two different raspberries the problem is the same.<br/>
+4) No error is shown in the openremote logs or in z-way logs.<br/>
+5) The problem arises also when I issue (say) three commands, 2 of which are not related with z-way (for instance two switches for starting a rule). OR waits for the z-way related command to finish before executing the other rules.<br/>
+I really tried hard to solve this independently, but I did not succeed. Any hint on where to look?<br/>
+thank you <br/>
+marcello</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22887669"></a>
+                                    <font class="smallfont"><p>It's me again!</p>
+
+<p>after some more debugging I was able to pinpoint the moment when the communication between OR and Z-way gets stuck. Right after the 10/20 secs of halt I'm experiencing, I see this in the dev.log. When the command is executed with no delay, these messages do not appear.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2014-07-23 07:00:32,703 INFO [Polling thread <span class="code-keyword">for</span> sensor: K2-Sensor]: received message: <span class="code-keyword">true</span>
+2014-07-23 07:00:32,705 TRACE [Polling thread <span class="code-keyword">for</span> sensor: K2-Sensor]: Processed '<span class="code-keyword">true</span>', received 'on'
+2014-07-23 07:00:32,708 INFO [HTTP-<span class="code-object">Thread</span>-1]: Had waited the skipped sensor ids of statuses in ChangedStatusRecord:491889754295782383602151576191698023-[67, 68, 69, 70] sensorID:[67, 68, 69, 70] statusChangedSensorID:[67]
+2014-07-23 07:00:32,709 INFO [HTTP-<span class="code-object">Thread</span>-1]: Querying changed data from StatusCache...
+2014-07-23 07:00:32,709 INFO [HTTP-<span class="code-object">Thread</span>-1]: Have queried changed data from StatusCache.
+2014-07-23 07:00:32,712 INFO [HTTP-<span class="code-object">Thread</span>-1]: Return the polling status.
+2014-07-23 07:00:32,718 INFO [HTTP-<span class="code-object">Thread</span>-1]: Finished polling at 2014-07-23 07:00:32
+
+2014-07-23 07:00:32,749 INFO [HTTP-<span class="code-object">Thread</span>-4]: Querying changed state from ChangedStatus table...
+2014-07-23 07:00:32,752 INFO [HTTP-<span class="code-object">Thread</span>-4]: Found: [device =&gt; 491889754295782383602151576191698023, sensorIDs =&gt; [67, 68, 69, 70]] in ChangedStatus table.
+2014-07-23 07:00:32,753 INFO [HTTP-<span class="code-object">Thread</span>-4]: ChangedStatusRecord:491889754295782383602151576191698023-[67, 68, 69, 70] sensorID:[67, 68, 69, 70] statusChangedSensorID:[]Waiting...
+2014-07-23 07:00:33,233 INFO [Polling thread <span class="code-keyword">for</span> sensor: LD1-DimSensor]: received message: 0
+2014-07-23 07:00:33,236 TRACE [Polling thread <span class="code-keyword">for</span> sensor: LD1-DimSensor]: Processed '0', received '0'
+
+</pre>
+</div></div>
+
+<p>This is run on a test system with only three switches. Any idea?<br/>
+thanks<br/>
+marcello</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mcfanda at Jul 23, 2014 06:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

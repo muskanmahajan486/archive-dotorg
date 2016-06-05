@@ -1,0 +1,459 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Forwarding match in UDPListener</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Forwarding match in UDPListener
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 04, 2013 by <font color="#0050B2">raphyot</font>.
+				    </div>
+
+				    <p>Hi everyone,</p>
+
+<p>I'm looking at OR for a few days now, and I must say I really love it!<br/>
+I have several home made arduino sending xPL, unfortunately it seems this can't work with OR at the moment. I'm ok to now follow the full xPL implementation (keepalive etc...), but I'd need at least to listen to UDP messages, and be able to send some. And I have problems with both...</p>
+
+<h4><a name="ForwardingmatchinUDPListener-1ListeningUDP%3A"></a>1 Listening UDP:</h4>
+
+<p>It seems a common issue while looking at the feedback, using UDPListener with rules is not really suitable for a fully UDP based protocol. I need UDPListener to send the match back to a custom sensor. Hence, I made the following change that works fine for me:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+diff UDPListenerCommand.java 
+
+114,118c114
+&lt;                     <span class="code-keyword">if</span> (matcher.groupCount()&gt;0)  {
+&lt;                       sensor.update(matcher.group(1));
+&lt;                     } <span class="code-keyword">else</span> {
+&lt;                       sensor.update(""+<span class="code-object">System</span>.currentTimeMillis());
+&lt;                     }
+---
+&gt;                     sensor.update(""+<span class="code-object">System</span>.currentTimeMillis());
+
+</pre>
+</div></div>
+
+<p>With this code, if you add a regex in UDPListener without the group match '(' and ')', it will work as before.<br/>
+If you add a group match, the first match will be send as value (not sure this is best practice in OR?). I use the following regex to match an xPL message: </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+(?s).*arduino.rgb.*device=pbed.rgb.*command=setcolor.*color=(\w+).*
+</pre>
+</div></div>
+
+<p>And this work fine. I didn't understand the developer doc (it seems outdated?) and struggled with subversion to find a good snapshot, I hope it's ok to show the diff in the forum.</p>
+
+<h4><a name="ForwardingmatchinUDPListener-2SendingUDP%3A"></a>2 Sending UDP:</h4>
+
+<p>The problem with sending UDP is that it seems I can't enter control character, which I'm using to parse the xPL payload on my arduino. XML should take &#10; to enter a new line character, however when I enter this in the UDP command it get translated as &amp;#10; in the XML. <br/>
+Not sure how to solve that one, anyway, I currently did a small python REST api to send xPL message with the HTTP command so I can keep playing with OR <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22873646"></a>
+                                    <font class="smallfont"><p>Thanks, sending diff is fine.</p>
+
+<p>For further development you can use the current snapshot tag in <a href="http://svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617/">http://svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617/</a></p>
+
+<p>Build with ant from top directory:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>&gt; ant
+</pre>
+</div></div>
+
+<p>(obviously you need ant somewhere in your PATH first).</p>
+
+<p>For further development and write access to Subversion, a contributor agreement is required. Please send me an email to juha at openremote dot org for details.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 05, 2013 09:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873652"></a>
+                                    <font class="smallfont"><p>Thanks Juha, that's the snapshot I worked with. Does that mean the diff proposal will be reviewed and integrated?<br/>
+OR is already covering 99% of my needs so I'm not sure yet if I want a write access to Subversion <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+If getting a few bugs fixed through the forum works, I'm good with that.</p>
+
+<p>Can someone still help on inserting a new line character from the designer (issue #2 above)?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by raphyot at Jul 05, 2013 10:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873654"></a>
+                                    <font class="smallfont"><p>I'll review it but basically yes, will include. Have not decided on the version yet, may push it to 2.2, depends on the review. Will get back to it next week, going away for the weekend with no internet connection.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 05, 2013 10:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874322"></a>
+                                    <font class="smallfont"><p>Sorry for the delay, getting back to this now.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 02, 2013 21:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874355"></a>
+                                    <font class="smallfont"><p>Hello Raphael,</p>
+
+<p>The binary for issue <a href="http://jira.openremote.org/browse/ORCJAVA-392">ORCJAVA-392</a> is available here <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.1%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_FM_ORCJAVA-392.zip/download">OpenRemote-Controller-2.1.0_FM_ORCJAVA-392.zip</a> and contains the regexp group modification to UDP listener. Currently scheduled for the 2.1 release branch.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 03, 2013 22:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874356"></a>
+                                    <font class="smallfont"><p>Raphael,</p>
+
+<p>Did you find a solution to your line-feed issue, or are you still using the intermediate http scripts?</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 03, 2013 22:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874462"></a>
+                                    <font class="smallfont"><p>Thanks for adding the code!</p>
+
+<p>No, I didn't find a solution for the line-feed issue, I'm still using an additional http script.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by raphyot at Aug 06, 2013 12:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874463"></a>
+                                    <font class="smallfont"><p>Preparing patch for UDP linefeed (from Simon Vincent). Will get you a binary to test.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 06, 2013 12:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874469"></a>
+                                    <font class="smallfont"><p>Raphael, </p>
+
+<p>I've deployed a test version of a UDP patch originally contributed by Simon. It required some modifications so would appreciate it if you have a chance to test it.</p>
+
+<p>In <a href="https://composer.openremote.org/staging">https://composer.openremote.org/staging</a> you can login and find in the UDP protocol a new configuration attribute 'line ending'. It should allow you to select CR, LF, or CRLF as option to include at the end of the UDP packet you send.</p>
+
+<p>For the functionality to work, you will need to install a controller snapshot from today, available here: <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.1%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_FM_SNAPSHOT-2013-08-06.zip/download">OpenRemote-Controller-2.1.0_FM_SNAPSHOT-2013-08-06.zip</a>. It also includes the addition to UDP listener to accept a regexp group as input.</p>
+
+<p>If you can provide feedback on whether these features work and we can push them forward to release.</p>
+
+<p>Best regards,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 06, 2013 16:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874568"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>I can test more over the weekend, but I just logged in the composer. From what I saw I can only enter one line in the "command" text field, and then chose how this line end.<br/>
+What is needed with XPL is to have several lines ending by a carriage return, ideally using a textarea.</p>
+
+<p>Thanks,<br/>
+Raphael</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by raphyot at Aug 09, 2013 08:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879437"></a>
+                                    <font class="smallfont"><p>Hi - I'm using this snapshot but not having much luck.  To test, I have a little python script which sends a UDP packet to port 8014.  Using 'nc -ul 192.168.2.10 8014' I can verify the content arrives correctly to the specified port on the specified host.  However, I can't seem to get OpenRemote (running on the same host) to react.  I do see 2 messages on the console at startup which seem to be related:</p>
+
+<p><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2013-11-04 21:13:14,513 (XML): A <span class="code-keyword">switch</span> sensor (Name = 'Fireplace light sensor', ID = 66) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = on/&gt;.
+DEBUG 2013-11-04 21:13:14,513 (XML): A <span class="code-keyword">switch</span> sensor (Name = 'Fireplace light sensor', ID = 66) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = off/&gt;.
+</pre>
+</div></div>}</p>
+
+<p>This might explain the switch not reacting to the sensor.  However, I would still have expected to see something show up in a log file somewhere.  So, I guess I have 2 questions:</p>
+
+<p>1.  Should there be a log entry somewhere for UDP packets received on the UDPListner port?<br/>
+2.  What/where do I need to fix to resolve the 2 messages above?</p>
+
+<p>My sensor is configured as UDPListner on port 8014, and the regexp is 'Fireplace_lt is: (\d)', in case that matters.</p>
+
+<p>Thanks,<br/>
+Jeff</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kwazy at Nov 05, 2013 15:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879466"></a>
+                                    <font class="smallfont">
+<p>1. You will need to enable UDP listener DEBUG logging by adding the following into your Controller/webapps/controller/WEB-INF/classes/log4j.properties file:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>log4j.logger.OpenRemote.Controller.protocol.udp_listener = ALL, udp-file
+log4j.appender.udp-file = org.apache.log4j.RollingFileAppender
+log4j.appender.udp-file.File = ../logs/udp/udp.log
+log4j.appender.udp-file.Threshold = DEBUG
+log4j.appender.udp-file.MaxFileSize = 500KB
+log4j.appender.udp-file.layout = org.apache.log4j.PatternLayout
+log4j.appender.udp-file.layout.ConversionPattern = %p %d (UDP): %m%n
+</pre>
+</div></div>
+
+
+<p>2. The DEBUG statement is not an ERROR and nothing is required for you to do. It's just a note with regards to incomplete XML definitions the designer creates.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 05, 2013 22:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879472"></a>
+                                    <font class="smallfont"><p>Thanks for your reply Juha.  I added the lines you listed to the file you specified, and I now see a udp.log in logs/udp.  However, its size remains 0 when I test.</p>
+
+<p>Additionally, I did some more playing around, including downgrading from openjdk 1.7 to openjdk 1.6 so that I could experiment with some rules.  I've since commented out all rules, but I'm seeing the following console output when I send my test UDP packet, but only the first packet after a stop/restart:</p>
+
+<p><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR [UDPListener Port: 8014]: Error in UDPListenerThread
+java.lang.IllegalStateException: No match found
+        at java.util.regex.Matcher.group(Matcher.java:485)
+        at org.openremote.controller.protocol.socket.UDPListenerCommand$UDPListenerThread.run(UDPListenerCommand.java:122)
+</pre>
+</div></div>}</p>
+
+<p>Thanks again - feel like I'm getting closer...</p>
+
+<p>Jeff</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kwazy at Nov 05, 2013 23:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879475"></a>
+                                    <font class="smallfont"><p>Hi Jeff,</p>
+
+<p>Looks like an issue with the patch itself.</p>
+
+<p>1) The IllegalStateException handling is outside of the listener loop so once it's thrown, the listener thread dies</p>
+
+<p>2) The exception shouldn't happen in the first place, as it says it is caused by an illegal state, so a programming error</p>
+
+<p>The related <a href="file://localhost/Users/juha/Java/javadoc/docs/api/java/util/regex/Matcher.html#group()">javadoc</a> for the call causing the exception doesn't detail much:</p>
+
+<blockquote>
+<p>IllegalStateException - If no match has yet been attempted, or if the previous match operation failed</p></blockquote>
+
+<p>But looking at the implementation after the patch above in this thread has been added, it does seem to be missing the relevant match() or find() call on the regexp matcher which might explain the "illegal state".</p>
+
+<p>Any chance you'd be able to patch the patch yourself? The patch branch is in my workspace, and the relevant file is in <a href="http://svn.code.sf.net/p/openremote/code/workspace/juha/Controller_2_1_0_FM_ORCJAVA-392/src/org/openremote/controller/protocol/socket/UDPListenerCommand.java">http://svn.code.sf.net/p/openremote/code/workspace/juha/Controller_2_1_0_FM_ORCJAVA-392/src/org/openremote/controller/protocol/socket/UDPListenerCommand.java</a></p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+     @Override
+      <span class="code-keyword">public</span> void run() {
+         <span class="code-keyword">try</span> {
+            DatagramSocket dsocket = <span class="code-keyword">new</span> DatagramSocket(port);
+            <span class="code-object">byte</span>[] buffer = <span class="code-keyword">new</span> <span class="code-object">byte</span>[2048];
+            DatagramPacket packet = <span class="code-keyword">new</span> DatagramPacket(buffer, buffer.length);
+
+            <span class="code-comment">// Now loop forever, waiting to receive packets and evaluating them
+</span>            <span class="code-keyword">while</span> (<span class="code-keyword">true</span>) {
+              dsocket.receive(packet);
+              <span class="code-object">String</span> msg = <span class="code-keyword">new</span> <span class="code-object">String</span>(buffer, 0, packet.getLength());
+              logger.debug(<span class="code-quote">"Received UDP packet: "</span> + msg);
+              <span class="code-keyword">for</span> (Entry&lt;<span class="code-object">String</span>, Sensor&gt; entry : regexSensorMap.entrySet()) {
+                 <span class="code-object">String</span> regex = entry.getKey();
+                 Sensor sensor = entry.getValue();
+                 Pattern regexPattern = Pattern.compile(regex);
+                 Matcher matcher = regexPattern.matcher(msg);
+
+                <span class="code-comment">// This is a patch from ORCJAVA-392:
+</span>                <span class="code-comment">//
+</span>                <span class="code-comment">// If a regular expression group is defined and there's a match,
+</span>                <span class="code-comment">// the (first) group is returned as the event value instead of just a simple
+</span>                <span class="code-comment">// timestamp.
+</span>
+                <span class="code-keyword">if</span> (matcher.groupCount() &gt; 0)
+                {
+                  sensor.update(matcher.group(1));
+                }
+
+                <span class="code-keyword">else</span>
+                {
+                  sensor.update("" + <span class="code-object">System</span>.currentTimeMillis());
+                }
+              }
+
+              <span class="code-comment">// Reset the length of the packet before reusing it.
+</span>              packet.setLength(buffer.length);
+            }
+          } <span class="code-keyword">catch</span> (Exception e) {
+            logger.error(<span class="code-quote">"Error in UDPListenerThread"</span>, e);
+          }
+      }
+
+</pre>
+</div></div>
+
+
+<p>I would have to build tests to confirm the correct behavior and it will take me some time before I have a chance to do that.</p>
+
+<p>Let me know...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 06, 2013 01:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879519"></a>
+                                    <font class="smallfont"><p>So, I successfully got this built - eventually.  Maybe I'm just not looking in the right place, but I didn't find any current instructions on building from source.  Things like svn package names being wrong in the examples, the tools directory being a separate package, and not knowing which tree to use as a base kept me stumbling.  In the end, I used package Controller_2_1_0_FM_SNAPSHOT-20130617, and even here I was tripped up by there being no build target for "war".  Luckily "run-test" inherently builds the target.  </p>
+
+<p>Then, the deployment instructions left me scratching my head when directory names weren't lining up, there being no controller.war file, etc.  I ended up just finding the .class files I built and copying them into the binary directory I had previously been running from.</p>
+
+<p>In the end, I was successful in getting this to run, with one minor tweak.  I changed this:</p>
+
+<p><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+                   <span class="code-keyword">if</span> (matcher.groupCount() &gt; 0) {
+                     sensor.update(matcher.group(1));
+                   } <span class="code-keyword">else</span> {
+                     sensor.update("" + <span class="code-object">System</span>.currentTimeMillis());
+                   }
+</pre>
+</div></div>}</p>
+
+<p>to this:</p>
+
+<p><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+                 <span class="code-keyword">if</span> (matcher.find()) {
+                   <span class="code-keyword">if</span> (matcher.groupCount() &gt; 0) {
+                     sensor.update(matcher.group(1));
+                   } <span class="code-keyword">else</span> {
+                     sensor.update("" + <span class="code-object">System</span>.currentTimeMillis());
+                   }
+                 }
+</pre>
+</div></div>}</p>
+
+<p>I'm not a java guy, but it didn't seem like we wanted to grab the matcher info (or assume a non-group match) unless the match was actually found to begin with.  Again, maybe I'm missing something.</p>
+
+<p>Oh, and then I had to change my regex (and the data I was sending) when the switch didn't like being set with 1 or 0 - apparently it wants "on" and "off" (and not uppercase, as I found).  Maybe I'm missing some more recent documentation somewhere?</p>
+
+<p>In any case, when might this make it into an "official" build of some sort?</p>
+
+<p>Thanks again for your help Juha.</p>
+
+<p>Jeff</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kwazy at Nov 06, 2013 19:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880000"></a>
+                                    <font class="smallfont"><p>Hi Jeff,</p>
+
+<blockquote>
+<p>In any case, when might this make it into an "official" build of some sort?</p></blockquote>
+
+<p>Yes will do (once I find some free time).</p>
+
+<p>Thanks for doing the work!</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 19, 2013 20:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884893"></a>
+                                    <font class="smallfont"><p>Updated binary available for testing is here: <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.1%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_FM_ORCJAVA-392-2.zip/download">OpenRemote-Controller-2.1.0_FM_ORCJAVA-392-2.zip</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 27, 2014 16:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:41</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

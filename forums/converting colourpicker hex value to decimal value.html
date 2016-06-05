@@ -1,0 +1,315 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : converting colourpicker hex value to decimal value</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : converting colourpicker hex value to decimal value
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 31, 2015 by <font color="#0050B2">robnas</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>I want to convert the value of the colourpicker(HEX) to this format: R,G,B<br/>
+i know the colourpicker give values like: FF0000  (for colour red) and it must be converted with comma's to:  255,0,0</p>
+
+<p>i have this script:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">public</span> <span class="code-keyword">static</span> Color hex2Rgb(<span class="code-object">String</span> colorStr)
+{
+    <span class="code-keyword">return</span> result[0] Color(
+            <span class="code-object">Integer</span>.valueOf( colorStr.substring( 0, 2 ), 16 ),
+            <span class="code-object">Integer</span>.valueOf( colorStr.substring( 2, 4 ), 16 ),
+            <span class="code-object">Integer</span>.valueOf( colorStr.substring( 4, 6 ), 16 ) );
+}
+
+
+rule <span class="code-quote">"color-picker value"</span>
+when
+CustomState(source == <span class="code-quote">"virtualColorSens"</span>, $rgb:value)
+then
+execute.command(<span class="code-quote">"kleurenkiezer-ring"</span>, hex2rgb($rgb)[0]);
+end
+</pre>
+</div></div>
+
+<p>but is doesnt work, any sugestions?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23600371"></a>
+                                    <font class="smallfont"><p>Hi Rob,</p>
+
+
+<p>Richard Turner very kindly wrote a rule for me to test the colour picker with 3 Velbus dimmer channels.</p>
+
+<p>It works really well, so much so that I've adapted it a little to use with 3 separate colour pickers and 9 dimmer channels. 3 x RGB.<br/>
+Then once again so that 1 more colour picker sets all 9 channels.</p>
+
+<p>Richard has given me permission to share his work publicly.</p>
+
+
+<p>Please let me know how get on with it.</p>
+
+<p>Good luck.</p>
+
+<p>Stuart</p>
+
+
+
+<p>Rule to convert Colour picker into VMB4DC <br/>
+dimmer commands</p>
+
+<p>Where "186-Ch1R-on", "186-Ch2G-on" &amp; "186-Ch3B-on" are simple 'Dimmer_Level' commands for 3 VMB4DC dimmer channels and "RGB_Status" is the Virtual status command the Colour Picker is sending its value to.</p>
+
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>
+
+package org.openremote.controller.protocol;
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+import java.util.*;
+rule "RGB To 3 Channels" when
+
+  $evt:Event( source == "RGB_Status", $val : value)
+
+then
+
+  String valStr = $val.toString();
+  
+  if (valStr != null &amp;&amp; valStr.length() == 6) {
+  
+      // Split colour into RGB
+      String rStr = valStr.substring(0,2);
+      String gStr = valStr.substring(2,4);
+      String bStr = valStr.substring(4,6);
+      
+      // Convert hex values to int
+      Integer r = Integer.parseInt(rStr, 16);
+      Integer g = Integer.parseInt(gStr, 16);
+      Integer b = Integer.parseInt(bStr, 16);
+
+      // Convert 0-255 value to 0-100
+      r = (int)Math.round(((double)r / 255d) * 100);
+      g = (int)Math.round(((double)g / 255d) * 100);
+      b = (int)Math.round(((double)b / 255d) * 100);
+
+      execute.command( "186-Ch1R-on", r.toString() );
+
+      execute.command( "186-Ch2G-on", g.toString() );
+
+      execute.command( "186-Ch3B-on", b.toString() );
+  }
+end
+</pre>
+</div></div>
+
+
+
+<p>Okay, I give up.</p>
+
+<p>I've tried 10 times to get this code tag to work.</p>
+
+<p>What am I doing wrong?</p>
+
+
+<p>This text file contains the rule code :-</p>
+
+<p>Http://www.MDAR.co.UK/dl/rule1.txt</p>
+
+
+<p>Sept 2015,<br/>
+HAR!</p>
+
+<p>I used a noformat tag and it worked.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Aug 03, 2015 22:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600384"></a>
+                                    <font class="smallfont"><p>Hi Stuart,</p>
+
+<p>i will check the code and let you know <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> thanks.  your code needs to begin and with <div class="error"><span class="error">Unknown macro: { code }</span> </div></p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+<span class="code-keyword">import</span> java.util.*;
+rule <span class="code-quote">"RGB To 3 Channels"</span> when
+
+  $evt:Event( source == <span class="code-quote">"RGB_Status"</span>, $val : value)
+
+then
+
+  <span class="code-object">String</span> valStr = $val.toString();
+  
+  <span class="code-keyword">if</span> (valStr != <span class="code-keyword">null</span> &amp;&amp; valStr.length() == 6) {
+  
+      <span class="code-comment">// Split colour into RGB
+</span>      <span class="code-object">String</span> rStr = valStr.substring(0,2);
+      <span class="code-object">String</span> gStr = valStr.substring(2,4);
+      <span class="code-object">String</span> bStr = valStr.substring(4,6);
+      
+      <span class="code-comment">// Convert hex values to <span class="code-object">int</span>
+</span>      <span class="code-object">Integer</span> r = <span class="code-object">Integer</span>.parseInt(rStr, 16);
+      <span class="code-object">Integer</span> g = <span class="code-object">Integer</span>.parseInt(gStr, 16);
+      <span class="code-object">Integer</span> b = <span class="code-object">Integer</span>.parseInt(bStr, 16);
+
+      <span class="code-comment">// Convert 0-255 value to 0-100
+</span>      r = (<span class="code-object">int</span>)<span class="code-object">Math</span>.round(((<span class="code-object">double</span>)r / 255d) * 100);
+      g = (<span class="code-object">int</span>)<span class="code-object">Math</span>.round(((<span class="code-object">double</span>)g / 255d) * 100);
+      b = (<span class="code-object">int</span>)<span class="code-object">Math</span>.round(((<span class="code-object">double</span>)b / 255d) * 100);
+
+      execute.command( <span class="code-quote">"186-Ch1R-on"</span>, r.toString() );
+
+      execute.command( <span class="code-quote">"186-Ch2G-on"</span>, g.toString() );
+
+      execute.command( <span class="code-quote">"186-Ch3B-on"</span>, b.toString() );
+  }
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Aug 04, 2015 11:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600390"></a>
+                                    <font class="smallfont"><p>Stuart,</p>
+
+<p>it works, i had to combine the red, green and blue value into one string.</p>
+
+<p>My full project is to control the ambilight hyperion via openremote:</p>
+
+<p>full project:
+<a href="http://www.instructables.com/id/DIY-Ambilight-with-Hyperion-Works-with-HDMIAV-Sour/">http://www.instructables.com/id/DIY-Ambilight-with-Hyperion-Works-with-HDMIAV-Sour/</a></p>
+
+<p>you can control it by an standard hyperion app in the appstore, but you can also change colour via a raw telnet command like:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> {<span class="code-quote">"color"</span>: [255,0,0], <span class="code-quote">"command"</span>: <span class="code-quote">"color"</span>, <span class="code-quote">"priority"</span>: 100} </pre>
+</div></div>
+
+<p>(more info about commands: <a href="https://github.com/tvdzwan/hyperion/issues/316">https://github.com/tvdzwan/hyperion/issues/316</a> &amp; <a href="https://github.com/tvdzwan/hyperion/wiki">https://github.com/tvdzwan/hyperion/wiki</a>)<br/>
+send this command via openremote to the raspberry's ip and to port 19444, it will change to the colour red (255,0,0) see <a href="http://www.color-hex.com/color/ff0000">http://www.color-hex.com/color/ff0000</a></p>
+
+<p>Using colourpicker to change colour:<br/>
+create a sensor which receives the colourpicker commands like FF0000</p>
+
+<p>add this to your rules:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+<span class="code-keyword">import</span> java.util.*;
+
+rule <span class="code-quote">" color-picker value "</span> 
+when
+  $evt:Event( source == <span class="code-quote">"virtualColorSens"</span>, $val : value)
+then
+
+  <span class="code-object">String</span> valStr = $val.toString();
+  
+  <span class="code-keyword">if</span> (valStr != <span class="code-keyword">null</span> &amp;&amp; valStr.length() == 6) {
+  
+      <span class="code-comment">// Split colour into RGB
+</span>      <span class="code-object">String</span> rStr = valStr.substring(0,2);
+      <span class="code-object">String</span> gStr = valStr.substring(2,4);
+      <span class="code-object">String</span> bStr = valStr.substring(4,6);
+      
+      <span class="code-comment">// Convert hex values to <span class="code-object">int</span>
+</span>      <span class="code-object">Integer</span> r = <span class="code-object">Integer</span>.parseInt(rStr, 16);
+      <span class="code-object">Integer</span> g = <span class="code-object">Integer</span>.parseInt(gStr, 16);
+      <span class="code-object">Integer</span> b = <span class="code-object">Integer</span>.parseInt(bStr, 16);
+
+
+execute.command(<span class="code-quote">"kleurenkiezer-ring"</span>, r.toString()  + <span class="code-quote">","</span> + g.toString()  + <span class="code-quote">","</span> + b.toString());
+}
+end
+</pre>
+</div></div>
+
+<p>this script will convert the FF0000 value to 255,0,0 and send it to $param in the telnet command.<br/>
+create a telnet command called "kleurenkiezer-ring"<br/>
+fill in the raspberry's ip and port (standard is 19444)<br/>
+use this command: </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">null</span>|{<span class="code-quote">"color"</span>: [${param}], <span class="code-quote">"command"</span>: <span class="code-quote">"color"</span>, <span class="code-quote">"priority"</span>: 50}</pre>
+</div></div>
+
+<p>it now sends the colourpickers value to the hyperion server <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Aug 04, 2015 14:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601160"></a>
+                                    <font class="smallfont"><p>Hi Rob,</p>
+
+
+<p>It's great to know the code has helped.</p>
+
+<p>Good luck with the rest of your design.</p>
+
+<p>Cheers</p>
+
+<p>Stuart</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Sep 08, 2015 17:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

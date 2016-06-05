@@ -1,0 +1,602 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Rule support in OR Boss Controller</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Rule support in OR Boss Controller
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 10, 2009 by <font color="#0050B2">kkreuzer</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>I am new to OpenRemote, so please forgive me if I ask silly questions <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> <br/>
+I tried to read as much of your docs/blogs/forums as possible, but couldn't find an answer to an important question that I have.</p>
+
+<p>About my background: I have a KNX system in my home and run MisterHouse with the iPhone Web-UI on top of it. As I am a professional Java developer, I am not too fond of all this Perl scripting and would prefer some other - more modern - Java-based solution. That's how I came across OR.</p>
+
+<p>A major feature of MisterHouse is that you can define automation rules in simple scripts (e.g. mute my music, if the phone rings etc.). It's pretty easy to define such logics and they can be instantly activated on the running instance without needing to compile, build or restart anything.</p>
+
+<p>Now is there anything similar in OR? My impression is that OR is currently really only about "remoting" things, but it seems to be lacking the "Automation" part of HA. I have read in the docs that the OR controller should provide "higher level functionality such as scheduled events", but couldn't find anything further about this. Furthermore, I have learnt that the OR Controller is stateless, which IMHO means quite a problem for including many kinds of rules (so I guess the rules wouldn't be part of the controller at all, but stored and executed in another component).</p>
+
+<p>I am very curious about your feedback on this - be it pointing out that I completely missed something or be it a different opinion on the necessity of such a functionality.</p>
+
+<p>Cheers,<br/>
+Kai</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-6946944"></a>
+                                    <font class="smallfont"><p>Hello Kai,</p>
+
+<blockquote>
+<p>Now is there anything similar in OR? My impression is that OR is currently really only about "remoting" things, but it seems to be lacking the "Automation" part of HA.</p></blockquote>
+
+<p>You're correct. The 1.0 version of OR Boss is only for remotely controlling devices. Scripting/Rules is not included.</p>
+
+<p>This was recently discussed here: <a href="Sending events from device to device.html" title="Sending events from device to device">Sending events from device to device</a></p>
+
+<p>Since you have a Java background, please stick around. Would like to chat with you more. We are planning to plug in Drools to support different types of rule definitions, DSLs, temporal rules, complex event processing even, the whole works.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 10, 2009 14:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6946960"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>Thanks for your quick reply!</p>
+
+<blockquote><p>This was recently discussed here: Sending events from device to device</p></blockquote>
+<p>Indeed, that's the kind of requirement I had in mind. </p>
+
+<blockquote><p>Since you have a Java background, please stick around.</p></blockquote>
+<p>I'll try my best to do so; I'll also do a test installation of OR and connect it to my KNX network soon, this will give me some more insight into OR <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<blockquote><p>We are planning to plug in Drools to support different types of rule definitions, DSLs, temporal rules, complex event processing even, the whole works.</p></blockquote>
+
+<p>Sounds very promising, I think that Drools is definitely a good choice.<br/>
+Just be aware of all this when designing your high availability features; as mentioned above, I doubt that you'll be able to stay with a stateless controller for long...</p>
+
+<p>Cheers,<br/>
+Kai</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kkreuzer at Dec 10, 2009 15:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6946962"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Just be aware of all this when designing your high availability features; as mentioned above, I doubt that you'll be able to stay with a stateless controller for long...</p></blockquote>
+
+<p>Right, it will make failover trickier. I haven't looked into the details of it yet. Drools adds a working memory and a rule set. Whether these can be successfully used in combination with a distributed cache is an open question.</p>
+
+<p>Alternative is a stateless fail-over. This works where rules can be reasserted (without state) such as in the example Marcus posted in his thread (it would work, we are acting on incoming rules, not a state maintained in a controller). Whether there are scenarios where we do need to maintain actual state in the controller remains to be seen.</p>
+
+<p>In the latter case I suppose we could support our state directly with a distributed cache that is locally fed into a rule engine's working memory. The rule engine would need to support some type of master/slave setup in this case to inhibit the slave from executing on rules already handled by the master to avoid duplicate actions.</p>
+
+<p>We will see... while the devices own their state and the controller merely caches it (at most) is more manageable &#8211; as the device state can always be queried.</p>
+
+<p>It should be fun to figure out though!</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 10, 2009 15:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6946963"></a>
+                                    <font class="smallfont"><blockquote><p>This works where rules can be reasserted (without state) such as in the example Marcus posted in his thread</p></blockquote>
+<p>Yes, but he also thinks further and talks about "status and rules which are stored on the controller", so actually states which are not associated to any device (like "sleep mode").</p>
+
+<blockquote><p>Whether there are scenarios where we do need to maintain actual state in the controller remains to be seen.</p></blockquote>
+<p>How about such simple rules as "if front door opens -&gt; 1. turn lights on, 2. wait 5 minutes, 3. turn lights off". Not sure how you would do this in Drools, maybe you would split it in two and create rules "if front door opens -&gt; turn lights on" and "if front door opened 5 minutes ago and didn't change its state in the meantime -&gt; turn lights off". But the last rule would not require a state of a rule itself, but therefore a kind of history for state events...</p>
+
+<blockquote><p>...as the device state can always be queried.</p></blockquote>
+<p>Don't count on this; I know KNX devices, which do not allow being queried <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> And as OR is supposed to be modular, you should not count on this.</p>
+
+<p>Btw, have you ever considered to use the publish-subscribe pattern instead of callback-APIs for device status updates and sending of commands?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kkreuzer at Dec 10, 2009 16:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6946964"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Yes, but he also thinks further and talks about "status and rules which are stored on the controller", so actually states which are not associated to any device (like "sleep mode").</p></blockquote>
+
+<p>Stateful controller modes however are an easier case, this is no different from replicated HTTP session state. It's a problem that has already been solved by Java middleware.</p>
+
+<p>It is the device associated state that can be trickier to handle.</p>
+
+<blockquote>
+<p>How about such simple rules as "if front door opens -&gt; 1. turn lights on, 2. wait 5 minutes, 3. turn lights off". Not sure how you would do this in Drools, maybe you would split it in two and create rules "if front door opens -&gt; turn lights on" and "if front door opened 5 minutes ago and didn't change its state in the meantime -&gt; turn lights off". But the last rule would not require a state of a rule itself, but therefore a kind of history for state events...</p></blockquote>
+
+<p>This is a temporal rule. And this is the case I was talking about and haven't investigated what solution Drools provide for a fail-over that occurs in the middle of a temporal rule like this &#8211; ie. can the state of the working memory (if that's how Drools handles temporal rules, or in rule sets or what, another open question) be stored in a distributed cache and another rule engine instance (with a same rule set, obviously) pick it up again after the requested time has elapsed.</p>
+
+<blockquote>
+<p>Don't count on this; I know KNX devices, which do not allow being queried  And as OR is supposed to be modular, you should not count on this.</p></blockquote>
+
+<p>There's not much we can do about bad hardware short of building better ones ourselves. I device that does not allow its state to be queried is no different from your regular unidirectional infrared device. For automation, avoid like the plague.</p>
+
+<blockquote>
+<p>Btw, have you ever considered to use the publish-subscribe pattern instead of callback-APIs for device status updates and sending of commands?</p></blockquote>
+
+<p>Yes and no. Depends what you mean exactly. Between devices and controller (would depend on device manufacturers supporting this) or internally within controller (in which case the answer is sort of yes, though I'm not hung up on pub-sub but mediator bus architecture typically advocated by microkernels, OSGi, et al) ?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 10, 2009 17:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6946996"></a>
+                                    <font class="smallfont"><blockquote><p>This is a temporal rule. And this is the case I was talking about and haven't investigated what solution Drools provide for a fail-over that occurs in the middle of a temporal rule like this.</p></blockquote>
+<p>Yes, but even if there is no easy solution, I think one could live with this fact; this kind of requirement is possibly something to care about in a much later stage of the project...</p>
+
+<blockquote><p>A device that does not allow its state to be queried is no different from your regular unidirectional infrared device. For automation, avoid like the plague.</p></blockquote>
+<p>Well, under the assuption that a device is reliably executing the commands that are passed to it, one can always figure out its state by the command history; The problem only comes up, if the device might change its state on his own or does not execute commands under certain conditions. So depending on how critical the accuracy of the state is, these devices can regardlessly be included in the automation.</p>
+
+<blockquote><p><span class="error">&#91;...&#93;</span> internally within controller (in which case the answer is sort of yes, though I'm not hung up on pub-sub but mediator bus architecture typically advocated by microkernels, OSGi, et al) ?</p></blockquote>
+<p>Yes, that's what I had in mind. Actually, the background of my question is that I myself was thinking of a suitable architecture for a home automation controller myself recently (see <a href="http://kaikreuzer.blogspot.com/2009/11/reinventing-wheel.html">my blogpost</a>) and that's how I came to look at OR.<br/>
+Please let me know, if I am moving too far off-topic, but in case it is of any interest for you: My idea was to build on OSGi (of which I am a big fan, especially if you want to build something very modular like OR!) and use the standard EventAdmin service (kind of very simple message bus) as an extension to the KNX bus. This has IMHO a couple of nice advantages:</p>
+<ul>
+	<li>Decoupling: Any component could send commands and listen and react to any other message on the bus. Still, components have the possibility to decide what messages they are interested in and thus can avoid being flooded.</li>
+	<li>Distribution: There is not necessarily a single hub, but you could build a distributed system, e.g. across different buildings or locations, if you have devices connected to different computers.</li>
+	<li>Testing: It's perfectly simple to do run tests as you can just send sample messages on the bus; no need to mock any of your devices etc.</li>
+</ul>
+
+
+<p>Such an architecture would allow to add a rule engine as "yet another component", or even different engines with different rules at the same time. Through OSGi, this could be even done dynamically at runtime by adding or removing bundles.</p>
+
+<p>How much is the core architecture of OR already fixed and settled? Would you see the possibility to move towards OSGi and/or a message based controller in the future?</p>
+
+<p>Please don't take any of the above as a criticism of the current architecture; I am to new to OR to judge on that - I just wanted to share my thoughts and ideas that I had BEFORE looking at OR; and see whether they could be of any value as they try to address exactly the same domain and challenges as OR does.</p>
+
+<p>Regards,<br/>
+Kai</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kkreuzer at Dec 11, 2009 13:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6946997"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Yes, but even if there is no easy solution, I think one could live with this fact; this kind of requirement is possibly something to care about in a much later stage of the project...</p></blockquote>
+
+<p>Agreed <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>First thing is to get the rules out there.</p>
+
+
+<blockquote>
+<p>The problem only comes up, if the device might change its state on his own or does not execute commands under certain conditions.</p></blockquote>
+
+<p>So yeah, I think this situation might come up quite a bit. What the professional installers have told us is they tend to avoid devices like this in their business since in the end the end-user experience the customer is going to get is poor. Therefore they've also a lot to say which brands and models of A/V equipment to buy, for instance.</p>
+
+<p>So reliable one-way is fine as long as you have distinct commands (or what we would call a stateless send-respond protocol). If the command is "switch to HDMI 1" then it is less critical for the system to track the state. If however, and this is often the case, your input channels rotate without distinct commands (next...next...next) then your system will be very quickly out-of-sync maybe as soon as you power down the device.</p>
+
+<p>And this is still with a reliable ACK'ing protocol, when it comes to infrared you never even know if your line-of-sight worked.</p>
+
+<blockquote>
+<p>Decoupling: Any component could send commands and listen and react to any other message on the bus. Still, components have the possibility to decide what messages they are interested in and thus can avoid being flooded.</p></blockquote>
+
+<p>Decoupling services is the biggest advantage in my opinion as it allows us to create pluggable and customizable runtimes.</p>
+
+<p>A bit of background: we've discussed this since we started, and have actually built a middleware server around these ideas in our past lives so it's not something we need to be sold on. The benefits are obvious. They may not be so obvious to people coming from other backgrounds.</p>
+
+<p>So as far as priorities go, first priority was and is to get a working system out. A full-blown service container has been in the back burner (although our very first prototype was based on it but was scrapped as we had to move on with other development) but won't stay that way for much longer. The web archive based approach to building servers clearly does not work much further and the system is starting to feel a bit creaky and clumsy already because of that. So I doubt I'll go much beyond Boss 2.0 before putting a real service container back in the game.</p>
+
+<p>At least now I don't need to do so much vague hand-waving trying to convince people why such a thing is important. With you, Marcus et al you already understand the issues and the solution as well.</p>
+
+<blockquote>
+<p>Distribution: There is not necessarily a single hub, but you could build a distributed system, e.g. across different buildings or locations, if you have devices connected to different computers.</p></blockquote>
+
+<p>I am less convinced on this argument &#8211; one reason is as soon as you distribute your bus you need to start watching out for and distributing state again, unless all your invocations are stateless. If the system is purely acting without state then each node can proxy/route requests without much effort but as soon as you move out of those boundaries it gets trickier again. And then there are better existing solutions to distributed messaging already so now we are talking about message brokers connecting service containers. </p>
+
+<p>Whether you then consider it's the service containers wrapping the distributed message broker or vice versa is a matter of preference.</p>
+
+<blockquote>
+<p>Please don't take any of the above as a criticism of the current architecture;</p></blockquote>
+
+<p>Not at all. I vaguely remember spending countless months and probably years writing, teaching and advocating such architectures....</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 11, 2009 21:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6947065"></a>
+                                    <font class="smallfont"><blockquote><p>I am less convinced on this argument - one reason is as soon as you distribute your bus you need to start watching out for and distributing state again</p></blockquote>
+
+<p>Right, so your distributed cache for the high availability comes for free <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Each component could simply store the states that it is interested in (so if it is a "dumb" IR connector, it could be stateless as well). It really resembles the idea of the KNX-bus itself; it is decentralized and asynchronous and thus you do not need any service containers at all.</p>
+
+<blockquote><p>And then there are better existing solutions to distributed messaging already so now we are talking about message brokers connecting service containers.</p></blockquote>
+
+<p>Could you give an example of what kind of setup you have in mind? I've never been so deeply involved in middleware development as you <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kkreuzer at Dec 14, 2009 18:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6947068"></a>
+                                    <font class="smallfont">
+<p>Clearing some terminology so we don't end up talking at cross-purposes:</p>
+
+<h5><a name="RulesupportinORBossController-%281%29ServiceContainer"></a>(1) Service Container </h5>
+
+<p>By service container I mean things like OSGi, etc. &#8211; any framework that manages service lifecycle, configuration and dependencies.</p>
+
+<p>Adopting a service container has three distinct benefits when it comes to OpenRemote Controller:</p>
+
+<p>i) </p>
+
+<p>Decouple service implementations so that we (OpenRemote community, installers, or anybody else who deploys OpenRemote Boss) can easily create customized runtimes in an a la carte fashion depending on requirements.</p>
+
+<p>This means being able to pick and choose which protocol implementations are included for example &#8211; do you need KNX, or not? X10? UPnP? etc.</p>
+
+<p>Also means which system level services might be included &#8211; e.g. Jerome prefers JSON over HTTP/REST, Bonjour discovery vs. ad-hoc multicast discovery vs. controller beacon-based (push) discovery, and so on.</p>
+
+<p>It also later has implications for system maintenance in terms of software updates to existing, deployed systems but leaving that out of the discussion for now.</p>
+
+
+<p>ii)</p>
+
+<p>Manage third party contributions &#8211; decoupled service architecture is essentially a plugin architecture that makes it easier to establish new innovations from the community by providing a plugin framework where implementations can be tested and experimented with and easily adopted by users who are willing to be the early adopters of these features.</p>
+
+<p>iii)</p>
+
+<p>Make contributing to the core codebase easier &#8211; because of a decoupled service architecture implementations become clearly defined within their service interfaces. This means that the system is less entangled with concerns that affect the entire spectrum of the codebase and therefore the codebase becomes more manageable. Making changes to specific functionality does not require sweeping changes across the codebase.</p>
+
+<p>The points above puts the service container rather high up in architecture considerations for OpenRemote Boss.</p>
+
+
+<h5><a name="RulesupportinORBossController-%282%29StateDistribution"></a>(2) State Distribution</h5>
+
+
+<p>I consider service containers as local (in-process, in-vm) constructs and would constraint them for the purposes listed above in #1.</p>
+
+<p>State distribution is required for high-availability <b>when</b> there is state <b>owned</b> by the controller. At the moment we don't have state backed by only the controller itself so this is somewhat of a lower priority. As was said earlier in this thread, it is likely to emerge at some point but it's not there yet so treating it at somewhat lower priority.</p>
+
+<p>State distribution is essentially a tightly coupled distribution in a sense that the state cannot be recreated by external means (or the controller would have to manage its own persistent state) and that usually occurs when you want to form a group of homogeneous controller instances where we can seamlessly switch to another instance in case of a failure.</p>
+
+<p>The current high-availability discussion and implementation in OpenRemote Boss 2.0 revolves around a client-side round-robin implementation that assumes a stateless architecture. The goal there is to keep the system responsive and functional as far as receiving and passing commands and does not involve state distribution, distributed cache, etc. And we'll stay at that level of high-availability until there's a real need by an implemented feature to improve it.</p>
+
+<h5><a name="RulesupportinORBossController-%283%29DistributedAsynchronousBus"></a>(3) Distributed Asynchronous Bus</h5>
+
+<p>This is the part of what you suggested that I am skeptical about. Distributed asynchronous bus is essentially useful for integrating multiple <b>heterogeneous</b> systems. It tends to be loosely coupled distribution, hence no tightly integrated state distribution.</p>
+
+<p>I can't currently see this as being a priority apart from some specific integration cases where OpenRemote Boss building automation needs to be integrated to other systems in asynchronous fashion. And even where cases for this emerge I believe can be handled on as-needed basis. So this last part has no priority for me at the moment.</p>
+
+
+<p>So to summarize: #1 has a priority from architectural point of view but interleaved with other priorities specific to implementing building automation features. #2 may become a priority at some point but isn't one now, and #3 is still looking for its raison d'etre in home automation or OpenRemote Boss.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 15, 2009 13:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6947070"></a>
+                                    <font class="smallfont"><h5><a name="RulesupportinORBossController-%281%29ServiceContainer"></a>(1) Service Container</h5>
+
+<p>Full Ack on the Service Container part. Just wondering why you didn't manage to convince the others of starting with such an architecture right from version 0.0.1 <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Hope to see OSGi coming into the picture pretty soon (You do not think of any other container, do you?)</p>
+
+<h5><a name="RulesupportinORBossController-%282%29StateDistribution"></a>(2) State Distribution</h5>
+
+<p>I honestly think a round-robin high-availability solution (of identical ORBs) is of a very low priority. More interesting to me is the following question: If you have a highly modular design as you describe in (1), why should OR then still require one central hub, where everything needs to connect to? Couldn't you think of having the LIRC-connector running on one machine (which is close to the IR-devices that are to be controlled) and other connectors and the panels being served from a machine in the cellar?</p>
+
+<p>This is actually not any of my weird fantasies, but my current setup that I have with Misterhouse: The "main" instance runs in the server-rack and is attached to the KNX-bus (via RS232 and eibd on the same machine), while I have a netbook running in the living room, which is attached via RS232 to my AVR and has iTunes running on it. If I press a KNX-switch on my wall, the AVR is turned on and iTunes starts playing; looks similar to what Marcus is trying with Russound, right? With ORB hardware being available for less than 200 EUR and consuming less than 10W, I guess this is a scenario that should be taken into account; especially as you are targeting IR-devices, which might be spread all around the house...</p>
+
+<p>Now assuming the above setup is reality - then you could easily put additional modules on to the ORBs in a sleep mode as a standby for failover. (This will of course only work for TCP/IP-based ones as you e.g. cannot replace a RS232-based module) The "web-serving" module could even be activated on all ORBs for round-robin load-balancing (though I doubt that this will ever be necessary for performance reasons). The whole high-availability functionality would therefore come more or less for free.</p>
+
+
+<h5><a name="RulesupportinORBossController-%283%29DistributedAsynchronousBus"></a>(3) Distributed Asynchronous Bus</h5>
+
+<p>see (2) - yes, I AM talking there about "multiple <b>heterogeneous</b> systems". Are you still of the opinion that this is almost irrelevant? If not, a message bus could be a good option to realie the setup described in (2).</p>
+<blockquote><p>I can't currently see this as being a priority apart from some specific integration cases where OpenRemote Boss building automation needs to be integrated to other systems in asynchronous fashion</p></blockquote>
+
+<p>But that's exactly what you do with the KNX support in OR - you are connecting the ORB to another system in an asynchronous fashion. Note that all status updates etc. are always only sent asynchronous. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kkreuzer at Dec 15, 2009 20:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6947081"></a>
+                                    <font class="smallfont"><p>Anybody already looked at "Spring dynamic modules"? Since the controller is already using Spring in the moment it might makes sense to use that as out service container. And yes, it is OSGi based <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>&#45;-Marcus</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 16, 2009 21:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6947082"></a>
+                                    <font class="smallfont"><blockquote><p>Anybody already looked at "Spring dynamic modules"?</p></blockquote>
+
+<p>A year ago I would have said yes, that's what one needs as it is a perfect combination of dependency injection and modularization.</p>
+
+<p>Today I have a different impression though: There have many useful things been added to OSGi, such as Declarative Services, EventAdmin, etc. So IMHO one can build a quite lightweight system purely with OSGi. When you add SpringDM on top, it brings quite a bunch of libraries and additional technology which might not really be necessary. But I am not completely oposed to it, maybe some Spring enthusiast can convince me of the additional benefits of SpringDM over OSGi <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kkreuzer at Dec 16, 2009 21:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-6947083"></a>
+                                    <font class="smallfont"><p>Here is some very detailed reading about the two options:</p>
+
+<p><a href="http://heikoseeberger.blogspot.com/2008/10/comparing-osgi-ds-to-spring-dm.html">http://www.slideshare.net/heiko.seeberger/osgi-devcon-09-component-oriented-development-in-osgi-with-ds-spring-and-ipojo</a></p>
+
+<p>See slides 149 and 150 for the pros and cons of SpringDM.</p>
+
+<p>A very interesting conclusion is that actually each bundle can decide on its own whether to use DS or DM - it's completely compatible (see slide 196).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kkreuzer at Dec 16, 2009 21:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-7405572"></a>
+                                    <font class="smallfont"><blockquote>
+<p>why should OR then still require one central hub, where everything needs to connect to?</p></blockquote>
+
+<p>Connecting everything to one central hub is not the deployment architecture we are aiming for if you're automating your entire house (some of the website material is out-of-date in this regard). You'd only connect things directly to ORB if you're doing a small deployment where ORB is present as part of your A/V setup in your living room for example.</p>
+
+<p>In a normal "full house" scenario you will have just one ORB in your basement.</p>
+
+<p>Our reference hardware deployment is having an ORB somewhere in the local network (in the basement) with no other devices connecting directly to it but reachable by local network &#8211; an IP Ethernet network at this point although we are watching what people are doing with RF network meshes too and that may be an option later.</p>
+
+<blockquote>
+<p>Couldn't you think of having the LIRC-connector running on one machine (which is close to the IR-devices that are to be controlled) and other connectors and the panels being served from a machine in the cellar?</p></blockquote>
+
+<p>Yes, but this is what IRTrans is for. Or Global Cache although then you don't benefit from the extent of all the already recorded LIRC infrared devices and have to do the recording yourself from scratch.</p>
+
+<p>Assuming you already have one Boss installation in your basement, taking another ORB and plugging an USB IR transmitter to it is basically an overkill &#8211; the unit needs no logic other than translating an incoming IP protocol into a infrared space-pulse sequence.</p>
+
+<p>It does not (and should not) host the full OpenRemote Boss software &#8211; there's no benefit for doing so.</p>
+
+<p>It is important to make a difference here with units that host application logic (OpenRemote Boss) and peripheral units that act as proxies to translate transport protocols to reach devices.</p>
+
+<p>When it comes to application logic, fault tolerance is the only valid reason to add distribution. Distributing for load purposes seems unlikely (but never say never) and distributing application logic is what I would consider an anti-pattern here.</p>
+
+<p>In general, what you want for a full house scenario is one central OpenRemote Boss and then peripheral microprocessor based units (IRTrans, GlobalCache, JetPort, KNX/IP gateways, etc.) that handles your connectivity needs locally to your devices where necessary. This is the hardware deployment Marcus is doing for example and I think he's done the right choice in terms of a) cost of the system b) maintainability of the system c) flexibility of the system d) simplicity of the system (this last part is especially important when considering failure scenarios for example).</p>
+
+
+
+<blockquote>
+<p>then you could easily put additional modules on to the ORBs in a sleep mode as a standby for failover. (This will of course only work for TCP/IP-based ones as you e.g. cannot replace a RS232-based module)</p></blockquote>
+
+<p>Right, which in other words means that you are treating your ORBs as homogeneous units (removing physical port connections and decoupling them from central units via a network).</p>
+
+<p>Once you've done that logical step then you will realize there's no reason to spread ORBs around the house as your TCP/IP network can reach them from your basement too. To deal with ORB failure scenarios add another unit in the basement to take over if necessary.</p>
+
+
+<blockquote>
+<p>I AM talking there about "multiple heterogeneous systems". Are you still of the opinion that this is almost irrelevant? If not, a message bus could be a good option to realie the setup described in (2).</p></blockquote>
+
+<p>Yes, multiple heterogeneous systems is irrelevant when you have control of the entire architectural design.</p>
+
+<p>You shouldn't build a heterogeneous distributed system on purpose. As I said above, I consider this an anti-pattern &#8211; it is a bad idea here but also in distributed middleware in general (there are some exceptions but I'm not going to get into them here, you can infer them from the thread above).</p>
+
+<blockquote>
+<p>But that's exactly what you do with the KNX support in OR - you are connecting the ORB to another system in an asynchronous fashion. Note that all status updates etc. are always only sent asynchronous.</p></blockquote>
+
+<p>No, we are talking about different things here.</p>
+
+<p>I'm not looking to flow KNX messages in a distributed bus across nodes &#8211; the points above should make it clear I do not consider it a sound architectural choice in a general automation design: </p>
+
+<p>1) there's no requirement to distribute your application logic across nodes <br/>
+2) it would force a stateless design across nodes since async distributed bus is a decoupled distribution by nature<br/>
+3) state synchronization (for fail-over) is fundamentally a tightly coupled distribution</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 19, 2009 14:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-7405671"></a>
+                                    <font class="smallfont"><p>Ok, I think I now about understand your architectural ideas. </p>
+
+<p>I didn't yet catch the distribution aspect via IRTrans, GlobalCache, JetPort and the like - this indeed makes many more scenarios possible. I do not use any of these systems personally, so maybe you can tell me (or point me to some page/thread on the OR website) how the integration in OR is supposed to look like? I guess any of these devices will run a different kind of application protocol over TCP/IP and thus you will need an ORB integration for each? Are there Java APIs available or do you need to call/install some "proprietary" client on the ORB hardware and connect to it via command line (the current IR support looks like this to me...)?</p>
+
+<p>If there is no "real" integration of such devices into the (Software-)ORB, don't you end up with quite a heterogeneous configuration mess? And this is not all on the central ORB, as you have to configure these devices (often with proprietary software) as well. I definitely welcome the support of such things and there will be many real-life cases where this is just what is needed, but I do not agree that this is the way to go in order to achieve a clean and decent system architecture.</p>
+
+<p>My suggestion here was rather to define an OR standard way how to communicate over TCP/IP - if you have the endpoint under your control, i.e. you can install a (tiny) Java component on them. As Nettop-PCs are hardly more expensive (with prices falling) than e.g. a GlobalCache device, this should be considered an option. </p>
+
+<p>Especially, as you gain a lot more flexibility (see my thread about new protocol proposals, like PC applications (media players), bluetooth, USB-webcams, etc.). Ok, you will find a dedicated IP-connected device (Squeezebox for sound, IP-cam for videos) for all of these cases, but have you ever checked out the prices of a multi-mega-pixel IP-webcam...?</p>
+
+<blockquote><p>Assuming you already have one Boss installation in your basement, taking another ORB and plugging an USB IR transmitter to it is basically an overkill</p></blockquote>
+<p>In your (simple) scenario, yes. But consider an already existing PC and more advanced use cases, such as a USB-webcam - what's the answer then?</p>
+
+<p>So please get me right, I do not say we need the one or the other, but actually I am voting for both at the same time as there are legitimate use cases for both.</p>
+
+<blockquote><p>This is the hardware deployment Marcus is doing for example and I think he's done the right choice</p></blockquote>
+<p>Is there anything to read on what he's doing or could you briefly summarize it? I do not know what he is up to <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<blockquote><p>It does not (and should not) host the full OpenRemote Boss software - there's no benefit for doing so.</p></blockquote>
+<p>Could you elaborate on the "full" ORB software, what this actually is? What is the application logic that runs there? Why do you think you need a "full" installation?<br/>
+That's the point I tried to get across earlier on - if you have it modularized in OSGi bundles, the "core" ORB would be nothing more than the TCP/IP communication module that allows communicating with other ORBs - I guess this could be a few KB (&lt;1 MB) of Java code, not more. So no logic, no nothing. All you would then put on top are the (non-TCP/IP) connectors that you need on this device, e.g. RS232-support. This "core" ORB would simply provide a standardized communication format, which you have under YOUR control (choose HTTP to get through firewalls or whatever - you probably will have more problems trying to do such things with proprietary devices).</p>
+
+<blockquote><p>Yes, multiple heterogeneous systems is irrelevant when you have control of the entire architectural design.</p></blockquote>
+<p>You have not, if you rely on devices such as GlobalCache etc, see above.</p>
+
+<blockquote><p>You shouldn't build a heterogeneous distributed system on purpose. <span class="error">&#91;...&#93;</span> I consider this an anti-pattern. <span class="error">&#91;...&#93;</span> I do not consider it a sound architectural choice in a general automation design.</p></blockquote>
+<p>Hm, so do I understand you right that KNX was a big mistake right from the start and has been built on an anti-pattern?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kkreuzer at Dec 21, 2009 22:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-7405675"></a>
+                                    <font class="smallfont"><blockquote>
+<p>I do not use any of these systems personally, so maybe you can tell me (or point me to some page/thread on the OR website) how the integration in OR is supposed to look like? I guess any of these devices will run a different kind of application protocol over TCP/IP and thus you will need an ORB integration for each? Are there Java APIs available or do you need to call/install some "proprietary" client on the ORB hardware and connect to it via command line (the current IR support looks like this to me...)?</p></blockquote>
+
+<p>It's an IP level integration, e.g. JetPort defines a TCP protocol which it translates to serial commands, IRTrans, GC do the same.</p>
+
+<p>It's the same principle on how you integrate RS-232 control interfaces. You script the device against the protocol they define. For simple unidirectional protocols we can already do TCP/IP integration on one-off commands with the existing 1.0 release. That's what Marcus used for IRTrans and JetPort, IIRC.</p>
+
+
+<blockquote>
+<p>My suggestion here was rather to define an OR standard way how to communicate over TCP/IP - if you have the endpoint under your control, i.e. you can install a (tiny) Java component on them. As Nettop-PCs are hardly more expensive (with prices falling) than e.g. a GlobalCache device, this should be considered an option.</p>
+
+<p>Especially, as you gain a lot more flexibility (see my thread about new protocol proposals, like PC applications (media players), bluetooth, USB-webcams, etc.). Ok, you will find a dedicated IP-connected device (Squeezebox for sound, IP-cam for videos) for all of these cases, but have you ever checked out the prices of a multi-mega-pixel IP-webcam...?</p></blockquote>
+
+<p>Yes, you can do a small TCP/IP device yourself as an endpoint, ie. what is refered to as the "POD" in some discussions &#8211; however the BOM for these can be as low as $40 as was discussed earlier on an ARM + Dalvik VM.</p>
+
+<p>The important distinction here is that these "pods" will still be "dumb" devices in that they don't host the Boss application logic but act merely as translators from IP&lt;-&gt;IR/USB/RS232/Zigbee/Z-wave/KNX. They can go even lower if you focus the device to a single protocol and can manage it with a mere microprocessor (e.g. Arduino). </p>
+
+<p>What I said earlier I want to avoid is distributing <b>application logic</b> &#8211; this is what I consider a bad idea. </p>
+
+<p>You <b>could</b> use the ORB hardware as "POD" but that's now a $200 BOM vs. $20 BOM. The other factor is the full complexity of the software stack in the unit (vs. microprocessor), which once it fails cuts you off from your device integration (e.g. USB&lt;-&gt;KNX bridge) &#8211; no amount of additional fail-over units is going to get you into that dead port.</p>
+
+
+<blockquote>
+<p>Could you elaborate on the "full" ORB software, what this actually is? What is the application logic that runs there? Why do you think you need a "full" installation?</p></blockquote>
+
+<p>In two words, application logic. Whether its rules, scheduled events, controller modes. Anything that deals with conversational state now or potentially in future with feature additions.</p>
+
+<p>The above is what you don't want to be spreading across nodes.</p>
+
+<blockquote>
+<p>Hm, so do I understand you right that KNX was a big mistake right from the start and has been built on an anti-pattern?</p></blockquote>
+
+<p>No you did not understand correctly <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Distribution has more nuances than just the fact you have more than one process space working in coordination. KNX distribution has nothing to do with distributing the Boss software. For one thing, KNX actuators as far as I know do not maintain conversational state (which is the point you brought up originally in this thread <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> with each other and try to keep that in sync.</p>
+
+<p>In regards to distributing Boss, the concern is on distributing application logic (software state), not the fact that there is 1, 5, or 500 stateless protocol translators deployed somewhere across the LAN.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 21, 2009 23:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-7405681"></a>
+                                    <font class="smallfont"><p><blockquote>
+<p>Is there anything to read on what he's doing or could you briefly summarize it? I do not know what he is up to</p></blockquote>I want to be able to control every device in my home using the openremote platform. In the final stadium I see the ORB as central server which does all the interfacing to my devices, provides different visualizations (iTouch, wall-mount touch, speach?), includes a rule engine and all the other nice features which were already discussed or we might come up with <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>To accomplish this I need a way to have the ORB communicate with my devices. My preferred protocol for this is TCP/IP because I want the ORB in the basement and only protocol converter where I need them.</p>
+
+
+<p>Currently I use irtrans (www.irtrans.de) to communicate with all my entertainment devices that have no other communication port (RS232, Ethernet).</p>
+
+<p>KNX is hooked up using a IP-Gateway (Elsner PS640IP).</p>
+
+<p>My MythTV clients have a telnet based protocol.</p>
+
+<p>The Russound multiroom amp is hooked up directly to the ORB (RS232). The Russound is located in the basement. It is also possible to use a Jetport/Moxa (RS232&lt;-&gt;Ethernet) to attach the Russound to TCP/IP.</p>
+
+<p>I have a LG LCD television which has a RS232 port and I use a Jetport to control that.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 22, 2009 11:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-7405793"></a>
+                                    <font class="smallfont"><blockquote><p>KNX actuators as far as I know do not maintain conversational state with each other</p></blockquote>
+
+<p>I would tend to say they try to avoid it. But that is the overall concept of KNX, you do not necessarily need a "smart" rule engine as many standard automation use cases can be realized by listening to group addresses. You can then have some actuators offering simple (AND/OR) logic gates. Only if you have more complex scenarios, you might look at a central instance like a GIRA HomeServer. So in a "conventional" KNX installation (without a HomeServer), you already have quite some automation logic spread all over your hardware devices. If you change some logic in the ETS, you will usually have to program a couple of different devices in order to "deploy" this change. I'm not saying whether this is good or bad, but I think KNX is a strong example for a decentralized system.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kkreuzer at Dec 27, 2009 19:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023571"></a>
+                                    <font class="smallfont"><p>Hi Marcus, I am trying to control an Arcam Processor using a Moxa 5110A but not having much luck .. do you have any example of the config/commands for your Jetport/LG LCD with OR? I am about to install KNX in my house which is why OR is so attractive for me.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kimjohannessen at Mar 28, 2011 22:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

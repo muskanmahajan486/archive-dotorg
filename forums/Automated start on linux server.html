@@ -1,0 +1,349 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Automated start on linux server</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Automated start on linux server
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 13, 2012 by <font color="#0050B2">koenh</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>I have a tiny core client with OpenRemote server on. It works well, but i don't get OpenRemote started automatically.<br/>
+Does anyone has an idea how to use the shell script in an automated version so the service is started when my client reboots?</p>
+
+<p>Already thanks.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20449787"></a>
+                                    <font class="smallfont"><p>Usually you'd set things up in the /etc/init.d:</p>
+
+<p><a href="http://www.ghacks.net/2009/04/04/get-to-know-linux-the-etcinitd-directory/">http://www.ghacks.net/2009/04/04/get-to-know-linux-the-etcinitd-directory/</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 13, 2012 12:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449791"></a>
+                                    <font class="smallfont"><p>tx for the link. <br/>
+How do i put a command in that directory? </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by koenh at Aug 13, 2012 17:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449792"></a>
+                                    <font class="smallfont"><p>It's a regular bash script:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>#! /bin/sh
+
+start() {
+
+  # do stuff
+
+}
+
+stop() {
+ 
+  # do stuff
+}
+
+restart() {
+
+  # do stuff
+
+}
+</pre>
+</div></div>
+
+<p>You can look at /etc/init.d/crond for example.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 13, 2012 20:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449793"></a>
+                                    <font class="smallfont"><p>Here's one example used with Synology NAS:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>
+#!/bin/sh
+
+User=openremote
+
+cd /usr/local/OpenRemote/bin
+
+case "$1" in
+
+stop)
+        echo "Stopping OpenRemote Controller..."
+        su -l $User -c "/usr/local/OpenRemote/bin/openremote.sh stop" &gt; /dev/null 2&gt;&amp;1 &amp;
+        ;;
+
+start)
+        # start OpenRemote in background mode
+        su -l $User -c "/usr/local/Openremote/bin/openremote.sh start" &gt; /dev/null 2&gt;&amp;1 &amp;
+        echo "OpenRemote Controller started..."
+        ;;
+
+restart)
+        $0 stop
+        sleep 5
+        $0 start
+        ;;
+*)
+        echo "usage: $0 { start | stop | restart}" &gt;&amp;2
+        exit 1
+        ;;
+
+esac
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 13, 2012 20:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450145"></a>
+                                    <font class="smallfont"><p>Hi!</p>
+
+<p>I also wanted to set up everything to boot automatically, so I installed the controller in /opt/openremote, created an openremote user and changed the owner of all the files to that user. Then I created an init.d script with the contents you pasted and changed the paths accordingly. Now I am able to start the application using the start option, but stopping it wont work. If I check the processes it's still there. If I run the line manually I get the following:</p>
+
+<p>sudo su -l openremote -c "/opt/openremote/bin/openremote.sh stop"<br/>
+No directory, logging in with HOME=/<br/>
+Using CATALINA_BASE:   /opt/openremote<br/>
+Using CATALINA_HOME:   /opt/openremote<br/>
+Using CATALINA_TMPDIR: /opt/openremote/temp<br/>
+Using JRE_HOME:       /usr<br/>
+Aug 29, 2012 9:56:20 AM org.apache.catalina.startup.Catalina stopServer<br/>
+SEVERE: Catalina.stop: <br/>
+java.net.ConnectException: Connection refused<br/>
+	at java.net.PlainSocketImpl.socketConnect(Native Method)<br/>
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)<br/>
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)<br/>
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)<br/>
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:366)<br/>
+	at java.net.Socket.connect(Socket.java:529)<br/>
+	at java.net.Socket.connect(Socket.java:478)<br/>
+	at java.net.Socket.&lt;init&gt;(Socket.java:375)<br/>
+	at java.net.Socket.&lt;init&gt;(Socket.java:189)<br/>
+	at org.apache.catalina.startup.Catalina.stopServer(Catalina.java:421)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)<br/>
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)<br/>
+	at java.lang.reflect.Method.invoke(Method.java:597)<br/>
+	at org.apache.catalina.startup.Bootstrap.stopServer(Bootstrap.java:337)<br/>
+	at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:415)</p>
+
+<p>Any ideas?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by uglybob at Aug 29, 2012 08:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450146"></a>
+                                    <font class="smallfont"><p>Is there anything that might be blocking (like firewall?) the port 8005 which it is listening to for a shutdown command?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Aug 29, 2012 09:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450147"></a>
+                                    <font class="smallfont"><p>No, there are no firewall on that machine. But I am running a lot of other services of course. Apache, torrent, media-servers etc. So Catalina is trying to reach port 8005 and there is no answer, is that it? What is it trying to contact? Maybe the other service isn't running...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by uglybob at Aug 29, 2012 09:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450151"></a>
+                                    <font class="smallfont"><p>The script is trying to contact the Tomcat instance.</p>
+
+<p>It's defined in the conf/server.xml (first line):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;Server port=<span class="code-quote">"8005"</span> shutdown=<span class="code-quote">"SHUTDOWN"</span>&gt;
+
+ ...
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 29, 2012 10:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450152"></a>
+                                    <font class="smallfont"><p>If you've got more than one Tomcat instance running, this may conflict with the shutdown.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 29, 2012 10:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039270"></a>
+                                    <font class="smallfont"><p>I'm running OpenRemote on a linux platform and I added to the .../bin/openremote.sh script code in excerpt below to store the Proces ID of the CATALINA process, so the stop -force paramaters can use the PID</p>
+
+<p>...snip</p>
+<ol>
+	<li>Only set CATALINA_HOME if not already set<br/>
+[ -z "$CATALINA_HOME" ] &amp;&amp; CATALINA_HOME=`cd "$PRGDIR/.." ; pwd`</li>
+</ol>
+
+
+<ol>
+	<li>
+	<ol>
+		<li>This and the following 2 lines are added by YANN1420</li>
+	</ol>
+	</li>
+	<li>Only set CATALINA_PID if not already set<br/>
+[ -z "$CATALINA_PID" ] &amp;&amp; CATALINA_PID=$CATALINA_HOME/temp/CATALINE.PID</li>
+</ol>
+
+
+<ol>
+	<li>For Cygwin, ensure paths are in UNIX format before anything is touched</li>
+</ol>
+
+
+<p>...snip</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yann1420 at Jan 02, 2013 19:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859422"></a>
+                                    <font class="smallfont"><p>This is functional on my Debian Raspberry Pi.  Just change path to your bin folder.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          openremote
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# <span class="code-object">Short</span>-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+
+cd /opt/openremote/bin
+
+<span class="code-keyword">case</span> <span class="code-quote">"$1"</span> in
+
+stop)
+        echo <span class="code-quote">"Stopping OpenRemote Controller..."</span>
+        /opt/openremote/bin/openremote.sh stop &gt; /dev/<span class="code-keyword">null</span> 2&gt;&amp;1 &amp;
+        ;;
+
+start)
+        # start OpenRemote in background mode
+        /opt/openremote/bin/openremote.sh start &gt; /dev/<span class="code-keyword">null</span> 2&gt;&amp;1 &amp;
+        echo <span class="code-quote">"OpenRemote Controller started..."</span>
+        ;;
+
+restart)
+        $0 stop
+        sleep 5
+        $0 start
+        ;;
+*)
+        echo <span class="code-quote">"usage: $0 { start | stop | restart}"</span> &gt;&amp;2
+        exit 1
+        ;;
+
+esac
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kalross at Apr 01, 2013 02:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413796"></a>
+                                    <font class="smallfont"><p>Kal,</p>
+
+<p>Thanks for sharing your script. Have added it to documentation on page: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Install+Controller+on+Raspberry+Pi" title="OpenRemote 2.0 How To - Install Controller on Raspberry Pi">OpenRemote 2.0 How To &#45; Install Controller on Raspberry Pi</a>.</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 08, 2013 06:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

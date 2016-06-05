@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Device rotation in iOS console</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Device rotation in iOS console
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 27, 2011 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>I'm currently looking at how device rotation is handled in the iOS console application and on how I will modify this to fix the current issues.</p>
+
+<p>Some feedback on what is possible in the modeler.<br/>
+The user can define a Group, which allows multiple screens to be related to each other. In a simple case where I define a group with 3 portrait screens, this will be displayed on the console with a "pagination" indicator at the bottom and this allows the user to swipe left or right to go from screen to screen.</p>
+
+<p>Using a button or some specific gesture, it is always possible to define an action to directly navigate to a specific screen in the group or to a screen in an entirely different group.</p>
+
+<p>When defining a screen, it is possible to mark it as portrait, landscape or both. In that later case, 2 different designs of the same screen are defined in the modeler, one will be used when the device is in portrait orientation and one  when the device is in landscape orientation. When only 1 orientation is supported for a screen, it is displayed irrelevant of the orientation of the device.</p>
+
+<p>Now combine the above 2 possibilities to define a group such that:</p>
+<ul class="alternate" type="square">
+	<li>the first screen is portrait only</li>
+	<li>the second screen supports both orientation</li>
+	<li>the third screen is landscape only</li>
+</ul>
+
+
+<p>How should the interface behave in this case?<br/>
+What I have observed in the current implementation:</p>
+<ul class="alternate" type="square">
+	<li>starting with the device in portrait, screen 1 is displayed and the pagination indicator shows 2 screens in the group</li>
+	<li>I swipe to the next screen, the portrait version of screen 2 is displayed, the pagination indicator shows the second screen as selected</li>
+	<li>I rotate the device to landscape, the landscape version of screen 2 is displayed BUT the pagination indicator shows the first screen as selected</li>
+	<li>I can NOT swipe back to the first screen</li>
+	<li>I swipe to the next screen and screen 3 is displayed (in landscape as only that version is available), page indicator shows second screen as selected</li>
+	<li>I rotate the device to portrait, screen 2 is displayed but staying in landscape</li>
+	<li>I want to swipe to previous screen, but I need to do with a gesture from top to bottom as device is portrait but display is landscape</li>
+	<li>screen 2 is displayed, but still the landscape version</li>
+	<li>rotate the device to landscape, then back to portrait -&gt; portrait version of screen 2 is displayed and page indicator shows second screen as selected</li>
+	<li>can now swipe to previous screen, screen 1 is displayed in portrait</li>
+	<li>rotate device to landscape, screen 1 is still displayed in portrait orientation</li>
+</ul>
+
+
+<p>So my understanding of the algorithm is that the group is divided in 2 versions: one with all the screens in portrait and 1 with all the screens in landscape. When the device is rotated, the landscape or portrait group is selected. Then, you can swipe between the different screens in the group. </p>
+
+<p>What is your opinion on that ?</p>
+
+<p>An alternative way to implement this would be to say the group always contains all the screens defined in it and the pagination indicator shows all the pages, irrelevant of the device orientation.<br/>
+When the device orientation changes, or when a new screen is defined, if a specific orientation for a page is defined, it is used; otherwise the one orientation that is available is used.<br/>
+So the above scenario would now be like:</p>
+<ul class="alternate" type="square">
+	<li>starting with the device in portrait, screen 1 is displayed and the pagination indicator shows 3 screens in the group</li>
+	<li>I swipe to the next screen, the portrait version of screen 2 is displayed, the pagination indicator shows the second screen as selected</li>
+	<li>I rotate the device to landscape, the landscape version of screen 2 is displayed, the pagination indicator still shows screen 2 as selected</li>
+	<li>If I want to, I can swipe back to the first screen, it would then be displayed in portrait, as this is the only version available</li>
+	<li>I swipe to the next screen and screen 3 is displayed (in landscape as only that version is available), page indicator shows third screen as selected</li>
+	<li>I rotate the device to portrait, screen 3 is displayed and stays in landscape as this is the only version available</li>
+	<li>I want to swipe to previous screen, and I need to do with a gesture from top to bottom as device is portrait but display is landscape</li>
+	<li>the portrait version of screen 2 is displayed</li>
+	<li>rotate the device to landscape, then back to portrait -&gt; landscape version is displayed briefly, then back to portrait</li>
+	<li>I can swipe to previous screen, screen 1 is displayed in portrait</li>
+	<li>rotate device to landscape, screen 1 is still displayed in portrait orientation</li>
+</ul>
+
+
+<p>I do prefer this later solution, finding that in most situations and actions from the user to reaction of the device makes more sense and is more predictable.<br/>
+The only drawback I see is implementing something like an interface where I'm using a group to control a device. In landscape, I want to have 2 screens to control this device and be able to swipe between the 2. In portrait, as I have less width available, somehow my design ends up being split on 3 screens and I want to be able to swipe between those 3. Such a design would not be possible with my later proposition.</p>
+
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

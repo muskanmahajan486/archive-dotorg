@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : UDP command timeout</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : UDP command timeout
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 30, 2012 by <font color="#0050B2">svalent</font>.
+				    </div>
+
+				    <p>Hello, </p>
+
+<p>  I am trying create sensor on base UDP command:</p>
+
+<p>  command name: Temperature1<br/>
+  Protocol: UDP<br/>
+  IP: 192.168.1.40<br/>
+  Port: 9090<br/>
+  Command: *S*GET_TEMP1*K*</p>
+
+<p>  Sensor is :<br/>
+  Name: SensTemp1<br/>
+  Command: Temperature1<br/>
+  Type: level</p>
+
+<p>  after start  controller (2.0.1) i receive on my second server  192.168.1.40:9090 UDP packet "*S*GET_TEMP1*K*" ,immediately server  <br/>
+  response " $server-&gt;send("5");"   (i writing socket server in perl. It was easier than  java for me...)</p>
+
+<p>  everrithing is OK (on android phone in GUI i see on my text label(which have setting Sensor SensTemp1)  value 5)</p>
+
+<p>  but: <br/>
+  1)  controller send UDP packet every one second ...<br/>
+  2) after about  15 .. 30 ping/pong (send UDP packet &amp; receive UDP answer from 192.168.1.40) controller get exception  "java.net.SocketTimeoutException: Receive timed out"   and stop sending UDP reqeust to 192.168.1.40</p>
+
+<p>My question is :<br/>
+1) why  so often ?? (why not - perhaps once per minute ? Can I setting interval ? (polling interval))<br/>
+2) of course - it may happen that the 192.168.1.40 responds after longer time (perhaps 50 ms?) or never (if is down) . But can I setting timeout time?<br/>
+And when controller get timeout - why definitly stops getting sensor value ?</p>
+
+
+<p> many thanks</p>
+
+<p> (and - Imust add : OpenRemote  is very good project ...., but my knowledge is very poor at this time... )</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21039204"></a>
+                                    <font class="smallfont"><p>2) parameter timeout  is in controller.xml  ?: </p>
+
+<p>   /**</p>
+<ul>
+	<li>Sets the timeOut</li>
+	<li>@param timeOut the new timeOut<br/>
+    */   <br/>
+   public void setTimeOut(String timeOut) {<br/>
+      try <div class="error"><span class="error">Unknown macro: {         Integer tempValue = Integer.parseInt(timeOut.trim());         if (tempValue &gt; 0) <div class="error"><span class="error">Unknown macro: {
+            this.timeOut = tempValue;
+         }</span> </div>      }</span> </div><br/>
+      catch (NumberFormatException e) <div class="error"><span class="error">Unknown macro: {
+         logger.error(&quot;time out property in controller.xml is not an integer&quot;, e);
+      }</span> </div><br/>
+   }</li>
+</ul>
+
+
+<p>and - default is 1 (but 1 Second or 1 milisec ???) :</p>
+
+
+<p>/** The default timeout used to wait for a result */<br/>
+   public static final int DEFAULT_TIMEOUT = 1;</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by svalent at Dec 30, 2012 20:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039225"></a>
+                                    <font class="smallfont"><p>There is code but that is only used for the socket timeout and has nothing todo with how often the command is executed itself to retrieve a new value.<br/>
+UDPSocketCommand is still using the deprecated StatusCommand interface when used for a sensor.<br/>
+This means it is polling every 500ms by default.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 31, 2012 15:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039335"></a>
+                                    <font class="smallfont"><p>thanks....<br/>
+  result for this time for me is = i rewrite code and now using HTTP protocol - everything is OK <br/>
+(but more traffics for one polling...<img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> )</p>
+
+
+<p>S.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by svalent at Jan 04, 2013 20:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

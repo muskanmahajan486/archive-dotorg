@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Decoding cEMI messages</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Decoding cEMI messages
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 11, 2010 by <font color="#0050B2">kennym</font>.
+				    </div>
+
+				    <p>Thanks to the good information here in the knowledgebase, I've been able to decode some KNXnet/IP packets.</p>
+
+<p>However I wonder if anyone can point me in the right direction to find information on decoding the cEMI frame within a TUNNELLING_REQUEST.</p>
+
+<p>First of all, here's an example of the packet I receive from a KNXnet device:<br/>
+06 10 04 20 00 15 04 02 00 00 29 00 bc e0 11 05 0a 00 01 00 81</p>
+
+<p>Which I can decode like this:<br/>
+06 - Header Length<br/>
+10 - KNXnet version (1.0)<br/>
+04 20 - Service type descriptor (TUNNELLING_REQUEST)<br/>
+00 15 - Total length - 21 Bytes<br/>
+04 - Structure length<br/>
+02 - Comms Channel<br/>
+00 - Sequence number<br/>
+00 - Reserved</p>
+
+<p>Then follows the cEMI frame:<br/>
+I know the 0x29 means it is a L_Data.ind Data service, but I cannot find any more information on decoding the rest of this packet. Some of the bytes I can make an educated guess at, for example the 11 05 means KNX device 1.1.5, and I know that overall the command is a Group 1/2/0 Lamp ON command - but I do not know how to decode this information from the packet.</p>
+
+<p>Is there somewhere I can get data on decoding cEMI frames ?</p>
+
+<p>Regards,<br/>
+K.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-9601520"></a>
+                                    <font class="smallfont"><p>0x00 0xBC 0xE0 are additional info length and control fields 1 and 2 respectively.</p>
+
+<p>0x00 means no additional info, control bits you can decode here <a href="http://www.openremote.org/display/knowledge/Common+EMI+Frame+Control+Fields" title="Common EMI Frame Control Fields">Common EMI Frame Control Fields</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 12, 2010 05:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-9601521"></a>
+                                    <font class="smallfont"><p>The next two bytes are source address (in 2 byte format) as you correctly deducted. The following two bytes are destination address (in 2 byte format, 0xA0 0x00 in your example).</p>
+
+<p>The next byte (0x01 in your frame) is the data length of the following APDI bytes (the last two bytes in your frame).</p>
+
+<p>This may help you visualize it: <a href="http://www.openremote.org/display/knowledge/KNX+Data+Link+Layer+Data+Service+%28L_Data%29" title="KNX Data Link Layer Data Service (L_Data)">KNX Data Link Layer Data Service &#40;L&#95;Data&#41;</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 12, 2010 05:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-9601522"></a>
+                                    <font class="smallfont"><p>Finally APDU (the actual payload, last two bytes in your frame) is quite specific depending on the flags in the message frame, message type and the device data point type.</p>
+
+<p>Bytes 0x80 and 0x81 are basically one bit on/off commands.</p>
+
+<p>APCI/APDU is a somewhat convoluted structure, I don't have it well documented anywhere at the moment (the KNX spec itself is quite messy in this part).</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 12, 2010 05:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-9601524"></a>
+                                    <font class="smallfont"><p>Thanks to all who replied.<br/>
+This definitely helps. </p>
+
+<p>Thanks to the replies above I can now successfully decode the BC E0 frame control fields.</p>
+
+<p>Howvere there is still some ambiguity.</p>
+
+<p>For example, in my exmaple frame above, I know the source address is in the bytes 11 05, which is KNX address 1.1.5, and I know the destination address is group 1/2/0 - what I don't know is how to decode the 0A 00 to 1/2/0 - is it simply (12 x BYTE1) + BYTE2 does that mena BYTE2 is always in the range 00-0C? It doesn't seem to be BCD - maybe if anyone knows what the maximum group address components are that would help.</p>
+
+<p>Anyway, thanks for all the help it has been great.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kennym at May 13, 2010 10:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-9601525"></a>
+                                    <font class="smallfont"><p>Group address formatting on CEMI frame is an area where the KNX specification starts to break down vis-a-vis KNX tooling implementation.</p>
+
+<p>By <b>convention</b> only, the two bytes can be interpreted as main/middle/sub levels (5/3/8 bits respectively) or main/sub levels (5/11 bits respectively).</p>
+
+<p>Some additional detail here: <a href="http://www.openremote.org/display/knowledge/KNX+Group+Address" title="KNX Group Address">KNX Group Address</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 13, 2010 12:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

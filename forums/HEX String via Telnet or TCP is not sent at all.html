@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : HEX String via Telnet or TCP is not sent at all</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : HEX String via Telnet or TCP is not sent at all
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 13, 2013 by <font color="#0050B2">hennemarc</font>.
+				    </div>
+
+				    <p>Hello all,</p>
+
+<p>I am using OR Server 2.1.0 beta on a RaspberryPi and I don't know why, but I am not able to send out a Telnet or TCP command via OR at all. I verify this with WireShark and it tells me that not one byte is sent at all to the OR server. </p>
+
+<p>What I am trying to do is to send out a HEX-String via Telnet over a MOXA Serial-2-IP converter (IP: 192.168.1.55, Port: 4001) to the home ventilation system (ZEHNDER ComfoAir 350). The HEX command "0x07 0xF0 0x00 0x99 0x01 0x04 0x4B 0x07 0x0F" turns on the ventilation to Level 3. To say this upfront, by using a terminal program (RealTerm) the command is properly sent and in WireShark I see exactly the data I have sent out. </p>
+
+<p><div align="center"><img src="attachments/22878059/23036182.jpg" border="0"/></div></p>
+
+<p>But I see absolutely nothing when I do this with OpenRemote.</p>
+
+<p>For this I just created a simple command for turning on the ventilation: </p>
+
+<p><div align="center"><img src="attachments/22878059/23036181.jpg" border="0"/></div></p>
+
+<p>After the command has been created I assigned that command to a Button. But by touching that button nothing happens at all.</p>
+
+<p>For better evaluation I copied below the log files output for this command. From there you can see that no telnet could be performed. But why?<br/>
+I have also tried to modify the command to "null|0x07 0xF0 0x00 0x99 0x01 0x04 0x4B 0x07 0x0F|" or "null|07 F0 00 99 01 04 4B 07 0F|" but with the same negative result. What I find very strange is that no telnet is performed, although maybe the command string might be formatted differently. But at least I would expect a telnet session to the device.</p>
+
+<p>Can anybody give me a hint why I have this behavior?</p>
+
+
+
+<p>The telnet.log files tells me the following:</p>
+
+<p>INFO 2013-10-13 10:40:54,531 (Telnet): WaitForString read before running into timeout: ^GÃ³<sup>GÃ°</sup>@&lt;<br/>
+^Ã^V^ÃOm^F^@<sup>@</sup>@Ã Â³^G^O^GÃ³<sup>GÃ°</sup>@&lt;<br/>
+^Ã^V^ÃOm^F^@<sup>@</sup>@Ã Â³^G^O^GÃ³<sup>GÃ°</sup>@Âª^H^@<sup>@</sup>@<sup>@</sup>@<sup>@</sup>@^@_^G^O^GÃ³<sup>GÃ°</sup>@Ã^N^O#2^O#2##^B^AFF^@^@&amp;^G^O^GÃ³<sup>GÃ°</sup>@&lt;<br/>
+^Ã^V^ÃOm^F^@<sup>@</sup>@Ã Â³^G^O^GÃ³<sup>GÃ°</sup>@Ã R?WXB^O(((^Ã^G^O<br/>
+ERROR 2013-10-13 10:40:54,532 (Telnet): could not perform telnetEvent<br/>
+java.lang.Exception: waitForString response timed-out waiting for "0x07 0xF0 0x00 0x99 0x01 0x04 0x4B 0x07 0x0F"<br/>
+        at org.openremote.controller.protocol.telnet.TelnetCommand.waitForString(TelnetCommand.java:207)<br/>
+        at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:153)<br/>
+        at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:131)<br/>
+        at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)<br/>
+        at org.openremote.controller.rest.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)<br/>
+        at org.openremote.controller.rest.RESTAPI.doPost(RESTAPI.java:159)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+        at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)<br/>
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)<br/>
+        at java.lang.Thread.run(Thread.java:724)</p>
+
+<p>And the telnet-debug.log says:</p>
+
+<p>DEBUG 2013-10-13 10:40:53,287 (Telnet): Building Telnet command<br/>
+DEBUG 2013-10-13 10:40:53,300 (Telnet): Telnet Command: port= 4001<br/>
+DEBUG 2013-10-13 10:40:53,300 (Telnet): Telnet Command: command = 0x07 0xF0 0x00 0x99 0x01 0x04 0x4B 0x07 0x0F<br/>
+DEBUG 2013-10-13 10:40:53,301 (Telnet): Telnet Command: timeout = 1<br/>
+DEBUG 2013-10-13 10:40:53,302 (Telnet): Telnet Command: ipAddress = 192.168.1.55<br/>
+DEBUG 2013-10-13 10:40:53,303 (Telnet): Telnet Command created successfully<br/>
+INFO 2013-10-13 10:40:54,531 (Telnet): WaitForString read before running into timeout: ^GÃ³<sup>GÃ°</sup>@&lt;<br/>
+^Ã^V^ÃOm^F^@<sup>@</sup>@Ã Â³^G^O^GÃ³<sup>GÃ°</sup>@&lt;<br/>
+^Ã^V^ÃOm^F^@<sup>@</sup>@Ã Â³^G^O^GÃ³<sup>GÃ°</sup>@Âª^H^@<sup>@</sup>@<sup>@</sup>@<sup>@</sup>@^@_^G^O^GÃ³<sup>GÃ°</sup>@Ã^N^O#2^O#2##^B^AFF^@^@&amp;^G^O^GÃ³<sup>GÃ°</sup>@&lt;<br/>
+^Ã^V^ÃOm^F^@<sup>@</sup>@Ã Â³^G^O^GÃ³<sup>GÃ°</sup>@Ã R?WXB^O(((^Ã^G^O<br/>
+ERROR 2013-10-13 10:40:54,532 (Telnet): could not perform telnetEvent<br/>
+java.lang.Exception: waitForString response timed-out waiting for "0x07 0xF0 0x00 0x99 0x01 0x04 0x4B 0x07 0x0F"<br/>
+        at org.openremote.controller.protocol.telnet.TelnetCommand.waitForString(TelnetCommand.java:207)<br/>
+        at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:153)<br/>
+        at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:131)<br/>
+        at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)<br/>
+        at org.openremote.controller.rest.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)<br/>
+        at org.openremote.controller.rest.RESTAPI.doPost(RESTAPI.java:159)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+        at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)<br/>
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)<br/>
+        at java.lang.Thread.run(Thread.java:724)</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22878059/23036181.jpg">Telnet_Command.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22878059/23036183.jpg">Wireshark_log_telnet.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22878059/23036182.jpg">Wireshark_log_telnet.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22878059/23036192.jpg">TCP_Command.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22878059/23036191.jpg">TCP_Command.jpg</a> (image/jpeg)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22878184"></a>
+                                    <font class="smallfont"><p>The log does indicate that a Telnet session is initiated. However, OR expects response to the initiation (telnet prompt) - which it doesn't receive. Hence, no further commands are sent.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 15, 2013 04:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878452"></a>
+                                    <font class="smallfont"><p>Thanks for the investigation, meanwhile I have found a solution for this. I changed the command type from Telnet to TCP/IP to the following and it is working fine.</p>
+
+<p><div align="center"><img src="attachments/22878059/23036191.jpg" border="0"/></div></p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by hennemarc at Oct 19, 2013 10:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

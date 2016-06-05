@@ -1,0 +1,315 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Minido - Which protocol do you recommend to link with OpenRemote ?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Minido - Which protocol do you recommend to link with OpenRemote ?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 22, 2012 by <font color="#0050B2">pivert</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm the happy owner of this very cheap Minido home automation and Alarm system from AnB S.A. in Belgium. <br/>
+I wrote the decoding part of the Minido using the excellent Twisted network event based Python framework, and a STOMP message broker (Currently orbited) used to communicate between software pieces to transfer data (JSON encoded). This software is called Minido-Unleashed.</p>
+
+<p>I did not yet write any web interface for the latest release (twisted based), and I am really interested in plugging OpenRemote on Minido-Unleashed. </p>
+
+<p>Which protocol should I implement in Minido-Unleashed to allow OpenRemote to connect to it ?</p>
+
+<p>TCP/IP or Telnet ? Where can I find docs for tcp/ip ? <br/>
+Or maybe is there any message server already in OpenRemote ?</p>
+
+
+<p>P.S. : It's not possible to think about plugging OpenRemote directly on the RS485 Bus because Minido is extremely simple. For instance there is no way to change a relay state without redefining the 7 others on a 8 relays module, and it's not possible to query the states, so Minido-Unleashed software permanently sniff the bus to build &amp; keep internal state tables.</p>
+
+
+<p>Regards,</p>
+
+<p>François</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19435070"></a>
+                                    <font class="smallfont"><p>Hello François,</p>
+
+<p>The TCP or UDP/IP commands are pretty simple.<br/>
+They take an IP address, a port and a string to send.<br/>
+They are stateless, each time a command is executed, the connection is established to the given IP/port, the given string is sent and any string returned back by the server you're talking to is the return value from your command.</p>
+
+<p>So in Minido-Unleashed you could implement something like when you receive <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">RELAY-1=ON</pre>
+</div></div> you turn that relay on.<br/>
+In OR, you would simply send that string and ignore the return value.</p>
+
+<p>You could also have a command such as <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">RELAY-1-STATUS</pre>
+</div></div> that returns <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">ON</pre>
+</div></div> and in OR create a command to use with a switch sensor to have the feedback from a relay.</p>
+
+<p>Hope this already helps.</p>
+
+<p>PS: I suppose you're from Belgium, where I'm also located. I'm thinking about doing kind of a "user group" meeting in February. I'll post the details on the forums when I know more.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 22, 2012 14:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435076"></a>
+                                    <font class="smallfont"><p>Thanks Eric for your quick reply.</p>
+
+<p>The reason why I moved to Twisted is that I really want no delay in the update of an event, so no polling. </p>
+
+<p>I would prefer to avoid reconnecting and/or polling, and have one connection that keeps open, and that also received the updates from Minido-Unleased in realtime.</p>
+
+<p>That's fun. I in fact discovered the project by looking in the Fosdem Lightening talks. Is it you that make the presentation ? I will certainly join, except if I go for some skiing <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pivert at Jan 22, 2012 16:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435077"></a>
+                                    <font class="smallfont"><p>OK, then the best is to implement a custom protocol in OpenRemote. You can leave the connection open and start a thread to listen to messages from Mindo-Unleashed and update the status cache asynchronously.<br/>
+There is not a ton of doc on how to do this but if you're a Java programmer, it's not too difficult, you can look at implementation of existing modules and we can guide you via the forum.</p>
+
+<p>Yes, I'll be doing the FOSDEM presentation, so maybe we'll meet there.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 22, 2012 18:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435079"></a>
+                                    <font class="smallfont"><p>And regarding the telnet protocol, will it work for asynchronous updates ?</p>
+
+<p>I do not consider myself as a Java developer, but if I have good samples this should not be a problem. Where should I start ?</p>
+
+<p>I'm looking forward to meeting you in FOSDEM.</p>
+
+<p>Regards,</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pivert at Jan 22, 2012 23:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435099"></a>
+                                    <font class="smallfont"><p>The Telnet protocol implementation in OR will not provide asynchronous support or stay connected, works the same as UDP or TCP.<br/>
+If you implement a custom protocol, you could use telnet, keep the connection open and have a thread listen for incoming messages.</p>
+
+<p>But if you're implementing the server, I don't see added benefit to telnet (over plain TCP/IP), unless it's easier to implement on the server side.<br/>
+(OK, there might be a small advantage to testing the server side manually when using telnet).</p>
+
+<p>I think the Samsung protocol implementation that Marcus did might be the closest to what you'll be doing when integrating with a TCP/IP protocol. I'll talk to him tomorrow or he might chime in for more information.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 23, 2012 18:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435101"></a>
+                                    <font class="smallfont"><p>Ok,</p>
+
+<p>Too bad that the telnet protocol do not keep the connection open waiting for asynchronous updates.</p>
+
+<p>Well, telnet is just easier to test, and so might be easier to implement with other protocols or systems.</p>
+
+<p>If I have to start from nothing, I would prefer Openremote to talk JSON over STOMP; this is really made for asynchronous updates, and also easy to debug as you can connect as many clients as you want.</p>
+
+<p>But all of this really makes sense if the openremote webinterface is using Ajax Server Push/COMET and/or Websockets to asynchronously update the client. </p>
+
+<p>Is it well the case ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pivert at Jan 23, 2012 20:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435107"></a>
+                                    <font class="smallfont"><p>As you're implementing a custom protocol, you can easily use JSON over STOMP if that's the best choice from the server side. There are Java libraries to support both easily.</p>
+
+<p>I'm pretty sure the OR web console uses server push (and if it's not the case, it should use this or something similar). The iOS and Android consoles do use that.</p>
+
+<p>Also, just want to stress that the communication with the consoles (UI) and the communications with the devices (Minido in this case) are totally decoupled. So polling on one side does not imply/influence polling on the other side.<br/>
+This is particularly important because OR is not only a control system but also an automation system. So for instance rules can be triggered based on status change from a device without any UI being involved.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 24, 2012 09:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435146"></a>
+                                    <font class="smallfont"><p>Thanks Eric for all these details.</p>
+
+<p>So OR is exactly what I need.</p>
+
+<p>I'll set up a development environment, and find the right doc. I'hope that I'll find the time next week-end.</p>
+
+<p>Regards,</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pivert at Jan 24, 2012 21:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435196"></a>
+                                    <font class="smallfont"><p>Sorry Eric, but I still can't imagine that a modern home automation software is mainly based on polling to get status updates from the home automation system.</p>
+
+<p>I have more than 100 devices that might generate events, including presence sensors in the rooms, and window/door opening detector on 3 floors.</p>
+
+<p>If I want my light to switch on less than 0.1s after triggering a presence sensor, or get my web page status updated with near to no delay when I switch on a light or open a door, I would have to poll more than 1000 times per seconds permanently ??? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pivert at Jan 25, 2012 20:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435198"></a>
+                                    <font class="smallfont"><p>Not sure why you say it's mainly based on polling. If the protocol supports it, OR will receive async notifications. That's what we do for instance with KNX or Lutron.</p>
+
+<p>If you implement the server to push status update as soon as they happen on the physical bus, you can implement the client in OR to receive those without any polling.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 25, 2012 22:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435700"></a>
+                                    <font class="smallfont"><p>Hi Eric,</p>
+
+<p>Many thanks for your nice presentation yesterday in FOSDEM.</p>
+
+<p>As you explained that KNX protocol can sync asynchronous updates to OpenRemote, I'm just wondering if instead of adding a protocol to OpenRemote, couldn't I just build a tcp/ip compatibility module so Minido (in this case) is behaving like a KNX system?</p>
+
+<p>The pros are that the new module makes Minido compatible not only with OpenRemote, but with any automation system KNX compatible.</p>
+
+<p>The cons ? Is there any cons ?</p>
+
+<p>Do you have in OpenRemote other protocols than KNX that currently support asynchronous updates ? X10 maybe ?</p>
+
+<p>Regards,</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pivert at Feb 06, 2012 09:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435705"></a>
+                                    <font class="smallfont"><p>Hello François,</p>
+
+<p>Thanks, go to see you there.</p>
+
+<p>KNX is quite a complex protocol, so implementing a KNX IP stack as a "simulation" layer on top of Minido would be quite a complex undertaking I think.<br/>
+Plus you'll need access to the KNX spec if you want to implement this, which you can only get by becoming a KNX member. You can always take a look at existing source code for KNX clients but still complex.</p>
+
+<p>I'm not sure about the way the X10 support is implemented. I think it's older code and will use polling but I might be wrong.<br/>
+The Lutron HomeWorks code uses async listening on the bus.</p>
+
+<p>I'm still convinced that a native Minido implementation in OR is the best way to go.<br/>
+Have you already got a server side implemented using JSON/STOMP ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Feb 06, 2012 14:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435715"></a>
+                                    <font class="smallfont"><p>Thanks Eric for this clear answer that definitely close the KNX protocol proposal. So KNX is not open as they say, they're in fact closed.</p>
+
+<p>The reasons why I'm so shy in adding my protocol to the OR are :</p>
+<ul class="alternate" type="square">
+	<li>If I add a new protocol to OR this will be a quite high level protocol to link to the minido protocol driver in python, it means that I must reinvent a protocol that certainly already exists. I'm really not fan of reinventing the wheel.</li>
+	<li>As I'm not a professional developer, digging into the OR code can eat a lot of time, and I would prefer to not invest too much time in the OR code, especially if the main interfaces that I need (web &amp; android) are still in heavy development.</li>
+</ul>
+
+
+<p>Answer :<br/>
+Yes, I have a STOMP server onto which it's easy for me to implements commands such as set / get / or send async updates. As I made some tests to send bigger data sets, including full access to the RS485 bus, I encode the messages with JSON. It's not mandatory to use JSON, but I think it's better, even for simple setter/getters.</p>
+
+<p>Remark : I want to keep simple into the protocol, remove everything related to naming &amp; location from the current implementation to only keep the naming conventions used by AnB and our Electrician such as "EXO 5.8" to address the 8th output of the EXO module at the address 5.</p>
+
+
+<p>I see 2 options :</p>
+<ul class="alternate" type="square">
+	<li>Implement a "mid level" home automation protocol into OR (and minido python adapter called MU), with at least 2 commands for setting and getting status + a third update command that can be received asynchronously, when changes are detected. In this case, I should maybe first try to find an "home automation open communication protocol" before inventing one (even if it's trivial I admit).</li>
+	<li>Forget about python implementation, and reimplement the protocol driver into OR, in java.</li>
+</ul>
+
+
+<p>The advantage of the first solutions in my point of view are :</p>
+<ul class="alternate" type="square">
+	<li>Possible Independance from OR (if an other home automation software already implemented "home automation open protocol".</li>
+	<li>Faster &amp; easier to develop.</li>
+	<li>Faster to test and debug.</li>
+	<li>Clear separation between driver and OR, this also ease new setup and testing on new Minido infrastructures.</li>
+	<li>OR can be shutdown/restarted without the risk of loosing updates from the Minido Bus (as long as the python driver runs).</li>
+	<li>Free to run many home automation software on the same Minido infrastructure, including OR and current Minido Unleashed release.</li>
+</ul>
+
+
+<p>The disadvantage of the second option, is that it would add a dependency for persistence on the controller such a DB, that's not good.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pivert at Feb 06, 2012 21:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

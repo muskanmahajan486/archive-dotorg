@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Custom hardware with Openremote</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Custom hardware with Openremote
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 20, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Good day </p>
+
+<p>I have developed an Arduino based Automation controller</p>
+
+<p>I have tried to get it to work with Openremote but I still have problem arias.</p>
+
+<p>I need to understand how Openremote works to get my system working.</p>
+
+<p>I am using a UDP protocol.I need to know what Openremote are looking for to talk to my controller.</p>
+
+<p>I do have udp events working with the Button widgets. But I need to let it work as a switch and with the slider.</p>
+
+<p>How do I work with the udp listener and what port do I use? Is it the multicast port address specified under /config controller / advanced / multicast</p>
+
+<p>what I have at the moment is openremote server = IP 192.168.1.100 P3333 and the controller is 192.168.1.111:7777   </p>
+
+<p>I am trying create a switch. <br/>
+As I understand I have to create 3 commands, <br/>
+ie. Power ON = B1O1H<br/>
+Power Off = B1O1L<br/>
+Status normally reply with the same message that is sent.What is this command looking for I have set to udp listener.(if I do not have feedback how do I make this work?<br/>
+using rules?</p>
+
+<p>Also need a sensor = connect status command.<br/>
+then link that to a switch command.</p>
+
+<p>At the moment the switch will turn on only. Also after I sync the controller the devices turn on by default.</p>
+
+<p>Also how do I manage a slider, My controller is looking for a massage B1O1P000 - B101P255 How do I use the $[param] with udp is  it B1O1P&amp;{param}<br/>
+will it give me the correct output or do I have to use rules for this. </p>
+
+
+<p>Any assistance would be appreciated<br/>
+Many Thanks<br/>
+Riaan</p>
+
+
+
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21858941"></a>
+                                    <font class="smallfont">
+<blockquote>
+<p>How do I work with the udp listener and what port do I use?</p></blockquote>
+
+<p>It turns out the UDP listener we have is not useful for integrating device state to UI widgets. You will need to implement a new UDP listener on your own and integrate it to OpenRemote. You can try to look at the existing implementation for help (or modify it to your needs):</p>
+
+<p><a href="http://svn.code.sf.net/p/openremote/code/workspace/juha/Controller_2_1_0_FeatureMergeBranch/src/org/openremote/controller/protocol/socket/UDPListenerCommand.java">UDPListenerCommand.java</a></p>
+
+<p>The issue with the implementation is that it is not reading the incoming packet payload or reacting to it, it only generates an event with a timestamp on receiving any packet on the incoming listening port:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">for</span> (Entry&lt;<span class="code-object">String</span>, Sensor&gt; entry : regexSensorMap.entrySet()) 
+{
+  <span class="code-object">String</span> regex = entry.getKey();
+  Sensor sensor = entry.getValue();
+  Pattern regexPattern = Pattern.compile(regex);
+  Matcher matcher = regexPattern.matcher(msg);
+                 
+  <span class="code-keyword">if</span> (matcher.find()) 
+  {
+    sensor.update(""+<span class="code-object">System</span>.currentTimeMillis());
+  }
+}
+</pre>
+</div></div>
+
+
+<blockquote>
+<p> Is it the multicast port address specified under /config controller / advanced / multicast</p></blockquote>
+
+<p>No, that's something different.</p>
+
+<blockquote>
+<p>Also how do I manage a slider, My controller is looking for a massage B1O1P000 - B101P255 How do I use the $[param] with udp is it B1O1P&amp;{param}</p></blockquote>
+
+<p>Yes that would be correct.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 20, 2013 05:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

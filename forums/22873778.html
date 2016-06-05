@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Using Open Remote with RF modules + raspberrypi</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Using Open Remote with RF modules + raspberrypi
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 09, 2013 by <font color="#0050B2">fuzail</font>.
+				    </div>
+
+				    <p>Hello.</p>
+
+<p>I sort of have a crude home automation setup going on using micro controllers to do mains switching, sensor detection AC control etc.<br/>
+i am using an arduino mega with an Ethernet shield to create a small server(or base) of sorts. right now its a simple html page which has all the buttons etc.<br/>
+at the end points i have atmega 328 micro controllers controlling and monitoring a specific room.<br/>
+the base and the various micro controllers in the different rooms communicate over RF using nrf24l01+ transceiver.<br/>
+i have this system working rather nicely. <br/>
+However the web interface leaves alot to be desired. since the server is actually a micro controller with an ethernet shield, the web interface is restricted only to html and memory is also another issue. i would like to have a nice UI to control the setup.<br/>
+so i figured i would try using a raspberry pi as the main server.<br/>
+There is a library that will allow me to communicate with my already existing system using the GPIO pin connected to the transceiver.</p>
+
+<p>I started was wondering if it would be possible to use Open remote on raspberry pi to control my existing setup.</p>
+
+<p>what i want to know is, would it be possible to incorporate the commands from that library into open remote somehow ?</p>
+
+<p>an obvious question would be, why use these modules instead of zigbee, z-wave or insteon. <br/>
+the answer is rather simple, the total cost of this system is substantially lower and it works pretty much the same way.</p>
+
+<p>the library can be found at <a href="https://github.com/stanleyseow/RF24/tree/master/librf24-rpi/librf24">https://github.com/stanleyseow/RF24/tree/master/librf24-rpi/librf24</a>.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22873808"></a>
+                                    <font class="smallfont"><p>Depending on the nature of the communication you're trying to achieve, one option may be building a native binary and accessing it through a shell script execution (if communication is intended as one-way): <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Execute+Shell+commands" title="OpenRemote 2.0 How To - Execute Shell commands">OpenRemote 2.0 How To &#45; Execute Shell commands</a>. For bi-directional communication, an option might be to look at building some sort of TCP daemon wrapper around the library. Depends a bit on your needs and requirements.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 10, 2013 18:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873845"></a>
+                                    <font class="smallfont"><p>thank you for the reply juah.<br/>
+The existing system is 2 way. It is mostly 1 way, and occasionally maybe ever 30sec or so the base node receives data from other nodes, on the status of switches and the temp, humidity, light levels etc.</p>
+
+
+<p>allow me to explain a bit more in detail, maybe then you could suggest something better or tell me that i cant do it with my skill level.<br/>
+the library has functions such as network.send() and network.read().<br/>
+these functions are able to send/receive data to/from a node (which is a MC connected to things, Lights,Fan etc)  <br/>
+i am using different struct to hold the values of each of the connected peripheral. so a struct for each of the rooms.<br/>
+now, when ever the i click something on the page, it changes the relavant value in the struct and send the entire structure to the node.  <br/>
+the node then process the information and does what needs to be done.</p>
+
+<p>for instance</p>
+
+<p>lets say that my ethernet+arduino is base node 00 .<br/>
+lets say  Master bedroom is node 01.<br/>
+I have web page, that lists various room and the attached peripherals.<br/>
+something like this<br/>
+Room 1</p>
+<ul class="alternate" type="square">
+	<li>Light (these are buttons)</li>
+	<li>Fan<br/>
+Room 2</li>
+	<li>Light</li>
+	<li>Fan</li>
+</ul>
+
+
+<p>now say i click the fan button on room1 , my arduino+ethernet (which is hosting the page) gets something like Room01,sw02,ON<br/>
+now i extract the value of room ie 01 , the switch value 02, and the status ON ie 1.<br/>
+i use the value of the room as the node to send the data to, and store the status of the switch in the relevant position in the struct.<br/>
+so <br/>
+room 1(this is the struct)</p>
+<div class="error"><span class="error">Unknown macro: {
+Light = 0
+Fan = 1
+}</span> </div>
+
+<p>now i send this struct using the function network.send()<br/>
+on the other end, i use network.read() to get the data<br/>
+and the fan turns on.</p>
+
+<p>this is just a simple example to illustrate what is going on .</p>
+
+<p>now what i would want to happen is this.</p>
+
+<p>I create an UI of the house in open remote.<br/>
+i link the fan in master bedroom to be sw 02.<br/>
+now when i click the button in the UI, it should identify that it is room01sw02ON . or something along those lines. (i believe this is how your software works already)<br/>
+i just need it to send the data using network.send() . obviously, this would require that open remote recognizes the library.<br/>
+and occasionally use the network.read() function to update values such as temp, humidity of each room.</p>
+
+<p>now that you are better able to understand how my setup is working, what do you think ? will i be able to use open remote in a way that is not overly complicated a few newbie like me ?<br/>
+i am willing to learn, if you could point me the right direction .</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fuzail at Jul 11, 2013 19:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

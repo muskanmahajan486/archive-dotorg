@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : A better IR-Command</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : A better IR-Command
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 12, 2011 by <font color="#0050B2">barf</font>.
+				    </div>
+
+				    <p>The present, LIRC-based, controller IR-command has several shortcomings. I have managed fairly easily to overcome these, as described in this article. This is achieved by linking to my pet, &nbsp;<a href="http://www.harctoolbox.org">Harctoolbox</a>, see also&nbsp;<a href="http://www.openremote.org/pages/viewpage.action?pageId=2982284">this</a>. A new "command" (in the sense of <a href="http://www.openremote.org/pages/viewpage.action?pageId=10551576">this article</a> (thanx Juha; it was understandable)) for the controller, called "newir" is constructed. This can not only send devicename/commandname pair to a LIRC server (as the present "ir" command) but also invoke GlobalCache and Irtrans IR gateways directly. IR-Codes in CCF format can be sent directly to GlobalCaches and Irtranses, also LIRC if applying a non-official patch. To IRtrans&nbsp; (the ethernet model with "database") and LIRC-servers also devicename/commandname pairs can be sent (assuming that the server knows them of courses). More interestingly, a number of IR protocols are known (can be extended), and it is possible to send protocol/devicenumber(/subdevicenumber)/commandnumber type of commands, see&nbsp;<a href="http://www.openremote.org/pages/viewpage.action?pageId=10551657">this article</a>. These are transformed to CCF-codes before sent to an IR-Gateway. Even more high-level: given appropriate device descriptions, devicename/commandname pairs can be given, which are transformed to CCF-form and sent to the appropriate gateway.</p>
+
+<p>This article can be considered as a practical follow-up to <a href="http://www.openremote.org/pages/viewpage.action?pageId=10551657">the more theoretical article</a>. It should be considered as a proof-of-concept,&nbsp; intended for discussion and feedback, not for end user deployment.</p>
+
+
+<p>This is a patch against <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/branches/OpenRemote_Boss_2_0_DeveloperReleases/Controller_2_0_0_Alpha11&amp;nbsp">https://openremote.svn.sourceforge.net/svnroot/openremote/branches/OpenRemote_Boss_2_0_DeveloperReleases/Controller_2_0_0_Alpha11&amp;nbsp</a>; revision 3186.</p>
+
+
+<p>Create a directory src/org/openremote/controller/protocol/newinfrared and put <a href="http://www.harctoolbox.org/storage/GatewayType.java">GatewayType.java</a>, <a href="http://www.harctoolbox.org/storage/NewIRCommand.java">NewIRCommand.java</a>, and <a href="http://www.harctoolbox.org/storage/NewIRCommandBuilder.java">NewIRCommandBuilder.java</a> therein. Patch build.xml with&nbsp; <a href="http://www.harctoolbox.org/storage/build.xml.diff">build.xml.diff</a> and config/applicationContext.xml with <a href="http://www.harctoolbox.org/storage/applicationContext.xml.diff">applicationContext.xml.diff</a>. Get the <a href="http://www.harctoolbox.org/downloads/harctoolbox-0.6.0_bin.tar.gz">binary Harctoolbox</a>, unpack, and put harctoolbox.jar in the new directory lib/harctoolbox. Put the dtds, protocol-, and devices subdirectories in the root directory of the used tomcat server. The controller should now build and be deployed by "ant war" and "ant deploy". (The upnp-stuff had some issues; so I just deleted it from my working copy.)</p>
+
+<p>Since this patch only considers the controller, it is necessary to custom hack controller.xml with, e.g. a&nbsp; standard text/XML editor, and repack the openremote.zip, and uploading...</p>
+
+<p>The command element in the hacked controller.xml should now have "newir" as the value of the protocol attribute. There are now a number of new properties of the command:</p>
+<ul>
+	<li>gateway_type: one of globalcache, irtrans, lirc_client</li>
+	<li>ip_address: obvious. For LIRC, there should be a LIRC network server.</li>
+	<li>connector: IR connector of IRtrans or GlobalCache. AFAIK&nbsp; not supported for LIRC, Typically "1".</li>
+	<li>module. Only for GlobalCache, see its API-documentation. Typically "2" on a "small" GC, "4" on a "large".</li>
+	<li>count: obvious</li>
+	<li>ccf: CCF format of signal. Leave empty if using protocol or devicename, see below.</li>
+	<li>interface: only for IRTrans, one of tcp_ascii, udp, http. Denotes interface used to communicate with the IRTrans. CCF-form of IR-signals requires UDP. "tcp" not supported.</li>
+	<li>devicename: either devicename for a LIRC server or a preprogrammed ("database") IRTrans, or used with the device evaluation, see below.</li>
+	<li>commandname: analog to devicename.</li>
+	<li>protocol: name of IR protocol, like RC5 or NEC1. Used together with devicenumber, possibly subdevicenumber, and commandnumber to compute CCF.</li>
+	<li>devicenumber: see protocol</li>
+	<li>subdevicenumber: see protocol</li>
+	<li>commandnumber: see protocoll</li>
+</ul>
+
+
+<p>Be sure to get the difference between, e.g. devicenumber and device name: The first is, e.g. 'denon_avr_a100', the latter a small, nonnegative number to be used by the protocol.</p>
+
+
+<p>We have now essentially four different use cases, dependent on the properties:</p>
+<ol>
+	<li>a commandname/devicename pair is sent to the ir gateway (LIRC, IRTrans/tcp_ascii (with "data base"))</li>
+	<li>User enters a CCF that is sent to the IR gateway (GC, IRTrans/UDP, patched LIRC)</li>
+	<li>User enters protocol, devicenumber (possibly subdevicenumber), and command number. This is used to compute a CCF signal, sent as in usecase 2. For example, protocol="rc5", devicenumber=0, commandnumber=12 power cycles most Philips TVs.</li>
+	<li>User enters device name and device number, using a device description file, CCF is computed and sent to the IR gateway as in usecase 2.</li>
+</ol>
+
+
+<p>It should be pointed out that in a more final version, it may be better to eliminate usecases 3 and 4 in the sense of letting the designer/beehive compute the corresponging CCF instead of the controller, as above.</p>
+
+
+<p>BTW, here is a <a href="http://www,harctoolbox.org/storage/controller.xml">controller.xml </a>that can be used as an example.</p>
+
+<p>Ohh, most likely I got at least something wrong. Please bear with me if everything does not compile and work exactly like described...</p>
+
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

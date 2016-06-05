@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Designer&Panel alignement problem for a switch "image" in the grid widget</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Designer&Panel alignement problem for a switch "image" in the grid widget
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 02, 2011 by <font color="#0050B2">yannph</font>.
+				    </div>
+
+				    <p>In an iPAD panel, I'm using an "Switch" widget with an image property. <br/>
+This switch is located within the cell of a Grid.<br/>
+On the UI Designer, the switch image is correctly aligned in the middle of the cell (horizontally &amp; vertically)<br/>
+On the iPad panel, the switch is aligned in the top-left corner.<br/>
+It's the same behavior with an Androd panel.</p>
+
+<p>Is there a property to set for fixing the alignment?</p>
+
+<p>Regards</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-16024335"></a>
+                                    <font class="smallfont"><p>Thanks for the report &#8211; will look into this.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 11, 2011 09:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024365"></a>
+                                    <font class="smallfont"><p>I did reproduce this on the iPad.<br/>
+Looking at the iPad console code, there is no alignment done in the cell, its contained element is located at cell top left corner.<br/>
+The Switch element takes the size of the on image when one is assigned, so the size of the cell does not matter here.</p>
+
+<p>We should clearly define the rules for handling alignment / clipping / re-sizing and implement similarly across all consoles.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 13, 2011 10:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024369"></a>
+                                    <font class="smallfont"><p>Thank you Eric <br/>
+FYI, it's the same on ANDROID.<br/>
+My guess, in a short term, would be to follow the designer behavior.<br/>
+At this stage, in the designer, the switch image is centered on the cell. Since we're designing the interface in the designer, would be nice to follow the same behavior. At least, we'll have the same display that what was expected in the designer.<br/>
+In a more long term, would be nice to have options to align different UI elements individually (Vtop, Vcenter, Vdown, HLeft, HCenter, HRight) and relativility to others elements (ALL to left, all centered, all to right)<br/>
+Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at May 13, 2011 11:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024400"></a>
+                                    <font class="smallfont"><p>I can reproduce this on Android as well.  I'll work on a fix.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at May 15, 2011 00:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024413"></a>
+                                    <font class="smallfont"><p>The Android code is similar.</p>
+
+<p>The switch is implemented as a regular Android Button within a LinearLayout.  The button is resized to match the dimensions of the on image if one is present.</p>
+
+<p>Centering an item both horizontally and vertically in a LinearLayout is not particularly simple.  I'll see what options I can come up with.  RelativeLayouts are much more flexible and may be what we need instead.  There are several classes that inherit from ComponentView, which is the one which inherits from LinearLayout.</p>
+
+<p>One approach I've tried so far is to leave the button dimensions the same as the grid cell and center the image within the button.  I don't think that's going to be a viable solution though, because clicking on areas of the screen that are part of the button but not the image would most likely cause the button to be pressed.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at May 16, 2011 00:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024457"></a>
+                                    <font class="smallfont"><p>A switch element either has both an on image and an off image or no images, correct?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at May 17, 2011 18:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024458"></a>
+                                    <font class="smallfont"><p>I think that is a reasonable assumption, not sure if we are enforcing it, but a mix does not make sense to me.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 17, 2011 19:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482386"></a>
+                                    <font class="smallfont"><p>Yann,</p>
+
+<p>Andrew is working on a fix for Android here: 
+<a href="https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/andrewball/Android_Console_2_0_0_Betas_switch_image_alignment_in_grid_cell/">https://openremote.svn.sourceforge.net/svnroot/openremote/workspace/andrewball/Android_Console_2_0_0_Betas_switch_image_alignment_in_grid_cell/</a></p>
+
+<p>Judging by the last message (<a href="http://lists.openremote.org/pipermail/openremote-svn/2011-May/004273.html">R4252</a>) there's at least a partial fix although it affected other parts of the renderer so those are still being tested and worked on.</p>
+
+<blockquote>
+<p>Log Message:<br/>
+-----------<br/>
+re ANDROID-76 Fix for switch image alignment in grid cell</p>
+
+<ul>
+	<li>make ComponentView a subclass of RelativeLayout instead of<br/>
+  LinearLayout to make centering child views both vertically<br/>
+  and horizontally more feasible.
+	<ul>
+		<li>NB: I haven't yet adapted descendents of ComponentView other<br/>
+   than SwitchView for this change yet, so it's possible that<br/>
+   some unexpected behavior may occur with this version.  I'll<br/>
+   get to them soon.</li>
+	</ul>
+	</li>
+	<li>always center the Button widget used to represent a switch in<br/>
+  Switch view, both vertically and horizontally</li>
+	<li>If a SwitchView's Switch Component has both an on image and<br/>
+  an off image, set its layout width and height to WRAP_CONTENT.<br/>
+  Otherwise, set its layout width and height to<br/>
+  switchComponent.getFrameWidth() and switchComponent.getFrameHeight()</li>
+</ul>
+</blockquote>
+
+
+<p>Will let Andrew pitch in if it's too early to test this branch yet but the build instructions to try are here: <a href="http://www.openremote.org/display/docs/Building+OpenRemote+Android+2.0+Console" title="Building OpenRemote Android 2.0 Console">Building OpenRemote Android 2.0 Console</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 21, 2011 09:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482498"></a>
+                                    <font class="smallfont"><p>Andrew, Juha,</p>
+
+<p>Thank you for the effort to fix this on Android platform. I appreaciate the quick reaction, but I've to apologize.<br/>
+I haven't taken the time to test until now.<br/>
+I wondering if a Android Package is already existing for that or if I still have to build the console with Android SDK?<br/>
+At this time, I've never build any Android App, but could  start ...</p>
+
+<p>Regards<br/>
+Yann</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Jun 01, 2011 20:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482516"></a>
+                                    <font class="smallfont"><p>Android APK is fairly easy to build (just run the 'ant debug' target), there are some instructions here:<br/>
+<a href="http://www.openremote.org/display/docs/Building+OpenRemote+Android+2.0+Console" title="Building OpenRemote Android 2.0 Console">Building OpenRemote Android 2.0 Console</a></p>
+
+<p>Let me know how that goes.. otherwise Andrew can probably get an APK distributable done in a matter of few minutes.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 02, 2011 16:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482532"></a>
+                                    <font class="smallfont"><p>I've put an APK on Dropbox at <a href="http://dl.dropbox.com/u/25636228/openremote/switch_alignment/OpenRemote-debug.apk">http://dl.dropbox.com/u/25636228/openremote/switch_alignment/OpenRemote-debug.apk</a>.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at Jun 03, 2011 15:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482535"></a>
+                                    <font class="smallfont"><p>Thank you Andrew.<br/>
+I've downloaded it.<br/>
+Let you know soon about the results</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Jun 04, 2011 09:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482553"></a>
+                                    <font class="smallfont"><p>Hi,<br/>
+I've tested this new version. Here is my result:</p>
+<ul class="alternate" type="square">
+	<li>installation: can't replace the previous version. need to uninstall first. After that: OK</li>
+	<li>Discovery: doesn't seem to find my server. Introduce the URL manually</li>
+	<li>Display: the application is running on a quarter of the screen size. It's running on the 1st quadrant (top-left) Pretty small <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></li>
+	<li>display of label, temperature, slider are OK.</li>
+	<li>Button- Image: the image is centered on the grid-cell (H&amp;V) with Images On &amp; Off. This will make easier and consistent the design of screen. The image on the button seems to be distorted. I don't know if it's a cause of the wrong screen size or a cause of this alignment change.</li>
+</ul>
+
+
+<p>Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Jun 06, 2011 07:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039361"></a>
+                                    <font class="smallfont"><p>Thanks for testing this, Yann!</p>
+
+<p>What type of device are you using?  I believe I know what the app displayed in such a small portion of the screen.  It may be necessary to use a custom panel design at the moment to take full advantage of a device with a higher screen resolution and/or density than you would get with something resembling an HTC G1.</p>
+
+<p>I'm curious about the distortion of the image on the button.  Are you able to take a screenshot?  You may be able to use the technique described at the following URL: <a href="http://www.androidcentral.com/taking-screenshots-without-root">http://www.androidcentral.com/taking-screenshots-without-root</a> .</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at Jun 06, 2011 17:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039362"></a>
+                                    <font class="smallfont"><p>Hi Andrew,</p>
+
+<p>the device I'm running the app is an ACER LIQUID E with Android 2.3.4<br/>
+For your information, the previous app, beta2, is displaying correctly.<br/>
+The discovery is aslo not running on beta 2, at least for my network topology.</p>
+
+<p>for the distortion, I'll wait for a patch on the display size before confirming the issue. May be it's a human perception side effect.</p>
+
+<p>Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Jun 06, 2011 18:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039366"></a>
+                                    <font class="smallfont"><p>Thanks.</p>
+
+<p>The reason that your panel appears small on your screen has to do with changes that I made in order to be able to make use of higher-resolution screens.  The idea was that if someone has a device with a higher resolution display, they should be able to take advantage of it with their panels.  Unfortunately, the designer current assumes only one screen resolution for Android.</p>
+
+<p>Here are the forum posts:</p>
+
+<p><a href="http://www.openremote.org/pages/viewpage.action?pageId=15532122&amp;focusedCommentId=16023812#comment-16023812">http://www.openremote.org/pages/viewpage.action?pageId=15532122&amp;focusedCommentId=16023812#comment-16023812</a>
+<a href="http://www.openremote.org/pages/viewpage.action?pageId=15532804&amp;focusedCommentId=15533205#comment-15533205">http://www.openremote.org/pages/viewpage.action?pageId=15532804&amp;focusedCommentId=15533205#comment-15533205</a></p>
+
+<p>Making a custom panel with a resolution that matches your device should use your full screen.</p>
+
+<p>One or both of the following approaches may be best:</p>
+
+<p>(1) enhance the designer to know about more types of screens for Android<br/>
+(2) give an option for having the panel scaled as it previously was in case someone doesn't want to redesign their panel for a higher-resolution device</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at Jun 06, 2011 19:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039384"></a>
+                                    <font class="smallfont"><p>I've made a new ticket for dealing with different screen sizes and densities more gracefully, <a href="http://jira.openremote.org/browse/ANDROID-91">http://jira.openremote.org/browse/ANDROID-91</a>.  This is a bit tricky.  I'll let you know as soon as I have something to try.  I suspect that the screen on your device is similar to the one on my HTC G2 and that turning automatic scaling back on based on density may help.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at Jun 07, 2011 23:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

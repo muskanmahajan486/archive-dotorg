@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Toggle a Switch in the UI via a rule ?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Toggle a Switch in the UI via a rule ?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 08, 2013 by <font color="#0050B2">hennemarc</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>is it somehow possible to toggle the position of a switch via a rule?</p>
+
+<p>I have a device which I want to turn on by pushing the switch. This device shall automatically be turned off after (e.g.) 10 minutes. This would not be a problem to implement if that device would provide me a status. This device is commanded via TCP/IP command, but it does not have a status reply, which I could use for a sensor.</p>
+
+<p>Therefore I created a switch, which has virtual commands inside. For this virtual switch I created as well a sensor, which tells me that the switch is in ON or OFF position. All this works fine. The only problem I have (due to a missing real sensor) is that this virtual switch is not changing its position after the 10m, so it is always on, which means that my device is turned off after 10 minutes, but it is immediately switched on again, due to the rule mentioned above.</p>
+
+<p>Is there a way to change the switch position by means of a rule command? This would allow me to proceed as mentioned above.</p>
+
+<p>Marc</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22879634"></a>
+                                    <font class="smallfont"><p>An example how to toggle a switch from a rule you find in this thread <a href="http://www.openremote.org/display/forums/Changing+set+temperature+using+switches+and+buttons">http://www.openremote.org/display/forums/Changing+set+temperature+using+switches+and+buttons</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 09, 2013 10:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879658"></a>
+                                    <font class="smallfont"><p>Hello Michal,</p>
+
+<p>yepp, that works. In case somebody is interested how this is done, here is the code of the rule (by using a simple LED for demonstration):</p>
+
+<p>rule "Switch LED On in case Virtual Switch is ON"<br/>
+when<br/>
+  Event(source=="Test_Virtual Sensor",value=="on")<br/>
+then<br/>
+  execute.command("LED ON");<br/>
+end</p>
+
+
+<p>rule "Switch LED OFF after 10s in case Virtual Switch has been set to ON"<br/>
+  timer (int: 10s)<br/>
+when<br/>
+  Event(source=="Test_Virtual Sensor",value=="on")<br/>
+then<br/>
+  execute.command("LED OFF");<br/>
+  execute.command("Test_Virtual_STATUS","off");<br/>
+end</p>
+
+<p>The first rule switches LED On directly after the virtual switch has been set to ON.<br/>
+The second rule switches LED Off after 10s. Further on the virtual switch is set to Off. That allows a simple repetition of the procedure without manual intervention.</p>
+
+<p>The only defective appearance is that I need two rules for setting this up. In case there is a way to put the command "LED ON" into the second one, it would limit the amount of rules and brings a better overview.</p>
+
+<p>Marc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by hennemarc at Nov 09, 2013 22:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879663"></a>
+                                    <font class="smallfont"><blockquote>
+<p>The only defective appearance is that I need two rules for setting this up. In case there is a way to put the command "LED ON" into the second one, it would limit the amount of rules and brings a better overview.</p></blockquote>
+<p>This is not 'defective appearance' but the way drools is intended to work. You have 2 actions, turn led on and turn led off, therefore you need 2 rules. Each one for each action. If your think about it, in case for example of 1000 rules it is better to review each rule separately.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 09, 2013 23:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

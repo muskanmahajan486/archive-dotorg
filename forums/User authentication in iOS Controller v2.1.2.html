@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : User authentication in iOS Controller v2.1.2</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : User authentication in iOS Controller v2.1.2
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 03, 2013 by <font color="#0050B2">mfo38</font>.
+				    </div>
+
+				    
+<p>Hi Eric, I think your are the main/single point of contact regarding the iOS App.</p>
+
+<p>I've installed the latest version and decided to test again user authentication in OR because I'd like to expose my controller on the internet but not without minimum security.<br/>
+I added the suggested entries in web.xml file and entered a user/pwd in users.xml.<br/>
+I can confirm that the web console does prompt for password and authorize me if only I enter the correct user/pwd.</p>
+
+<p>Unfortunately, the iOS controller App doesn't prompt for password and once security is enabled in web.xml, if I go to settings and click "Done", then I get the message "No Group Found", "Please check your setting or define a group with screens first". For sure I have groups and I have screens.<br/>
+If I remove security, once Tomcat picks up the change, the iOS App will work fine again, just without security.<br/>
+I tried to delete the App from the iDevice and start fresh but the behavior is the same.</p>
+
+<p>Can you double check on your side if some bug still exists in the user authentication code or if I'm doing something wrong ?</p>
+
+<p> I'm using this section in web.xml:</p>
+
+<p>   &lt;security-constraint&gt;<br/>
+      &lt;web-resource-collection&gt;<br/>
+        &lt;web-resource-name&gt;Panel identity RESTful service of Openremote Controller&lt;/web-resource-name&gt;<br/>
+        &lt;description&gt;Panel identity RESTful service of Openremote Controller&lt;/description&gt;<br/>
+        &lt;url-pattern&gt;/rest/panel/*&lt;/url-pattern&gt;<br/>
+        &lt;http-method&gt;GET&lt;/http-method&gt;<br/>
+        &lt;http-method&gt;POST&lt;/http-method&gt;<br/>
+      &lt;/web-resource-collection&gt;<br/>
+      &lt;auth-constraint&gt;<br/>
+        &lt;role-name&gt;openremote&lt;/role-name&gt;<br/>
+      &lt;/auth-constraint&gt;<br/>
+    &lt;/security-constraint&gt;</p>
+
+<p>    &lt;login-config&gt;<br/>
+      &lt;auth-method&gt;BASIC&lt;/auth-method&gt;<br/>
+      &lt;realm-name&gt;OPENREMOTE_Controller&lt;/realm-name&gt;<br/>
+    &lt;/login-config&gt;<br/>
+    &lt;security-role&gt;<br/>
+      &lt;role-name&gt;openremote&lt;/role-name&gt;<br/>
+    &lt;/security-role&gt;</p>
+
+<p>Also can you explain what's the purpose of the User name and Password entries that cannot be modified in the controller editing page ?</p>
+
+<p>Thanks in advance.</p>
+
+<p>Marc</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21858186"></a>
+                                    <font class="smallfont"><p>I'll have to take a closer look, I'll let you know.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Mar 03, 2013 11:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859296"></a>
+                                    <font class="smallfont"><p>Hello Marc,</p>
+
+<p>Sorry for the long delay, I've had a lot on my plates lately.</p>
+
+<p>I did some tests and indeed, there are some issues in the way this is handle, which I'll need to take a look at a later stage.<br/>
+Good news is, there is still a way to make it work.</p>
+
+<p>The application will not ask for your username/password and consider the authentication challenge as an error, which leads to the "No Group Found" message you're seeing.<br/>
+But if you do provide a username/password on the controller details page, then it will be used and you will be able to see your panel.</p>
+
+<p>As you noticed, those fields appear to be non editable. It's not the case but there is a layout issue with them (basically, there is a 300px gap to the right of the label before the field starts).<br/>
+On the iPhone, if you rotate to landscape and tap at around 3/4 of the cell length, you should be able to edit the field.<br/>
+This will be fixed in v2.1.3 that should be sent to Apple pretty soon.</p>
+
+<p>With the change you did in web.xml (and I suppose you also have users declaration in security/users.xml file), you are protecting an individual panel, which is not that well supported.</p>
+
+<p>The behaviour is slightly different if you're protecting the whole access (using (&lt;url-pattern&gt;/rest/*&lt;/url-pattern&gt;).<br/>
+In that case, if you tap on the panel selection list, a popup will ask for your username / password and the application will remember it from now on. There are still many other use cases where the application does not behave correctly though.</p>
+
+<p>Obviously, there is some work to be done to make this work correctly, but in the mean time, this should allow you to protect the install with some basic password.<br/>
+Note that as this is HTTP basic authentication, the password is send in clear (base64 but that does not give you anything) and so you might want to go over https to protect it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Mar 27, 2013 11:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859306"></a>
+                                    <font class="smallfont"><p>Hello Eric,</p>
+
+<p>Thanks for the lengthy and detailed explanation, I'll test this and get back to you with my results.</p>
+
+<p>Cheers<br/>
+Marc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mfo38 at Mar 27, 2013 20:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859407"></a>
+                                    <font class="smallfont"><p>Hi Eric,</p>
+
+<p>Worked like a charm like you said, thanks for your help.<br/>
+Any news of the updated iOS App submission to Apple ?</p>
+
+<p>Regards<br/>
+Marc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mfo38 at Mar 31, 2013 19:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859409"></a>
+                                    <font class="smallfont"><p>Submitted on Wed, usually takes about a week to approve</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Mar 31, 2013 20:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859570"></a>
+                                    <font class="smallfont"><p>v 2.1.3 is now available in the App Store</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Apr 03, 2013 12:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877704"></a>
+                                    <font class="smallfont"><p>Hi Eric,</p>
+
+<p>I am useing v2.1.3. Input username and password in setting, after normal running openremote. But, clicking logout button and "logout succesfully" message in the screen, click "OK" but not logout and continues all control. Can you help me?</p>
+
+<p>Regards,<br/>
+Ali Haydar</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ali at Oct 07, 2013 15:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877769"></a>
+                                    <font class="smallfont"><p>Hello Ali,</p>
+
+<p>I'm afraid I can't help you much in the short term.<br/>
+I never looked at logout in details before and don't know the background but quickly looking at the controller and iOS console code, it does not make a lot of sense to me.</p>
+
+<p>I'm writing down my technical findings here so maybe somebody else can chime in if I missed something.<br/>
+What a logout action does is call the /rest/logout API on the controller, which invalidates the HTTP session on the controller side.<br/>
+However, the overall communication mechanism between the console and the controller is stateless and not based on the existence of an HTTP session, hence to logout does not really do anything.</p>
+
+<p>On iOS, once you access a protected URL, the console should ask you for your username/password and store it for future requests. I believe this should "more or less" work as expected. However, once this is stored, there is no easy way to "forget" the password, forcing the user to authenticate again.</p>
+
+<p>You could always edit the controller and empty the password field, but this is not really a working solution.</p>
+
+<p>We'll have to add that issue to the list of things to review.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Oct 08, 2013 09:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885869"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I am new on openremote, but not so in RPI. This weekend I succedded in doing a lot of things, including connect EnviR (currentcost) throught node-red and access openremote. Well, now i'm facing to login on iphone and ipad and confirm that this login problem remains. My controler is OpenRemote-Controller-2.1.0_FM_ORCJAVA-392-2 (PC/Win8.1 machine), but the webconsole works fine.</p>
+
+<p>greets,</p>
+
+<p>CAP</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by capolan at Apr 14, 2014 01:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:46</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

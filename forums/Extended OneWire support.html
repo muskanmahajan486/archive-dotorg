@@ -1,0 +1,334 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Extended OneWire support</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Extended OneWire support
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jun 18, 2012 by <font color="#0050B2">tkucharski</font>.
+				    </div>
+
+				    <p>Hi guys, <br/>
+I built my home automation system based on 1-wire devices. As a result I have about ~20xDS2408 working as digital inputs (160inputs), 20xDS2408 working as 10A 240V power output (160output) and approximately ~30 temperature sensors. I've got custom made solution supporting switches, humidity, temperatures and inputs. Logic is defined in drools. <br/>
+I've noticed openremote supports rule engine finally, so it's good reason to redesign my solution and merge it with OpenRemote <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>OpenRemote supports OneWire (thanks to Jaroslav Misura commitment) but is very limited:</p>
+<ul>
+	<li>doesn't support alarming</li>
+	<li>do not support device latch attributes (quite necessary in switches)</li>
+	<li>poorly optimized 1-wire requests (needs 1 requests per device, not command)</li>
+</ul>
+
+
+<p>Looking at svn stats I see active commits made year ago. I would like to contribute to openremote but needs more information about controller's protocol interface and design. </p>
+<ul>
+	<li>is it possible to introduce new device type with custom properties?</li>
+	<li>Are there any rules related to introducing new device type (i.e Russound device vs Device)?</li>
+	<li>Is an "ordinary" device just a grouping element in UI designer?</li>
+	<li>Is there any device lifecycle? Especially initial call executed as a phase of starting openremote controller.</li>
+	<li>Are there any constraints to thread management? Is it consistent with architecture to provide 1-wire protocol connector with dedicated thread scanning alarming devices?</li>
+</ul>
+
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19989272/23036179.png">diagram.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19989272/23036180.png">onewire-structure.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19989283"></a>
+                                    <font class="smallfont"><p>Hi Tom,</p>
+
+<p>the code was already changed to reflect our latest architecture which supports EventListener. This means that the command is responseable for listening/polling the latest status of your device and updates the sensor.</p>
+
+<p>I also added support for an extra attribute "data" which can be used for switches to send "1" or "0" to turn on/off the device.<br/>
+The latest code can be found here: <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/mredeker/Controller_2_0_0_Fixes/src/org/openremote/controller/protocol/onewire/">http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/mredeker/Controller_2_0_0_Fixes/src/org/openremote/controller/protocol/onewire/</a></p>
+
+<p>What are device latch attributes and commands? <br/>
+We are using the Java jowfsclient library which connects to owserver from the owfs project</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 19, 2012 13:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19989300"></a>
+                                    <font class="smallfont"><p>Hi Marcus, <br/>
+I know this new feature (found on the forum) and deployed fixed version. <br/>
+I see you did really good job providing 1-wire adapter to OpenRemote, but there are still several obstacles that (in my opinion) needs to be removed to use 1-wire effectively. </p>
+
+<h3><a name="ExtendedOneWiresupport-Initialcommands"></a>Initial commands</h3>
+<p>There is a need to run "initial commands" to set up alarming feature. These commands include:</p>
+<ul>
+	<li>set_alarm with parameters described on <a href="http://owfs.org/uploads/DS2408.3.html#sect10">owfs page</a>. Usually it would be 133333333 for input switch device (DS2408)</li>
+	<li>turn off por flag (power on reset) to eliminate artificial conditional search results</li>
+</ul>
+
+
+<p>It should be run once (running it on every single request is just inefficient)</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-object">String</span> command = <span class="code-quote">"set_alarm"</span>;
+<span class="code-object">String</span> parameters = <span class="code-quote">"133333333"</span>;
+client.write(path + SLASH + command, parameters);
+
+<span class="code-object">String</span> command = <span class="code-quote">"por"</span>;
+<span class="code-object">String</span> parameters = <span class="code-quote">"0"</span>;
+client.write(path + SLASH + command, parameters);
+</pre>
+</div></div>
+
+<h3><a name="ExtendedOneWiresupport-Usinglatches"></a>Using latches</h3>
+<p>There is possiblity in OpenRemote to read from "LATCH.ALL" instead of sensed.X command. This is crucial to handle input made between openremote calls to owfs. There is an issue with this approach - you need to reset these latches after reading it. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">private</span> <span class="code-keyword">static</span> <span class="code-keyword">final</span> <span class="code-object">String</span> LATCH_ALL = <span class="code-quote">"latch.ALL"</span>;
+
+<span class="code-keyword">public</span> void read() <span class="code-keyword">throws</span> NetworkException {
+   <span class="code-object">String</span> s = networkConnector.read(LATCH_ALL);
+   <span class="code-comment">// handling goes here
+</span>   latchReset();
+}
+
+<span class="code-keyword">private</span> void latchReset() <span class="code-keyword">throws</span> NetworkException {
+   networkConnector.write(LATCH_ALL, LATCH_RESET);
+}
+
+</pre>
+</div></div>
+
+<h3><a name="ExtendedOneWiresupport-OpenRemote%3EOneWirerequest%27sefficiency"></a>OpenRemote-&gt;OneWire request's efficiency </h3>
+<p>Creating command for every single input in i.e. DS2408 (has 8 of them) is inefficient. I haven't performed any performance tests with openremote's 1-wire adapter, but I almost sure it would scale up to 5-10 devices. Reading more than 10 commands results in ~200ms lag that is quite annoying. Currently working implementation in my house (quite simple, based on jowsfclient as it is done in OR) consists of requesting "latch.ALL" attribute on alarming device. <br/>
+There is no doubt that request's efficiency has minor priority as it is not essential for &lt;10 onewire devices installations. <br/>
+Although it is crucial for me, I think it can be discussed later <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tkucharski at Jun 20, 2012 02:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19989303"></a>
+                                    <font class="smallfont"><p>Looks like it all drills down to some read and write actions which is already doable.</p>
+
+<p>We don't have a "initialize something" method yet but to test you could just create the appropriate command and trigger it only once with a button press. I will discuss this feature with the others.</p>
+
+<p>If you crate a "latch.ALL" command you can assign a custom sensor and parse the string within the rules engine to update multiple sensors. That rule could also trigger a command which executes the latch reset. This is just an idea and I cannot test since I only have temp and humidity 1-wire devices.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 20, 2012 08:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878030"></a>
+                                    <font class="smallfont"><p>Hi there <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>It's been a long time since my last post, but I decided to share my experience with OpenRemote 1-wire support. <br/>
+I tried to use existing 1-wire protocol adapter but this code was designed to support passive devices (like temperatures and humidity sensors) and simple switch device. </p>
+
+<p>I needed more advanced support for switching devices. Both switches (&gt;160) and relays(&gt;160) are utilizing DS2408 devices. <br/>
+As turning light on after clicking switch has to be instant there was necessity to utilize 1-wire alarming feature and more advanced multithreading. <br/>
+I followed Marcus Redeker suggestion to create command for every switch but lack of alarming functionality and switches support made it both hard to configure and completely unresponsive. </p>
+
+<p>I developed new version of 1-wire support in OpenRemote that uses alarming events introduced in new jowfsclient library. It introduces alarming and switching type of command at the same time providing backward compatibility for INTERVAL and PASSIVE commands. </p>
+
+<p>It works perfectly for almost half a year in "production environment" withot any issue. <br/>
+<b>I would like to push it into OpenRemote codebase if you guys agree.</b></p>
+
+<p>You will find some info regarding onewire adapter If you are interested in how it was done. Hope it helps to decide whether to push it to repo or not.</p>
+
+<p><b>Package structure</b><br/>
+<img src="attachments/19989272/23036180.png" align="absmiddle" border="0"/></p>
+
+<p><b>This diagram shows relationships between different command types</b><br/>
+<img src="attachments/19989272/23036179.png" align="absmiddle" border="0"/></p>
+
+<p>This is the code snippet showing commands type available in one wire protocol. </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+/**
+ * Represents types of commands supported by OneWire adapter
+ * @author Tom Kucharski &lt;kucharski.tom@gmail.com&gt;
+ * @since 14.04.13 18:53
+ */
+<span class="code-keyword">public</span> <span class="code-keyword">enum</span> OneWireCommandType {
+	/**
+	 * Devices that alerts on 1-wire alarm
+	 */
+	ALARMING,
+
+	/**
+	 * Switchable devices, mostly used in DS2408 or in similar devices;
+	 */
+	SWITCHABLE,
+
+	/**
+	 * Simple command that reads its value periodically
+	 */
+	INTERVAL,
+
+	/**
+	 * Simple passive command
+	 */
+	EXECUTABLE;
+
+}
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tkucharski at Oct 13, 2013 00:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878087"></a>
+                                    <font class="smallfont"><p>Hi Tom,<br/>
+this sounds great. We would appreciate if you want to contribute your code.<br/>
+Please take a look here: <a href="http://www.openremote.org/display/Community/New+Contributors+Getting+Started" title="New Contributors Getting Started">New Contributors Getting Started</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 13, 2013 19:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878093"></a>
+                                    <font class="smallfont"><p>Thanks Marcus, <br/>
+I've just send you an email to add my user account to OpenRemote repository. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tkucharski at Oct 13, 2013 22:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879642"></a>
+                                    <font class="smallfont"><p>Hi Tom,</p>
+
+<p>Your solution looks really interesting, as I'm looking at implementing control and sensing using the DS2408.</p>
+
+<p>Has your code been accepted into the codebase? Is there any way to get access to the functionality? </p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by c973535 at Nov 09, 2013 11:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879697"></a>
+                                    <font class="smallfont"><p>Hi Anders, </p>
+
+<p>My code has been accepted into the codebase but it is still on feature branch. You can check it out here:
+<a href="https://svn.code.sf.net/p/openremote/code/workspace/tkucharski/Controller_2_1_0_FM_20130617_OneWire">https://svn.code.sf.net/p/openremote/code/workspace/tkucharski/Controller_2_1_0_FM_20130617_OneWire</a></p>
+
+<p>1-wire adapter was rewritten from scratch as there was required to support devices other than simple and passive temperature sensors (DS1820).<br/>
+New implementation is backward compatible, but introduced features such as:</p>
+<ul>
+	<li>support alarming devices (actually it is only DS2408)</li>
+	<li>dynamicValue parameter enabling to send command data via rules.</li>
+	<li>shared device property value between different OpenRemote commands</li>
+	<li>global onewire configuration in designer that makes introducing new devices with less hassle (currently available via <a href="https://composer.openremote.org/staging">https://composer.openremote.org/staging</a> only)</li>
+</ul>
+
+
+<p>New features and configuration examples will be described here:
+<a href="http://www.openremote.org/display/docs/OpenRemote+2.2+How+To+-+1-Wire+Sensors">http://www.openremote.org/display/docs/OpenRemote+2.2+How+To+-+1-Wire+Sensors</a></p>
+
+<p>How are you going to use DS2408? Will it be used as relays controller or as 8-channel input sensor?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tkucharski at Nov 10, 2013 23:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879725"></a>
+                                    <font class="smallfont"><p>Hi Tom,</p>
+
+<p>Thank you for replying, the link especially to the documentation you updated helped my understanding of the possibilities with the new code, and it is still aligned with my plans.</p>
+
+<p>I'm still quite new to OR, which means I am spending quite a lot of time reading and searching around the forums for tips and how to's, and at the same time trying out the basic steps of OR in order to determine my design possibilities. </p>
+
+<p>My setup is remote control of a holiday house on a budget (raspberry pi,I2C-&gt;1-wire, 3G USB, inexpensive 1-wire components). The house is fairly new, and I managed to install quite a few twisted pair cables around the house during construction, as well as magnetic sensors in the windows and doors, with the aim/hope of a home automation project later on.</p>
+
+<p>My intention is to use the DS2408 both as sensors, reading the window and door sensors for break-ins, as well as relays controllers, for remote heat control. Which is similar to your setup, as I understand it, although my setup is smaller, approx. 10-15 relays and 15 access sensors + some temperature sensors. The features you have implemented are therefore spot on.</p>
+
+<p>As I said I'm still in the early phases, still a bit of learning curve to overcome, but I'm differently trying out your implementation so I will probably be back later with more questions <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Thanks for pointing me in the right direction.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by c973535 at Nov 11, 2013 19:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879763"></a>
+                                    <font class="smallfont"><p>Anders, <br/>
+Good luck with your installation. <br/>
+Do not hesitate to ask me if you've experienced any difficulties in configuring OR. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tkucharski at Nov 12, 2013 12:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

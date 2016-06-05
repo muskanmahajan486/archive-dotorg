@@ -1,0 +1,1771 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : New Z-Wave 2.0.0 Release</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : New Z-Wave 2.0.0 Release
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 01, 2015 by <font color="#0050B2">rhitz</font>.
+				    </div>
+
+				    <p>I just want to let you know that we have just released the new 2.0.0 Z-Wave version.</p>
+
+<p>Goto <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-Wave">OpenRemote+2.0 How To - Z-Wave</a> and search for the controller and zwave.jar download links. Note that you have to download a new Controller in order to use the new zwava.jar — replacing the zwave.jar in your old controller is not sufficient.</p>
+
+<p>Please note that the Z-Wave documentation for the new version hasn't been updated yet but this post is a kind of quick start guide for the more experienced OpenRemote users.</p>
+
+<h2><a name="NewZ-Wave2.0.0Release-NewFeatures"></a>New Features</h2>
+
+<ul class="alternate" type="square">
+	<li>Extended Z-Wave command class support</li>
+	<li>Z-Wave node inclusion/exclusion commands</li>
+	<li>Z-Wave association, Z-Wave parameter and wake-up interval configuration</li>
+</ul>
+
+
+
+<h2><a name="NewZ-Wave2.0.0Release-ZWaveNodeInclusion%2FExclusion"></a>Z-Wave Node Inclusion/Exclusion</h2>
+
+<p>With the new version it's possible to activate inclusion/exclusion mode by means of special commands in order to add Z-Wave nodes to the network or remove nodes from the network respectively. With this new feature it's now possible to support Z-Wave USB stick that do not have an inclusion/exclusion hardware button like the Aeon Labs Z-Stick S2.</p>
+
+<p>The following commands are available:</p>
+
+<p><b>INCLUSION_MODE_ON</b><br/>
+<b>INCLUSION_MODE_OFF</b><br/>
+<b>INCLUSION_MODE_STATUS</b></p>
+
+<p><b>EXCLUSION_MODE_ON</b><br/>
+<b>EXCLUSION_MODE_OFF</b><br/>
+<b>EXCLUSION_MODE_STATUS</b></p>
+
+<p>Use the Z-Wave node ID 1 in combination with these commands.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Z-Wave nodeID: 1
+Command: INCLUSION_MODE_ON
+</pre>
+</div></div>
+
+<p>With these command sets create two switches in the OpenRemote Designer and place them on your OpenRemote Designer panel design. </p>
+
+<p>The inclusion/exclusion mode automatically turns off after 60 seconds or after a Z-Wave node has been added or removed. </p>
+
+<p>After a successful inclusion of a new Z-Wave node you'll find a node&lt;nodeID&gt;.xml file in the ‚<b>'&lt;OpenRemote Controller&gt;/webapps/controller/zwave'</b> directory which contains all the information that has been read from the new device.</p>
+
+<p>It may happen for any reason that a new Z-Wave node has been added with a new Z-Wave node ID to the network but an error occurred while reading Z-Wave device information form the device. If this happens you should exclude the device from the Z-Wave network even if no node&lt;nodeID&gt;.xml file has been created.</p>
+
+<p>Inclusion/Exclusion by means of the Aeon Labs Z-Stick hardware button is still supported. </p>
+
+
+<h2><a name="NewZ-Wave2.0.0Release-ZWaveAssociationandParameterConfiguration"></a>Z-Wave Association and Parameter Configuration</h2>
+
+<p>The node&lt;nodeID&gt;.xml file that I've previously mentioned contains a &lt;configuration&gt; section that is used to configure Z-Wave associations, Z-Wave parameters and the wake-up interval in case of battery powered devices.</p>
+
+<p>Example (#FIBARO Multi Sensor):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;configuration hash=<span class="code-quote">"FA035ACF6EC2AF7CD89543A422425087"</span>&gt;
+  &lt;associations&gt;
+    &lt;association-group id=<span class="code-quote">"1"</span> capacity=<span class="code-quote">"5"</span> /&gt;
+    &lt;association-group id=<span class="code-quote">"2"</span> capacity=<span class="code-quote">"5"</span> /&gt;
+    &lt;association-group id=<span class="code-quote">"3"</span> capacity=<span class="code-quote">"1"</span>&gt;
+      &lt;association&gt;
+        &lt;node&gt;1&lt;/node&gt;
+      &lt;/association&gt;
+    &lt;/association-group&gt;
+  &lt;/associations&gt;
+  &lt;parameters&gt;
+    &lt;parameter&gt;
+      &lt;number&gt;24&lt;/number&gt;
+      &lt;value&gt;1&lt;/value&gt;
+      &lt;size&gt;1&lt;/size&gt;
+    &lt;/parameter&gt;
+  &lt;/parameters&gt;
+  &lt;wake-up interval=<span class="code-quote">"7200"</span> /&gt;
+&lt;/configuration&gt;
+</pre>
+</div></div>
+
+<p>In order to configure the Z-Wave device you have to edit the &lt;configuration&gt; section manually - add associations, parameter settings and edit the wake-up interval. The modified settings will be activated  after restart of the OpenRemote Controller. Editing the XML configuration manually is an intermediate solution until we have a GUI that facilitates the configuration of Z-Wave nodes.</p>
+
+<p>With devices that have <b>COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION</b> support (e.g. #FIBARO Dimmer FGD-211, #FIBARO Relay Switch FGS-211, #FIBARO Double Relay Switch FGS-221) it's possible to configure multi instance associations with the following format:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;association&gt;
+   &lt;node&gt;13&lt;/node&gt;
+   &lt;endpoint&gt;2&lt;/endpoint&gt;
+&lt;/association&gt;
+</pre>
+</div></div>
+
+<p>Use case example:<br/>
+The #FIBARO Double Relay Switch has two binary switch instances. In order to address one of these 2 loads from another Fibaro switch that supports the <b>COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION</b>, a multi instance association has to be configured.</p>
+
+
+<h2><a name="NewZ-Wave2.0.0Release-ZWaveCommandConfiguration"></a>Z-Wave Command Configuration</h2>
+
+<p>The following description of the Z-Wave command configuration is based on the Z-Wave command classes that are supported by a Z-Wave device. Please take a look in the aforementioned node&lt;nodeID&gt;.xml files to find the command classes that are available. The following section lists the Z-Wave command classes and the related OpenRemote commands that have to be used in the OpenRemote Designer:</p>
+
+<p><b>COMMAND_CLASS_SWITCH_BINARY</b> : [ON, OFF, STATUS]</p>
+
+
+<p><b>COMMAND_CLASS_SWITCH_MULTILEVEL</b> : [DIM, ON, OFF, STATUS]</p>
+
+
+<p><b>COMMAND_CLASS_SWITCH_MULTILEVEL_V3</b> : [UP, DOWN, STOP, DIM, STATUS, STATUS_LIVE]</p>
+
+
+<p><b>COMMAND_CLASS_BATTERY</b> : [BATTERY]</p>
+
+
+<p><b>COMMAND_CLASS_SENSOR_BINARY</b> : [STATUS]</p>
+
+
+<p><b>COMMAND_CLASS_SENSOR_MULTILEVEL</b> : [see following example]</p>
+
+<p>Example (#FIBARO Motion Sensor FGMS-001):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;command-class id=<span class="code-quote">"0x31"</span> version=<span class="code-quote">"5"</span> name=<span class="code-quote">"COMMAND_CLASS_SENSOR_MULTILEVEL_V5"</span>&gt;
+  &lt;sensors&gt;
+    &lt;sensor id=<span class="code-quote">"0x03"</span> name=<span class="code-quote">"LUMINANCE"</span>&gt;
+      &lt;scales&gt;
+        &lt;scale id=<span class="code-quote">"0x01"</span>&gt;LUMINANCE_SCALE_LUX&lt;/scale&gt;
+      &lt;/scales&gt;
+    &lt;/sensor&gt;
+    &lt;sensor id=<span class="code-quote">"0x01"</span> name=<span class="code-quote">"AIR_TEMPERATURE"</span>&gt;
+      &lt;scales&gt;
+        &lt;scale id=<span class="code-quote">"0x00"</span>&gt;AIR_TEMPERATURE_SCALE_CELSIUS&lt;/scale&gt;
+      &lt;/scales&gt;
+    &lt;/sensor&gt;
+  &lt;/sensors&gt;
+&lt;/command-class&gt;
+</pre>
+</div></div>
+
+<p>Resulting OR commands : [LUMINANCE_SCALE_LUX, AIR_TEMPERATURE_SCALE_CELSIUS]</p>
+
+
+<p><b>COMMAND_CLASS_SENSOR_ALARM</b> : [see following example] </p>
+
+<p>Example (#FIBARO Smoke Sensor FGSS-001):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;command-class id=<span class="code-quote">"0x9C"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_SENSOR_ALARM"</span>&gt;
+    &lt;sensors&gt;
+        &lt;sensor id=<span class="code-quote">"0x00"</span>&gt;GENERAL_PURPOSE_ALARM&lt;/sensor&gt;
+        &lt;sensor id=<span class="code-quote">"0x04"</span>&gt;HEAT_ALARM&lt;/sensor&gt;
+        &lt;sensor id=<span class="code-quote">"0x01"</span>&gt;SMOKE_ALARM&lt;/sensor&gt;
+    &lt;/sensors&gt;
+&lt;/command-class&gt;
+</pre>
+</div></div>
+
+<p>Resulting OR commands : [GENERAL_PURPOSE_ALARM, HEAT_ALARM, SMOKE_ALARM]</p>
+
+
+<p><b>COMMAND_CLASS_METER</b> : [see following example]</p>
+
+<p>Example (Qubino Flush 1 Relay):</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;command-class id=<span class="code-quote">"0x32"</span> version=<span class="code-quote">"3"</span> name=<span class="code-quote">"COMMAND_CLASS_METER_V3"</span>&gt;
+  &lt;meter-type id=<span class="code-quote">"0x01"</span>&gt;ELECTRIC_METER&lt;/meter-type&gt;
+    &lt;scales&gt;
+      &lt;scale id=<span class="code-quote">"0x02"</span>&gt;ELECTRIC_METER_SCALE_W&lt;/scale&gt;
+      &lt;scale id=<span class="code-quote">"0x00"</span>&gt;ELECTRIC_METER_SCALE_KWH&lt;/scale&gt;
+    &lt;/scales&gt;
+  &lt;meter-reset&gt;<span class="code-keyword">true</span>&lt;/meter-reset&gt;
+&lt;/command-class&gt;
+</pre>
+</div></div>
+
+<p>Resulting OR commands : [ELECTRIC_METER_SCALE_W, ELECTRIC_METER_SCALE_KWH]</p>
+
+
+<h2><a name="NewZ-Wave2.0.0Release-ZWaveCommandConfigurationMultiInstance"></a>Z-Wave Command Configuration - Multi Instance</h2>
+
+<p>Some devices, like multi sensors or switches with more than one load, are composed of a root device and additional sub devices. Each sub device is an &lt;endpoint&gt; of the &lt;endpoints&gt; section in the node&lt;nodeID&gt;.xml file. In order to address such an endpoint it's necessary to append the endpoint number to the Z-Wave node ID separated by a colon. The following example (#FIBARO Flood Sensor FGFS-101) shows the resulting commands:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;endpoints&gt;
+  &lt;endpoint number=<span class="code-quote">"1"</span>&gt;
+    &lt;<span class="code-keyword">generic</span>-device-class id=<span class="code-quote">"0x20"</span>&gt;GENERIC_TYPE_SENSOR_BINARY&lt;/<span class="code-keyword">generic</span>-device-class&gt;
+    &lt;specific-device-class id=<span class="code-quote">"0x01"</span>&gt;SPECIFIC_TYPE_ROUTING_SENSOR_BINARY&lt;/specific-device-class&gt;
+    &lt;command-classes&gt;
+      &lt;command-class id=<span class="code-quote">"0x30"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_SENSOR_BINARY"</span> /&gt;
+    &lt;/command-classes&gt;
+  &lt;/endpoint&gt;
+  &lt;endpoint number=<span class="code-quote">"2"</span>&gt;
+    &lt;<span class="code-keyword">generic</span>-device-class id=<span class="code-quote">"0x21"</span>&gt;GENERIC_TYPE_SENSOR_MULTILEVEL&lt;/<span class="code-keyword">generic</span>-device-class&gt;
+    &lt;specific-device-class id=<span class="code-quote">"0x01"</span>&gt;SPECIFIC_TYPE_ROUTING_SENSOR_MULTILEVEL&lt;/specific-device-class&gt;
+    &lt;command-classes&gt;
+      &lt;command-class id=<span class="code-quote">"0x31"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_SENSOR_MULTILEVEL"</span>&gt;
+        &lt;sensors&gt;
+          &lt;sensor id=<span class="code-quote">"0x01"</span> name=<span class="code-quote">"AIR_TEMPERATURE"</span>&gt;
+            &lt;scales&gt;
+              &lt;scale id=<span class="code-quote">"0x00"</span>&gt;AIR_TEMPERATURE_SCALE_CELSIUS&lt;/scale&gt;
+            &lt;/scales&gt;
+        &lt;/sensor&gt;
+        &lt;/sensors&gt;
+      &lt;/command-class&gt;
+    &lt;/command-classes&gt;
+  &lt;/endpoint&gt;
+&lt;/endpoints&gt;
+</pre>
+</div></div>
+
+<p>Resulting OR commands:</p>
+
+<p>Z-Wave nodeID: 72:1<br/>
+Command: STATUS</p>
+
+<p>Z-Wave nodeID: 72:2<br/>
+Command: AIR_TEMPERATURE_SCALE_CELSIUS </p>
+
+
+<h2><a name="NewZ-Wave2.0.0Release-CertifiedDevices"></a>Certified Devices</h2>
+
+<p>Fibaro Relay Switch FGS-211<br/>
+Fibaro Double Relay Switch FGS-221<br/>
+Fibaro Universal Dimmer FGD-211<br/>
+Fibaro Roller Shutter 2 FGRM-222<br/>
+Fibaro Wall Plug FGWPE-101<br/>
+Fibaro Door/Window Sensor FGK-101-107<br/>
+Fibaro Motion Sensor FGMS-001<br/>
+Fibaro Flood Sensor FGFS-101<br/>
+Fibaro Smoke Sensor FGSS-001</p>
+
+<p>Aeon Labs (Aeotec) Z-Stick S2<br/>
+Aeon Labs (Aeotec) Micro Smart Dimmer <br/>
+Aeon Labs (Aeotec) Range Extender<br/>
+Aeon Labs (Aeotec) 4-in-1 MultiSensor</p>
+
+<p>Qubino Flush 1 Relay<br/>
+Qubino Flush Dimmer<br/>
+Qubino Flush Shutter</p>
+
+<p>Z-Wave.Me Z-StickC <br/>
+Z-Wave.Me ZME_UZB1 (500-series chip)</p>
+
+
+<h2><a name="NewZ-Wave2.0.0Release-KnownIssues%3A"></a>Known Issues:</h2>
+
+<ul class="alternate" type="square">
+	<li>You have to add at least one Z-Wave command in the OpenRemote Designer and a related sensor otherwise the Z-Wave protocol is not initialized.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23595691/23789751.jpg">controllercommand.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23595691/23789752.jpg">controllersensor.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23595691/23789781.jpg">specs.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23595691/23789794.jpg">ssensor.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23595691/23789795.jpg">ssensor1.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23595691/23789796.jpg">1.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23595691/23789797.jpg">ssensor2.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23595691/23790019.jpg">CH_202_rakurs_02-650x400.jpg</a> (image/jpeg)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23595748"></a>
+                                    <font class="smallfont"><p>If I create two switches: inclusion and exclusion, I'll be able to include / exclude the z-wave device without removing the Aeon Labs Z-Stick S2 from Synology, and not to use the buttons on the Aeon Labs Z-Stick S2 for include / exclude the z-wave device?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jan 22, 2015 14:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595751"></a>
+                                    <font class="smallfont"><p>Exactly - you do not have to remove the Aeon Labs Z-Stick S2 if you have these software buttons.</p>
+
+<p>It's now possible to include/exclude Z-Wave devices with Z-Wave interfaces that do not have an inclusion/exclusion hardware button (e.g. Razberry).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Jan 22, 2015 15:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595795"></a>
+                                    <font class="smallfont"><p>I have done so, that's right, all the commands for Node 1?<br/>
+<a class="confluence-thumbnail-link 1126x678" href='http://www.openremote.org/download/attachments/23595691/controllercommand.jpg'><img src="attachments/thumbnails/23595691/23789751" align="left" border="0"/></a><a class="confluence-thumbnail-link 1126x678" href='http://www.openremote.org/download/attachments/23595691/controllersensor.jpg'><img src="attachments/thumbnails/23595691/23789752" align="absmiddle" border="0"/></a><br/>
+but have not tried to include or exclude nodes.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jan 23, 2015 13:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595797"></a>
+                                    <font class="smallfont"><p>Yes - you did it right.</p>
+
+<p>I forgot to mention that these special inclusion/exclusion commands should look like the following:</p>
+
+<p>Command: INCLUSION_MODE_ON<br/>
+Z-Wave nodeID: 1</p>
+
+<p>Command: INCLUSION_MODE_OFF<br/>
+Z-Wave nodeID: 1</p>
+
+<p>Command: INCLUSION_MODE_STATUS<br/>
+Z-Wave nodeID: 1</p>
+
+<p>Command: EXCLUSION_MODE_ON<br/>
+Z-Wave nodeID: 1</p>
+
+<p>Command: EXCLUSION_MODE_OFF<br/>
+Z-Wave nodeID: 1</p>
+
+<p>Command: EXCLUSION_MODE_STATUS <br/>
+Z-Wave nodeID: 1</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Jan 23, 2015 13:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595823"></a>
+                                    <font class="smallfont"><p>I'm trying the latest OR 2.1 release and I'm not having much luck with ZWave discovery. I think I've followed the manual (configure ZWave tty on free designer, copy zwave.jar, enable DEBUG logging, sync one panel) but my zwave.log only shows:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+INFO 2015-01-24 17:44:33,347 (Z-Wave): 
+
+--------------------------------------------------------------------
+
+  OpenRemote Z-Wave protocol version : '2.0.0'
+
+--------------------------------------------------------------------
+</pre>
+</div></div>
+
+<p>The serial device of my Aeon Labs stick works, I managed to get a BeNext dimmer switch on openHAB and I'm seeing other devices and settings in open-zwave-controller. Maybe I am missing some very basic OR Java service discovery setting somewhere, it almost looks like the zwave.jar isn't picked up.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cbauer at Jan 24, 2015 16:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595826"></a>
+                                    <font class="smallfont"><p>You have to add a Z-Wave command in the designer and in addition link the command with a sensor otherwise the Z-Wave network is not scanned.</p>
+
+<p>For example add the following command and also add a related switch sensor.</p>
+
+<p>Command: INCLUSION_MODE_STATUS<br/>
+Z-Wave nodeID: 1</p>
+
+<p>The need for a sensor is a bug and we'll fix that in the next version.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Jan 24, 2015 17:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595836"></a>
+                                    <font class="smallfont"><p>Thanks Rainer, that got me to the next step. I'm now seeing zwave log output. If anyone needs a 64 bit version of RXTXcomm.jar and librxtxSerial.so on x86 Linux, the following binaries seem to work as a drop-in replacement: <a href="https://code.google.com/p/create-lab-commons/source/browse/trunk/java/lib/rxtx/">https://code.google.com/p/create-lab-commons/source/browse/trunk/java/lib/rxtx/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cbauer at Jan 24, 2015 18:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596263"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Certified Devices</p>
+
+<p>Z-Wave.Me ZME_UZB1 (500-series chip)</p></blockquote>
+
+<p>There will soon be a <a href="http://forum.z-wave.me/viewtopic.php?f=3422&amp;t=20983&amp;p=54672#p54649">micro firmware update</a> for this device.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 02, 2015 11:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596292"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I'm a beginner in Openremote and i only have one device in my zwave system. (Everspring SF812)<br/>
+I have installed openremote on a Synology NAS with Z-Stick Series 2 controller.</p>
+
+<p>I can see the smoke detector detection in zwave.log but my zwave folder is empty (no xml file)<br/>
+Does it reserved to the pro version ? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gman0105 at Feb 02, 2015 22:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596298"></a>
+                                    <font class="smallfont"><p>The new Z-Wave version can be used with the free controller.</p>
+
+<p>I assume that you have included the Everspring SF812 by means of the Aeon Labs Z-Stick button to the Z-Wave network.</p>
+
+<p>The SF812 is a battery powered device and is in sleep mode most of the time. When you restart the controller the Z-Wave protocol implementation tries to communicate with the device in order to read the device information and eventually create the nodeX.xml file. It's only possible to read the device information when the device is awake. You can configure this wake up frequency with the wake up time setting. Note that this wake up interval can be very long (hours). You can awake the SF812 manually if you triple press the inclusion/exclusion button.</p>
+
+<p>I'ld propose the following procedure:</p>
+
+<ol>
+	<li>Restart the controller.</li>
+	<li>Watch the zwave.log file with the following command
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+tail -f zwave.log
+</pre>
+</div></div></li>
+	<li>Wake up the device manually (triple click inclusion/exclusion) button. Note that it's sometimes necessary to wake up the device several times. This is not necessary for new devices (Fibaro) because they are fast but I could imagine that the SF812 is an old one.</li>
+</ol>
+
+
+<p>If the previous procedure doesn't work you could try the following:</p>
+
+<ol>
+	<li>Exclude the SF812 from the Z-Wave network (Aoen Labs Z-Stick button)</li>
+	<li>Watch the zwave.log file (tail -f zwave.log)</li>
+	<li>Add the SF812 by means of a software inclusion button (see <b>INCLUSION_MODE_ON</b>, <b>INCLUSION_MODE_OFF</b>, <b>INCLUSION_MODE_STATUS</b> commands)</li>
+	<li>If necessary wake up the device manually (triple click)</li>
+</ol>
+
+
+<p>If you do not see a new nodeX.xml file take a look in the zwave.log file and search for errors.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Feb 03, 2015 06:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596429"></a>
+                                    <font class="smallfont"><p>i installed openremote for the first time to get familliar with the software. My goal is to get zwave intoduced in my house.<br/>
+I also bougt a Eminent EM6600 energy reader and a z wave stick. The installation went fine and OR recognized the reader but unfortunately i am unabel to read data from the reader.<br/>
+The node.xml is very small and i think not complete. Do i have to edit this file to get things working?<br/>
+I also have soem info from the energy reader explaining about the supported command classes and sensor parameters.</p>
+
+<p>This is what the XML file;</p>
+
+<p>&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br/>
+&lt;node id="4"&gt;<br/>
+  &lt;manufacturer id="150"&gt;NorthQ&lt;/manufacturer&gt;<br/>
+  &lt;basic-device-class id="0x04"&gt;BASIC_TYPE_ROUTING_SLAVE&lt;/basic-device-class&gt;<br/>
+  &lt;generic-device-class id="0x31"&gt;GENERIC_TYPE_METER&lt;/generic-device-class&gt;<br/>
+  &lt;specific-device-class id="0x01"&gt;SPECIFIC_TYPE_SIMPLE_METER&lt;/specific-device-class&gt;<br/>
+  &lt;product-type id="0x0001" /&gt;<br/>
+  &lt;product id="0x0001" /&gt;<br/>
+  &lt;listening&gt;false&lt;/listening&gt;<br/>
+  &lt;routing&gt;true&lt;/routing&gt;<br/>
+  &lt;command-classes&gt;<br/>
+    &lt;command-class id="0x70" version="1" name="COMMAND_CLASS_CONFIGURATION" type="supported" /&gt;<br/>
+    &lt;command-class id="0x20" version="1" name="COMMAND_CLASS_BASIC" type="supported" /&gt;<br/>
+    &lt;command-class id="0x80" version="1" name="COMMAND_CLASS_BATTERY" type="supported" /&gt;<br/>
+    &lt;command-class id="0x32" version="2" name="COMMAND_CLASS_METER_V2" type="supported"&gt;<br/>
+      &lt;meter-type id="0x01"&gt;ELECTRIC_METER&lt;/meter-type&gt;<br/>
+      &lt;scales&gt;<br/>
+        &lt;scale id="0x00"&gt;ELECTRIC_METER_SCALE_KWH&lt;/scale&gt;<br/>
+      &lt;meter-reset&gt;false&lt;/meter-reset&gt;<br/>
+    &lt;/command-class&gt;<br/>
+    &lt;command-class id="0x72" version="1" name="COMMAND_CLASS_MANUFACTURER_SPECIFIC" type="supported" /&gt;<br/>
+    &lt;command-class id="0x84" version="1" name="COMMAND_CLASS_WAKE_UP" type="supported"&gt;<br/>
+      &lt;wake-up-interval&gt;900&lt;/wake-up-interval&gt;<br/>
+      &lt;notification-node-id&gt;1&lt;/notification-node-id&gt;<br/>
+    &lt;/command-class&gt;<br/>
+    &lt;command-class id="0x86" version="1" name="COMMAND_CLASS_VERSION" type="supported" /&gt;<br/>
+  &lt;/command-classes&gt;<br/>
+  &lt;configuration hash="A1339E3FB1F05B2B0C08FC65AFE063F6"&gt;<br/>
+    &lt;associations /&gt;<br/>
+    &lt;parameters /&gt;<br/>
+    &lt;wake-up interval="900" /&gt;<br/>
+  &lt;/configuration&gt;<br/>
+&lt;/node&gt;</p>
+
+
+<p>hope somebody can help me out.<a class="confluence-thumbnail-link 707x1073" href='http://www.openremote.org/download/attachments/23595691/specs.jpg'><img src="attachments/thumbnails/23595691/23789781" align="absmiddle" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bart groot at Feb 07, 2015 23:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596435"></a>
+                                    <font class="smallfont"><p>The information that has been read from the device and stored to the node4.xml file looks good. Based on the Z-Wave command class information from this file you can create the following OpenRemote commands:</p>
+
+<p><b>BATTERY</b><br/>
+<b>ELECTRIC_METER_SCALE_KWH</b></p>
+
+<p>The XML file does not contain the COMMAND_CLASS_METER_TBL_MONITOR that is used to read historical and aggregated meter values because it's currently not supported.</p>
+
+<p>I think that you have to configure parameter #2 depending on your meter system (if you have a meter with a rotating wheel the default should work):</p>
+
+<p><b>Sensor Type Configuration (Parameter #2):</b></p>
+
+<p><em>ROTATING WHEEL (Default):</em></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;parameters&gt;
+  &lt;parameter&gt;
+     &lt;number&gt;2&lt;/number&gt;
+     &lt;value&gt;2&lt;/value&gt;
+     &lt;size&gt;1&lt;/size&gt;
+  &lt;/parameter&gt;
+&lt;/parameters&gt;
+</pre>
+</div></div>
+
+<p><em>PULSE METER:</em></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;parameters&gt;
+  &lt;parameter&gt;
+     &lt;number&gt;2&lt;/number&gt;
+     &lt;value&gt;1&lt;/value&gt;
+     &lt;size&gt;1&lt;/size&gt;
+  &lt;/parameter&gt;
+&lt;/parameters&gt;
+</pre>
+</div></div>
+
+<p>Note that a new parameter configuration can only be configured when the device wakes up.</p>
+
+<p>The device wakes up every 900 seconds (15 minutes). It's also possible to activate 'Real-time mode' if you press the button of the Eminent EM6600 once. In 'Real-time mode' the device sends every 5 sec the meter value for the next 15 minutes.</p>
+
+<p>I'm a bit wondering how the Eminent EM6600 sends meter values to the controller because it doesn't have any association groups and as a result it's not possible to configure an association from the device to the controller. I could imagine that the device sends a broadcast message - but that is currently not supported by the controller.</p>
+
+<p>If you restart the controller and afterwards the device wakes up the meter value should be shown in your OpenRemote panel design. Note that you're are able to wake-up the device if you press the button of the Eminent EM6600 3 times.</p>
+
+<p>Polling the meter value should work anyhow. For test purposes create a Button in the OpenRemote designer and link it with the <b>ELECTRIC_METER_SCALE_KWH</b> command. If you press the button, the meter value will be read the next time when the device wakes up.</p>
+
+<p>I'm interested in how the device sends the meter value at wake-up time or in realtime mode. Please activate realtime mode of the device and take a look in the <b>zwavel.log</b> file in order to check what the device is repeatedly (every 5 seconds) sending.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Feb 08, 2015 09:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596438"></a>
+                                    <font class="smallfont"><p>Hurray,</p>
+
+<p>i made a button for a KWH meter read and an battery read command. Now i am able to read the battery and energy meter.<br/>
+This is the zwave-debug.log after i put the meter in to real time mode. i am afraid that it does not send any data because there is no change. It takes at least an hour to use 1 KWH. The eminent software can somehow also read the current watt usage.<br/>
+What do i do with the sensor type parameter. add this to the node4.xml ? is this enabling OR to read aggregated meter values?</p>
+
+<div style="max-width: 1000px;"><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2015-02-09 10:31:19,651 (Z-Wave): CCBattery                   : Node '4:0' : [COMMAND_CLASS_BATTERY::BATTERY_GET] succeeded.
+DEBUG 2015-02-09 10:31:19,652 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x01]
+DEBUG 2015-02-09 10:31:19,654 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x09, 0x00, 0x04, 0x00, 0x04, 0x03]
+DEBUG 2015-02-09 10:31:19,655 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x80, 0x03, 0x53, 0x25]
+DEBUG 2015-02-09 10:31:19,658 (Z-Wave): RX_Frame_Layer              : Data frame [0x01, 0x09, 0x00, 0x04, 0x00, 0x04, 0x03, 0x80, 0x03, 0x53, 0x25] has been received.
+DEBUG 2015-02-09 10:31:19,659 (Z-Wave): RX_Session_Layer            : Node '4' : [APP_CMD_HANDLER_FRAME : NodeID='4', Status=[RECEIVE_STATUS_TYPE_SINGLE], CommandClass='COMMAND_CLASS_BATTERY', Command='0x03', Parameters: [0x53]]
+DEBUG 2015-02-09 10:31:19,660 (Z-Wave): CCBattery                   : Node '4:0' : [COMMAND_CLASS_BATTERY::BATTERY_REPORT, BatteryLevel='83'].
+DEBUG 2015-02-09 10:31:22,971 (Z-Wave): Controller_API_WakeUp_Queue : Node '4' : [COMMAND_CLASS_WAKEUP::WAKE_UP_NO_MORE_INFORMATION].
+DEBUG 2015-02-09 10:31:22,976 (Z-Wave): Controller_API              : Dequeue (queue count=0) Z-Wave function call 'ZW_SendData(NodeID=4, Payload=[0x84, 0x08], TxOptions=[TRANSMIT_OPTION_AUTO_ROUTE, TRANSMIT_EXPLORE_OPTION_ACK], CallbackID=0x00)'.
+DEBUG 2015-02-09 10:31:22,977 (Z-Wave): TX_Session_Layer            : Executing Z-Wave function call 'ZW_SendData(NodeID=4, Payload=[0x84, 0x08], TxOptions=[TRANSMIT_OPTION_AUTO_ROUTE, TRANSMIT_EXPLORE_OPTION_ACK], CallbackID=0x00)'...
+DEBUG 2015-02-09 10:31:22,978 (Z-Wave): Controller_API              : Enqueue (queue count=0) Z-Wave function call 'ZW_SendData(NodeID=4, Payload=[0x84, 0x08], TxOptions=[TRANSMIT_OPTION_AUTO_ROUTE, TRANSMIT_EXPLORE_OPTION_ACK], CallbackID=0x0A)'.
+DEBUG 2015-02-09 10:31:22,978 (Z-Wave): TX_Session_Layer            : Send (repeat count=1) Z-Wave function 'ZW_SendData(NodeID=4, Payload=[0x84, 0x08], TxOptions=[TRANSMIT_OPTION_AUTO_ROUTE, TRANSMIT_EXPLORE_OPTION_ACK], CallbackID=0x0A)' request (callback ID=0x0A).
+DEBUG 2015-02-09 10:31:22,980 (Z-Wave): TX_Frame_Layer              : Send data frame [0x01, 0x09, 0x00, 0x13, 0x04, 0x02, 0x84, 0x08, 0x05, 0x0A, 0x60].
+DEBUG 2015-02-09 10:31:22,992 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x06]
+DEBUG 2015-02-09 10:31:22,993 (Z-Wave): RX_Frame_Layer              : ACK -&gt; Data frame [0x01, 0x09, 0x00, 0x13, 0x04, 0x02, 0x84, 0x08, 0x05, 0x0A, 0x60] transmission OK.
+DEBUG 2015-02-09 10:31:22,994 (Z-Wave): RX_Session_Layer            : ACK -&gt; Z-Wave function 'ZW_SendData(NodeID=4, Payload=[0x84, 0x08], TxOptions=[TRANSMIT_OPTION_AUTO_ROUTE, TRANSMIT_EXPLORE_OPTION_ACK], CallbackID=0x0A)' has been successfully sent - waiting 5,000 [ms] <span class="code-keyword">for</span> response frame.
+DEBUG 2015-02-09 10:31:22,995 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x01]
+DEBUG 2015-02-09 10:31:22,995 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x04, 0x01]
+DEBUG 2015-02-09 10:31:22,996 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x13, 0x01, 0xE8]
+DEBUG 2015-02-09 10:31:22,997 (Z-Wave): RX_Frame_Layer              : Data frame [0x01, 0x04, 0x01, 0x13, 0x01, 0xE8] has been received.
+DEBUG 2015-02-09 10:31:22,998 (Z-Wave): RX_Session_Layer            : 'ZW_SendData' response [0x01, 0x04, 0x01, 0x13, 0x01, 0xE8] with status 'RETURN_VALUE_TRUE' received (callback ID=0x0A).
+DEBUG 2015-02-09 10:31:22,999 (Z-Wave): RX_Session_Layer            : Waiting 64,979 [ms] <span class="code-keyword">for</span> 'ZW_SendData' callback frame (callback ID=0x0A).
+DEBUG 2015-02-09 10:31:23,149 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x01]
+DEBUG 2015-02-09 10:31:23,150 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x05, 0x00, 0x13, 0x0A]
+DEBUG 2015-02-09 10:31:23,151 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x01, 0xE2]
+DEBUG 2015-02-09 10:31:23,151 (Z-Wave): RX_Frame_Layer              : Data frame [0x01, 0x05, 0x00, 0x13, 0x0A, 0x01, 0xE2] has been received.
+DEBUG 2015-02-09 10:31:23,152 (Z-Wave): RX_Session_Layer            : Callback [0x01, 0x05, 0x00, 0x13, 0x0A, 0x01, 0xE2] (callback ID=0x0A) with state 'TRANSMIT_COMPLETE_NO_ACK' received -&gt; Failed to execute Z-Wave function 'ZW_SendData(NodeID=4, Payload=[0x84, 0x08], TxOptions=[TRANSMIT_OPTION_AUTO_ROUTE, TRANSMIT_EXPLORE_OPTION_ACK], CallbackID=0x0A)'
+DEBUG 2015-02-09 10:31:23,159 (Z-Wave): Controller_API_WakeUp_Queue : Node '4' : [COMMAND_CLASS_WAKEUP::WAKE_UP_NO_MORE_INFORMATION] failed : 'NO_ACK_ERROR'.
+DEBUG 2015-02-09 10:33:24,809 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x01]
+DEBUG 2015-02-09 10:33:24,811 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x0C]
+DEBUG 2015-02-09 10:33:24,812 (Z-Wave): RX_Serial_Port_RXTX         : Data bytes read : [0x00, 0x04, 0x00, 0x04, 0x06, 0x70, 0x06, 0x0B, 0x02, 0x46, 0x50, 0x9C]
+DEBUG 2015-02-09 10:33:24,814 (Z-Wave): RX_Frame_Layer              : Data frame [0x01, 0x0C, 0x00, 0x04, 0x00, 0x04, 0x06, 0x70, 0x06, 0x0B, 0x02, 0x46, 0x50, 0x9C] has been received.
+DEBUG 2015-02-09 10:33:24,816 (Z-Wave): RX_Session_Layer            : Node '4' : [APP_CMD_HANDLER_FRAME : NodeID='4', Status=[RECEIVE_STATUS_TYPE_SINGLE], CommandClass='COMMAND_CLASS_CONFIGURATION', Command='0x06', Parameters: [0x0B, 0x02, 0x46, 0x50]]
+</pre>
+</div></div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bart groot at Feb 08, 2015 10:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596440"></a>
+                                    <font class="smallfont"><p>For better readability, please include your code and logs in {code} {code} tags</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 08, 2015 11:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596445"></a>
+                                    <font class="smallfont"><blockquote><p>What do i do with the sensor type parameter.</p></blockquote>
+
+<p>That depends on your system. If you have a meter with a rotating wheel no parameter configuration is needed because the default should work.</p>
+
+<p>If you have a pulse meter do the following:</p>
+
+<ol>
+	<li>Edit the parameter section of the node4.xml file as follows:
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;parameters&gt;
+  &lt;parameter&gt;
+     &lt;number&gt;2&lt;/number&gt;
+     &lt;value&gt;1&lt;/value&gt;
+     &lt;size&gt;1&lt;/size&gt;
+  &lt;/parameter&gt;
+&lt;/parameters&gt;
+</pre>
+</div></div></li>
+	<li>Restart the controller</li>
+	<li>Wake up the device (triple button press) so that it's possible for the controller to configure the device with the new parameter setting</li>
+</ol>
+
+
+<blockquote><p>The eminent software can somehow also read the current watt usage</p></blockquote>
+<p>I've read in another forum that the Eminent EM6600 doesn't have a wattage channel. That means the wattage value is somehow calculated by the Eminent software based on the <b>ELECTRIC_METER_SCALE_KWH</b> channel value.  </p>
+
+<p>btw. you do not need a button in your panel design that requests the battery level value or the meter value - this can be done by means of a rule that periodically executes the <b>ELECTRIC_METER_SCALE_KWH</b> and <b>BATTERY</b> commands.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Feb 08, 2015 14:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596446"></a>
+                                    <font class="smallfont"><p>Got it. I've got a prehistoric one so i don't need to add the parameter. i am going to figure out how to get a wattage usage out of the data from the meter. Iam also working on a rule, i think i almost nailed it but the log keeps coming back with an error.<br/>
+i made a command "KWh"to read the meter. and this is the rules script;</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+global org.openremote.controller.statuscache.CommandFacade excecute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+rule  <span class="code-quote">"heartbeat_every_15_minutes"</span> 
+
+   timer (<span class="code-object">int</span>: 0s 15m)  when  eval  (<span class="code-keyword">true</span>)  then
+
+   execute.command (<span class="code-quote">"KWh"</span>);
+
+end
+</pre>
+</div></div>
+
+<p>and the boot.log</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+ERROR 2015-02-09 14:41:45,579 : Rule definition 'modeler_rules.drl' could not be deployed. See errors below.
+ERROR 2015-02-09 14:41:45,580 : Rule Compilation error execute cannot be resolved
+ERROR 2015-02-09 14:41:45,582 : There was an error parsing the rule definition 'modeler_rules.drl' : Could not parse knowledge.
+java.lang.IllegalArgumentException: Could not parse knowledge.
+	at org.drools.builder.impl.KnowledgeBuilderImpl.newKnowledgeBase(KnowledgeBuilderImpl.java:58)
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:532)
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:659)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:872)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:454)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1411)
+	at java.lang.<span class="code-object">Thread</span>.run(Unknown Source)
+INFO 2015-02-09 14:41:45,590 : Initialized event processor : Drools Rule Engine
+INFO 2015-02-09 14:41:45,606 : Initialized event processor : RRD4J Data Logger
+INFO 2015-02-09 14:41:45,606 : Initialized event processor : EmonCMS Data Logger
+INFO 2015-02-09 14:41:45,854 : Registered sensor : Range Sensor (Name = 'Verbruik', ID = '106628059', Min: 0, Max: 10000000)
+INFO 2015-02-09 14:41:45,855 : Registered sensor : Sensor (Name = 'channel', ID = '106239525', State Mappings: {})
+INFO 2015-02-09 14:41:45,856 : Registered sensor : Range Sensor (Name = 'pulsfactor', ID = '106627897', Min: 0, Max: 1000)
+INFO 2015-02-09 14:41:45,856 : Registered sensor : Range Sensor (Name = 'updatetijd', ID = '106627896', Min: 0, Max: 1000)
+INFO 2015-02-09 14:41:45,857 : Registered sensor : Range Sensor (Name = 'batterij', ID = '106628112', Min: 0, Max: 100000)
+INFO 2015-02-09 14:41:45,857 : Registered sensor : Switch Sensor (Name = 'inclusion <span class="code-keyword">switch</span> sensor', ID = '106239353')
+INFO 2015-02-09 14:41:45,859 : Registered sensor : Range Sensor (Name = 'meterstand', ID = '106627895', Min: 0, Max: 900000)
+INFO 2015-02-09 14:41:45,860 : Registered sensor : Switch Sensor (Name = 'exclusion <span class="code-keyword">switch</span> sensor', ID = '106239352')
+INFO 2015-02-09 14:41:45,861 : Registered sensor : Sensor (Name = 'powerstatus', ID = '106239627', State Mappings: {e2instandby:<span class="code-keyword">false</span>=on, e2instandby:<span class="code-keyword">true</span>=off})
+INFO 2015-02-09 14:41:45,872 : Startup complet
+
+</pre>
+</div></div>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bart groot at Feb 08, 2015 14:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596479"></a>
+                                    <font class="smallfont"><p>Thanks a lot. I have waked up the device, I have now the xml file in the folder... next step....</p>
+
+<p>Here is the file : (everspring SF812)</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;node id=<span class="code-quote">"2"</span>&gt;
+  &lt;manufacturer id=<span class="code-quote">"96"</span>&gt;Everspring&lt;/manufacturer&gt;
+  &lt;basic-device-class id=<span class="code-quote">"0x04"</span>&gt;BASIC_TYPE_ROUTING_SLAVE&lt;/basic-device-class&gt;
+  &lt;<span class="code-keyword">generic</span>-device-class id=<span class="code-quote">"0xA1"</span>&gt;GENERIC_TYPE_SENSOR_ALARM&lt;/<span class="code-keyword">generic</span>-device-class&gt;
+  &lt;specific-device-class id=<span class="code-quote">"0x07"</span>&gt;SPECIFIC_TYPE_ROUTING_SMOKE_SENSOR&lt;/specific-device-class&gt;
+  &lt;product-type id=<span class="code-quote">"0x000D"</span> /&gt;
+  &lt;product id=<span class="code-quote">"0x0001"</span> /&gt;
+  &lt;listening&gt;<span class="code-keyword">false</span>&lt;/listening&gt;
+  &lt;routing&gt;<span class="code-keyword">true</span>&lt;/routing&gt;
+  &lt;command-classes&gt;
+    &lt;command-class id=<span class="code-quote">"0x80"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_BATTERY"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x20"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_BASIC"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x72"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_MANUFACTURER_SPECIFIC"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x85"</span> version=<span class="code-quote">"2"</span> name=<span class="code-quote">"COMMAND_CLASS_ASSOCIATION_V2"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x86"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_VERSION"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x9C"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_SENSOR_ALARM"</span> type=<span class="code-quote">"supported"</span>&gt;
+      &lt;sensors&gt;
+        &lt;sensor id=<span class="code-quote">"0x01"</span>&gt;SMOKE_ALARM&lt;/sensor&gt;
+      &lt;/sensors&gt;
+    &lt;/command-class&gt;
+  &lt;/command-classes&gt;
+  &lt;configuration hash=<span class="code-quote">"B9222D42F9C61D3AB08B039FE8E232DE"</span>&gt;
+    &lt;associations&gt;
+      &lt;association-group id=<span class="code-quote">"1"</span> capacity=<span class="code-quote">"5"</span> /&gt;
+    &lt;/associations&gt;
+    &lt;parameters /&gt;
+  &lt;/configuration&gt;
+&lt;/node&gt;
+</pre>
+</div></div>
+
+<p>Can I add wake up time manually ? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gman0105 at Feb 09, 2015 21:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596486"></a>
+                                    <font class="smallfont"><p>You have to do the following:</p>
+
+<ol>
+	<li>In OpenRemote Designer create commands with the command strings <b>SMOKE_ALARM</b> and <b>BATTERY</b></li>
+	<li>Edit the configuration section in the node2.xml file manually in order to configure an association from the device to the controller
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;associations&gt;
+  &lt;association-group id=<span class="code-quote">"1"</span> capacity=<span class="code-quote">"5"</span>&gt;
+    &lt;association&gt;
+      &lt;node&gt;1&lt;/node&gt;
+    &lt;/association&gt;
+  &lt;/association-group&gt;
+&lt;/associations&gt;
+</pre>
+</div></div> </li>
+	<li>Restart the controller</li>
+	<li>Wake up the Everspring SF812 manually so that it's possible for the controller to configure the association</li>
+	<li>Test if everything works as expected - press the button of the device (according to the manual 3 seconds)</li>
+</ol>
+
+
+<p>It seems that you cannot configure the wake-up interval because the device doesn't support the Z-Wave <b>COMMAND_CLASS_WAKE_UP</b> - that's a bit strange for a battery powered device.</p>
+
+<p>I'm not sure if the device sends the battery status to the controller from time to time. Maybe you have to create a rule that executes the <b>BATTERY</b> command periodically (e.g. once a day).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Feb 10, 2015 08:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596502"></a>
+                                    <font class="smallfont"><p>Problem Solved,</p>
+
+<p>after reading a lot in this forum i found the solution. I had Java8 installed. Rules only work in Java6. Installed Java6.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bart groot at Feb 11, 2015 07:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596659"></a>
+                                    <font class="smallfont"><p>Hi.</p>
+
+<p>Today I am connected to the Z-Wave network a smoke detector Fibaro FGSS-001, using switches Inclusion/Exclusion, directly from the phone Android. This really comes in handy!<br/>
+I created four (4) commands:</p>
+
+<p>AIR_TEMPERATURE_SCALE_CELSIUS =&gt; I have created a Sensor, and get the temperature of FGSS-001.<br/>
+and<br/>
+SMOKE_ALARM           =&gt;<br/>
+HEAT_ALARM            =&gt; I have created a Sensor (Custom), and get the value "0" of FGSS-001. That is, there is NO Alarm.<br/>
+GENERAL_PURPOSE_ALARM =&gt;</p>
+
+<p><a class="confluence-thumbnail-link 564x368" href='http://www.openremote.org/download/attachments/23595691/ssensor.jpg'><img src="attachments/thumbnails/23595691/23789794" align="left" border="0"/></a><a class="confluence-thumbnail-link 354x344" href='http://www.openremote.org/download/attachments/23595691/ssensor1.jpg'><img src="attachments/thumbnails/23595691/23789795" align="absmiddle" border="0"/></a></p>
+
+<p>That is correct, the Sensor (Custom)? What value the will instead of "0" if the alarm is YES? "1" or "255" ?<br/>
+I want to create the image sensor for these commands. How to do it?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Feb 20, 2015 16:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596661"></a>
+                                    <font class="smallfont"><p><a href="http://www.openremote.org/display/docs/Designer+2.0+-+Create+Custom+Sensor">http://www.openremote.org/display/docs/Designer+2.0+-+Create+Custom+Sensor</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 20, 2015 16:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596664"></a>
+                                    <font class="smallfont"><p>The following OpenRemote Designer commands are required for the <b>#FIBARO Smoke Sensor FGSS-001</b> (Example : Z-Wave node ID = <b>4</b>):</p>
+
+<p><b>Smoke Alarm Command</b></p>
+
+<p>Z-Wave nodeID : 4<br/>
+Command : <b>SMOKE_ALARM</b></p>
+
+<p><b>Heat Alarm Command</b></p>
+
+<p>Z-Wave nodeID : 4<br/>
+Command : <b>HEAT_ALARM</b></p>
+
+<p><b>Tamper Alarm Command</b></p>
+
+<p>Z-Wave nodeID : 4<br/>
+Command : <b>GENERAL_PURPOSE_ALARM</b></p>
+
+<p><b>Temperature Command</b></p>
+
+<p>Z-Wave nodeID : 4<br/>
+Command : <b>AIR_TEMPERATURE_SCALE_CELSIUS</b></p>
+
+<p>Note that I could imagine that you have to use the command <b>AIR_TEMPERATURE_SCALE_FAHRENHEIT</b> in case of a US version.</p>
+
+<p><b>Battery Status Command</b></p>
+
+<p>Z-Wave nodeID : 4<br/>
+Command : <b>BATTERY</b></p>
+
+<p><b><ins>Alarm Sensor Values</ins></b><br/>
+Alarm OFF : 0<br/>
+Alarm ON : 255 <br/>
+Alarm Serverity Range : 1 - 100</p>
+
+<p>That means the commands <em>SMOKE_ALARM</em>, <em>HEAT_ALARM</em>, <em>GENERAL_PURPOSE_ALARM</em> may return the values 0, 255 or a value form the severity range 1 - 100. I'm pretty much sure that the <em>GENERAL_PURPOSE_ALARM</em> command returns only the values 0 or 255. </p>
+
+
+
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Feb 20, 2015 18:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596677"></a>
+                                    <font class="smallfont"><p>Hi Rainer. Thanks for the reply.<br/>
+1. With commands, I understand. <br/>
+For them, the Sensors (type Custom) return the value "0" or "255"? Ie looks like this:</p>
+
+<p>Command : SMOKE_ALARM<br/>
+Sensor (Custom):  <br/>
+OFF &lt;- 0<br/>
+ON  &lt;- 255</p>
+
+<p>Accordingly, for Command : HEAT_ALARM and GENERAL_PURPOSE_ALARM, correct, if wrong.</p>
+
+<p>2. Another question about the temperature.<br/>
+My sensor Smoke Sensor FGSS-001 is connected to the constant 12V supply (not to the battery).<br/>
+Command : AIR_TEMPERATURE_SCALE_CELSIUS for Smoke Sensor FGSS-001 returns the value of the temperature rarely or (possible only when you restart the controller). With the thermostat, for instance, the temperature is returned every five minutes.<br/>
+Something is not right with the update temperature?</p>
+
+<p>3. I connected Fibaro Motion Sensor FGMS-001.</p>
+
+<p>For motion sensor:</p>
+
+<p>Command : STATUS<br/>
+If for this command the Sensor (Switch type), the return value is "ON" or "OFF". <br/>
+If for this command the Sensor (Custom type), the return value is "1" or "0".</p>
+
+<p>For accelerometer:<br/>
+Command : GENERAL_PURPOSE_ALARM<br/>
+If for this command the Sensor (Switch type), the return value is "ON" or "OFF". <br/>
+If for this command the Sensor (Custom type), the return value is "255" or "0".</p>
+
+<p>Question:<br/>
+For Commands: SMOKE_ALARM and HEAT_ALARM can also be used Sensor (Switch type)? For a Smoke Sensor FGSS-001</p>
+
+<p>N.B. The temperature values with a Motion Sensor FGMS-001 returned normally,  with a Smoke Sensor FGSS-001 - not (screenshot). Why?<br/>
+<a class="confluence-thumbnail-link 349x249" href='http://www.openremote.org/download/attachments/23595691/1.jpg'><img src="attachments/thumbnails/23595691/23789796" align="left" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Feb 21, 2015 11:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596698"></a>
+                                    <font class="smallfont"><blockquote><p>2. Another question about the temperature.</p></blockquote>
+<p>...</p>
+<blockquote><p>Command : AIR_TEMPERATURE_SCALE_CELSIUS for Smoke Sensor FGSS-001 returns the value of the temperature rarely or (possible only when you restart the </p></blockquote>
+<p>Temperature reporting is configurable by means of parameter <b>#10 - Temperature report interval</b> and <b>#12 - Temperature report hysteresis</b> (see device manual). The default temperature delta is currently 2 degrees celsius. Admittedly this seems to me a bit high - I'll change that default value to a lower value - maybe 1 degrees celsius.</p>
+<blockquote><p>For Commands: SMOKE_ALARM and HEAT_ALARM can also be used Sensor (Switch type)? For a Smoke Sensor FGSS-001</p></blockquote>
+<p>Yes<br/>
+0 --&gt; OFF<br/>
+1-100, 255 --&gt; ON</p>
+<blockquote><p>N.B. The temperature values with a Motion Sensor FGMS-001 returned normally, with a Smoke Sensor FGSS-001 - not (screenshot). Why?</p></blockquote>
+<p>I have the Fibaro Motion Sensor and the Fibaro Smoke Sensor (battery powered) in the same room and they show a temperature difference of 1 celsius degrees but I think that this is mainly because we do not show decimal places.</p>
+
+<p>Thanks for testing and keep us informed if your <b>Fibaro Smoke Sensor FGSS-001</b> behaves correctly.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Feb 22, 2015 09:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596714"></a>
+                                    <font class="smallfont"><p>Today I see the change in temperature with Fibaro Smoke Sensor FGSS-001.<br/>
+Yesterday:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> 
+DEBUG 2015-02-21 12:50:18,754 (Z-Wave): RX_Session_Layer            : Received an unexpected frame [APP_CMD_HANDLER_FRAME : NodeID='5', Status=[RECEIVE_STATUS_TYPE_SINGLE], CommandClass='COMMAND_CLASS_SENSOR_MULTILEVEL', Command='0x05', Parameters: [0x01, 0x22, 0x00, 0xDB]] <span class="code-keyword">while</span> waiting <span class="code-keyword">for</span> an ACK of the Z-Wave function 'ZW_SendData(NodeID=4, Payload=[0x43, 0x02, 0x0D], TxOptions=[TRANSMIT_OPTION_AUTO_ROUTE, TRANSMIT_EXPLORE_OPTION_ACK], CallbackID=0x10)'.
+DEBUG 2015-02-21 12:50:18,755 (Z-Wave): Node_Initializer            : Node '5:0' : [COMMAND_CLASS_SENSOR_MULTILEVEL::SENSOR_MULTILEVEL_REPORT (Retry='1'), Value='21.9', Type='AIR_TEMPERATURE', Scale='AIR_TEMPERATURE_SCALE_CELSIUS'].
+</pre>
+</div></div>
+<p>Today, one time (I do not know why):</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2015-02-22 11:52:35,322 (Z-Wave): CCMultiLevelSensor          : Node '5:0' : [COMMAND_CLASS_SENSOR_MULTILEVEL::SENSOR_MULTILEVEL_REPORT, Value='17.4', Type='AIR_TEMPERATURE', Scale='AIR_TEMPERATURE_SCALE_CELSIUS'].
+</pre>
+</div></div>
+<p><a class="confluence-thumbnail-link 333x237" href='http://www.openremote.org/download/attachments/23595691/ssensor2.jpg'><img src="attachments/thumbnails/23595691/23789797" align="left" border="0"/></a></p>
+
+<p>From Device manual.<br/>
+#10 - Temperature report interval<br/>
+Default setting: 0 (Reports inactive)<br/>
+#12 - Temperature report hysteresis <br/>
+Default setting: 20 (2oC)</p>
+
+<p>This sensor is new (it was not used), pulled it out of the new box. I do not connect the battery, pulled out. Is connect to 12V power supply, and included in the Z-Wave network. Need to change these settings. How to do it?</p>
+
+<p>And a question for illumination sensor.<br/>
+Yesterday returns the value ("20", then "7" night "0"). And today, and with the included light shows "0". Also need to change the settings? How?</p>
+
+<p>P.S. The next step, after testing FGMS-001 and FGSS-001, is testing the module Fibaro RGBW Controller FGRGB-101.</p>
+
+<p>P.S.S Sometimes sensor FGSS-001 sends temperature values. Two changes per day:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2015-02-22 15:02:39,194 (Z-Wave): RX_Session_Layer            : Node '5' : [APP_CMD_HANDLER_FRAME : NodeID='5', Status=[RECEIVE_STATUS_TYPE_SINGLE], CommandClass='COMMAND_CLASS_SENSOR_MULTILEVEL', Command='0x05', Parameters: [0x01, 0x22, 0x00, 0xD2]]
+DEBUG 2015-02-22 15:02:39,195 (Z-Wave): CCMultiLevelSensor          : Node '5:0' : [COMMAND_CLASS_SENSOR_MULTILEVEL::SENSOR_MULTILEVEL_REPORT, Value='21', Type='AIR_TEMPERATURE', Scale='AIR_TEMPERATURE_SCALE_CELSIUS'].
+...............................................
+DEBUG 2015-02-23 09:49:14,997 (Z-Wave): RX_Session_Layer            : Node '5' : [APP_CMD_HANDLER_FRAME : NodeID='5', Status=[RECEIVE_STATUS_TYPE_SINGLE], CommandClass='COMMAND_CLASS_SENSOR_MULTILEVEL', Command='0x05', Parameters: [0x01, 0x22, 0x00, 0xAF]]
+DEBUG 2015-02-23 09:49:14,998 (Z-Wave): CCMultiLevelSensor          : Node '5:0' : [COMMAND_CLASS_SENSOR_MULTILEVEL::SENSOR_MULTILEVEL_REPORT, Value='17.5', Type='AIR_TEMPERATURE', Scale='AIR_TEMPERATURE_SCALE_CELSIUS'].
+...............................................
+DEBUG 2015-02-24 09:46:30,523 (Z-Wave): RX_Session_Layer            : Node '5' : [APP_CMD_HANDLER_FRAME : NodeID='5', Status=[RECEIVE_STATUS_TYPE_SINGLE], CommandClass='COMMAND_CLASS_SENSOR_MULTILEVEL', Command='0x05', Parameters: [0x01, 0x22, 0x00, 0xAA]]
+DEBUG 2015-02-24 09:46:30,524 (Z-Wave): CCMultiLevelSensor          : Node '5:0' : [COMMAND_CLASS_SENSOR_MULTILEVEL::SENSOR_MULTILEVEL_REPORT, Value='17', Type='AIR_TEMPERATURE', Scale='AIR_TEMPERATURE_SCALE_CELSIUS'].
+...............................................
+DEBUG 2015-02-25 09:54:54,295 (Z-Wave): RX_Session_Layer            : Node '5' : [APP_CMD_HANDLER_FRAME : NodeID='5', Status=[RECEIVE_STATUS_TYPE_SINGLE], CommandClass='COMMAND_CLASS_SENSOR_MULTILEVEL', Command='0x05', Parameters: [0x01, 0x22, 0x00, 0xBB]]
+DEBUG 2015-02-25 09:54:54,296 (Z-Wave): CCMultiLevelSensor          : Node '5:0' : [COMMAND_CLASS_SENSOR_MULTILEVEL::SENSOR_MULTILEVEL_REPORT, Value='18.7', Type='AIR_TEMPERATURE', Scale='AIR_TEMPERATURE_SCALE_CELSIUS'].
+</pre>
+</div></div>
+
+<p>But why, if Default setting: 0 (Reports inactive)?</p>
+
+<p>I Checked the sensor FGSS-001, smoke from cigarettes. SMOKE_ALARM Works! I'll try to heat the sensor hairdryer to check HEAT_ALARM</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Feb 22, 2015 12:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596842"></a>
+                                    <font class="smallfont"><p>Hi.<br/>
+I was able to change the settings of z-wawe devices (via a third-party application).</p>
+
+<p>For FGSS-001 I changed:</p>
+
+<p>#10 - Temperature report interval<br/>
+I setting: 300<br/>
+#12 - Temperature report hysteresis <br/>
+I setting: 10</p>
+
+<p>For FGMS-001 I changed:</p>
+
+<p>#42 - ILLUMINATION REPORTS INTERVAL<br/>
+I setting: 300 (for example)</p>
+
+<p>All sensors works, reports are sent every 5 minutes.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Feb 28, 2015 12:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596846"></a>
+                                    <font class="smallfont"><p>You do <b>NOT</b> need a third party tool in order to configure Z-Wave device parameters.</p>
+
+<p>This is the general procedure in order to configure Z-Wave device parameters:</p>
+
+<ol>
+	<li>Read the device manual and determine the parameter number, size (1, 2 or 4 bytes) and the parameter value.</li>
+	<li>Open the node&lt;nodeID&gt;.xml file with a text editor.</li>
+	<li>Edit the node&lt;nodeID&gt;.xml file and add the parameter configuration.</li>
+	<li>Restart the controller.</li>
+</ol>
+
+
+<p>Example: Configure '<em>Temperature Report Interval</em>' parameter of the <b>#FIBARO Smoke Sensor FGSS-001</b>. The device has the Z-Wave node ID 8.</p>
+
+<ol>
+	<li>In the manual of the <b>Fibaro Smoke Sensor FGSS-001</b> you can read that parameter number #10 is used to configure the '<em>Temperature Report Interval</em>'. The parameter has a size of 2 bytes and a value range of [1 - 17280]. The value has to be multiplied by 5 seconds.</li>
+	<li>Search for the node8.xml file in the <b>'&lt;OpenRemote Controller&gt;/webapps/controller/zwave'</b> directory and open it with a text editor.</li>
+	<li>Add the following parameter configuration to the XML file:
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;configuration hash=<span class="code-quote">"FA035ACF6EC2AF7CD89543A422425087"</span>&gt;
+  &lt;associations&gt;
+    ...      
+  &lt;/associations&gt;
+
+  &lt;parameters&gt;
+    &lt;parameter&gt;
+      &lt;number&gt;10&lt;/number&gt;
+      &lt;value&gt;300&lt;/value&gt;
+      &lt;size&gt;2&lt;/size&gt;
+    &lt;/parameter&gt;
+  &lt;/parameters&gt;
+
+  ...
+
+&lt;/configuration&gt;
+</pre>
+</div></div></li>
+	<li>Restart the controller. The controller checks whether the &lt;configuration&gt; has changed based on the hash value. The controller writes the parameter settings to the device if it detects that the &lt;configuration&gt; has changed at startup time of the controller.</li>
+</ol>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Mar 01, 2015 08:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596860"></a>
+                                    <font class="smallfont"><p>Hi.<br/>
+1. I did not know, that so can change the devices parameters in the application OpenRemote.<br/>
+And what if I changed  the device parameters in the third-party application?<br/>
+But it works in OpenRemote.</p>
+
+<p>2. You can be more in detail, in my example.<br/>
+For Fibaro Smoke Sensor FGSS-001, now my node5.xml file looks like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;configuration hash=<span class="code-quote">"598FD9F478E102476552D1467867E85E"</span>&gt;
+    &lt;associations&gt;
+      &lt;association-group id=<span class="code-quote">"1"</span> capacity=<span class="code-quote">"5"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"2"</span> capacity=<span class="code-quote">"5"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"3"</span> capacity=<span class="code-quote">"1"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+    &lt;/associations&gt;
+    &lt;parameters /&gt;
+  &lt;/configuration&gt;
+&lt;/node&gt;
+</pre>
+</div></div>
+
+<p>I must add this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;parameters&gt;
+    &lt;parameter&gt;
+      &lt;number&gt;10&lt;/number&gt;
+      &lt;value&gt;300&lt;/value&gt;
+      &lt;size&gt;2&lt;/size&gt;
+    &lt;/parameter&gt;
+  &lt;/parameters&gt;
+</pre>
+</div></div>
+
+<p>and this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;parameters&gt;
+    &lt;parameter&gt;
+      &lt;number&gt;12&lt;/number&gt;
+      &lt;value&gt;10&lt;/value&gt;
+      &lt;size&gt;1&lt;/size&gt;
+    &lt;/parameter&gt;
+  &lt;/parameters&gt;
+</pre>
+</div></div>
+
+<p>As these two parameters will be displayed in the node.xml file (two or more parameters), and how it will be displayed in my node5.xml file?  <br/>
+I would like sort out which lines like and where to insert my node5.xml file.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Mar 01, 2015 12:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596861"></a>
+                                    <font class="smallfont"><p>You have to insert the #10 and #12 &lt;parameter&gt; configurations to the &lt;parameters&gt; section. Your node5.xml file should look the following after you've edited it:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;node id=<span class="code-quote">"5"</span>&gt;
+  ...
+  ...
+  &lt;configuration hash=<span class="code-quote">"598FD9F478E102476552D1467867E85E"</span>&gt;
+    &lt;associations&gt;
+      &lt;association-group id=<span class="code-quote">"1"</span> capacity=<span class="code-quote">"5"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"2"</span> capacity=<span class="code-quote">"5"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"3"</span> capacity=<span class="code-quote">"1"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+    &lt;/associations&gt;
+    &lt;parameters&gt;
+      &lt;parameter&gt;
+        &lt;number&gt;10&lt;/number&gt;
+        &lt;value&gt;300&lt;/value&gt;
+        &lt;size&gt;2&lt;/size&gt;
+      &lt;/parameter&gt;
+      &lt;parameter&gt;
+        &lt;number&gt;12&lt;/number&gt;
+        &lt;value&gt;10&lt;/value&gt;
+        &lt;size&gt;1&lt;/size&gt;
+      &lt;/parameter&gt;
+    &lt;/parameters&gt;
+    ...
+    ...
+  &lt;/configuration&gt;
+&lt;/node&gt;
+</pre>
+</div></div>
+
+<p>btw. it's also possible to configure Z-Wave associations and the node wake up interval this way.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Mar 01, 2015 13:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596869"></a>
+                                    <font class="smallfont"><p>Thank you for the explanation, but still little understood. <br/>
+1. In my file:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;node id=<span class="code-quote">"5"</span>&gt;
+  ...
+  ...
+  &lt;configuration hash=<span class="code-quote">"598FD9F478E102476552D1467867E85E"</span>&gt;
+    &lt;associations&gt;
+      &lt;association-group id=<span class="code-quote">"1"</span> capacity=<span class="code-quote">"5"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"2"</span> capacity=<span class="code-quote">"5"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"3"</span> capacity=<span class="code-quote">"1"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+    &lt;/associations&gt;
+    &lt;parameters /&gt;                &lt;--   <span class="code-quote">"parameters /"</span>
+  &lt;/configuration&gt;
+&lt;/node&gt;
+</pre>
+</div></div>
+
+<p>In your example:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;node id=<span class="code-quote">"5"</span>&gt;
+  ...
+  ...
+  &lt;configuration hash=<span class="code-quote">"598FD9F478E102476552D1467867E85E"</span>&gt;
+    &lt;associations&gt;
+      &lt;association-group id=<span class="code-quote">"1"</span> capacity=<span class="code-quote">"5"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"2"</span> capacity=<span class="code-quote">"5"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"3"</span> capacity=<span class="code-quote">"1"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+    &lt;/associations&gt;
+    &lt;parameters&gt;            &lt;--   <span class="code-quote">"parameters"</span>, without <span class="code-quote">"/"</span>
+      &lt;parameter&gt;
+        &lt;number&gt;10&lt;/number&gt;
+        &lt;value&gt;300&lt;/value&gt;
+        &lt;size&gt;2&lt;/size&gt;
+      &lt;/parameter&gt;
+      &lt;parameter&gt;
+        &lt;number&gt;12&lt;/number&gt;
+        &lt;value&gt;10&lt;/value&gt;
+        &lt;size&gt;1&lt;/size&gt;
+      &lt;/parameter&gt;
+    &lt;/parameters&gt;
+    ...
+    ...
+  &lt;/configuration&gt;
+&lt;/node&gt;
+</pre>
+</div></div>
+
+<p>As correctly, with a "/" or without?</p>
+
+<p>2. And what if I changed the device parameters in the third-party application?<br/>
+But it works in OpenRemote.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Mar 01, 2015 17:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596901"></a>
+                                    <font class="smallfont"><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;parameters /&gt;
+</pre>
+</div></div>
+<p>is the short form of </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;parameters&gt;
+&lt;/parameters&gt;
+</pre>
+</div></div>
+<p>that means the list of parameter configurations is empty.</p>
+
+<p>Currently, parameter settings are not read from the device. That's the reason why your &lt;parameters&gt; list is empty even if you've set a few parameters with a third party tool. Reading parameter settings from Z-Wave devices will be possible with an upcoming Z-Wave device database.</p>
+
+<p>The &lt;associations&gt; list data is read from the device. If you set Z-Wave associations with a third party tool you'll see them in the &lt;associations&gt; list.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Mar 03, 2015 06:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596909"></a>
+                                    <font class="smallfont"><p>Thanks. Now I understand.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Mar 03, 2015 10:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597550"></a>
+                                    <font class="smallfont"><p>Does this update apply to the Pro Controller? First attempt I am having issues getting Z-wave setup, haven't dug too much into it, but haven't seen anything mentioned about any changes needed to Pro</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by drewscm at Apr 11, 2015 15:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600322"></a>
+                                    <font class="smallfont"><p>Wondering what the syntax is for a value that has a low and high byte? </p>
+
+<p>For a Aeon Labs Siren Gen5 that works on the zwave network with on/off commands and shows zwave config file) </p>
+
+<p>Parameter #= Hex(0x25)    Decimal(37) </p>
+
+<p>Value =<br/>
+1, The value1 (low byte) is used to select the Siren<br/>
+sound :<br/>
+Value1=0, do not change the current Siren sound.<br/>
+Value1=1, Siren sound 1 is selected.<br/>
+Value1=2, Siren sound 2 is selected.<br/>
+Value1=3, Siren sound 3 is selected.<br/>
+Value1=4, Siren sound 4 is selected.<br/>
+Value1=5, Siren sound 5 is selected.<br/>
+Other values will be ignored.<br/>
+  <br/>
+2, The value2 (high byte) is used to adjust the volume:<br/>
+Value2=0, do not change the current volume.<br/>
+Value2=1, set the volume to 88 dB.<br/>
+Value2=2, set the volume to 100 dB.<br/>
+Value2=3, set the volume to 105 dB.<br/>
+Other values will be ignored.</p>
+
+<p>Size=2</p>
+
+<p>Tried the following for low byte of 1 and high byte of 2:</p>
+
+<p>&lt;parameters&gt;<br/>
+  &lt;parameter&gt;<br/>
+     &lt;number&gt;37&lt;/number&gt;<br/>
+     &lt;value&gt;1,2&lt;/value&gt;<br/>
+     &lt;size&gt;2&lt;/size&gt;<br/>
+  &lt;/parameter&gt;<br/>
+&lt;/parameters&gt;</p>
+
+<p>Doesn't seem to work.   Anyone have luck with multi byte value syntax? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niedejb at Jul 30, 2015 03:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600326"></a>
+                                    <font class="smallfont"><p>I also own the Aeon Labs Siren and played around with parameter 37. It seems that the official documentation is wrong because the high byte determines the sound type and the low byte the volume.</p>
+
+<p>I've found the following instructions which are very helpful : <a href="http://www.vesternet.com/resources/application-notes/apnt-90">http://www.vesternet.com/resources/application-notes/apnt-90</a></p>
+
+<p>That means sound 1 and volume 2 (0x0102 = 258) requires the following configuration:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;parameters&gt;
+    &lt;parameter&gt;
+        &lt;number&gt;37&lt;/number&gt;
+        &lt;value&gt;258&lt;/value&gt;
+        &lt;size&gt;2&lt;/size&gt;
+    &lt;/parameter&gt;
+&lt;/parameters&gt;
+</pre>
+</div></div>
+
+<p>Currently it's not possible to configure the parameter number and/or value with hexadecimal notation. In the upcoming new version it will be possible to do the following :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;parameters&gt;
+    &lt;parameter&gt;
+        &lt;number&gt;0x25&lt;/number&gt;
+        &lt;value&gt;0x0102&lt;/value&gt;
+        &lt;size&gt;2&lt;/size&gt;
+    &lt;/parameter&gt;
+&lt;/parameters&gt;
+</pre>
+</div></div>
+
+<p>Btw in order to convert hexadecimal to decimal values or vice versa 'Google' for a 'hexadecimal to decimal converter'. </p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Jul 30, 2015 08:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600334"></a>
+                                    <font class="smallfont"><p>That did the trick...thank you sir!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niedejb at Jul 30, 2015 22:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602928"></a>
+                                    <font class="smallfont"><p>Hi RAINER</p>
+
+<p>Happy New Year.<br/>
+Tell me please, when will support all classes of commands to the thermostat?<br/>
+There are already thermostats support IR control for air conditioners. <br/>
+<a class="confluence-thumbnail-link 650x400" href='http://www.openremote.org/download/attachments/23595691/CH_202_rakurs_02-650x400.jpg'><img src="attachments/thumbnails/23595691/23790019" align="left" border="0"/></a><br/>
+That's part of the description:</p>
+
+<p>"The thermostat CH-202 - is a Z-Wave device for controlling the air-conditioned by sending their IR commands. <br/>
+The thermostat can send commands to the switching on and off, selects the desired temperature and fan speed control modes. <br/>
+he device has a simple algorithm for the study of IR commands. <br/>
+CH-202 can expand its functionality with the ability to connect various sensors companies ConnectHome."</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Dec 31, 2015 13:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606037"></a>
+                                    <font class="smallfont"><p>Up!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Mar 12, 2016 14:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606103"></a>
+                                    <font class="smallfont"><p>Well, I'm also one of those struggling with OpenRemote on my Qnap NAS. Up to know I also issued my problem at another place <a href="http://www.openremote.org/pages/viewpage.action?pageId=23592977&amp;focusedCommentId=23593011#comment-23593011" title="OpenRemote on Qnap TS-119">entry</a>, but as far as I understand this topic, here might be the better place to ask you.</p>
+
+<p>In the end, I have the same problem as Christian Bauer has mentioned in his post. My log-file (zwave.log) has the same entries as Christan's. So I followed the instructions by Rainer and modelled the commands as seen in the screenshots I have attached. Syncing with OpenRemote works and I can open the Controller Panel via the webconsole.</p>
+
+<p>So, when I take a look at <font color="red"> boot.log </font>, I get the following statement:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+DEBUG 2016-03-18 16:23:41,680 : Created object model <span class="code-keyword">for</span> Command( ID = 17, Type = zwave, Properties : {name=Inclusion On, nodeId=1, command=INCLUSION_MODE_ON}).
+DEBUG 2016-03-18 16:23:41,680 : Created object model <span class="code-keyword">for</span> Command( ID = 18, Type = zwave, Properties : {name=Inclusion Status, nodeId=1, command=INCLUSION_MODE_STATUS}).
+DEBUG 2016-03-18 16:23:41,680 : Created object model <span class="code-keyword">for</span> Command( ID = 19, Type = zwave, Properties : {name=Inclusion OFF, nodeId=1, command=INCLUSION_MODE_OFF}).
+DEBUG 2016-03-18 16:23:41,681 : Created object model <span class="code-keyword">for</span> Command( ID = 20, Type = zwave, Properties : {name=Exclusion On, nodeId=1, command=EXCLUSION_MODE_ON}).
+DEBUG 2016-03-18 16:23:41,681 : Created object model <span class="code-keyword">for</span> Command( ID = 21, Type = zwave, Properties : {name=Exclusion Off, nodeId=1, command=EXCLUSION_MODE_OFF}).
+DEBUG 2016-03-18 16:23:41,681 : Created object model <span class="code-keyword">for</span> Command( ID = 22, Type = zwave, Properties : {name=Exclusion Status, nodeId=1, command=EXCLUSION_MODE_STATUS}).
+DEBUG 2016-03-18 16:23:41,681 : Initializing event processor: Drools Rule Engine
+INFO 2016-03-18 16:23:41,682 : No rule definitions found in '/share/CE_CACHEDEV1_DATA/.qpkg/OpenRemote/OpenRemote/webapps/controller/rules'.
+INFO 2016-03-18 16:23:41,682 : Initialized event processor : Drools Rule Engine
+DEBUG 2016-03-18 16:23:41,682 : Initializing event processor: RRD4J Data Logger
+INFO 2016-03-18 16:23:41,695 : Initialized event processor : RRD4J Data Logger
+DEBUG 2016-03-18 16:23:41,695 : Initializing event processor: EmonCMS Data Logger
+INFO 2016-03-18 16:23:41,695 : Initialized event processor : EmonCMS Data Logger
+ERROR 2016-03-18 16:23:41,702 : Creating sensor failed. Error : org/openremote/controller/ZWaveConfiguration 
+ XML Element : &lt;sensor xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> id=<span class="code-quote">"107969761"</span> name=<span class="code-quote">"InclusionSwitchSensor"</span> type=<span class="code-quote">"<span class="code-keyword">switch</span>"</span>&gt;
+</span>      &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"17"</span> /&gt;
+      &lt;state name=<span class="code-quote">"on"</span> /&gt;
+      &lt;state name=<span class="code-quote">"off"</span> /&gt;
+    &lt;/sensor&gt;
+java.lang.NoClassDefFoundError: org/openremote/controller/ZWaveConfiguration
+	at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.createZWavePortConfiguration(DefaultZWaveConfigurationManager.java:74)
+	at org.openremote.controller.protocol.zwave.DefaultZWaveConfigurationManager.getPortConfiguration(DefaultZWaveConfigurationManager.java:47)
+	at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.initZWaveController(ZWaveCommandBuilder.java:245)
+	at org.openremote.controller.protocol.zwave.ZWaveCommandBuilder.build(ZWaveCommandBuilder.java:145)
+	at org.openremote.controller.command.CommandFactory.getCommand(CommandFactory.java:164)
+	at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:420)
+	at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:287)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:817)
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:663)
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:858)
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)
+INFO 2016-03-18 16:23:41,705 : Startup complete.
+</pre>
+</div></div>
+
+<p>This looks like a mistake I did when working in the Designer? Since the error occurs, I also cannot click on the button in the webconsole (error message).</p>
+
+<p>However, the folder "zwave" in "OpenRemote\webapps\controller\" was created (this is the folder, where the nodeX.xml should appear?). Also, this folder remains empty.</p>
+
+<p>The hardware I use is Aeotec Z-Stick Gen5 (ZW090-C) and a Popp Smart Home 009006 Wall Plug Switch. Pairing them works according to their manuals (flash light indicators). The USB Stick is recognized on my NAS as "Sigma Designs Inc."</p>
+
+<p>So question - what is the mistake I do?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philip27 at Mar 18, 2016 16:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606193"></a>
+                                    <font class="smallfont"><p>Thanks to this amazing thread I successfully connected a Qubino Flush 1D relay + Aeon Labs Gen5 Z-Stick to OpenRemote Pro =&gt; I can control the relay, but am half-away there in reading the magnetic sensor.</p>
+
+<p>So, I have connected the magnetic sensor (door sensor) to I2 and L, according to <a href="http://qubino.com/products/flush-1d-relay/">http://qubino.com/products/flush-1d-relay/</a><br/>
+This relay has 2 endpoints. In OR I created 2 new commands, each associated to a new sensor:<br/>
+1)	Command: NodeID = "6:1" and Command = "Status" | Sensor Type = "Binary". I CAN read the status of the magnetic sensor, HOWEVER, the status of the sensor ALSO changes whenever I send a command to the relay... which is no good!<br/>
+2)	Command: NodeID = "6:2" and Command = "Status" | Sensor Type = tried them all. I CANNOT read the status of the magnetic sensor.</p>
+
+<p>Why am I not getting the Status from NodeID 6:2 ??? Should I change the relay's Parameter 100 to 9? (please see link above). If so, and because I change the relay's Parameters in Node6.xml, how can I follow Qubino's Note: "NOTE: After parameter change, module has to be re included into the network in order setting to take effect!" ? </p>
+
+<p>Please help!</p>
+
+<p>My Node6.xml</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;
+&lt;node id=<span class="code-quote">"6"</span>&gt;
+  &lt;manufacturer id=<span class="code-quote">"345"</span>&gt;Goap&lt;/manufacturer&gt;
+  &lt;basic-device-class id=<span class="code-quote">"0x04"</span>&gt;BASIC_TYPE_ROUTING_SLAVE&lt;/basic-device-class&gt;
+  &lt;<span class="code-keyword">generic</span>-device-class id=<span class="code-quote">"0x10"</span>&gt;GENERIC_TYPE_SWITCH_BINARY&lt;/<span class="code-keyword">generic</span>-device-class&gt;
+  &lt;specific-device-class id=<span class="code-quote">"0x01"</span>&gt;SPECIFIC_TYPE_POWER_SWITCH_BINARY&lt;/specific-device-class&gt;
+  &lt;product-type id=<span class="code-quote">"0x0002"</span> /&gt;
+  &lt;product id=<span class="code-quote">"0x0053"</span> /&gt;
+  &lt;listening&gt;<span class="code-keyword">true</span>&lt;/listening&gt;
+  &lt;routing&gt;<span class="code-keyword">true</span>&lt;/routing&gt;
+  &lt;command-classes&gt;
+    &lt;command-class id=<span class="code-quote">"0x72"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_MANUFACTURER_SPECIFIC"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x60"</span> version=<span class="code-quote">"2"</span> name=<span class="code-quote">"COMMAND_CLASS_MULTI_CHANNEL_V2"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x30"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_SENSOR_BINARY"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x8E"</span> version=<span class="code-quote">"2"</span> name=<span class="code-quote">"COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x86"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_VERSION"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x25"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_SWITCH_BINARY"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x85"</span> version=<span class="code-quote">"2"</span> name=<span class="code-quote">"COMMAND_CLASS_ASSOCIATION_V2"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x70"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_CONFIGURATION"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x20"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_BASIC"</span> type=<span class="code-quote">"supported"</span> /&gt;
+    &lt;command-class id=<span class="code-quote">"0x20"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_BASIC"</span> type=<span class="code-quote">"controlled"</span> /&gt;
+  &lt;/command-classes&gt;
+  &lt;endpoints&gt;
+    &lt;endpoint number=<span class="code-quote">"1"</span>&gt;
+      &lt;<span class="code-keyword">generic</span>-device-class id=<span class="code-quote">"0x10"</span>&gt;GENERIC_TYPE_SWITCH_BINARY&lt;/<span class="code-keyword">generic</span>-device-class&gt;
+      &lt;specific-device-class id=<span class="code-quote">"0x01"</span>&gt;SPECIFIC_TYPE_POWER_SWITCH_BINARY&lt;/specific-device-class&gt;
+      &lt;command-classes&gt;
+        &lt;command-class id=<span class="code-quote">"0x20"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_BASIC"</span> type=<span class="code-quote">"supported"</span> /&gt;
+        &lt;command-class id=<span class="code-quote">"0x25"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_SWITCH_BINARY"</span> type=<span class="code-quote">"supported"</span> /&gt;
+        &lt;command-class id=<span class="code-quote">"0x8E"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_MULTI_INSTANCE_ASSOCIATION"</span> type=<span class="code-quote">"supported"</span> /&gt;
+        &lt;command-class id=<span class="code-quote">"0x85"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_ASSOCIATION"</span> type=<span class="code-quote">"supported"</span> /&gt;
+        &lt;command-class id=<span class="code-quote">"0x86"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_VERSION"</span> type=<span class="code-quote">"supported"</span> /&gt;
+      &lt;/command-classes&gt;
+    &lt;/endpoint&gt;
+    &lt;endpoint number=<span class="code-quote">"2"</span>&gt;
+      &lt;<span class="code-keyword">generic</span>-device-class id=<span class="code-quote">"0x07"</span>&gt;GENERIC_TYPE_SENSOR_NOTIFICATION&lt;/<span class="code-keyword">generic</span>-device-class&gt;
+      &lt;specific-device-class id=<span class="code-quote">"0x01"</span>&gt;SPECIFIC_TYPE_NOTIFICATION_SENSOR&lt;/specific-device-class&gt;
+      &lt;command-classes&gt;
+        &lt;command-class id=<span class="code-quote">"0x20"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_BASIC"</span> type=<span class="code-quote">"supported"</span> /&gt;
+        &lt;command-class id=<span class="code-quote">"0x8E"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_MULTI_INSTANCE_ASSOCIATION"</span> type=<span class="code-quote">"supported"</span> /&gt;
+        &lt;command-class id=<span class="code-quote">"0x85"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_ASSOCIATION"</span> type=<span class="code-quote">"supported"</span> /&gt;
+        &lt;command-class id=<span class="code-quote">"0x30"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_SENSOR_BINARY"</span> type=<span class="code-quote">"supported"</span> /&gt;
+        &lt;command-class id=<span class="code-quote">"0x86"</span> version=<span class="code-quote">"1"</span> name=<span class="code-quote">"COMMAND_CLASS_VERSION"</span> type=<span class="code-quote">"supported"</span> /&gt;
+      &lt;/command-classes&gt;
+    &lt;/endpoint&gt;
+  &lt;/endpoints&gt;
+  &lt;configuration hash=<span class="code-quote">"F275F2F7F478D5AC094A196499A385D0"</span>&gt;
+    &lt;associations&gt;
+      &lt;association-group id=<span class="code-quote">"1"</span> capacity=<span class="code-quote">"1"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"2"</span> capacity=<span class="code-quote">"16"</span> /&gt;
+      &lt;association-group id=<span class="code-quote">"3"</span> capacity=<span class="code-quote">"16"</span> /&gt;
+      &lt;association-group id=<span class="code-quote">"4"</span> capacity=<span class="code-quote">"16"</span>&gt;
+        &lt;association&gt;
+          &lt;node&gt;1&lt;/node&gt;
+        &lt;/association&gt;
+      &lt;/association-group&gt;
+      &lt;association-group id=<span class="code-quote">"5"</span> capacity=<span class="code-quote">"16"</span> /&gt;
+    &lt;/associations&gt;
+    &lt;parameters&gt;
+      &lt;parameter&gt;
+        &lt;number&gt;1&lt;/number&gt;
+        &lt;value&gt;0&lt;/value&gt;
+        &lt;size&gt;1&lt;/size&gt;
+      &lt;/parameter&gt;
+      &lt;parameter&gt;
+        &lt;number&gt;11&lt;/number&gt;
+        &lt;value&gt;75&lt;/value&gt;
+        &lt;size&gt;2&lt;/size&gt;
+      &lt;/parameter&gt;
+      &lt;parameter&gt;
+        &lt;number&gt;30&lt;/number&gt;
+        &lt;value&gt;1&lt;/value&gt;
+        &lt;size&gt;1&lt;/size&gt;
+      &lt;/parameter&gt;
+      &lt;parameter&gt;
+        &lt;number&gt;15&lt;/number&gt;
+        &lt;value&gt;1&lt;/value&gt;
+        &lt;size&gt;1&lt;/size&gt;
+      &lt;/parameter&gt;
+    &lt;/parameters&gt;
+  &lt;/configuration&gt;
+&lt;/node&gt;
+</pre>
+</div></div>
+
+<p>PS: Thanks PZ1!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rui.ponte at Mar 27, 2016 10:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606197"></a>
+                                    <font class="smallfont"><blockquote><p>Tried the [ Code] [ /Code] but that didn't work.</p></blockquote>
+
+<p>Use {code}...{code} instead. Without backslash in the closing tag! </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Mar 27, 2016 13:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

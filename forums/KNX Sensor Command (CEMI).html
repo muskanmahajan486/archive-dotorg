@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNX Sensor Command (CEMI)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNX Sensor Command (CEMI)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 02, 2011 by <font color="#0050B2">frbusu</font>.
+				    </div>
+
+				    <p>Hi ppl,</p>
+
+<p>I previously had a problem with KNX. I have since gotten into more technical detail ...into cemi frames etc... For writing values it is working perfectly, however i am currently trying to read some values. I have used this format for the CEMI Frame :</p>
+
+<p>06<br/>
+10<br/>
+04  : Tunnel req<br/>
+20<br/>
+00<br/>
+15</p>
+
+<p>04<br/>
+41 : Channel ID<br/>
+03 : Seq Counter<br/>
+00 : Reserved</p>
+
+<p>11 : MC<br/>
+00 : MC<br/>
+8E : Control Field1<br/>
+E0 : Control Field2<br/>
+00 : Source Address Byte1<br/>
+00 : Source Address Byte2<br/>
+00 : Dest Add Byte1<br/>
+01 : Dest Add Byte2<br/>
+01<br/>
+00  : KNX Command for read<br/>
+00</p>
+
+<p>When I send this, I expected to get a tunnel response, however I got nothing. I am perfectly able to write values and the heart beat implementation is also ok. I'm thinking I'm sending something wrong in terms of bytes but i'm not sure what. Can anyone help? Thanks</p>
+
+<p>Regards,<br/>
+Franco</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-15532536"></a>
+                                    <font class="smallfont"><p>Hi Franco,</p>
+
+<p>I just found this thread - I guess you already fixed the issue.. However, I was facing the same problems as you when I worked on my project last week. I forgot to set the reading flag of the accessed actors - therefore I haven`t got a proper answer from the gateway. I am new to KNX so don`t blame me for that. <br/>
+I took a look at what I`m sending over the ethernet for a read request. I think your Control Field 1 could cause the problem. I read that the last two bits of it has to be set to 0 otherwise the telegram wouldn`t be interpreted (and accepted) as a KNX telegram. So you should try to set this field to 8C. <br/>
+Good luck!</p>
+
+<p>Best regards,<br/>
+Ulrich </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by usteu at Feb 14, 2011 09:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532538"></a>
+                                    <font class="smallfont"><p>Hi Ulrich,</p>
+
+<p>Many thanks for your interest. As such, I was still lost there. In terms of control field i tried many variations 8C, 8E, 8F, 8A etc... I have to check the ETS settings for the reading flags...10x for mentioning it. So to be sure we're on the same page....i should set the reading flag of the actuator/s that i am trying to read from right?</p>
+
+<p>I was even considering trying to write to XML file and read from it the sensor values instead of polling the sensors but it doesn't make that much sense and seems like a waste of resources.</p>
+
+<p>In terms of the sequence counter byte are you still incrementing it whether it be a write of read request right? </p>
+
+<p>Thanks and Regards,<br/>
+Franco </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frbusu at Feb 14, 2011 10:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532542"></a>
+                                    <font class="smallfont"><p>Hi Franco,</p>
+
+<p>yes.. it is really a grueling work with this KNX telegrams. However, if you are able to write to certain addresses you should also be able to read from the bus - it is basically the same procedure. You just have to take care that the reading flag of the group address which you are trying to read from is set. <br/>
+I`m playing around with the Code of OR KNX. I think you should either set the control field to 8C or AC - with AC the telegram is marked as repeated. My code is using AC all the time, so there should be no problem with marking the tunneling requests always as repeated.</p>
+
+<p>Until now I`m listening to the bus and set the actuators to the certain values in my internal data structure. If I`m changing the page in the app I do send reading requests to all the items shown on that page, but I`m not explicitly waiting for the answers from the bus. It seems to work fine.. most times. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> But I`m not an expert at all - I don`t know whether this procedure is watertight.</p>
+
+<p>With the sequence counter it`s like you said: it is incremented with each tunneling request (write or read doesn`t matter).</p>
+
+<p>Anyways - I guess it is already working -&gt; i bet it was the reading flag. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Best regards,<br/>
+Ulrich</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by usteu at Feb 14, 2011 16:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

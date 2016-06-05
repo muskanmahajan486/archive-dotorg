@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Xpath query returning Premature end of file quering an ISY-994</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Xpath query returning Premature end of file quering an ISY-994
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 31, 2014 by <font color="#0050B2">technicallygky</font>.
+				    </div>
+
+				    <p>I am trying to get the status of an insteon light switch and cant seem to get it. I'm sure its something simple but beyond me at the moment...</p>
+
+<p>I am setting up a custom command, using the following:<br/>
+url: <a href="http://10.0.0.249/rest/nodes/29%20B3%2023%201/ST">http://10.0.0.249/rest/nodes/29%20B3%2023%201/ST</a><br/>
+HTTP Method: GET<br/>
+user: admin<br/>
+pass: (correct password)</p>
+
+<p>Xpath: I've tried multiple versions -<br/>
+//properties/property/@value<br/>
+concat(//properties/property/@value,"")<br/>
+number(concat(//properties/property/@value,""))<br/>
+//property/@value</p>
+
+<p>If I browse to the url myself, I get:</p>
+
+<p>&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br/>
+&lt;properties&gt;<br/>
+&lt;property uom="%/on/off" formatted="Off" value="0" id="ST"/&gt;<br/>
+&lt;/properties&gt;</p>
+
+
+<p>I need to pull that value for a range, which will vary from 0 - 255.</p>
+
+<p>Thoughts?</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22886819/23036582.jpg">ISY_switch.jpg</a> (image/jpeg)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22886819/23036583.jpg">ISY_on.jpg</a> (image/jpeg)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22886823"></a>
+                                    <font class="smallfont"><p>Update:<br/>
+It seems to be an issue with the http authentication. I created an xml file with the exact same xml info and pointed the sensor to it. That one works fine which is why I think its the authentication, however I know the username and password I have entered are correct since they are the ones I use when I browse to the page manually...</p>
+
+<p>Update 2:<br/>
+The minds behind all of this deserve alot of credit for all they've done. I didn't realize that I could simply create an ISY-99 command with ST as the actual command and it would then run that as a status check instead of a command. This is much easier than I was expecting it to be.</p>
+
+<p>Now if only I could figure out why the slider doesn't line up right for what it is telling the switch...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at May 31, 2014 18:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886836"></a>
+                                    <font class="smallfont"><p>You will need a command which has a polling interval and which returns the sensor value for the slide.<br/>
+There is no connection between switch and slider and once the switch turns something on, you need a sensor to give feedback.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 01, 2014 11:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886839"></a>
+                                    <font class="smallfont"><p>Thank you for the response, Marcus. I would agree with you that I need a command with a polling interval, but I couldn't get that command to get any data because of the authentication issue. What is working for getting the status is this -<br/>
+<a class="confluence-thumbnail-link 392x256" href='http://www.openremote.org/download/attachments/22886819/ISY_switch.jpg'><img src="attachments/thumbnails/22886819/23036582" align="absmiddle" border="0"/></a><br/>
+It doesn't make sense to me that it works, but I'm not going to question it.<br/>
+What is happening with the slider tho is an issue with the ranges they function on. The slider seems to be sending commands based on percent (0%-100%) but I can only read status on a 0-255 scale. For example, when I move the slider to 33%, it sets the light correctly to 84 (33% of 255) but then updates the position of the slider to 84% based on the status returned. I tried setting the slider range to 0-255, but then 98 will set the light to 98% and 102 is back to 2%, same for 198 and 202, and finally 255 (slider all the way) is only 55%.I have the slider using the DON command which for insteon uses a 0-255 scale for commands - <a href="http://wiki.universal-devices.com/index.php?title=ISY-99i_Series_INSTEON:REST_Interface#Commands">http://wiki.universal-devices.com/index.php?title=ISY-99i_Series_INSTEON:REST_Interface#Commands</a><br/>
+<a class="confluence-thumbnail-link 386x260" href='http://www.openremote.org/download/attachments/22886819/ISY_on.jpg'><img src="attachments/thumbnails/22886819/23036583" align="absmiddle" border="0"/></a><br/>
+Advice on correcting the slider would be awesome.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 01, 2014 12:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886844"></a>
+                                    <font class="smallfont"><p>You should be able to create a sensor 0-255 which is used by the slider.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 01, 2014 17:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886847"></a>
+                                    <font class="smallfont"><p>Hi Jesse,</p>
+
+<p>I have checked in a version of the controller and designer which I would expect would provide you a much better experience with the ISY.</p>
+
+<p>The designer can interrogate the ISY for all the devices, and automatically create appropriate commands, sensors, switches and sliders for every element.  It is very similar to Dan's work with the Omnilink.  It just so happens I have 1 house with Omnilink, and another with ISY.</p>
+
+<p>The controller has been upgraded to use a Soap subscription to monitor all status changes via 1 channel, instead of the existing http polling method which really isn't scalable.  I found the ISY starts throwing errors with not too many commands polling.</p>
+
+<p>However, getting your own designer installed at home is no small feat.  It requires knowledge of mysql, tomcat and a few other things.  If you would like to give this a try you can find my changes at:</p>
+
+<p><a href="https://svn.code.sf.net/p/openremote/code/workspace/craigham/">https://svn.code.sf.net/p/openremote/code/workspace/craigham/</a></p>
+
+<p>It is the two ISY folders.</p>
+
+<p>cheers,<br/>
+craig</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Jun 01, 2014 17:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886875"></a>
+                                    <font class="smallfont"><p>Thank you both for your replies.</p>
+
+<p>Marcus, I have a sensor set for 0-255 range and it reads that correctly. Unfortunately, it seems that the command the slider sends is based off percentage, as in 0-100 no matter what I do.</p>
+
+<p>Craig, I would be very interested in setting up my own designer and have a fair amount of dealings with mysql but not much with tomcat. Is there a thread or tutorial somewhere that provides some basic steps for setting up an inhouse designer?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 03, 2014 19:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886877"></a>
+                                    <font class="smallfont"><p>Jesse,</p>
+
+<p>Here is a recent post of someone who set up designer, beehive and mysql.</p>
+
+<p>Make sure you notice the GWT version that ended up working.  This also tripped me up last year when I set up my environment.</p>
+
+<p><a href="http://www.openremote.org/display/forums/Setting+up+local+Beehive,+Designer+and+Controller">http://www.openremote.org/display/forums/Setting+up+local+Beehive,+Designer+and+Controller</a></p>
+
+<p>You may want to set up an environment with the builds of controller and designer they used in the post just to limit diversion of steps.  After you get beehive and mysql and the controller/designer working in this article, it would be rather straight forward to download my versions of the designer/controller and you'd be on your way.</p>
+
+<p>Just a warning, it can be painful getting started, but once you have everything working, it really opens up the possibility to make changes, or use some of the bleeding edge enhancements.</p>
+
+<p>cheers,<br/>
+craig</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Jun 03, 2014 19:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886878"></a>
+                                    <font class="smallfont"><p>Thank you very much... I wish there was a thanks button I could push <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 03, 2014 19:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886915"></a>
+                                    <font class="smallfont"><p>What console are you using that exhibits this behavior with the slider ?<br/>
+Also I suspect that the slider feedback would be wrong and that when the sensor returns 100 the slider is already at maximum position ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jun 05, 2014 15:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886916"></a>
+                                    <font class="smallfont"><p>So far the only console I've used is the web console. And yes, the slider doesn't like the feedback - anything 100 up just sets the slider to max. I probably need to make a macro or rule (I'm a noob here... I don't know what exactly need made) that essentially divides the feedback by 2.5 so it gives the slider the correct data. It would be awesome if it didn't have to be done for each individual switch since there are almost 80 dimmers in this setup to program.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 05, 2014 16:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886917"></a>
+                                    <font class="smallfont"><p>This looks to me like a bug in the WebConsole, so eventually it should be fixed, though I can't promise when.</p>
+
+<p>Macro wouldn't help, it should be possible to work around the issue with rules but that's a lot of work for a temporary fix.<br/>
+So I would just advice to wait for now...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jun 05, 2014 16:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886918"></a>
+                                    <font class="smallfont"><p>So it should work correctly in the iphone console?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 05, 2014 16:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886919"></a>
+                                    <font class="smallfont"><p>Yes, if it does not, please let me know and I'll investigate, but as far as I remember this was working OK.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jun 05, 2014 16:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886920"></a>
+                                    <font class="smallfont"><p>Hi Jesse,</p>
+
+<p>I can confirm that this isn't an issue with the Web Console, I created a virtual test slider with a range of 0-255 and it correctly displays and the correct value is sent back to the controller when the slider is changed.</p>
+
+<p>Sounds like a command problem, worth checking on the iOS console though to be sure.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 05, 2014 18:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886929"></a>
+                                    <font class="smallfont"><p>As Rich says, testing with the iOS console would confirm that the issue is not in the WebConsole (if the behavior is the same).</p>
+
+<p>Just to double check, you did define a sensor of type range, defined its min at 0 and max at 255 and used that sensor in your "building modeler slider" definition, then linked that element to your visual slider ?</p>
+
+<p>Also, if you create a label and link the sensor to it, does it correctly display 0-&gt;255 values ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jun 06, 2014 10:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887011"></a>
+                                    <font class="smallfont"><p>I think I've figured out what is going on with the slider. Based on the packets I see being sent, whenever I set the slider the value that is sent to the ISY is whatever the slider is multiplied by 2.55. Since I have the sliders range as 0-255. When I move the slider to full (255) it sends/cmd/DON/650 (which is 255*2.55) and the light sets to 138, which is (650-256)-256.</p>
+
+<p>How do I get rid of that multiplier on the slider?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 12, 2014 13:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887148"></a>
+                                    <font class="smallfont"><p>I will test with the iOS console today and report my findings.</p>
+
+<p>As far as how I've set it up, its exactly as you said currently. I will create a label linked to the sensor and check, but I'm pretty sure it will be correctly displaying the 0-255 value.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 18, 2014 13:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887163"></a>
+                                    <font class="smallfont"><p>Tested in iOS - same results. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 19, 2014 02:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887164"></a>
+                                    <font class="smallfont"><p>I just figured out what I was doing wrong in the original post - the url I was accessing had spaces for the insteon address, so I was putting %20 in place of the space. I noticed that in the packet sent that it was sending %2520... I simply put a space in the command instead of %20 and it worked!<br/>
+wrong address - <a href="http://10.0.0.249/rest/nodes/29%20B3%2023%201/ST">http://10.0.0.249/rest/nodes/29%20B3%2023%201/ST</a><br/>
+right address - <a href="http://10.0.0.249/rest/nodes/29">http://10.0.0.249/rest/nodes/29</a> B3 23 1/ST</p>
+
+<p>I'll just stand in the corner with a dunce cap now...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 19, 2014 03:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887252"></a>
+                                    <font class="smallfont"><p>No problem, glad it works and thanks for the feedback.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jun 23, 2014 10:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22887257"></a>
+                                    <font class="smallfont"><p>I guess I should add for the sake of anyone in the future running into the slider issue I was having that I am using a http command for the status query with the above address and have:<br/>
+(round(number(concat(//properties/property/@value,"")) div 2.55))</p>
+
+<p>in the Xpath command field so that the status is in a 0-100 range. Then I set the sensor to a range of 0-100 and everything works great.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by technicallygky at Jun 23, 2014 20:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

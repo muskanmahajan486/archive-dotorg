@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : CM15A USB Interface and X10 RF Protocol</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : CM15A USB Interface and X10 RF Protocol
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 20, 2011 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>I'm working on java code for the X10 CM15A USB interface and have started looking at how to integrate it with OR.&nbsp; The CM15A is capable of transmitting both Powerline X10 commands, and RF versions of the X10 Command, X10 RF TV Remote, X10 RF Cameras, X10 RF Security Sensors and X10 Security Commands.</p>
+
+<p>The current OR X10 command set implementation (CM11A) is small and each of these commands are typed in manually in the UI Designer.&nbsp; It would need to be expanded so that the user can identify the media for command transmission (Powerline or RF).</p>
+
+
+<p>Since the CM15A interface would introduce a lot of new commands, and the user wouldn't necessarily want to type in each and every one, what is the preferred way to introduce a default command set into the UI designer for a new protocol, so that the user could simply have a drop-down list of commands to select from?&nbsp; Or, a complete default set of commands imported into the design space?</p>
+
+<p>I looked at Beehive with the LIRC commands, but didn't dig into the code for it yet.&nbsp; Is this implementation flexible enough to use for a (non IR) command set for a new protocol?</p>
+
+<p>Denny Sheirer</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-15532658"></a>
+                                    <font class="smallfont"><p>How is the CM15A introducing additional commands?</p>
+
+<p>The X10 command set is very limited: <a href="http://www.openremote.org/display/docs/Overview+of+X10+Protocol" title="Overview of X10 Protocol">Overview of X10 Protocol</a> and should not change between implementations so they can be embedded into the protocol implementation, rather than going through Beehive. Is CM15 changing this somehow?</p>
+
+<p>The designer dialog can be fitted with a drop-down menu as part of the protocol XML definition (should already be implemented but not yet deployed):</p>
+
+<p><a href="https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/UIDesigner/protocols/protocols/x10.xml">https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/UIDesigner/protocols/protocols/x10.xml</a></p>
+
+<p>The media (PL/RF) for commands can be added as another property &#8211; the current X10 library for example abstracts both CM11 (PL over serial) and CM17 (RF over serial) as a singular SerialGateway : <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/x10/X10ControllerManager.java">https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/x10/X10ControllerManager.java</a></p>
+
+<p>Same should be possible for CM15 vs CM19 ?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 20, 2011 12:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532663"></a>
+                                    <font class="smallfont"><p><em>How is the CM15A introducing additional commands?</em></p>
+
+<p>The CM15A doesn't introduce new Powerline commands.&nbsp; The CM15A implements the same powerline command set that the CM11A supported, and what is also supported in Jesse Peterson's code.</p>
+
+<p>The CM17A implementation in Jesse's code only supports the RF version of a subset of the X10 powerline command set (On, Off, Dim, Bright).&nbsp; It's possible that the CM17A supports the full X10 RF protocol, but Jesse's code currently does not.</p>
+
+
+<p>The CM15A transmits on either PL, RF, or Both.&nbsp; It also handles the full RF protocol, compared to the subset implemented in Jesse Peterson's CM17A code.&nbsp; It seems that the CM15A will transmit over RF whatever bytes you tell it to transmit.&nbsp; And the CM19A, although I haven't test it yet, I think it should be capable of transmitting the full X10 RF protocol, like the CM15A.&nbsp; The X10 RF protocol includes a full set of TV Remote control commands used with the RF to IR converter (<a href="http://www.x10.com/automation/pm5900_s.html" title="RF to IR Converter - Remote Sender">Remote Sender</a>) and also supports wireless camera control and wireless security systems.</p>
+
+
+<p>I started mapping out the CM15A interface and consolidating the X10 RF protocol <a href="http://code.google.com/p/javax10/wiki/Protocol" title="CM15A Protocol">here</a>.</p>
+
+<p><em>The designer dialog can be fitted with a drop-down menu as part of the  protocol XML definition (should already be implemented but not yet  deployed):</em></p>
+
+<p>That is what I was hoping you would say.&nbsp; Since the protocol is static, it would be easy to implement it in the X10.xml version of protocol.xsd as a set of default values for a drop-down list.&nbsp; Is the new designer code in one of the tags/branches?</p>
+
+<p><em>The media (PL/RF) for commands can be added as another property - the  current X10 library for example abstracts both CM11 (PL over serial)  and CM17 (RF over serial) as a singular SerialGateway :</em> <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/x10/X10ControllerManager.java">https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/x10/X10ControllerManager.java</a></p>
+
+<p><em>Same should be possible for CM15 vs CM19 ?</em></p>
+
+<p>Yes, I think it's possible.&nbsp; The CM15A and CM19A appear to simply be USB variants of the serial CM11A and CM17A.&nbsp; I think I can combine my code with the Jesse Peterson code in the X10ControllerManager.class.&nbsp; I don't have a CM11A or CM17A to test against.&nbsp; I only have the CM15A and CM19A.</p>
+
+<p>Denny</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dsheirer at Feb 20, 2011 13:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532674"></a>
+                                    <font class="smallfont"><p>Ok sounds good.</p>
+
+<p>On sending serial or infrared commands, are these extensions on particular vendor's product or does a specification on X10/RF for infrared/serial exist that is implemented by multiple vendors and is publicly available?</p>
+
+<p>Infrared format would hopefully be in a format that is already widely used (CCF) or easily converted to CCF. Serial commands obviously are device specific and we've planned on collecting them to Beehive for some time &#8211; this would not be specific to X10 though as they will be just byte arrays. Beehive still needs to be cleaned up to production-grade before adding features there, I haven't gotten that far in my spring cleaning yet.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 21, 2011 09:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532716"></a>
+                                    <font class="smallfont"><p>I don't have any of the X10 RF to IR converter devices, but looking at the user manuals on the x10 website, it looks like the devices can be setup to control a variety of IR devices.&nbsp; The x10 RF command set is complete, but limited (ie Power, Menu, Live TV, 1-9, left, right, etc.).&nbsp; The RF remote control address space is defined by 1 byte, which provides space for 256 total commands for TV Remotes and Wireless Cameras combined.</p>
+
+<p>I was able to get the OR modeler installed locally running on Tomcat.&nbsp; I built the Modeler_gwt_Branch:3456 version, which includes the new drop-down option list feature that you mentioned.&nbsp; I modified the x10.xml protocol definition and was able to create attribute drop-down option lists for House Code, Device Code, Medium, Command Type (Command, Camera, Security or TV Remote), and then drop downs for each of the Command Types with the available commands corresponding to each type.</p>
+
+<p>I debated on combining all of the Command, Camera, Security and TV Remote commands under one drop down box, but this approach has it's merits as well &#45;&#45; pick the command type, and then select the command from one of the 4 command drop down boxes.</p>
+
+<p>I tried attaching screenshots, but they wouldn't render after being attached.</p>
+
+
+<p>I'm going to start working on expanding the x10 protocol in the controller next.</p>
+
+<p>Denny </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dsheirer at Feb 22, 2011 22:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

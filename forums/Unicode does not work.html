@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Unicode does not work</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Unicode does not work
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 15, 2014 by <font color="#0050B2">petitrabot</font>.
+				    </div>
+
+				    <p>Hello, I come to you for a new problem.<br/>
+I have a rule that gives me the brightness in my house with a sensor.<br/>
+On the result, I want to write the brightness value and "%".<br/>
+To have "%" I convert in unicode, % = \u0025<br/>
+My problem is that, if I write "\u0025", my rule give just the numeric value.<br/>
+I have try with "\u0024", my rule give the numeric value and "&amp;" </p>
+
+<p>I give you my rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+<span class="code-comment">// For logger
+</span><span class="code-keyword">import</span> org.openremote.controller.utils.Logger;
+<span class="code-keyword">import</span> org.openremote.controller.Constants;
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*
+<span class="code-comment">// For logger
+</span>
+function void log(<span class="code-object">String</span> msg)
+{
+  Logger.getLogger(Constants.RUNTIME_EVENTPROCESSOR_LOG_CATEGORY + <span class="code-quote">".drools"</span>).debug(msg);
+}
+
+rule <span class="code-quote">"Correct Luminosite"</span>
+when
+  CustomState(source==<span class="code-quote">"Sonde luminosite"</span>, $v: value)
+then
+  <span class="code-object">double</span> correctedLumValue = <span class="code-object">Double</span>.parseDouble($v.toString())/10;
+  execute.command(<span class="code-quote">"VLUM"</span>, <span class="code-object">String</span>.format(<span class="code-quote">"%.1f \u0025"</span>, correctedLumValue));
+end
+</pre>
+</div></div>
+
+<p>Thank for your help<br/>
+Guillaume</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22882911"></a>
+                                    <font class="smallfont"><p>You need to escape the % char. Either <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">\%</pre>
+</div></div> or <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">%%</pre>
+</div></div> should work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 15, 2014 16:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22882919"></a>
+                                    <font class="smallfont"><p>I have try with "%%" and it's perfect</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Correct Luminosite"</span>
+when
+  CustomState(source==<span class="code-quote">"Sonde luminosite"</span>, $v: value)
+then
+  <span class="code-object">double</span> correctedLumValue = <span class="code-object">Double</span>.parseDouble($v.toString())/10;
+  execute.command(<span class="code-quote">"VLUM"</span>, <span class="code-object">String</span>.format(<span class="code-quote">"%.1f %%"</span>, correctedLumValue));
+end
+</pre>
+</div></div>
+
+<p>Thank for all MICHAL</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by petitrabot at Jan 15, 2014 17:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

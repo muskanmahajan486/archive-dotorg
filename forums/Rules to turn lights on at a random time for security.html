@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Rules to turn lights on at a random time for security</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Rules to turn lights on at a random time for security
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 26, 2014 by <font color="#0050B2">jissa</font>.
+				    </div>
+
+				    <p>I am trying to create a rule that I can use when I go on vacation that would turn the lights on at sunset + a random number of minutes so that it appears that the lights don't turn on everyday at the same time.</p>
+
+<p>I create the rule as follows</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+<span class="code-keyword">import</span> java.util.Random;
+
+function <span class="code-object">int</span> rand(<span class="code-object">int</span> max)
+{
+  Random rnd = <span class="code-keyword">new</span> Random();
+  <span class="code-keyword">return</span> rnd.nextInt(max);
+}
+
+function <span class="code-object">String</span> srand(<span class="code-object">int</span> max)
+{
+  <span class="code-object">int</span> value = rand(max);
+  <span class="code-keyword">return</span> (""+value);
+}
+
+rule <span class="code-quote">"Vacations Lights on"</span>
+
+  
+  timer (cron: 0 * * * * ?) 
+
+  when 
+      eval (<span class="code-keyword">true</span>) 
+      $s1 : Event(source == <span class="code-quote">"time_to_sunset"</span> , value == eval(srand(30)))
+      $s2 : Event(source == <span class="code-quote">"vacation_sensor"</span>, value == <span class="code-quote">"on"</span>)
+  then
+
+      execute.command(<span class="code-quote">"entry_light_on"</span>); 
+
+end
+</pre>
+</div></div>
+
+<p>I have another rule that turns another light at 10 minutes before sunset and it works perfectly and the rule looks like this.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Porch Lights on"</span>
+
+  timer (cron: 0 * * * * ?) 
+
+  when 
+      eval (<span class="code-keyword">true</span>) 
+      $s1 : Event(source == <span class="code-quote">"time_to_sunset"</span> , value == <span class="code-quote">"10"</span>)
+  then
+
+      execute.command(<span class="code-quote">"porch_light_on"</span>); 
+
+end
+</pre>
+</div></div>
+
+<p>vacation_sensor is a virtualcommand status and time_to_sunset is using the DateTime protocol to return minutes to sunset.</p>
+
+<p>When I try to deploy it I get an error in dev.log </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> Line 65:60 mismatched input '(' expecting ')' in rule <span class="code-quote">"Vacations Lights on"</span> in pattern Event </pre>
+</div></div>
+
+<p>What am I doing wrong? Is there another way to get the rule to do what I want.</p>
+
+<p>Also,</p>
+
+<p>I have a sensor that uses the DateTime protocol to display the date on the main page. I set the timezone to America/Los_Angeles to display the local time but it displays the Raspberry Pi time which is UTC. Is there a way to display a specific time zone date and time or not?</p>
+
+
+<p>Thank you</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22883408/23036426.png">Screenshot from 2014-01-25 17:04:08.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22883408/23036425.png">Screenshot from 2014-01-25 17:05:45.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22883408/23036424.png">Screenshot from 2014-01-25 17:04:08.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22883416"></a>
+                                    <font class="smallfont"><p>Hello Jonny,</p>
+
+<p>isn't there a ")" too much in your event $s1 at the end?</p>
+
+
+<p>Johannes </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Jan 26, 2014 08:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883459"></a>
+                                    <font class="smallfont"><p>Thank you.</p>
+
+<p>I looked at it multiple times but missed that extra ).</p>
+
+<p>In regards to datetime is there a way to display the time for a specific time zone</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jissa at Jan 27, 2014 01:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

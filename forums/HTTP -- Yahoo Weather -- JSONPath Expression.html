@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : HTTP -- Yahoo Weather -- JSONPath Expression</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : HTTP -- Yahoo Weather -- JSONPath Expression
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 29, 2016 by <font color="#0050B2">learic</font>.
+				    </div>
+
+				    <p>I have been working on my interface with Z-Wave and decided to spice it up with some weather information. Looking at the yahooapi method via HTTP, I have decided to attempt a JSONPath Expression. When I test the data on a JSONPath Expression tester, the result comes back in a way I think is correct but I could be mistaken. I have turned on logging and the HTTP Get method seems to throw an error. Can someone else test this to see if they receive the same results? I'm using the OpenRemote Controller 2.1.1:</p>
+
+<p>DEBUG 2016-03-28 21:16:07,652 (HTTP): HttpGetCommand: url = <a href="https://query.yahooapis.com/v1/public/yql?q=select%20%2A%20from%20weather%2Eforecast%20where%20woeid%20in%20%28select%20woeid%20from%20geo%2Eplaces%281%29%20where%20text%3D%22orlando%2C%20fl%22%29&amp;format=json">https://query.yahooapis.com/v1/public/yql?q=select%20%2A%20from%20weather%2Eforecast%20where%20woeid%20in%20%28select%20woeid%20from%20geo%2Eplaces%281%29%20where%20text%3D%22orlando%2C%20fl%22%29&amp;format=json</a><br/>
+DEBUG 2016-03-28 21:16:07,652 (HTTP): HttpGetCommand: jsonpath = $..channel..item..condition..text</p>
+
+<p>By pasting the URL above into a web browser, I receive the following information:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">...<span class="code-quote">"condition"</span>:{<span class="code-quote">"code"</span>:<span class="code-quote">"27"</span>,<span class="code-quote">"date"</span>:<span class="code-quote">"Mon, 28 Mar 2016 09:00 PM EDT"</span>,<span class="code-quote">"temp"</span>:<span class="code-quote">"76"</span>,<span class="code-quote">"text"</span>:<span class="code-quote">"Mostly Cloudy"</span>}...</pre>
+</div></div>
+
+<p>Above is truncated due to length. By clicking on the URL link above, you can see the full JSON response..</p>
+
+<p>and when using the JSONPath Expression, I would receive the following information:</p>
+
+<p>[  <br/>
+   "Mostly Cloudy"<br/>
+]</p>
+
+<p>But, when OpenRemote Controller sends the request, I receive the following:</p>
+
+<p>ERROR 2016-03-28 21:16:10,387 (HTTP): ClientProtocolException when executing HTTP method<br/>
+org.apache.http.client.HttpResponseException: Bad Request<br/>
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)<br/>
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)<br/>
+	at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:238)<br/>
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:260)<br/>
+	at java.lang.Thread.run(Thread.java:701)<br/>
+ERROR 2016-03-28 21:16:10,387 (HTTP): ClientProtocolException when executing HTTP method<br/>
+org.apache.http.client.HttpResponseException: Bad Request<br/>
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)<br/>
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)<br/>
+	at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:238)<br/>
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:260)<br/>
+	at java.lang.Thread.run(Thread.java:701)<br/>
+INFO 2016-03-28 21:16:10,401 (HTTP): received message: <br/>
+ERROR 2016-03-28 21:16:10,427 (HTTP): Could not perform jsonpath evaluation<br/>
+java.lang.IllegalArgumentException: json can not be null or empty<br/>
+	at org.apache.commons.lang.Validate.notEmpty(Validate.java:363)<br/>
+	at com.jayway.jsonpath.JsonPath.read(JsonPath.java:304)<br/>
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:297)<br/>
+	at java.lang.Thread.run(Thread.java:701)<br/>
+INFO 2016-03-28 21:16:10,449 (HTTP): received message: <br/>
+ERROR 2016-03-28 21:16:10,451 (HTTP): Could not perform jsonpath evaluation<br/>
+java.lang.IllegalArgumentException: json can not be null or empty<br/>
+	at org.apache.commons.lang.Validate.notEmpty(Validate.java:363)<br/>
+	at com.jayway.jsonpath.JsonPath.read(JsonPath.java:304)<br/>
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:297)<br/>
+	at java.lang.Thread.run(Thread.java:701)<br/>
+ERROR 2016-03-28 21:16:17,911 (HTTP): ClientProtocolException when executing HTTP method<br/>
+org.apache.http.client.HttpResponseException: Bad Request<br/>
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)<br/>
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)<br/>
+	at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:238)<br/>
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:260)<br/>
+	at java.lang.Thread.run(Thread.java:701)</p>
+
+
+<p>Any help would be greatly appreciated.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23606363"></a>
+                                    <font class="smallfont"><p>I used this before   ( URL )</p>
+
+<p><a href="http://weather.yahooapis.com/forecastrss?p=CAQC0028&amp;u=c">http://weather.yahooapis.com/forecastrss?p=CAQC0028&amp;u=c</a></p>
+
+<p>now this  for me</p>
+
+<p><a href="http://xml.weather.yahoo.com/forecastrss/CAQC0028_c.xml">http://xml.weather.yahoo.com/forecastrss/CAQC0028_c.xml</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yogs at Apr 06, 2016 02:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23606365"></a>
+                                    <font class="smallfont"><p><a href="https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22orlando%22)&amp;format=json&amp;env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys">https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22orlando%22)&amp;format=json&amp;env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yogs at Apr 06, 2016 02:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

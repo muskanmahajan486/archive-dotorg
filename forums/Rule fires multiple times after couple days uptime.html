@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Rule fires multiple times after couple days uptime</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Rule fires multiple times after couple days uptime
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 22, 2016 by <font color="#0050B2">nokk3r1</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>I have problem which is bit weird: A rule which compares two sensor values fires multiple times after controller has been up and running some time. First 24h it works as it should(correctly fires only once). On second day it begins to fire two times and on third day three times and so on. Also after first day it sometimes fires even though it shouldn't(eval is false).</p>
+
+<p>I have also other similar rule which use the other sensor data but it works as it should. Below is screenshot about it.</p>
+
+<p><a class="confluence-thumbnail-link 1287x316" href='http://www.openremote.org/download/attachments/23605311/multiple.JPG'><img src="attachments/thumbnails/23605311/23790025" align="absmiddle" border="0"/></a></p>
+
+
+<p>Below are my rules(I have changed the command to be scene and also tested two CustomStates instead of event since taking screenshot, but it didn't help...) </p>
+
+<p>rule "Boileron"<br/>
+when<br/>
+   CustomState(source=="CurrentPriceSensor", $pri11 : value)<br/>
+   CustomState(source == "cheap3", $pri12 : value)<br/>
+   eval(Float.parseFloat((String)$pri12)&gt;=Float.parseFloat((String)$pri11))<br/>
+then<br/>
+  execute.command("BoilerScene", 0 );<br/>
+end</p>
+
+
+<p>rule "Boileroff"<br/>
+when<br/>
+   CustomState(source=="CurrentPriceSensor", $pri21 : value)<br/>
+   CustomState(source == "cheap3", $pri22 : value)<br/>
+   eval(Float.parseFloat((String)$pri22)&lt;Float.parseFloat((String)$pri21))<br/>
+then<br/>
+   execute.command("BoilerScene", 1 );<br/>
+end</p>
+
+
+<p>rule "HeatingcontrolCheap"<br/>
+when<br/>
+   Event( source=="CurrentPriceSensor", $pri31 : value)<br/>
+   CustomState( source == "cheap8", $pri32 : value)  <br/>
+   eval(Float.parseFloat((String)$pri32)&gt;=Float.parseFloat((String)$pri31))<br/>
+   Switch( source == "KotonaTietoSensor", value == "on" )<br/>
+then<br/>
+  execute.command("LammitysScene", 1 );<br/>
+end</p>
+
+
+<p>rule "HeatingControlExpensive"<br/>
+when <br/>
+   Event( source=="CurrentPriceSensor", $pri41 : value)<br/>
+   CustomState( source == "cheap8", $pri42 : value) <br/>
+   eval(Float.parseFloat((String)$pri42) &lt; Float.parseFloat((String)$pri41))<br/>
+   Switch( source == "KotonaTietoSensor", value =="on")<br/>
+then<br/>
+  execute.command("LammitysScene", 2 );<br/>
+end</p>
+
+
+
+<p>I'm running latest stable controller(from february) on x64 debian jessie and <br/>
+java version "1.6.0_36"<br/>
+OpenJDK Runtime Environment (IcedTea6 1.13.8) (6b36-1.13.8-1~deb7u1)<br/>
+OpenJDK 64-Bit Server VM (build 23.25-b01, mixed mode)</p>
+
+
+<p>Is it some weird bug in drools or what?</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23605311/23790025.jpg">multiple.JPG</a> (image/jpeg)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23605326"></a>
+                                    <font class="smallfont"><p>Using of eval() is depreciated. You are going outside of Drools and rare things can happen, especially when you are using unsafe typecasting and parsing. Instead try:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Boileron"</span>
+when
+  CustomState(source==<span class="code-quote">"CurrentPriceSensor"</span>, $pri11 : value)
+  CustomState(source == <span class="code-quote">"cheap3"</span>, value&gt;=$pri11)
+then
+  execute.command(<span class="code-quote">"BoilerScene"</span>, 0 );
+end
+</pre>
+</div></div>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 23, 2016 12:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605327"></a>
+                                    <font class="smallfont"><p>I use similar code when comparing range sensors, but it doesn't work on custom sensors:</p>
+
+<p>ERROR 2016-01-23 14:35:02,572 : Rule definition 'heatingcontrol.drl' could not be deployed. See errors below.<br/>
+ERROR 2016-01-23 14:35:02,572 : Evaluator '&gt;=' does not support type 'ValueType = 'String'<br/>
+ERROR 2016-01-23 14:35:02,572 : Unable to create restriction '<span class="error">&#91;VariableRestriction: &gt;= $pri11 &#93;</span>' for field 'value' in the rule 'Boileron'<br/>
+ERROR 2016-01-23 14:35:02,573 : Evaluator '&lt;' does not support type 'ValueType = 'String'<br/>
+ERROR 2016-01-23 14:35:02,573 : Unable to create restriction '<span class="error">&#91;VariableRestriction: &lt; $pri21 &#93;</span>' for field 'value' in the rule 'Boileroff'<br/>
+ERROR 2016-01-23 14:35:02,573 : There was an error parsing the rule definition 'heatingcontrol.drl' : Could not parse knowledge.<br/>
+java.lang.IllegalArgumentException: Could not parse knowledge.</p>
+
+<p>Values in those sensors are read using http GET commands and are in format 1.2345 if that helps</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nokk3r1 at Jan 23, 2016 12:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605328"></a>
+                                    <font class="smallfont"><p>Then simply change CustomState() to Event(), what they in fact are. You don't need to use anything else than Event().</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Boileron"</span>
+when
+  Event(source==<span class="code-quote">"CurrentPriceSensor"</span>, $pri11 : value)
+  Event(source == <span class="code-quote">"cheap3"</span>, value&gt;=$pri11)
+then
+  execute.command(<span class="code-quote">"BoilerScene"</span>, 0 );
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 23, 2016 12:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605331"></a>
+                                    <font class="smallfont"><p>Thank you Michal!</p>
+
+<p>Will report back tomorrow.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nokk3r1 at Jan 23, 2016 16:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

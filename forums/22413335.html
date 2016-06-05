@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Why "waste" a good HTTP call?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Why "waste" a good HTTP call?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 01, 2013 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <p>It seems that OpenRemote is spending a lot of the system resources on polling. The HTTP protocol by its nature typically has very short polling intervals in order to improve responsiveness of the controlled devices. I have seen polling examples of one or two seconds or even less. For light switches which mostly are operated only in terms of hours, this is quite wasteful. Indeed if switched on via a panel a response in the order of a second is highly desirable. But if the switch is manually operated or falls off automatically, at least for me a feedback after half a minute or so is quite acceptable.</p>
+
+<p>I am presently experimenting with Z-Wave switches operated via Razberry using the HTTP protocol. The switch on/off commands do return a null value. As I can control the Razberry side of the command I can return the actual status value. Unfortunately the HTTP call is unware of device it is controlling, so it can not pass this value on (afaik).</p>
+
+<p>From my perspective of a user of the protocol it would be nice if the HTTP protocol had an attribute where I could select a sensor which would be immediately updated with the returned value of the on/off or any other command.</p>
+
+<p><em>Does this line of thinking make sense as a generic solution?</em></p>
+
+<p>(Sorry, I am not a programmer so I can't do a test implementation within the OR framework)<br/>
+Pieter</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22413409"></a>
+                                    <font class="smallfont"><p>It makes sense and was mentioned somewhere else before.<br/>
+Use the return value of an action command to update the sensor without having the need for an extra status command.<br/>
+I will create a Jira issue for it, so we don't forget about it <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>
+<a href="http://jira.openremote.org/browse/ORCJAVA-337">http://jira.openremote.org/browse/ORCJAVA-337</a><br/>
+This does not mean that it will be worked on soon <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 02, 2013 20:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413412"></a>
+                                    <font class="smallfont"><p>Great, I hope someone finds the time to implement this, so more precious computer resource can be spent on real smartness.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at May 02, 2013 20:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872276"></a>
+                                    <font class="smallfont"><p>Following the <b>ORCJAVA-337</b> suggestion it may occur that a sensor is being updated from multiple http calls. <br/>
+At least that is how I read it. If the sensor update remains restricted to only one command, it would not really help solve my problem. That is updating a sensor directly from a http command, as well as using a separate http call for updating its status in a polling loop.</p>
+
+<p>So maybe a better, more generic approach seems to allow the selection of multiple commands to update a single sensor.</p>
+
+<p>Or rephrased in terms of using Designer, the idea is:</p>
+
+<p>1) Make a command that polls the status of a device every so many minutes.<br/>
+2) Make the command that switches a device on/off also return the the status value of that device.<br/>
+3) Make a sensor where you can select both commands 1) and 2).</p>
+
+
+<p>Would also be easier to maintain as well.<br/>
+Thoughts?   </p>
+
+<p><b>edit1:</b> I am aware that a sensor based on http requires it to have a polling interval set. (Some other protocols don't) For an on/off switch command, polling seems a not so good idea <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jun 04, 2013 13:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873056"></a>
+                                    <font class="smallfont"><p>I think the combination of possibilities with lower level transport protocols which are not dedicated to automation (HTTP, TCP, UDP, etc) are, if not endless, at least sufficiently high in numbers that continuing adding various scenarios to the implementations themselves is not useful. Providing generic means to combine requests in other ways (ad-hoc automation protocols if you will) would be the generic solution I'd go for here.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 19, 2013 00:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873062"></a>
+                                    <font class="smallfont"><p>Does this mean that you also oppose to the idea to add the option to update a sensor directly from http etc. commands, in the spirit as it is now available for the shell execution command?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jun 19, 2013 09:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873064"></a>
+                                    <font class="smallfont"><p>I'm not opposing anything, just saying it might be worth to spend the effort on a different kind of solution.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 19, 2013 10:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873067"></a>
+                                    <font class="smallfont"><p>From discussions with Marcus I got the impression that the shell execution command was a first example of how you guys intended to continue with the other 'standard' commands. I was not aware of the distinction in the OR concept of protocols dedicated to automation, and protocols not dedicated to automation. <br/>
+I agree with you that a wild proliferation of functions on these protocols should be avoided, on the other hand commands and sensors bound to each other in the OR model. For a binary switch, the existence of a binary status is a necessary criterion. So the 'opportunistic' update of a sensor from these commands imho is not that way out.</p>
+
+<p>That being said I am curious about more detail on how you see me combine requests in other ways. If that means that for example in the RaZberry application I have to continue to rely on polling, the RaZ-OR would scale badly.<br/>
+So please enligthen me.<br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jun 19, 2013 11:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593324"></a>
+                                    <font class="smallfont"><p>As far as I am concerned there is no longer a need to pursue <b>ORCJAVA-337</b> for the integration with RaZberry. <br/>
+It is in essence part of a polling approach, which from a performance point of view is not desirable. In the extreme, a switch that is used only a few times per year still needs 1 second polling intervals for acceptable UI feedback.<br/>
+A better approach would be if RaZberry, on an event at that side, could push (sensorname,value) pairs to a listener at the OR side.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 24, 2014 20:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593349"></a>
+                                    <font class="smallfont"><p>Having this would make it possible to create dynamic URL calls, for example for sites where from= and to= are needed. Like in Smappee Get Consumption API call <a href="https://smappee.atlassian.net/wiki/display/DEVAPI/Get+Consumption">https://smappee.atlassian.net/wiki/display/DEVAPI/Get+Consumption</a><br/>
+I've made it possible through rules+shell+curl, but it is quite complicated and certainly for advanced users only.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 26, 2014 11:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593351"></a>
+                                    <font class="smallfont"><p>Good to see there is a need for it. I only meant to say it is not critical for me anymore. </p>
+
+<p>What I badly need is the option to let my RaZberry directly update the value of any sensor by basically sending a {sensorName,value} pair. With that I do hope to avoid excessive polling.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 26, 2014 12:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

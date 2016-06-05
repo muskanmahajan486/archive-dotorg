@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : How text to string in rules?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : How text to string in rules?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 19, 2015 by <font color="#0050B2">robnas</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>ive made a scipt which sends the command: x56\xff\x00\x00\xaa   to a shell script<br/>
+unfortunately x56\xff\x00\x00\xaa cannot be send because the char "\" is not allowed. the boot.log says that this char is not allowed.<br/>
+is there another possibility?</p>
+
+<p>this script runs when a switch is pushed:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"wifi rgb controller2 kleur rood"</span>
+when
+<span class="code-comment">//when <span class="code-keyword">switch</span> is pushed:
+</span>Event( source == <span class="code-quote">"rood.wifi.rgb.2.sens"</span>, value == <span class="code-quote">"on"</span>)
+then
+<span class="code-comment">//turn <span class="code-keyword">switch</span> off
+</span>execute.command(<span class="code-quote">"rood.wifirgb2.uit"</span>);
+<span class="code-comment">//send variable to shell command
+</span>execute.command(<span class="code-quote">"wifirgb2.shell.netcat"</span>, <span class="code-quote">"x56\xff\x00\x00\xaa"</span>);
+end
+</pre>
+</div></div>
+
+<p>the variable will be sent to shell script and execute a netcat command to control my ambilight</p>
+
+<p><img src="attachments/23600633/23789955.png" align="absmiddle" border="0"/></p>
+
+<p>any posibillitys to send the command with chat "\" inside the string? tnx</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23600633/23789955.png">Naamloos.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23600693"></a>
+                                    <font class="smallfont"><p>Yes, it is possible. You need to escape it with another \, so it should look like \\x56\\xff\\x00\\x00<br clear="all" />xaa</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Aug 20, 2015 07:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600694"></a>
+                                    <font class="smallfont"><p>HI thanks i tried that already ( <a href="https://en.wikipedia.org/wiki/String_literal">https://en.wikipedia.org/wiki/String_literal</a> ) but it does not return the correct value, i tried this execute command:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+execute.command(<span class="code-quote">"wifirgb2.shell.netcat"</span>, <span class="code-quote">"\\x56\\xff\\x00\\x00\\xaa"</span>);
+</pre>
+</div></div>
+
+<p>the log file says:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2015-08-20 07:04:46,064 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/bin/wifi-rgb/wifi-rgb2.sh and use params: '\x56xffx00x00xaa'
+DEBUG 2015-08-20 07:04:46,156 (Shell): Shell command: /volume1/@appstore/OpenRemote/bin/wifi-rgb/wifi-rgb2.sh returned: 
+</pre>
+</div></div>
+
+<p>but it has to be '\x56\xff\x00\x00\xaa'<br/>
+is there a way to use unicode chars? <br/>
+i have another rule wich read a value from a colourpicker (which is variable)<br/>
+but is also needs the same output, i tried unicode chars but it doenst work. im also stuck here</p>
+
+<p>here is the 2nd rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"wifi rgb controller 2 kleurenschijf"</span> 
+when
+$evt2:Event( source == <span class="code-quote">"sensor.wifi.schijf2"</span>, $val2 : value)
+then
+<span class="code-object">String</span> valStr2 = $val2.toString();  
+<span class="code-keyword">if</span> (valStr2 != <span class="code-keyword">null</span> &amp;&amp; valStr2.length() == 6) {
+
+      <span class="code-object">String</span> rStr1 = valStr2.substring(0,2);
+      <span class="code-object">String</span> gStr2 = valStr2.substring(2,4);
+      <span class="code-object">String</span> bStr3 = valStr2.substring(4,6);
+
+execute.command(<span class="code-quote">"rgb2.kleurenschijf"</span>, rStr1.toString() + <span class="code-quote">"\005C"</span> + gStr2.toString() + <span class="code-quote">"\005C"</span> +  bStr3.toString());
+}
+end
+</pre>
+</div></div>
+
+<p>any ideas?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Aug 20, 2015 08:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600697"></a>
+                                    <font class="smallfont"><p>As I said, you must add escape character for each string parsing command. How many there are depends. For example, I had to add '\n' to a command for separation, so I'll finally call:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  curl <span class="code-quote">"Comand1\ncommand2"</span>
+</pre>
+</div></div>
+<p>through a shell script. In rules I'm preparing this with:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  $c.setNmea($n+<span class="code-quote">"\\\\n"</span>+$s);
+</pre>
+</div></div>
+<p>Where $n is command1 and $s is command2. Note, there are 3 escape \. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Aug 20, 2015 09:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600703"></a>
+                                    <font class="smallfont"><p>Michal <br/>
+above doenst work for me,below works for me according to : <a href="http://www.regular-expressions.info/java.html">http://www.regular-expressions.info/java.html</a></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Regular Expressions, Literal Strings and Backslashes
+
+In literal Java strings the backslash is an escape character. The literal string <span class="code-quote">"\\"</span> is a single backslash. In regular expressions, the backslash is also an escape character. The regular expression \\ matches a single backslash. This regular expression as a Java string, becomes <span class="code-quote">"\\\\"</span>. That's right: 4 backslashes to match a single one.
+
+The regex \w matches a word character. As a Java string, <span class="code-keyword">this</span> is written as <span class="code-quote">"\\w"</span>.
+
+The same backslash-mess occurs when providing replacement strings <span class="code-keyword">for</span> methods like <span class="code-object">String</span>.replaceAll() as literal Java strings in your Java code. In the replacement text, a dollar sign must be encoded as \$ and a backslash as \\ when you want to replace the regex match with an actual dollar sign or backslash. However, backslashes must also be escaped in literal Java strings. So a single dollar sign in the replacement text becomes <span class="code-quote">"\\$"</span> when written as a literal Java string. The single backslash becomes <span class="code-quote">"\\\\"</span>. Right again: 4 backslashes to insert a single one.
+
+</pre>
+</div></div>
+
+<p>its for controlling an RGB wifi370 controller, see below for full documentation:</p>
+
+<p>it works with "\\\\"  to get a single \<br/>
+below code will execute when pressing a switch:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"wifi rgb controller2 kleur rood"</span>
+when
+Event( source == <span class="code-quote">"rood.wifi.rgb.2.sens"</span>, value == <span class="code-quote">"on"</span>)
+then
+\\turn <span class="code-keyword">switch</span> off and send <span class="code-keyword">static</span> colour command (below colour red is sent)
+execute.command(<span class="code-quote">"rood.wifirgb2.uit"</span>);
+execute.command(<span class="code-quote">"wifirgb2.shell.netcat"</span>, <span class="code-quote">"\\\\x56\\\\xff\\\\x00\\\\x00\\\\xaa"</span>);
+end
+</pre>
+</div></div>
+
+
+<p>this rule below works for the colourpicker </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"wifi rgb controller 2 kleurenschijf"</span> 
+when
+$evt2:Event( source == <span class="code-quote">"sensor.wifi.schijf2"</span>, $val2 : value)
+then
+<span class="code-object">String</span> valStr2 = $val2.toString();
+
+<span class="code-comment">// <span class="code-keyword">if</span> string is 6 chars then proceed 
+</span><span class="code-comment">// seperate the RGB values from the colourpicker command received
+</span><span class="code-comment">// x56 is the header and xaa is the footer of the colour command to be send (see below link <span class="code-keyword">for</span> more info)
+</span><span class="code-comment">// then combines all values to \x56\xRR\xGG\xBB\xaa 
+</span>
+<span class="code-keyword">if</span> (valStr2 != <span class="code-keyword">null</span> &amp;&amp; valStr2.length() == 6) {
+
+    <span class="code-object">String</span> rStr1 = <span class="code-quote">"x"</span> + valStr2.substring(0,2);
+    <span class="code-object">String</span> gStr2 = <span class="code-quote">"x"</span> + valStr2.substring(2,4);
+    <span class="code-object">String</span> bStr3 = <span class="code-quote">"x"</span> + valStr2.substring(4,6);
+    <span class="code-object">String</span> bs = <span class="code-quote">"\\\\"</span>; 
+    <span class="code-object">String</span> hd = <span class="code-quote">"x56"</span>; 
+    <span class="code-object">String</span> ft = <span class="code-quote">"xaa"</span>; 
+
+execute.command(<span class="code-quote">"wifirgb2.shell.netcat"</span>, bs.toString() + hd.toString() + bs.toString() + rStr1.toString() + bs.toString() + gStr2.toString() + bs.toString() + bStr3.toString() + bs.toString() + ft.toString());
+}
+end
+</pre>
+</div></div>
+
+<p>its returns: \x56\xff\x00\x00\xaa  which has to be sended to a shell script</p>
+
+<p>create a shell command called : wifirgb2.shell.netcat<br/>
+add this code to the shell command:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+'${param}'
+</pre>
+</div></div>
+
+
+<p>create a .sh file with the code:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+echo -e $1 | nc -q 1 192.168.1.23 5577
+</pre>
+</div></div>
+<p>set the path in the shell command to your .sh file</p>
+
+<p>this shell script will close the tcp connection from ip 192.168.1.23 and port 5577 after 1 second when the red color string '\x56\xff\x00\x00\xaa' has been sended. don't set this to 0 otherwise your shell will freeze for a few minutes and all rules won't work . </p>
+
+
+<p>it works for the wifi370 rgb controller, see documentation and commands:
+<a href="http://blog.stedmeister.co.uk/">http://blog.stedmeister.co.uk/</a></p>
+
+<p>this script works on my synology but you have to install bootsrap (IPKG) see:
+<a href="http://www.synology-wiki.de/index.php/IPKG">http://www.synology-wiki.de/index.php/IPKG</a>  (german)<br/>
+and
+<a href="http://www.vspecialist.co.uk/how-to-install-ipkg-on-a-synology-nas/">http://www.vspecialist.co.uk/how-to-install-ipkg-on-a-synology-nas/</a></p>
+
+<p>then install netcat on the synology:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ipkg install netcat
+</pre>
+</div></div>
+<p>unfortunately i noticed that after a reboot of the synology the bootstrap wont start, i dont know what causes this problem</p>
+
+
+<p>see also a documentation to control the Hyperion TV Ambilight on your raspberry PI:
+<a href="http://www.openremote.org/display/forums/converting+colourpicker+hex+value+to+decimal+value">http://www.openremote.org/display/forums/converting+colourpicker+hex+value+to+decimal+value</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Aug 20, 2015 21:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600716"></a>
+                                    <font class="smallfont"><p>If you are calling netcat from a rule through shell command then perhaps you can simply use a TCP/IP protocol instead? You can feed it with hex string for the Command: field. For '\x56\xff\x00\x00\xaa' you will send simply '0x56ff0000aa'.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Aug 21, 2015 15:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600717"></a>
+                                    <font class="smallfont"><p>i did that before, it works directly with a pushbutton and the tcp command but when i call that same command from rules the whole system freezes. rules will hangup itself for a few minutes and nothing works . i dont know what that problem is, probably the wifi controller will cause this.<br/>
+ when i execute the command via the shell without netcat the shell also freezes. or is there a posibillity to close the TCP connection after 1 second with a parameter?</p>
+
+<p>i want to execute this command via rules  because i can couple 2 or more wifi controllers and give them one colour at the same time and than it works perfectly with the netcat command.</p>
+
+
+<p>maybe you could help me out why netcat and bootstrap wont work after a synology reboot?<br/>
+tnx</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Aug 21, 2015 15:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600726"></a>
+                                    <font class="smallfont"><p>when using a sensor to the tcp command still freezes rules and it hangs for a few minutes, so i need a parameter to disconnect the tcp connection like netcat does now</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Aug 21, 2015 20:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

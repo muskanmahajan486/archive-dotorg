@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : memory consumption</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : memory consumption
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 01, 2012 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Hi everyone,</p>
+
+<p>I am running the controller on my gentoo server on 2 processors (together 8 cores) and 16 GB ram.<br/>
+starting the controller leads in 8GB ram consumption for the java-controller instance</p>
+
+<p>is this correct? Do I misinterpret something? but the memory (16GB) is definitely full. I know there are other tasks also, but... see here the top two lines of "atop" sorted by memory:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>
+  PID        TID      MINFLT       MAJFLT      VSTEXT      VSLIBS        VDATA      VSTACK        VSIZE       RSIZE       VGROW        RGROW      SWAPSZ      RUID           EUID           MEM       CMD        1/4
+13538          -         220            0         28K      17588K         1.0G        136K         4.4G        3.3G          0K          32K       3668K      root           root           21%       VBoxHeadless
+13496          -           6            0         36K      13972K         8.2G        136K         8.2G      160.4M          0K           0K          0K      root           root            1%       java
+
+</pre>
+</div></div>
+
+<p>thanks<br/>
+Obelix</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20451281"></a>
+                                    <font class="smallfont"><p>Your total resident memory size is 160M which sounds about normal.</p>
+
+<p>The virtual memory size has been pre-allocated to 8GB which is normal if the Java VM has been run with aggressive memory allocation options. In this case it ensures your VM can receive memory up to 8GB from the operating system should it be necessary to request that much (the VM makes this allocation request at startup to ensure the OS can fulfill the request later).</p>
+
+<p>You can find out the default memory allocation profile with:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>java -XX:+UnlockDiagnosticVMOptions -XX:+PrintFlagsFinal -version | grep -i heapsize
+</pre>
+</div></div>
+
+<p>There are numerous resources on the web about how to tune JVM memory profiles. The simple getting started point is -Xmx which allows you to limit the maximum heap size.</p>
+
+<ul class="alternate" type="square">
+	<li><a href="http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html">http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html</a></li>
+	<li><a href="http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136373.html">http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136373.html</a></li>
+	<li><a href="http://q-redux.blogspot.ch/2011/01/inspecting-hotspot-jvm-options.html">http://q-redux.blogspot.ch/2011/01/inspecting-hotspot-jvm-options.html</a></li>
+	<li><a href="http://dow.ngra.de/2011/01/12/what-are-the-default-xmx-and-xms-values/">http://dow.ngra.de/2011/01/12/what-are-the-default-xmx-and-xms-values/</a></li>
+</ul>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 01, 2012 10:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451284"></a>
+                                    <font class="smallfont"><p>thanks for the hint, Juha.<br/>
+I have to try to get this fixed, because my swapper constantly throws error messages die to a lack of memory. I am not quite sure, but I think it's caused by the jvm. The reason for my thought is, that before I was running OR controller on that server I never got the messages.</p>
+
+<p>Seems like I would have to google and read how to overcome that.</p>
+
+<p>thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by obelix at Oct 01, 2012 10:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

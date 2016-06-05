@@ -1,0 +1,1302 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OpenRemote and Synology DS Audio with shell</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OpenRemote and Synology DS Audio with shell
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 03, 2015 by <font color="#0050B2">aleksey_z</font>.
+				    </div>
+
+				    <p>Hi.<br/>
+I use: Synology DS3615; OpenRemote 2.1.1 + AeonLabs Z-Wave Stick 2.<br/>
+I launched the DS Audio + USB DAC + amplifier for background music.<br/>
+Please help me with command for the DS Audio.<br/>
+Here is a link to the API: <a href="https://github.com/yannickcr/node-synology/wiki/synology-api">https://github.com/yannickcr/node-synology/wiki/synology-api</a><br/>
+On the command: <a href="http://forum.synology.com/enu/viewtopic.php?f=63&amp;t=20487#p354780">http://forum.synology.com/enu/viewtopic.php?f=63&amp;t=20487#p354780</a></p>
+
+<p>I having dealt with the command of the browser, in the Web browser (GC) its work.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Auth = <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=2&amp;method=login&amp;account=admin&amp;passwd=12345&amp;session=AudioStation&amp;format=cookie"</span>
+</span> response = <span class="code-quote">"{"</span>data<span class="code-quote">":{"</span>sid<span class="code-quote">":"</span>rr1Mm1MR9YYJk13A0LTN007533<span class="code-quote">"},"</span>succ ess<span class="code-quote">":<span class="code-keyword">true</span>}"</span>
+Logout = <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=1&amp;method=logout&amp;session=AudioStation"</span>
+</span> response = <span class="code-quote">"{"</span>success<span class="code-quote">":<span class="code-keyword">true</span>}"</span>
+Play = <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=play&amp;id=__SYNO_USB_PLAYER__&amp;version=2"</span>
+</span> response = <span class="code-quote">"{"</span>success<span class="code-quote">":<span class="code-keyword">true</span>}"</span>
+Start song = <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=play&amp;id=__SYNO_USB_PLAYER__&amp;value=music_14&amp;version=2"</span>
+</span> response = <span class="code-quote">"{"</span>success<span class="code-quote">":<span class="code-keyword">true</span>}"</span>
+Start PlayList = <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=play&amp;id=__SYNO_USB_PLAYER__&amp;value=playlist_shared_normal/1&amp;version=2"</span>
+</span>response = <span class="code-quote">"{"</span>success<span class="code-quote">":<span class="code-keyword">true</span>}"</span>
+</pre>
+</div></div>
+
+<p>And other:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Pause = <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=pause&amp;id=__SYNO_USB_PLAYER__&amp;version=2"</span>
+</span>Stop = <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=stop&amp;id=__SYNO_USB_PLAYER__&amp;version=2"</span>
+</span>Next = <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=next&amp;id=__SYNO_USB_PLAYER__&amp;version=2"</span>
+</span>Prev = <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=prev&amp;id=__SYNO_USB_PLAYER__&amp;version=2"</span></span>
+</pre>
+</div></div>
+
+<p>Will look like command authorization, and subsequent commands in the OpenRemote?</p>
+
+<p>I tried to send commands from the controller URC MRX-10 (Universal Remote Control equipment ), but work only authorization and logout. The rest of the commands return errors:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Authorization: GET\x20/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=2&amp;method=login&amp; account=admin&amp;passwd=12345&amp;session=AudioStation&amp;fo rmat=cookie\x0D\x0A\x0D\x0A
+{<span class="code-quote">"data"</span>:{<span class="code-quote">"sid"</span>:<span class="code-quote">"GCkNbekmi6osY13A0LTN007533"</span>},<span class="code-quote">"succ ess"</span>:<span class="code-keyword">true</span>}\x0A
+
+and
+
+Authorization &lt;sid&gt;: GET\x20/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=2&amp;method=login&amp; account=admin&amp;passwd=12345&amp;session=AudioStation&amp;fo rmat=sid\x0D\x0A\x0D\x0A
+
+<span class="code-quote">"{"</span>data<span class="code-quote">":{"</span>sid<span class="code-quote">":"</span>HABrw9gEFZz6213A0LTN007533<span class="code-quote">"},"</span>succ ess<span class="code-quote">":<span class="code-keyword">true</span>}\x0A"</span>
+
+Play PlayList: GET\x20/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlay er&amp;method=control&amp;action=play&amp;id=__SYNO_USB_PLAYER __&amp;value=playlist_shared_normal/1&amp;version=2\x0D\x0A\x0D\x0A
+
+<span class="code-quote">"{"</span>error<span class="code-quote">":{"</span>code<span class="code-quote">":105},"</span>success<span class="code-quote">":<span class="code-keyword">false</span>}\x0A"</span>
+
+105=The logged in session does not have permission
+
+POST\x20/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlay er&amp;method=control&amp;action=play&amp;id=__SYNO_USB_PLAYER __&amp;value=playlist_shared_normal/1&amp;version=2\x0D\x0A\x0D\x0A
+
+<span class="code-quote">"{"</span>error<span class="code-quote">":{"</span>code<span class="code-quote">":101},"</span>success<span class="code-quote">":<span class="code-keyword">false</span>}\x0A"</span>
+
+101=Invalid parameter
+
+Logout: GET\x20/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=1&amp;method=logout &amp;session=AudioStation\x0D\x0A\x0D\x0A
+
+<span class="code-quote">"{"</span>success<span class="code-quote">":<span class="code-keyword">true</span>}\x0A"</span>
+</pre>
+</div></div>
+
+<p>Ie for normal operation commands after login, you need to send an authorization with of each command. How to do it?</p>
+
+<p>P.S. I tried out from OpenRemote, not working.<br/>
+Need adjustment commands. <a class="confluence-thumbnail-link 583x417" href='http://www.openremote.org/download/attachments/23599872/OR DSAudio.png'><img src="attachments/thumbnails/23599872/23789903" align="absmiddle" border="0"/></a><a class="confluence-thumbnail-link 345x407" href='http://www.openremote.org/download/attachments/23599872/ds ui.png'><img src="attachments/thumbnails/23599872/23789904" align="absmiddle" border="0"/></a></p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789903.png">OR DSAudio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789904.png">ds ui.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789905.png">workscripr.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789906.png">shellcommand.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789907.png">shellcommand1.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789908.png">rights.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789910.png">syno-cookies.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789909.png">syno-cookies.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789911.png">songs.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23599872/23789912.png">playlists.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23599908"></a>
+                                    <font class="smallfont"><p>UP<br/>
+There is a ready script for Surveillance Station.
+<a href="http://forum.synology.com/enu/viewtopic.php?f=82&amp;t=47074&amp;start=15#p367103">http://forum.synology.com/enu/viewtopic.php?f=82&amp;t=47074&amp;start=15#p367103</a></p>
+
+<p>Example to enable cam 1 and start recording and disable cam 2 at same time: </p>
+
+<p>cameracmd -login -camera=1 -enable -recordon -camera=2 -disable -logout -verbose -clean</p>
+
+<p>For list of cmd : cameracmd -help</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#!/bin/sh
+ID=<span class="code-quote">"$RANDOM"</span>
+VER=<span class="code-quote">"1"</span>
+PASS=<span class="code-quote">"mypass"</span>
+SERVEUR=<span class="code-quote">"192.168.0.100:5000"</span>
+<span class="code-keyword">while</span> [ $# -gt 0 ]
+<span class="code-keyword">do</span>
+  key=<span class="code-quote">"$1"</span>
+  <span class="code-keyword">case</span> $key in
+    -l|-login)
+       echo <span class="code-quote">"Login"</span>&gt;/tmp/camres-${ID}.txt 
+       VER=<span class="code-quote">"1"</span>
+       wget -q --keep-session-cookies --save-cookies /tmp/syno-cookies-${ID}.txt -O- <span class="code-quote">"http:<span class="code-comment">//${SERVEUR}/webapi/auth.cgi?api=SYNO.API.Auth&amp;method=Login&amp;version=${VER}&amp;account=admin&amp;passwd=${PASS}"</span>&gt;&gt;/tmp/camres-${ID}.txt
+</span>       ;;
+    -logout)
+       echo <span class="code-quote">"Logout"</span>&gt;&gt;/tmp/camres-${ID}.txt 
+       VER=<span class="code-quote">"1"</span>
+       wget -q --load-cookies /tmp/syno-cookies-${ID}.txt -O- <span class="code-quote">"http:<span class="code-comment">//${SERVEUR}/webapi/auth.cgi?api=SYNO.API.Auth&amp;method=Logout&amp;version=${VER}"</span>&gt;&gt;/tmp/camres-${ID}.txt
+</span>       rm /tmp/syno-cookies-${ID}.txt
+       ;;
+    -clean)
+       rm /tmp/camres-${ID}.txt
+       ;;
+    -v|-verbose)
+       cat /tmp/camres-${ID}.txt
+       ;;
+    -i=*|-id=*)
+       ID=<span class="code-quote">"${1#*=}"</span>
+       ;;
+    -p|-printid)
+       echo <span class="code-quote">"${ID}"</span>
+       ;;   
+    -c=*|-camera=*)
+       CAM=<span class="code-quote">"${1#*=}"</span>
+       ;;
+    -e|-enable)
+       echo <span class="code-quote">"Enable"</span>&gt;&gt;/tmp/camres-${ID}.txt 
+       VER=<span class="code-quote">"3"</span>
+       wget -q --load-cookies /tmp/syno-cookies-${ID}.txt -O-  <span class="code-quote">"http:<span class="code-comment">//${SERVEUR}/webapi/entry.cgi?api=SYNO.SurveillanceStation.Camera&amp;method=Enable&amp;version=${VER}&amp;cameraIds=${CAM}"</span>&gt;&gt;/tmp/camres-${ID}.txt
+</span>       echo ""&gt;&gt;/tmp/camres-${ID}.txt 
+       ;;
+    -d|-disable)
+       echo <span class="code-quote">"Disable"</span>&gt;&gt;/tmp/camres-${ID}.txt 
+       VER=<span class="code-quote">"3"</span>
+       wget -q --load-cookies /tmp/syno-cookies-${ID}.txt -O-  <span class="code-quote">"http:<span class="code-comment">//${SERVEUR}/webapi/entry.cgi?api=SYNO.SurveillanceStation.Camera&amp;method=Disable&amp;version=${VER}&amp;cameraIds=${CAM}"</span>&gt;&gt;/tmp/camres-${ID}.txt
+</span>       echo ""&gt;&gt;/tmp/camres-${ID}.txt 
+       ;;
+    -notify=*)
+       EID=<span class="code-quote">"${1#*=}"</span>
+       echo <span class="code-quote">"Notify"</span>&gt;&gt;/tmp/camres-${ID}.txt 
+       VER=<span class="code-quote">"1"</span>
+       wget -q --load-cookies /tmp/syno-cookies-${ID}.txt -O-  <span class="code-quote">"http:<span class="code-comment">//${SERVEUR}/webapi/entry.cgi?api=SYNO.SurveillanceStation.Notification.Filter&amp;method=Set&amp;5=${EID}&amp;version=${VER}"</span>&gt;&gt;/tmp/camres-${ID}.txt
+</span>       echo ""&gt;&gt;/tmp/camres-${ID}.txt 
+       ;;
+    -event=*)
+       EID=<span class="code-quote">"${1#*=}"</span>
+       echo <span class="code-quote">"Event"</span>&gt;&gt;/tmp/camres-${ID}.txt 
+       VER=<span class="code-quote">"1"</span>
+       wget -q --load-cookies /tmp/syno-cookies-${ID}.txt -O-  <span class="code-quote">"http:<span class="code-comment">//${SERVEUR}/webapi/entry.cgi?api=SYNO.SurveillanceStation.ExternalEvent&amp;method=Trigger&amp;eventId=${EID}&amp;version=${VER}"</span>&gt;&gt;/tmp/camres-${ID}.txt
+</span>       echo ""&gt;&gt;/tmp/camres-${ID}.txt 
+       ;;
+    -preset=*)
+       PID=<span class="code-quote">"${1#*=}"</span>
+       echo <span class="code-quote">"Preset"</span>&gt;&gt;/tmp/camres-${ID}.txt 
+       VER=<span class="code-quote">"1"</span>
+        wget -q --load-cookies /tmp/syno-cookies-${ID}.txt -O-  <span class="code-quote">"http:<span class="code-comment">//${SERVEUR}/webman/3rdparty/SurveillanceStation/cgi/cameraPreset.cgi?action=presetExecute&amp;camId=${CAM}&amp;position=${PID}&amp;speed=3&amp;isPreview=1"</span>&gt;&gt;/tmp/camres-${ID}.txt
+</span>       echo ""&gt;&gt;/tmp/camres-${ID}.txt 
+       ;;
+    -recordon)
+       echo <span class="code-quote">"recordon"</span>&gt;&gt;/tmp/camres-${ID}.txt 
+       VER=<span class="code-quote">"1"</span>
+       wget -q --load-cookies /tmp/syno-cookies-${ID}.txt -O-  <span class="code-quote">"http:<span class="code-comment">//${SERVEUR}/webapi/entry.cgi?api=SYNO.SurveillanceStation.ExternalRecording&amp;method=Record&amp;action=start&amp;version=${VER}&amp;cameraId=${CAM}"</span>&gt;&gt;/tmp/camres-${ID}.txt
+</span>       echo ""&gt;&gt;/tmp/camres-${ID}.txt 
+       ;;
+    -recordoff)
+       echo <span class="code-quote">"recordoff"</span>&gt;&gt;/tmp/camres-${ID}.txt 
+       VER=<span class="code-quote">"1"</span>
+       wget -q --load-cookies /tmp/syno-cookies-${ID}.txt -O-  <span class="code-quote">"http:<span class="code-comment">//${SERVEUR}/webapi/entry.cgi?api=SYNO.SurveillanceStation.ExternalRecording&amp;method=Record&amp;action=stop&amp;version=${VER}&amp;cameraId=${CAM}"</span>&gt;&gt;/tmp/camres-${ID}.txt
+</span>       echo ""&gt;&gt;/tmp/camres-${ID}.txt 
+       ;;
+    -h|-help)
+       echo <span class="code-quote">"[-camera=camid] [-enable] [-disable] [-recordon] [-recordoff] [-preset=prstid] [-notify=0|1] [-printid] [-id=logid] [-login] [-logout] [-verbose] [-clean]"</span>
+       ;;
+    *)
+       echo <span class="code-quote">"unknown:$1"</span>
+       ;;
+  esac
+  shift
+done
+</pre>
+</div></div>
+<p>Please help change this script to control Audio Station API.</p>
+
+<p>The result should look something like:<br/>
+audiocmd -login -playlist=1 -logout -verbose -clean  /for start play specified playlist</p>
+
+<p>audiocmd -login -playsong=14 -logout -verbose -clean  /for start play specified song</p>
+
+<p>audiocmd -login -play -logout -verbose -clean  /for start play<br/>
+audiocmd -login -pause -logout -verbose -clean  /for pause</p>
+
+<p>Help please.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 03, 2015 09:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599911"></a>
+                                    <font class="smallfont"><p>I write two scripts that work in WinSCP: playlist and stop.<br/>
+From WinSCP these scripts work if Run.<br/>
+playlist1</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -q --keep-session-cookies --save-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=2&amp;method=login&amp;account=admin&amp;passwd=12345&amp;session=AudioStation&amp;format=cookie"</span>
+</span>wget -q --load-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=play&amp;id=__SYNO_USB_PLAYER__&amp;value=playlist_shared_normal/1&amp;version=2"</span>
+</span>wget -q --load-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=1&amp;method=logout&amp;session=AudioStation"</span></span>
+</pre>
+</div></div>
+<p>stop</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -q --keep-session-cookies --save-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=2&amp;method=login&amp;account=admin&amp;passwd=12345&amp;session=AudioStation&amp;format=cookie"</span>
+</span>wget -q --load-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=stop&amp;id=__SYNO_USB_PLAYER__&amp;version=2"</span>
+</span>wget -q --load-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=1&amp;method=logout&amp;session=AudioStation"</span></span>
+</pre>
+</div></div>
+<p><a class="confluence-thumbnail-link 622x430" href='http://www.openremote.org/download/attachments/23599872/workscripr.png'><img src="attachments/thumbnails/23599872/23789905" align="absmiddle" border="0"/></a><br/>
+But in OpenRemote it is dont work.<br/>
+How to specify the parameters of commands:<br/>
+<a class="confluence-thumbnail-link 496x273" href='http://www.openremote.org/download/attachments/23599872/shellcommand.png'><img src="attachments/thumbnails/23599872/23789906" align="absmiddle" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 03, 2015 16:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599913"></a>
+                                    <font class="smallfont"><p>Tried setting polling field?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jul 03, 2015 18:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599914"></a>
+                                    <font class="smallfont"><p>What for? I need to get that command carried out by pressing a button.<br/>
+Maybe the path should be as follows:<br/>
+Path:/volume1/@appstore/OpehRemote/scripts/playlist.sh</p>
+
+<p>without Command Parameter:</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 03, 2015 19:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599921"></a>
+                                    <font class="smallfont"><blockquote><p> What for? </p></blockquote>
+<p>To make sure the button part did not fail</p>
+<blockquote><p>Maybe the path should be as follows:</p></blockquote>
+<p>On my DS212+ I did make a folder <em>private</em> under <em>webapps</em> to store my scripts and local html pages. I used a short path like in the commands</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">private</span>/script.sh</pre>
+</div></div>
+<p>Maybe you need a slash at the beginning of the path. I am not sure since I don't use the shell command any more</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jul 04, 2015 09:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599922"></a>
+                                    <font class="smallfont"><p>Hi.<br/>
+On my DS3615 I did make a folder /scripts under webapps to store my scripts.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+volume1/@appstore/OpenRemote/scripts/playlist.sh
+
+or
+
+scripts/playlist.sh
+</pre>
+</div></div>
+<p><a class="confluence-thumbnail-link 501x272" href='http://www.openremote.org/download/attachments/23599872/shellcommand1.png'><img src="attachments/thumbnails/23599872/23789907" align="absmiddle" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 04, 2015 09:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599923"></a>
+                                    <font class="smallfont"><p>Sorry I did not get that. Guess my mind was mixed up with what I have read in some other thread the last few days that dealt with folders for scripts.</p>
+
+<p>I don't know for sure with the polling interval, but if it is a command, as in your case, you should not use it.  I suggested just for simulating the button.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jul 04, 2015 09:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599924"></a>
+                                    <font class="smallfont"><p>Dont work.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2015-07-04 11:37:17,435 (Shell): Building ShellExe command
+DEBUG 2015-07-04 11:37:17,436 (Shell): ShellExe Command: commandPath= volume1/@appstore/OpenRemote/scripts/playlist.sh
+DEBUG 2015-07-04 11:37:17,436 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 11:37:17,444 (Shell): Will start shell command: volume1/@appstore/OpenRemote/scripts/playlist.sh and use params: <span class="code-keyword">null</span>
+ERROR 2015-07-04 11:37:17,458 (Shell): Could not execute shell command: volume1/@appstore/OpenRemote/scripts/playlist.sh
+java.io.IOException: Cannot run program <span class="code-quote">"volume1/@appstore/OpenRemote/scripts/playlist.sh"</span>: java.io.IOException: error=2, No such file or directory
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:460)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:593)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:466)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.executeCommand(ShellExeCommand.java:119)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.send(ShellExeCommand.java:82)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:662)
+Caused by: java.io.IOException: java.io.IOException: error=2, No such file or directory
+	at java.lang.UNIXProcess.&lt;init&gt;(UNIXProcess.java:148)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:65)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:453)
+	... 31 more
+DEBUG 2015-07-04 11:37:17,459 (Shell): Shell command: volume1/@appstore/OpenRemote/scripts/playlist.sh returned: 
+DEBUG 2015-07-04 11:37:24,235 (Shell): Building ShellExe command
+DEBUG 2015-07-04 11:37:24,235 (Shell): ShellExe Command: commandPath= /volume1/@appstore/OpenRemote/scripts/stop.sh
+DEBUG 2015-07-04 11:37:24,235 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 11:37:24,235 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/stop.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 11:37:24,751 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/stop.sh returned: {<span class="code-quote">"data"</span>:{<span class="code-quote">"sid"</span>:<span class="code-quote">"F63AiM7ziAcvQ13A0LTN007533"</span>},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+{<span class="code-quote">"error"</span>:{<span class="code-quote">"code"</span>:105},<span class="code-quote">"success"</span>:<span class="code-keyword">false</span>}
+{<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 11:40:14,895 (Shell): Found cached ShellExe command with id: 2121
+DEBUG 2015-07-04 11:40:14,895 (Shell): Will start shell command: volume1/@appstore/OpenRemote/scripts/playlist.sh and use params: <span class="code-keyword">null</span>
+ERROR 2015-07-04 11:40:14,897 (Shell): Could not execute shell command: volume1/@appstore/OpenRemote/scripts/playlist.sh
+java.io.IOException: Cannot run program <span class="code-quote">"volume1/@appstore/OpenRemote/scripts/playlist.sh"</span>: java.io.IOException: error=2, No such file or directory
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:460)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:593)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:466)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.executeCommand(ShellExeCommand.java:119)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.send(ShellExeCommand.java:82)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:662)
+Caused by: java.io.IOException: java.io.IOException: error=2, No such file or directory
+	at java.lang.UNIXProcess.&lt;init&gt;(UNIXProcess.java:148)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:65)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:453)
+	... 31 more
+DEBUG 2015-07-04 11:40:14,899 (Shell): Shell command: volume1/@appstore/OpenRemote/scripts/playlist.sh returned: 
+DEBUG 2015-07-04 11:42:33,036 (Shell): Building ShellExe command
+DEBUG 2015-07-04 11:42:33,037 (Shell): ShellExe Command: commandPath= scripts/playlist.sh
+DEBUG 2015-07-04 11:42:33,037 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 11:42:33,045 (Shell): Will start shell command: scripts/playlist.sh and use params: <span class="code-keyword">null</span>
+ERROR 2015-07-04 11:42:33,059 (Shell): Could not execute shell command: scripts/playlist.sh
+java.io.IOException: Cannot run program <span class="code-quote">"scripts/playlist.sh"</span>: java.io.IOException: error=2, No such file or directory
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:460)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:593)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:466)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.executeCommand(ShellExeCommand.java:119)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.send(ShellExeCommand.java:82)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:662)
+Caused by: java.io.IOException: java.io.IOException: error=2, No such file or directory
+	at java.lang.UNIXProcess.&lt;init&gt;(UNIXProcess.java:148)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:65)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:453)
+	... 31 more
+DEBUG 2015-07-04 11:42:33,061 (Shell): Shell command: scripts/playlist.sh returned: 
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 04, 2015 09:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599925"></a>
+                                    <font class="smallfont"><p>Do you get the same result with</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">/scripts/playlist.sh</pre>
+</div></div>
+<p>or without the first slash</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jul 04, 2015 09:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599926"></a>
+                                    <font class="smallfont"><p>Dont work.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2015-07-04 12:11:48,879 (Shell): Found cached ShellExe command with id: 2121
+DEBUG 2015-07-04 12:11:48,879 (Shell): Will start shell command: /scripts/playlist.sh and use params: <span class="code-keyword">null</span>
+ERROR 2015-07-04 12:11:48,881 (Shell): Could not execute shell command: /scripts/playlist.sh
+java.io.IOException: Cannot run program <span class="code-quote">"/scripts/playlist.sh"</span>: java.io.IOException: error=2, No such file or directory
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:460)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:593)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:466)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.executeCommand(ShellExeCommand.java:119)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.send(ShellExeCommand.java:82)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:662)
+Caused by: java.io.IOException: java.io.IOException: error=2, No such file or directory
+	at java.lang.UNIXProcess.&lt;init&gt;(UNIXProcess.java:148)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:65)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:453)
+	... 31 more
+DEBUG 2015-07-04 12:11:48,882 (Shell): Shell command: /scripts/playlist.sh returned: 
+DEBUG 2015-07-04 12:11:53,415 (Shell): Building ShellExe command
+DEBUG 2015-07-04 12:11:53,415 (Shell): ShellExe Command: commandPath= /scripts/stop.sh
+DEBUG 2015-07-04 12:11:53,415 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 12:11:53,415 (Shell): Will start shell command: /scripts/stop.sh and use params: <span class="code-keyword">null</span>
+ERROR 2015-07-04 12:11:53,417 (Shell): Could not execute shell command: /scripts/stop.sh
+java.io.IOException: Cannot run program <span class="code-quote">"/scripts/stop.sh"</span>: java.io.IOException: error=2, No such file or directory
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:460)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:593)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:466)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.executeCommand(ShellExeCommand.java:119)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.send(ShellExeCommand.java:82)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:662)
+Caused by: java.io.IOException: java.io.IOException: error=2, No such file or directory
+	at java.lang.UNIXProcess.&lt;init&gt;(UNIXProcess.java:148)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:65)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:453)
+	... 31 more
+DEBUG 2015-07-04 12:11:53,418 (Shell): Shell command: /scripts/stop.sh returned: 
+DEBUG 2015-07-04 12:15:22,546 (Shell): Building ShellExe command
+DEBUG 2015-07-04 12:15:22,546 (Shell): ShellExe Command: commandPath= scripts/playlist.sh
+DEBUG 2015-07-04 12:15:22,546 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 12:15:22,554 (Shell): Will start shell command: scripts/playlist.sh and use params: <span class="code-keyword">null</span>
+ERROR 2015-07-04 12:15:22,569 (Shell): Could not execute shell command: scripts/playlist.sh
+java.io.IOException: Cannot run program <span class="code-quote">"scripts/playlist.sh"</span>: java.io.IOException: error=2, No such file or directory
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:460)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:593)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:466)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.executeCommand(ShellExeCommand.java:119)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.send(ShellExeCommand.java:82)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:662)
+Caused by: java.io.IOException: java.io.IOException: error=2, No such file or directory
+	at java.lang.UNIXProcess.&lt;init&gt;(UNIXProcess.java:148)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:65)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:453)
+	... 31 more
+DEBUG 2015-07-04 12:15:22,570 (Shell): Shell command: scripts/playlist.sh returned: 
+DEBUG 2015-07-04 12:15:31,876 (Shell): Building ShellExe command
+DEBUG 2015-07-04 12:15:31,876 (Shell): ShellExe Command: commandPath= scripts/stop.sh
+DEBUG 2015-07-04 12:15:31,876 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 12:15:31,876 (Shell): Will start shell command: scripts/stop.sh and use params: <span class="code-keyword">null</span>
+ERROR 2015-07-04 12:15:31,878 (Shell): Could not execute shell command: scripts/stop.sh
+java.io.IOException: Cannot run program <span class="code-quote">"scripts/stop.sh"</span>: java.io.IOException: error=2, No such file or directory
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:460)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:593)
+	at java.lang.<span class="code-object">Runtime</span>.exec(<span class="code-object">Runtime</span>.java:466)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.executeCommand(ShellExeCommand.java:119)
+	at org.openremote.controller.protocol.shellexe.ShellExeCommand.send(ShellExeCommand.java:82)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doPost(RESTAPI.java:159)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.RESTAPI.doGet(RESTAPI.java:112)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:662)
+Caused by: java.io.IOException: java.io.IOException: error=2, No such file or directory
+	at java.lang.UNIXProcess.&lt;init&gt;(UNIXProcess.java:148)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:65)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:453)
+	... 31 more
+DEBUG 2015-07-04 12:15:31,880 (Shell): Shell command: scripts/stop.sh returned: 
+</pre>
+</div></div>
+
+<p> From WinSCP - work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 04, 2015 10:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599927"></a>
+                                    <font class="smallfont"><p>Ups.<br/>
+I received such a response:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2015-07-04 12:30:41,752 (Shell): Building ShellExe command
+DEBUG 2015-07-04 12:30:41,753 (Shell): ShellExe Command: commandPath= /volume1/@appstore/OpenRemote/scripts/playlist.sh
+DEBUG 2015-07-04 12:30:41,753 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 12:30:41,761 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/playlist.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 12:30:42,291 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/playlist.sh returned: {<span class="code-quote">"data"</span>:{<span class="code-quote">"sid"</span>:<span class="code-quote">"C2KyiWzbiz0uo13A0LTN007533"</span>},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+{<span class="code-quote">"error"</span>:{<span class="code-quote">"code"</span>:105},<span class="code-quote">"success"</span>:<span class="code-keyword">false</span>}
+{<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 12:30:48,152 (Shell): Found cached ShellExe command with id: 2121
+DEBUG 2015-07-04 12:30:48,152 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/playlist.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 12:30:48,665 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/playlist.sh returned: {<span class="code-quote">"data"</span>:{<span class="code-quote">"sid"</span>:<span class="code-quote">"JRJnMDO8EmzKU13A0LTN007533"</span>},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+{<span class="code-quote">"error"</span>:{<span class="code-quote">"code"</span>:105},<span class="code-quote">"success"</span>:<span class="code-keyword">false</span>}
+{<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 12:30:51,886 (Shell): Building ShellExe command
+DEBUG 2015-07-04 12:30:51,886 (Shell): ShellExe Command: commandPath= /volume1/@appstore/OpenRemote/scripts/stop.sh
+DEBUG 2015-07-04 12:30:51,886 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 12:30:51,886 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/stop.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 12:30:52,412 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/stop.sh returned: {<span class="code-quote">"data"</span>:{<span class="code-quote">"sid"</span>:<span class="code-quote">"Ny0NQlSR48sAU13A0LTN007533"</span>},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+{<span class="code-quote">"error"</span>:{<span class="code-quote">"code"</span>:105},<span class="code-quote">"success"</span>:<span class="code-keyword">false</span>}
+{<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+</pre>
+</div></div>
+
+<p>but there is no reaction Audio Station.<br/>
+From WinSCP - work. Start playlist.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 04, 2015 10:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599928"></a>
+                                    <font class="smallfont"><p>Strange, looks like an file access rights problem.</p>
+
+<p>This is what I have for example:<br/>
+"openremo" stands for the group openremote as defined in the Synology setup instruction (IIRC)</p>
+
+<p><img src="attachments/23599872/23789908.png" align="left" border="0"/></p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jul 04, 2015 10:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599932"></a>
+                                    <font class="smallfont"><p>I did some commands:<br/>
+Author</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -q --keep-session-cookies --save-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- "http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?
+</span>api=SYNO.API.Auth&amp;version=2&amp;method=login&amp;account=admin&amp;passwd=12345&amp;session=AudioStation&amp;format=cookie"
+</pre>
+</div></div>
+<p>Playlist_1</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -q --load-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- <span class="code-quote">"http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=play&amp;id=__SYNO_USB_PLAYER__&amp;value=playlist_shared_normal/1&amp;version=2"</span></span>
+</pre>
+</div></div>
+<p>Stop</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -q --load-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- "http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?
+</span>api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=stop&amp;id=__SYNO_USB_PLAYER__&amp;version=2"
+</pre>
+</div></div>
+<p>Logout</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -q --load-cookies /volume1/<span class="code-keyword">public</span>/syno-cookies.txt -O- "http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?
+</span>api=SYNO.API.Auth&amp;version=1&amp;method=logout&amp;session=AudioStation"
+</pre>
+</div></div>
+<p>In log:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2015-07-04 13:24:36,153 (Shell): Building ShellExe command
+DEBUG 2015-07-04 13:24:36,153 (Shell): ShellExe Command: commandPath= /volume1/@appstore/OpenRemote/scripts/logout.sh
+DEBUG 2015-07-04 13:24:36,153 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 13:24:36,153 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/logout.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 13:24:36,208 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/logout.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 13:24:43,502 (Shell): Found cached ShellExe command with id: 2121
+DEBUG 2015-07-04 13:24:43,503 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/playlist_1.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 13:24:43,624 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/playlist_1.sh returned: {<span class="code-quote">"error"</span>:{<span class="code-quote">"code"</span>:105},<span class="code-quote">"success"</span>:<span class="code-keyword">false</span>}
+DEBUG 2015-07-04 13:24:48,992 (Shell): Found cached ShellExe command with id: 2123
+DEBUG 2015-07-04 13:24:48,992 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/author.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 13:24:49,338 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/author.sh returned: {<span class="code-quote">"data"</span>:{<span class="code-quote">"sid"</span>:<span class="code-quote">"yy4N90stSRfVk13A0LTN007533"</span>},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 13:24:53,454 (Shell): Found cached ShellExe command with id: 2121
+DEBUG 2015-07-04 13:24:53,454 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/playlist_1.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 13:24:53,582 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/playlist_1.sh returned: {<span class="code-quote">"error"</span>:{<span class="code-quote">"code"</span>:105},<span class="code-quote">"success"</span>:<span class="code-keyword">false</span>}
+DEBUG 2015-07-04 13:24:56,552 (Shell): Building ShellExe command
+DEBUG 2015-07-04 13:24:56,552 (Shell): ShellExe Command: commandPath= /volume1/@appstore/OpenRemote/scripts/stop.sh
+DEBUG 2015-07-04 13:24:56,552 (Shell): ShellExe Command created successfully
+DEBUG 2015-07-04 13:24:56,552 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/stop.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 13:24:56,672 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/stop.sh returned: {<span class="code-quote">"error"</span>:{<span class="code-quote">"code"</span>:105},<span class="code-quote">"success"</span>:<span class="code-keyword">false</span>}
+DEBUG 2015-07-04 13:24:58,718 (Shell): Found cached ShellExe command with id: 2128
+DEBUG 2015-07-04 13:24:58,718 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/logout.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 13:24:58,773 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/logout.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+</pre>
+</div></div>
+
+<p>Ie commands Author and Logout - work.<br/>
+105=The logged in session does not have permission</p>
+
+<p><a class="confluence-thumbnail-link 577x263" href='http://www.openremote.org/download/attachments/23599872/syno-cookies.png'><img src="attachments/thumbnails/23599872/23789909" align="absmiddle" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 04, 2015 11:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599936"></a>
+                                    <font class="smallfont"><p>Yes, it works for me as follows:<br/>
+Scripts of commands<br/>
+Author</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -qO - --save-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data "api=SYNO.API.Auth&amp;version=2&amp;method=login&amp;account=admin&amp;passwd=12345&amp;session=AudiStation
+&amp;format=cookie" http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi</span>
+</pre>
+</div></div>
+<p>Playlist_1</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -qO - --load-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data "api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=play&amp;id=__SYNO_USB_PLAYER__
+&amp;value=playlist_shared_normal/1&amp;version=2" http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi</span>
+</pre>
+</div></div>
+<p>Stop</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -qO - --load-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data "api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=stop&amp;id=__SYNO_USB_PLAYER__
+&amp;version=2" http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi</span>
+</pre>
+</div></div>
+<p>Logout</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -qO - --load-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data <span class="code-quote">"api=SYNO.API.Auth&amp;version=1&amp;method=logout&amp;session=AudioStation"</span> http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?</span>
+</pre>
+</div></div>
+<p>And other commands work: play, pause, next, prev.<br/>
+In log:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2015-07-04 15:57:53,547 (Shell): Found cached ShellExe command with id: 2123
+DEBUG 2015-07-04 15:57:53,547 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/author_ms.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 15:57:53,893 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/author_ms.sh returned: {<span class="code-quote">"data"</span>:{<span class="code-quote">"sid"</span>:<span class="code-quote">"SUbELQa1rXrqs13A0LTN007533"</span>},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 15:58:02,762 (Shell): Found cached ShellExe command with id: 2121
+DEBUG 2015-07-04 15:58:02,762 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/playlist_1_ms.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 15:58:03,186 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/playlist_1_ms.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 15:58:20,476 (Shell): Found cached ShellExe command with id: 2125
+DEBUG 2015-07-04 15:58:20,477 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/next_ms.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 15:58:20,970 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/next_ms.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 15:58:28,363 (Shell): Found cached ShellExe command with id: 2127
+DEBUG 2015-07-04 15:58:28,363 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/stop_ms.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 15:58:28,945 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/stop_ms.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 15:58:36,659 (Shell): Found cached ShellExe command with id: 2122
+DEBUG 2015-07-04 15:58:36,659 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/play_ms.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 15:58:37,149 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/play_ms.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 15:58:48,125 (Shell): Found cached ShellExe command with id: 2126
+DEBUG 2015-07-04 15:58:48,126 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/pause_ms.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 15:58:48,763 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/pause_ms.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 15:58:53,022 (Shell): Found cached ShellExe command with id: 2122
+DEBUG 2015-07-04 15:58:53,022 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/play_ms.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 15:58:53,781 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/play_ms.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 15:58:58,978 (Shell): Found cached ShellExe command with id: 2127
+DEBUG 2015-07-04 15:58:58,978 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/stop_ms.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 15:58:59,848 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/stop_ms.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+DEBUG 2015-07-04 15:59:02,049 (Shell): Found cached ShellExe command with id: 2128
+DEBUG 2015-07-04 15:59:02,049 (Shell): Will start shell command: /volume1/@appstore/OpenRemote/scripts/logout_ms.sh and use params: <span class="code-keyword">null</span>
+DEBUG 2015-07-04 15:59:02,157 (Shell): Shell command: /volume1/@appstore/OpenRemote/scripts/logout_ms.sh returned: {<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+</pre>
+</div></div>
+
+<p><a class="confluence-thumbnail-link 577x263" href='http://www.openremote.org/download/attachments/23599872/syno-cookies.png'><img src="attachments/thumbnails/23599872/23789909" align="absmiddle" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 04, 2015 14:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599938"></a>
+                                    <font class="smallfont"><p>Command getstatus.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;version=2&amp;method=getstatus&amp;id=__SYNO_USB_PLAYER__</span>
+</pre>
+</div></div>
+
+<p>Prompt how with this response, to obtain the following values for the sensors:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+{<span class="code-quote">"data"</span>:{<span class="code-quote">"index"</span>:5,<span class="code-quote">"play_mode"</span>:{<span class="code-quote">"repeat"</span>:<span class="code-quote">"none"</span>,<span class="code-quote">"shuffle"</span>:<span class="code-keyword">false</span>},<span class="code-quote">"playlist_timestamp"</span>:1436017823,<span class="code-quote">"playlist_total"</span>:13,<span class="code-quote">"position"</span>:7,<span class="code-quote">"song"</span>:
+{<span class="code-quote">"id"</span>:<span class="code-quote">"music_19"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/08. Let It Grow.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Let It Grow"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},<span class="code-quote">"state"</span>:<span class="code-quote">"pause"</span>,<span class="code-quote">"volume"</span>:30},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+</pre>
+</div></div>
+
+<p>1. "play_mode":{"repeat":"none","shuffle":false<br/>
+2. "song":{"id":"music_19","path":"/music/Eric Clapton - 461 Ocean Blvd/08. Let It Grow.flac","title":"Let It Grow"<br/>
+3. "state":"pause","volume":30</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 04, 2015 15:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599955"></a>
+                                    <font class="smallfont"><p>Thanks for all your work on this Aleksey. This is very helpful. Just to be clear, the auth command has to be included in every script along with the command desired? Were you able to get the sensor working correctly?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by efren at Jul 05, 2015 16:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599956"></a>
+                                    <font class="smallfont"><p>Aleksey, I was able to follow in your footsteps and got it to work!</p>
+
+<p>Adding this functionality is definitely fantastic. </p>
+
+<p>There doesn't appear to be a full listing of all the actions available for the various methods. I've been looking around and haven't been able to find them. Do you by chance know where I can find them? I'm specifically looking for how to control the volume. I'm having a hard time trying to grab the right data using http sniifs. </p>
+
+<p>Any help would be appreciated but you have already done amazing work. </p>
+
+<p>Thanks again. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by efren at Jul 05, 2015 17:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599957"></a>
+                                    <font class="smallfont"><p>Here is the information, but I do not know how to use it. 
+<a href="https://github.com/zzarbi/synology/blob/master/src/Synology/AudioStation/Api.php">https://github.com/zzarbi/synology/blob/master/src/Synology/AudioStation/Api.php</a><br/>
+and
+<a href="https://github.com/zzarbi/synology/blob/master/src/Synology/AudioStation/api.json">https://github.com/zzarbi/synology/blob/master/src/Synology/AudioStation/api.json</a></p>
+
+    <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">I'm specifically looking <span class="code-keyword">for</span> how to control the volume.</pre>
+</div></div>
+
+<p>That is something like:
+<a href="http://forum.synology.com/enu/viewtopic.php?f=63&amp;t=59168#p239144">http://forum.synology.com/enu/viewtopic.php?f=63&amp;t=59168#p239144</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 05, 2015 19:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599958"></a>
+                                    <font class="smallfont"><p>I tried this, get the sensor working.</p>
+
+<p>Regular Expression:</p>
+
+<p>$.data[.state  =&gt;  returns =&gt;   pause<br/>
+$.data[.volume =&gt;  returns =&gt;   30</p>
+
+<p>And so on.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 05, 2015 19:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599966"></a>
+                                    <font class="smallfont"><p>Thank you for the example. I haven't used a custom sensor yet so I'll give it a shot. Would you be so kind as to share a screen shot of yours? Might help me get a better idea.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by efren at Jul 05, 2015 22:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599967"></a>
+                                    <font class="smallfont"><p>Thanks! Will try to see if I can get it working with the different methods.</p>
+
+<p>I haven't had success grabbing the playlist index number yet so I can play a specific play list. Were you successful in doing so?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by efren at Jul 05, 2015 22:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599971"></a>
+                                    <font class="smallfont"><p>Thanks so much, this helped to grab the playlist index numbers but I can't get it to work correctly. It never calls the playlist. Have you had good success with it? Here's what I'm using. I also tried to escape the slash with %2F and no go. Does it work okay for you?</p>
+
+<p>wget -qO - --load-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data "api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;action=play&amp;id=_<em>SYNO_USB_PLAYER</em>_&amp;value=playlist_shared_normal/130&amp;version=2" <a href="http://.../webapi/AudioStation/remote_player.cgi">http://.../webapi/AudioStation/remote_player.cgi</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by efren at Jul 06, 2015 03:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599977"></a>
+                                    <font class="smallfont"><p>Hi.<br/>
+In fact, I did not do very much. I was guided by the theme <a href="http://forum.synology.com/enu/viewtopic.php?f=63&amp;t=20487#p354780">http://forum.synology.com/enu/viewtopic.php?f=63&amp;t=20487#p354780</a> and Synology API. <br/>
+But I do not have a lot of knowledge in Linux, and Shell protocol. <br/>
+In addition to the above commands, I have work follows commands (in browser a work; in OpenRemote have not tried,  but should work).</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Remote player status = http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;version=2&amp;method=getstatus
+</span>&amp;id=__SYNO_USB_PLAYER__
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+{<span class="code-quote">"data"</span>:{<span class="code-quote">"index"</span>:5,<span class="code-quote">"play_mode"</span>:{<span class="code-quote">"repeat"</span>:<span class="code-quote">"none"</span>,<span class="code-quote">"shuffle"</span>:<span class="code-keyword">false</span>},<span class="code-quote">"playlist_timestamp"</span>:1436017823,<span class="code-quote">"playlist_total"</span>:13,<span class="code-quote">"position"</span>:7,<span class="code-quote">"song"</span>:{<span class="code-quote">"id"</span>:<span class="code-quote">"music_19"</span>,
+<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/08. Let It Grow.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Let It Grow"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},<span class="code-quote">"state"</span>:<span class="code-quote">"pause"</span>,<span class="code-quote">"volume"</span>:30},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+</pre>
+</div></div>
+<p>From this we can get: (using this: <a href="http://ashphy.com/JSONPathOnlineEvaluator/?">http://ashphy.com/JSONPathOnlineEvaluator/?</a>)</p>
+
+<p>JSONPath Syntax</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+$.data[.title         '0' =&gt; <span class="code-quote">"Let It Grow"</span>
+$.data[.repeat        '0' =&gt; <span class="code-quote">"none"</span>
+$.data[.state         '0' =&gt; <span class="code-quote">"pause"</span>
+$.data[.volume        '0' =&gt; <span class="code-quote">"30"</span>
+</pre>
+</div></div>
+<p>etc.....</p>
+
+<p>List songs = <a href="http://192.168.1.7:5000/webapi/AudioStation/song.cgi?api=SYNO.AudioStation.Song&amp;version=1&amp;method=list">http://192.168.1.7:5000/webapi/AudioStation/song.cgi?api=SYNO.AudioStation.Song&amp;version=1&amp;method=list</a></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">{<span class="code-quote">"data"</span>:{<span class="code-quote">"offset"</span>:0,<span class="code-quote">"songs"</span>:[{<span class="code-quote">"id"</span>:<span class="code-quote">"music_12"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/01. Motherless Children.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Motherless Children"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>}
+,{<span class="code-quote">"id"</span>:<span class="code-quote">"music_13"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/02. Give Me Strength.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Give Me Strength"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_14"</span>,<span class="code-quote">"path"</span>:
+<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/03. Willie And The Hand Jive.flac"</span>,
+<span class="code-quote">"title"</span>:<span class="code-quote">"Willie And The Hand Jive"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_15"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/04. Get Ready.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Get Ready"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},
+{<span class="code-quote">"id"</span>:<span class="code-quote">"music_16"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/05. I Shot The Sheriff.flac"</span>,
+<span class="code-quote">"title"</span>:<span class="code-quote">"I Shot The Sheriff"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_17"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/06. I Can't Hold Out.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"I Can't Hold Out"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},
+{<span class="code-quote">"id"</span>:<span class="code-quote">"music_18"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/07. Please Be With Me.flac"</span>,
+<span class="code-quote">"title"</span>:<span class="code-quote">"Please Be With Me"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_19"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/08. Let It Grow.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Let It Grow"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},
+{<span class="code-quote">"id"</span>:<span class="code-quote">"music_20"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/09. Steady Rollin' Man.flac"</span>,
+<span class="code-quote">"title"</span>:<span class="code-quote">"Steady Rollin' Man"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_21"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/10. Mainline Florida.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Mainline Florida"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},
+{<span class="code-quote">"id"</span>:<span class="code-quote">"music_22"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/11. Walkin' Down The Road.flac"</span>,
+<span class="code-quote">"title"</span>:<span class="code-quote">"Walkin' Down The Road"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_23"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/12. Ain't That Lovin You.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Ain't That Lovin You"</span>,<span class="code-quote">"type"</span>:
+<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_24"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/Eric Clapton - 461 Ocean Blvd/13. Meet Me (Down At The Bottom).flac"</span>,
+<span class="code-quote">"title"</span>:<span class="code-quote">"Meet Me (Down At The Bottom)"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>}],<span class="code-quote">"total"</span>:13},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}</pre>
+</div></div>
+<p>From this we can get: <a class="confluence-thumbnail-link 909x522" href='http://www.openremote.org/download/attachments/23599872/songs.png'><img src="attachments/thumbnails/23599872/23789911" align="absmiddle" border="0"/></a></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+List PlayList = http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/playlist.cgi?api=SYNO.AudioStation.Playlist&amp;version=2&amp;method=list</span>
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+{<span class="code-quote">"data"</span>:{<span class="code-quote">"offset"</span>:0,<span class="code-quote">"playlists"</span>:[{<span class="code-quote">"id"</span>:<span class="code-quote">"playlist_personal_normal/__SYNO_AUDIO_SHARED_SONGS__"</span>,<span class="code-quote">"library"</span>:<span class="code-quote">"personal"</span>,<span class="code-quote">"name"</span>:<span class="code-quote">"__SYNO_AUDIO_SHARED_SONGS__"</span>,
+<span class="code-quote">"sharing_status"</span>:<span class="code-quote">"none"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"normal"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"playlist_shared_normal/1"</span>,<span class="code-quote">"library"</span>:<span class="code-quote">"shared"</span>,<span class="code-quote">"name"</span>:<span class="code-quote">"test"</span>,<span class="code-quote">"sharing_status"</span>:<span class="code-quote">"none"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"normal"</span>}],<span class="code-quote">"total"</span>:2},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+</pre>
+</div></div>
+<p>From this we can get: <a class="confluence-thumbnail-link 1153x249" href='http://www.openremote.org/download/attachments/23599872/playlists.png'><img src="attachments/thumbnails/23599872/23789912" align="absmiddle" border="0"/></a></p>
+
+<p>Attempting to download the playlist:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;version=2&amp;method=getplaylist
+</span>and
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;version=2&amp;method=getplaylist&amp;id=playlist_shared_normal/1</span>
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+{<span class="code-quote">"error"</span>:{<span class="code-quote">"code"</span>:500},<span class="code-quote">"success"</span>:<span class="code-keyword">false</span>}
+</pre>
+</div></div>
+
+<p>There is an example from the topics, but he have not earned, , or I did something wrong.</p>
+
+<p>load a playlist<br/>
+$playlist=number of playlist, this will be a fixed integer for each playlist.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -qO - --load-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data "api=SYNO.AudioStation.RemotePlayer&amp;id=$playerID
+&amp;library=shared&amp;limit=0&amp;method=updateplaylist&amp;offset=0&amp;containers_json=[{\<span class="code-quote">"type\"</span>:\<span class="code-quote">"playlist\"</span>,\<span class="code-quote">"id\"</span>:\<span class="code-quote">"playlist_shared_normal/$playlist\"</span>}]
+&amp;play=<span class="code-keyword">true</span>&amp;version=1" 
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi</span>
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;id=__SYNO_USB_PLAYER__&amp;library=shared&amp;limit=0
+</span>&amp;method=updateplaylist&amp;offset=0
+&amp;containers_json=[{\<span class="code-quote">"type\"</span>:\<span class="code-quote">"playlist\"</span>,\<span class="code-quote">"id\"</span>:\<span class="code-quote">"playlist_shared_normal/1\"</span>}]&amp;play=<span class="code-keyword">true</span>&amp;version=1"
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+{<span class="code-quote">"error"</span>:{<span class="code-quote">"code"</span>:101},<span class="code-quote">"success"</span>:<span class="code-keyword">false</span>}
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 06, 2015 09:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599980"></a>
+                                    <font class="smallfont"><p>I have not made a sensor, I checked in <a href="http://ashphy.com/JSONPathOnlineEvaluator/?">http://ashphy.com/JSONPathOnlineEvaluator/?</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 06, 2015 11:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599983"></a>
+                                    <font class="smallfont"><p>Always starts playing already loaded playlist. It does not depend on what is listed in the commands (playlist_shared_normal/1 or playlist_shared_normal/2).<br/>
+Necessary to draw up the right commands to load the specified playlist  (playlist_shared_normal/1 or playlist_shared_normal/2). I do not succeed. <br/>
+Maybe someone else can help us?</p>
+
+<p>P.S.   getplaylist</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=getplaylist&amp;id=__SYNO_USB_PLAYER__&amp;version=2
+</span>
+response
+
+{<span class="code-quote">"data"</span>:{<span class="code-quote">"current"</span>:0,<span class="code-quote">"mode"</span>:<span class="code-quote">"normal"</span>,<span class="code-quote">"shuffle"</span>:0,<span class="code-quote">"songs"</span>:[{<span class="code-quote">"id"</span>:<span class="code-quote">"music_33"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/09. Crying Like A Child.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Crying Like A Child"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},
+{<span class="code-quote">"id"</span>:<span class="code-quote">"music_28"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/04. Do It.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Do It"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_27"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/03. Don't Cry, My Baby.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Don't Cry, My Baby"</span>,
+<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_29"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/05. Everything Is Going To Be Allright.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Everything Is Going To Be Allright"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_30"</span>,
+<span class="code-quote">"path"</span>:<span class="code-quote">"/music/06. Let's Fly Together.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Let's Fly Together"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_26"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/02. Ma Cherie, Mon Amour.flac"</span>,
+<span class="code-quote">"title"</span>:<span class="code-quote">"Ma Cherie, Mon Amour"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_36"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/12. Rocking My Chair.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Rocking My Chair"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_32"</span>,
+<span class="code-quote">"path"</span>:<span class="code-quote">"/music/08. She Used To Love Me.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"She Used To Love Me"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_31"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/07. Sing, Sing A Song.flac"</span>,
+<span class="code-quote">"title"</span>:<span class="code-quote">"Sing, Sing A Song"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_34"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/10. St Valentine.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"St Valentine"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_35"</span>,
+<span class="code-quote">"path"</span>:<span class="code-quote">"/music/11. Valesco.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"Valesco"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>},{<span class="code-quote">"id"</span>:<span class="code-quote">"music_25"</span>,<span class="code-quote">"path"</span>:<span class="code-quote">"/music/01. You're Burning.flac"</span>,<span class="code-quote">"title"</span>:<span class="code-quote">"You're Burning"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"file"</span>}],
+<span class="code-quote">"timestamp"</span>:1436186392,<span class="code-quote">"total"</span>:12},<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+</pre>
+</div></div>
+<p>       updateplaylist</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;id=__SYNO_USB_PLAYER__&amp;value=playlist_shared_normal/1&amp;method=updateplaylist&amp;version=2
+</span>
+{<span class="code-quote">"success"</span>:<span class="code-keyword">true</span>}
+</pre>
+</div></div>
+
+<p>But that does nothing.</p>
+
+<p>P.S.1 Here is the information, but I do not know how to use it. <a href="https://github.com/JimRobs/syno/wiki/Audio-Station-API">https://github.com/JimRobs/syno/wiki/Audio-Station-API</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 06, 2015 12:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600065"></a>
+                                    <font class="smallfont"><p>Hi.<br/>
+Any ideas does not appear, how to construct commands to download and run various playlist, or songs?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 09, 2015 11:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600112"></a>
+                                    <font class="smallfont"><p>Hi.<br/>
+There is positive news.<br/>
+I downloaded and installed the utility HTTP Analizer V7.<br/>
+To add a playlist to the play queue, and start playback, use the following commands:</p>
+
+<p>For PlayList 1</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?
+</span>api=SYNO.AudioStation.RemotePlayer&amp;method=updateplaylist&amp;library=shared&amp;id=__SYNO_USB_PLAYER__&amp;offset=0&amp;limit=0&amp;play=<span class="code-keyword">true</span>&amp;version=2&amp;containers_json=[{<span class="code-quote">"type"</span>:<span class="code-quote">"playlist"</span>,<span class="code-quote">"id"</span>:<span class="code-quote">"playlist_shared_normal/1"</span>}]
+</pre>
+</div></div>
+
+<p>But the date <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">containers_json=[{<span class="code-quote">"type"</span>:<span class="code-quote">"playlist"</span>,<span class="code-quote">"id"</span>:<span class="code-quote">"playlist_shared_normal/1"</span>}]</pre>
+</div></div> has to be transmitted in this way: <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">containers_json=%5B%7B%22type%22%3A%22playlist%22%2C%22id%22%3A%22playlist_shared_normal%2F1%22%7D%5D</pre>
+</div></div></p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?
+</span>api=SYNO.AudioStation.RemotePlayer&amp;method=updateplaylist&amp;library=shared&amp;id=__SYNO_USB_PLAYER__&amp;offset=0&amp;limit=0&amp;play=<span class="code-keyword">true</span>&amp;version=2&amp;containers_json=%5B%7B%22type%22%3A%22playlist%22%2C%22id%22%3A%22playlist_shared_normal%2F1%22%7D%5D
+</pre>
+</div></div>
+
+<p>Then, the following command Play:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi?api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;id=__SYNO_USB_PLAYER__&amp;version=2&amp;action=play&amp;value=0</span>
+</pre>
+</div></div>
+
+<p>and starts Playback playlist1.</p>
+
+<p>For a starts Playback playlist1, I did this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+wget -qO - --save-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data <span class="code-quote">"api=SYNO.API.Auth&amp;version=2&amp;method=login&amp;account=admin&amp;passwd=12345&amp;session=AudiStation&amp;format=cookie"</span> http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi
+</span>wget -qO - --load-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data <span class="code-quote">"api=SYNO.AudioStation.RemotePlayer&amp;method=updateplaylist&amp;library=shared&amp;id=__SYNO_USB_PLAYER__&amp;offset=0&amp;limit=0&amp;play=<span class="code-keyword">true</span>&amp;version=2&amp;containers_json=%5B%7B%22type%22%3A%22playlist%22%2C%22id%22%3A%22playlist_shared_normal%2F1%22%7D%5D"</span> 
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi
+</span>wget -qO - --load-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data <span class="code-quote">"api=SYNO.AudioStation.RemotePlayer&amp;method=control&amp;id=__SYNO_USB_PLAYER__&amp;version=2&amp;action=play&amp;value=0"</span> 
+http:<span class="code-comment">//192.168.1.7:5000/webapi/AudioStation/remote_player.cgi
+</span>wget -qO - --load-cookies /volume1/@appstore/OpenRemote/scripts/cookies_ms.txt --post-data <span class="code-quote">"api=SYNO.API.Auth&amp;version=1&amp;method=logout&amp;session=AudioStation"</span> http:<span class="code-comment">//192.168.1.7:5000/webapi/auth.cgi?</span>
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aleksey_z at Jul 11, 2015 20:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600245"></a>
+                                    <font class="smallfont"><p>This is amazing! Great job. I'm going to try it myself. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by efren at Jul 22, 2015 18:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

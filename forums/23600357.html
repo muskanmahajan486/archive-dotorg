@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Questions about serial protocol?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Questions about serial protocol?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 01, 2015 by <font color="#0050B2">rayon02</font>.
+				    </div>
+
+				    <p>Hi, I am a new user of openremote and I want to interface openremote with a microcontroller which has a temperature sensor(DS1820) attached to one of its pins through serial protocol. The temperature will be displayed in a label. I use a button in order to send the temperature reading command           (COM2/ 9600/ 'A'). How can I display the temperature in a label since this requires a sensor? If I use the reading command(as a sensor command)         the microcontroller is busy with temperature monitoring and I don't want this. ( it must do something else). So I write a rule:</p>
+
+
+<p>rule "Read Temperature"<br/>
+when<br/>
+  CustomState(source=="DS1820", $v: value)<br/>
+then<br/>
+  double correctedValue = Double.parseDouble($v.toString());<br/>
+  double fahrenheit = (correctedValue*9) / 5 + 32;<br/>
+  execute.command("VTEMP", String.format("%.1f \u2103 / %.1f \u2109", correctedValue, fahrenheit));<br/>
+end</p>
+
+<p>1) Every time when the microcontroller send a string ( the string which contain the temperature) is it triggered the DS1820 sensor? Namely,              OR send the command of the DS1820 sensor ('A')?(I know that the VTEMP command is also performed =&gt; display temperature ) But the microcontroller      sends the tempererature once I push the button, hence the reading command ('A') is executed indefinitely....=&gt; the microcontroller is busy with temperature sending (the above situation)</p>
+
+<p>Is there any solution for the DS1820 sensor to be executed at least when the temperature is changing? I don't know... something like this:        $v:value!= last result </p>
+
+<p>2) If I have a second sensor connected to another pin, how could I display both values in different labels?  </p>
+
+<p>Any advice would be appreciated. Thanks!</p>
+
+<p>Sorry for my English!</p>
+
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23600357/23789949.png">readSensors.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23600357/23789950.png">Capture.PNG</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23600367"></a>
+                                    <font class="smallfont"><blockquote>
+<p>If I use the reading command(as a sensor command) the microcontroller is busy with temperature monitoring and I don't want this. ( it must do something else)</p></blockquote>
+<p>Can you elaborate on this? Why you can't use the reading command? </p>
+
+<p>Unless your microcontroller can generate an UDP message and send it to Openremote, the reading command with pooling interval is the only option.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Aug 03, 2015 13:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600369"></a>
+                                    <font class="smallfont"><p>I have: a button (sends the reading command: 'A')<br/>
+        a sensor (DS1820/the reading command/custom)<br/>
+        a label linked to sensor</p>
+
+<p>1)OR: I press the button =&gt; OR sends 'A' (the reading command)<br/>
+2)microcontroller: receives the reading command, and then it sends the temperature : printf("31,5 \r\n") <br/>
+3)OR: recieves the string ( "31,5") =&gt; the rule triggers =&gt; the temperature is dislayed in a label(which is OK) and the reading command('A') also is executed;<br/>
+4)microcontroller: recieves the reading command ('A') again =&gt; the step 2 is performed again... then step 3, step 4....then step 2 again and so on.</p>
+
+<p>Thus the microcontroller is busy with the temperature monitoring....I want to do something else (conversion,LCD temperature display,...)</p>
+
+<p>And.... Do you have an answer for the question 2? (2 sensors in 2 different labels)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rayon02 at Aug 03, 2015 17:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600370"></a>
+                                    <font class="smallfont"><p>I don't understand why in 3) the reading command is executed again and why this is correlated with pressing the button? The rule sets only in-memory variable, it does not call the microcntroller.</p>
+
+<p>Although I might have an answer for question 2, first I need fully understand what you are doing.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Aug 03, 2015 22:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600378"></a>
+                                    <font class="smallfont"><p>Look at this code:</p>
+
+<p>rule "Read Temperature"<br/>
+when<br/>
+CustomState(source=="DS1820", $v: value)<br/>
+then<br/>
+double correctedValue = Double.parseDouble($v.toString());<br/>
+double fahrenheit = (correctedValue*9) / 5 + 32;<br/>
+execute.command("VTEMP", String.format("%.1f \u2103 / %.1f \u2109", correctedValue, fahrenheit));<br/>
+end</p>
+
+<p>When OR receives a string the VTEMP command  is executed but it seems that it's also executed the command of the DS1820 sensor.<br/>
+(in my project the command of the sensor is the reading command which it is also the command of the button in UI)</p>
+
+<p>in step 3 OR receives the temperature as a string (because I press the button=&gt; the microcontroller sends the temp),then <br/>
+it executes the VTEMP command and it also executes the command of the sensor (the reading command).</p>
+
+<p>I don't know why it's executed the reading command again, but inside the label (in UI), the temperature is changing continously.....  I want to change the temperature ONLY if I press the button.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rayon02 at Aug 04, 2015 00:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600379"></a>
+                                    <font class="smallfont"><p>Another thing: Which is the role of a command in a sensor inside a rule? ( the command of the DS1820)...It is a write command, isn't it? </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rayon02 at Aug 04, 2015 00:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600383"></a>
+                                    <font class="smallfont"><p>Please show me how you've defined the VTEMP command. The rule is for temperature conversion and VTEMP should be in memory Virtual command (as indicted by the first letter V, which I use as a name for each in-memory virtual commands to distinguish them from device commands).</p>
+
+<p>The role of this command is to pass converted temperature value to a sensor which is linked to VTEMP command.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Aug 04, 2015 08:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600388"></a>
+                                    <font class="smallfont"><p>name:      VTEMP<br/>
+protocol:  In-memory Virtual Command<br/>
+command:   status<br/>
+adress:    VTEMP</p>
+
+<p>for temperature reading: ReadTemp /Serial/ COM2/ 9600bps/'A'<br/>
+for DS1820 sensor: DS1820/ ReadTemp/ custom</p>
+
+<p>name:      VirtualSensor<br/>
+command:   VTEMP<br/>
+type:      custom</p>
+
+<p>VirtualSensor is linked to a label. <br/>
+the button has the ReadTemp command.</p>
+
+<p>Do you say that the role of ReadTemp (in DS1820 sensor) is only to pass the temperature received to the VirtualSensor?....<br/>
+So it no longer matter which is the command of the DS1820 sensor.... whether is the ReadTemp or not... Thus I could define another command for the DS1820 sensor...and I could keep the ReadTemp command for the button</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rayon02 at Aug 04, 2015 12:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600391"></a>
+                                    <font class="smallfont"><p>It is not the rule which triggers the reading command. Are you sure that the pooling interval of the ReadTemp is not set?</p>
+
+<p>Anyway, it won't work the way you want, i.e. press button -&gt; one temperature read. This is because the instance of ReadCommand attached to the button is not linked with a sensor, therefore it's return value will be lost. Right now you probably are pooling the microcontroller all the time. You can decrease the pooling interval so the microcontroller has more time for other tasks.</p>
+
+<p>Of course you can define more commands for the DS1820 sensor but triggering them with a button is not feasible in Openremote. Each command needs separate sensor definition which it can be linked to. You can call these commands from a rule but their return value wont be passed back. So you really need sensors for all commands.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Aug 04, 2015 15:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600394"></a>
+                                    <font class="smallfont"><p>Thank you for your help Michal! <br/>
+I understand what you say, but, however I feel that I'm missing something... Let's forget the buttons</p>
+
+<p>1)What are the conditions for triggering the rule? <br/>
+  Must I send a string from the microcontroller in order to trigger the rule (to execute the VTEMP command? ($v:value)=&gt; the microcontroller has to start the communication<br/>
+  For value =="on"=&gt; the rule will be triggered only if I send the "on" string ?</p>
+
+<p>2)How could I set the polling interval? In my command definition there is no polling interval.. I've seen that HTTP protocol has a polling interval... I could insert a delay in the microcontroller's software or maybe I could write timer (int: 1s 00h) <br/>
+before "when" statement</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rayon02 at Aug 04, 2015 22:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600405"></a>
+                                    <font class="smallfont"><p>1) the rule is started when the sensor DS1820 is updated (changes value). If you constraint a value then it will be triggered only when the value condition is true.</p>
+
+<p>2) Unfortunately, serial protocol is not a part of pro controller, which I'm using. It seems to be a beta feature. Anyway, all my commands have polling interval, which serial protocol is obviously missing.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Aug 06, 2015 08:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600542"></a>
+                                    <font class="smallfont"><p>Hello, again! </p>
+
+<p>How could I display multiple values of temperature in different labels? (10 sensors - 10 labels) Must I use rules?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rayon02 at Aug 16, 2015 00:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23600548"></a>
+                                    <font class="smallfont"><p>You don' have to use rules for multiple sensors.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Aug 16, 2015 09:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

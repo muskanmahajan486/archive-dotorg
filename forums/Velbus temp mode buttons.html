@@ -1,0 +1,558 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Velbus temp mode buttons</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Velbus temp mode buttons
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 16, 2016 by <font color="#0050B2">nielsd</font>.
+				    </div>
+
+				    <p>About the question I asked on the Velbus Forum: <a href="http://forum.velleman.eu/viewtopic.php?f=81&amp;t=14850&amp;start=30">http://forum.velleman.eu/viewtopic.php?f=81&amp;t=14850&amp;start=30</a></p>
+
+<p>When I add a custom sensor, and add these values:</p>
+
+<p>on = heat_comfort<br/>
+off = heat_day<br/>
+off = heat_night<br/>
+off = heat_safe</p>
+
+<p>After "Submit" only one of the "off" values keeps existing. So it looks like it is not possible to add multiple values with the same name?</p>
+
+<p>Stuart also said "(Don't link anything with the Off state)", this also is not possible in the designer?</p>
+
+<p>Than you</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23605704"></a>
+                                    <font class="smallfont"><p>Hi Niels,</p>
+
+
+<p>Sorry that idea didn't work. I was convinced it would.</p>
+
+
+
+<p>My initial suggestion will work (as I have it running on my controllers) but it will require more work.</p>
+
+<p>You'll need to create 4 virtual switch states using the 'In-Memory virtual command' protocol.</p>
+
+<p><a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+In-memory+Virtual+Command+Protocol">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+In-memory+Virtual+Command+Protocol</a></p>
+
+
+<p>You'll need...</p>
+
+<p>3 commands;<br/>
+ON, OFF &amp; status</p>
+
+<p>Then a sensor looking at the status command</p>
+
+<p>And a switch using the sensor and the two state commands.</p>
+
+
+
+<p>The complex bit is creating a set of rules that allows only one virtual switch to be active at any time.</p>
+
+
+<p>However, once you've got those rules working, it's easy enough to add extra commands to sync to your glass panel.</p>
+
+<p>The biggest problem with this approach, and its not a major issue, is that when the controller is first loaded it will be out of sync with your glass panel.</p>
+
+
+<p>There is a way to use a rule to check the temp_mode_status of the glass panel and set the virtual switches, but I'll have to test this before I give more details.</p>
+
+
+
+<p>However, to get you started, here are the rules I'm using to keep 3 virtual switches in order</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+<span class="code-keyword">import</span> java.util.*;
+
+
+<span class="code-comment">// Block of rules <span class="code-keyword">for</span> Preset-Groups
+</span>
+
+
+rule <span class="code-quote">"Preset-Group-A-A"</span>
+when
+    $evt:Event(source matches <span class="code-quote">"Preset-Group-A-A-status"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"on"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Button Status Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"Preset-GroupA-B-Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"Preset-GroupA-C-Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Off"</span>, ""); // Uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Virtual"</span>, <span class="code-quote">"OFF"</span>); // This is just a virtual command to fake relay feedback
+</span>    }
+end
+
+
+
+
+rule <span class="code-quote">"Preset-Group-A-B"</span>
+when
+    $evt:Event(source matches <span class="code-quote">"Preset-Group-A-B-status"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"ON"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Button Status Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"Preset-GroupA-A-Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"Preset-GroupA-C-Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Off"</span>, ""); // Uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Virtual"</span>, <span class="code-quote">"OFF"</span>); // This is just a virtual command to fake relay feedback
+</span>    }
+end
+
+
+
+
+rule <span class="code-quote">"Preset-Group-A-C"</span>
+when
+    $evt:Event(source matches <span class="code-quote">"Preset-Group-A-C-status"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"ON"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Button Status Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"Preset-GroupA-A-Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"Preset-GroupA-B-Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Off"</span>, ""); // Uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Virtual"</span>, <span class="code-quote">"OFF"</span>); // This is just a virtual command to fake relay feedback
+</span>    }
+end
+
+</pre>
+</div></div>
+
+
+
+<p>Obviously you'll need to edit the sensor and command names.</p>
+
+
+<p>I'll help as much as I can.</p>
+
+
+<p>Good luck,</p>
+
+<p>Stuart</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Feb 16, 2016 15:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605706"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>I think I've worked out how to use 4 simple rules to keep the virtual switches in sync with a lead glass panel, with a bonus of being able to use the same set of rules to keep other glass panels in sync.</p>
+
+<p>Even without using the OpenRemote interface, however the mode is changed in the lead panel, other panels can be kept in sync.<br/>
+I've very tempted to run these rules at home, because I'm forever setting 4 panels to the same mode.</p>
+
+
+<p>........ I'll test that logic before I post it here....</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Feb 16, 2016 17:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605709"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>Well, after a little bit of playing around with "In-Memory Virtual" commands and switches, then some testing of rules, I can tell you that I have got it working!!!! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+<p>I now have an OpenRemote panel with 4 switches (showing as radial buttons), linked to 4 virtual switches that will switch each other off, so that only 1 is active at any time.</p>
+
+<p>The active switch sets the thermostat mode of a glass panel, but it would be really easy to add extra Velbus glass panels. (At the moment the first generation VMB1TS isn't supported)</p>
+
+<p>I have included a debounce timer so it may take up to 16 seconds for the radial buttons to respond to a Temp_Mode_Status change with in the glass panel (for example if a Velbus timed event changes the mode)</p>
+
+
+<p>The rules I've used are these:-</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+
+<span class="code-comment">// Block of rules <span class="code-keyword">for</span> TEMPERATURE MODE control from radial buttons - (Virtual switches)
+</span>
+
+
+rule <span class="code-quote">"Temp_Mode_Radial_COMFORT"</span>
+when
+    $evt:Event(source matches <span class="code-quote">"01-52_Comfort"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"ON"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Temp Mode Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"01-52_Day_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Night_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Safe_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52-GPnx-TempMode-HeatComfort"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span>    }
+end
+
+
+rule <span class="code-quote">"Temp_Mode_Radial_DAY"</span>
+when
+    $evt:Event(source matches <span class="code-quote">"01-52_Day"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"ON"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Temp Mode Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"01-52_Comfort_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Night_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Safe_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52-GPnx-TempMode-HeatDay"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span>    }
+end
+
+
+rule <span class="code-quote">"Temp_Mode_Radial_NIGHT"</span>
+when
+    $evt:Event(source matches <span class="code-quote">"01-52_Night"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"ON"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Temp Mode Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"01-52_Comfort_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Day_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Safe_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52-GPnx-TempMode-HeatNight"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span>    }
+end
+
+
+
+rule <span class="code-quote">"Temp_Mode_Radial_SAFE"</span>
+when
+    $evt:Event(source matches <span class="code-quote">"01-52_Safe"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"ON"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Temp Mode Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"01-52_Comfort_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Day_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Night_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52-GPnx-TempMode-HeatSafe"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span>    }
+end
+
+
+
+
+<span class="code-comment">// Block of rules to check status of Glass panel temp mode and set virtual relays
+</span>
+
+rule <span class="code-quote">"Read temp mode sensor_COMFORT"</span>
+
+    timer (<span class="code-object">int</span>: 4s) <span class="code-comment">// Debounce timer
+</span>
+when
+    $evt:Event(source matches <span class="code-quote">"01-52___Temp_Mode_STATUS_Custom_sensor"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"heat_comfort"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Temp Mode Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"01-52_Comfort_On"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Day_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Night_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Safe_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Off"</span>, ""); // Uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Virtual"</span>, <span class="code-quote">"OFF"</span>); // This is just a virtual command to fake relay feedback
+</span>    }
+end
+
+
+rule <span class="code-quote">"Read temp mode sensor_DAY"</span>
+
+    timer (<span class="code-object">int</span>: 4s) <span class="code-comment">// Debounce timer
+</span>
+when
+    $evt:Event(source matches <span class="code-quote">"01-52___Temp_Mode_STATUS_Custom_sensor"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"heat_day"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Temp Mode Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"01-52_Comfort_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Day_On"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Night_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Safe_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Off"</span>, ""); // Uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Virtual"</span>, <span class="code-quote">"OFF"</span>); // This is just a virtual command to fake relay feedback
+</span>    }
+end
+
+
+rule <span class="code-quote">"Read temp mode sensor_NIGHT"</span>
+
+    timer (<span class="code-object">int</span>: 4s) <span class="code-comment">// Debounce timer
+</span>
+when
+    $evt:Event(source matches <span class="code-quote">"01-52___Temp_Mode_STATUS_Custom_sensor"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"heat_night"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Temp Mode Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"01-52_Comfort_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Day_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Night_On"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Safe_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Off"</span>, ""); // Uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Virtual"</span>, <span class="code-quote">"OFF"</span>); // This is just a virtual command to fake relay feedback
+</span>    }
+end
+
+
+
+rule <span class="code-quote">"Read temp mode sensor_SAFE"</span>
+
+    timer (<span class="code-object">int</span>: 4s) <span class="code-comment">// Debounce timer
+</span>
+when
+    $evt:Event(source matches <span class="code-quote">"01-52___Temp_Mode_STATUS_Custom_sensor"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"heat_safe"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Temp Mode Change '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"01-52_Comfort_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Day_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Night_Off"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>        execute.command(<span class="code-quote">"01-52_Safe_On"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Off"</span>, ""); // Uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Relay 01 Virtual"</span>, <span class="code-quote">"OFF"</span>); // This is just a virtual command to fake relay feedback
+</span>    }
+end
+</pre>
+</div></div>
+
+
+<p>Please let me know if you need any help setting up the various virtual switches.</p>
+
+
+
+
+<p>Cheers,</p>
+
+<p>Stuart</p>
+
+
+<p><span class="error">Cannot resolve external resource into attachment.</span></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Feb 16, 2016 20:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605724"></a>
+                                    <font class="smallfont"><p>Hi Stuart,<br/>
+thank you very much for the effort!</p>
+
+<p>I'll try it as soon as possible and let you know if it works.</p>
+
+<p>Thx!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nielsd at Feb 17, 2016 10:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605759"></a>
+                                    <font class="smallfont"><p>Hello Niels,</p>
+
+<p>How are you getting on?</p>
+
+<p>Is it all making sense?</p>
+
+<p>Please give me a shout if you'd like anything explaining in more detail.</p>
+
+
+<p>I'm really curious to see what you come up with <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Cheers,</p>
+
+<p>Stuart</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Feb 20, 2016 13:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

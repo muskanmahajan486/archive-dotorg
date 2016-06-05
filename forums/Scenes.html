@@ -1,0 +1,309 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Scenes</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Scenes
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 05, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Hi<br/>
+I've started a few days ago with openremote and I find the system superb. Since I've learned a lot reading the forum, I'd like to give back something showing how I set up my system to operate with scenes (I'm a big fun of the idea of scenes and I made  lots of them). This is by no way a how-to (I'm too newbie for that), it is just a list of rules-sensor-tricks that work. I promise no light was hurt during the making of this post. Please give me any advice how to do this better/faster/cooler.</p>
+
+<p>My idea was to have a scene that would run automatically at a given time, reporting to my (android) interface its status, and be controllable by the interface as well. Practically: At 23.00 the system should start dimming the lights of the living room, 3 % every each 10 minutes up when the light level it's 3. This scene should appear in the panel interface. I want to be able, however, to switch off the rule progress and switch it back when I need. Lights are controlled via zwave devices hooked up to a zwave.me on-board controller mounted on a raspberry (wheezy). I use http commands to communicate with them. It does not really matter which device you have. The lights are dimmed with a command "LD1 set" that accepts a parameter to set the dim level.</p>
+
+<p>Step 1. <br/>
+a) Define a new device called (or whatever you want) "Scene lights-down".<br/>
+b) within the device define 3 in-memory Virtual commands as follows:</p>
+
+
+<p><img src="attachments/22413464/22708234.png" align="absmiddle" border="0"/></p>
+
+<p>Please notice "on" is case sensitive (I spent sometime on this forum because of that <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>)</p>
+
+<p>c) Within the device define a sensor hooked up to the get command above:</p>
+
+<p><img src="attachments/22413464/22708235.png" align="absmiddle" border="0"/></p>
+
+<p>Finally, define a switch as follows:</p>
+
+<p><img src="attachments/22413464/22708236.png" align="absmiddle" border="0"/></p>
+
+
+<p>Step 2. Define the rules needed for the scene to operate in "Config the controller -&gt; rules":</p>
+
+<p>here are the rules (with standard imports):</p>
+
+<div style="max-width: 800px;"><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Integer</span>;
+
+<span class="code-comment">// ________________
+</span><span class="code-comment">// <span class="code-keyword">this</span> starts the scene a 22.50. This is done every day 
+</span><span class="code-comment">// ________________
+</span>
+rule <span class="code-quote">"Living Lights Down Start"</span>
+  timer (cron: 0 50 22 * * ?)
+when 
+ eval(<span class="code-keyword">true</span>)
+then
+  execute.command( <span class="code-quote">"Scene-LLD-Get"</span>,<span class="code-quote">"on"</span> );
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"Rule Living Lights Down active"</span>); 
+end
+
+<span class="code-comment">// ******
+</span><span class="code-comment">//  <span class="code-keyword">this</span> dims down the lights every 10 minutes <span class="code-keyword">if</span> they are not already at 3 and the scene is on and is not later than 3 a.m 
+</span><span class="code-comment">// *******
+</span>
+rule <span class="code-quote">"Living Lights Down"</span>
+
+  timer (cron: 0 0/10 23-3 * * ?)
+
+when 
+  Event(source == <span class="code-quote">"DimSensor"</span>, value &gt; 3)
+  Event(source == <span class="code-quote">"Lights-Down-Sensor"</span>, value == <span class="code-quote">"on"</span> )
+  $evt: Range( source == <span class="code-quote">"DimSensor"</span>) 
+then
+  execute.command(<span class="code-quote">"LD1-Set"</span>,$evt.getValue()-3);
+  execute.command( <span class="code-quote">"Scene-LLD-Get"</span>,<span class="code-quote">"on"</span> );
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"Rule Living Lights Down working"</span>); 
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"Setting LD1 to level "</span>+ ( $evt.getValue()-3) ); 
+
+end
+
+<span class="code-comment">// ******
+</span><span class="code-comment">//  at 3 a.m. the rule is put to off and the lights are off (usually other scenes would off the lights already, but just in <span class="code-keyword">case</span> one forgets) 
+</span><span class="code-comment">// *****
+</span>
+rule <span class="code-quote">"Living Dies"</span>
+
+  timer (cron: 0 0 3 * * ?)
+
+when 
+ eval(<span class="code-keyword">true</span>)
+then
+  execute.command( <span class="code-quote">"Scene-LLD-Get"</span>,<span class="code-quote">"off"</span> );
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"Rule Living Lights Down stop"</span>); 
+
+end
+</pre>
+</div></div></div>
+
+
+<p>Step 3: set up the interface:</p>
+
+<p>Make a panel called "scenes" (or whereever you want to control and monitor the scene).<br/>
+Define a switch in the panel associated with the switch define in step 1:</p>
+
+<p><img src="attachments/22413464/22708237.png" align="absmiddle" border="0"/></p>
+
+<p>defined as:<br/>
+<img src="attachments/22413464/22708238.png" align="absmiddle" border="0"/></p>
+
+<p>Choose two different icons for "on" and "off" state.</p>
+
+<p>Add two labels, one with the name of the scene ("Lights down" in my case) and one with "..." text, the latter associated with the sensor as follows:</p>
+
+<p><img src="attachments/22413464/22708239.png" align="absmiddle" border="0"/></p>
+
+<p>save, reload, etc. and you are done. <br/>
+What you have is a automatic scene, which does actions for a while and then stop. It's status appears in your controller and you can halt it or activate again as you please. Something like:<br/>
+<img src="attachments/22413464/22708240.png" align="absmiddle" border="0"/><img src="attachments/22413464/22708241.png" align="absmiddle" border="0"/></p>
+
+<p>I hope this can help who is just started with openremote. Thanks guys for this great software which is giving my house a life!!</p>
+
+
+
+
+
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22413464/22708233.png">c1.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22413464/22708234.png">c.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22413464/22708235.png">s.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22413464/22708236.png">ss.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22413464/22708237.png">qq.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22413464/22708238.png">q.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22413464/22708239.png">qqq.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22413464/22708240.png">a.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22413464/22708241.png">b.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22413550"></a>
+                                    <font class="smallfont"><p>Marcello,</p>
+
+<p>This is excellent work and thanks for sharing it back to the rest of the community. We can only hope more people pick up your lead and start doing the same. That's what make communities work. I'm sure your work will be helpful for many others who are also just beginning with OpenRemote. Even if you are new it means you are writing from a perspective of a new user and others who are also new will share the same perspective.</p>
+
+<p>I think I'll look at a more permanent place in the Wiki to save your documentation effort.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 05, 2013 09:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413558"></a>
+                                    <font class="smallfont"><p>I've started a wiki page for your guide and copied the content (with slight copy-editing): <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Scheduled+Scenes" title="OpenRemote 2.0 How To - Scheduled Scenes">OpenRemote 2.0 How To &#45; Scheduled Scenes</a>. Feel free to add to the page, modify it, as you wish. Posting more content here on the forums section is fine too, if you prefer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 05, 2013 10:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413596"></a>
+                                    <font class="smallfont"><p>Thanks, that's great. I hope I can contribute some more as I progress in learning OR.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mcfanda at May 05, 2013 16:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413597"></a>
+                                    <font class="smallfont"><p>Marcello,<br/>
+I cannot thank you enough you made my day !!!</p>
+
+<p>I started with OpenRemote during the good old days when status was polled continuously with some kind of a polling interval. That way the group address of my KNX commands for a switch - on, off and status were the same. I had a perfectly working switch without worrying about a separate group to keep track of status.</p>
+
+<p>The continuous polling was disabled to avoid load on the controller which was the way to go, but, this messed up with my switch sensor. This meant the more the switches the more groups just to keep track of switch status. The good folks at OR later came out with the slider which I was absolutely in love with. This also caused a major heartburn, I was using a KNX DALI gateway for my lighting. I could only choose between value status object or switch status object. I went for the value object to implement the slider and choosing the group address of on off commands for the status. The switch status was getting updated if I used physical keypad but if the light was controlled through my iPod touch the status would not work.</p>
+
+<p>I have modified your tutorial to finally solve the problem using the following code in rules.</p>
+
+<p>Slider Sensor - The sensor that is used for sensing value of the light that I want to create a switch for.</p>
+
+<p>Switch-Status-Get - In-memory Virtual Command<br/>
+In-memory Virtual Command attribute - Command: status , Address: SwStatus</p>
+
+<p>created sensor with Switch-Status-Get</p>
+
+<p>I used this sensor for my KNX switch.      </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Integer</span>;
+
+rule <span class="code-quote">"Lights On State"</span>
+
+when 
+Event(source == <span class="code-quote">"Slider Sensor"</span>, value &gt; 0)
+$evt: Range( source == <span class="code-quote">"Slider Sensor"</span>) 
+
+then
+execute.command( <span class="code-quote">"Switch-Status-Get"</span>,<span class="code-quote">"on"</span> );
+<span class="code-object">System</span>.out.println(<span class="code-quote">"Light On State"</span>); 
+
+end
+
+rule <span class="code-quote">"Lights Off State"</span>
+
+when 
+Event(source == <span class="code-quote">"Slider Sensor"</span>, value == 0)
+$evt: Range( source == <span class="code-quote">"Slider Sensor"</span>) 
+
+then
+execute.command( <span class="code-quote">"Switch-Status-Get"</span>,<span class="code-quote">"off"</span> );
+<span class="code-object">System</span>.out.println(<span class="code-quote">"Light Off State"</span>); 
+
+end
+
+</pre>
+</div></div>
+
+<p>I did not know how to post the code looking as good as all the wonderful folks out here and am guilty of not putting effort prior to this post. I must give due credit to Juha's post <a href="http://openremote.org/pages/viewpage.action?pageId=21859613&amp;focusedCommentId=21859659">How to Post Code Block</a></p>
+
+<p>Thank you again my friend. Juha, Marcus, Eric and all the wonderful folks out there at OR keep up the good work. You guys rock !!!</p>
+
+<p>Edit - removed duplicate code which was caused by pasting the code twice.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ggraja at May 05, 2013 18:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872357"></a>
+                                    <font class="smallfont"><p>Grazie Marcello <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>look:<br/>
+<a href="http://www.openremote.org/pages/viewpage.action?pageId=21860717&amp;focusedCommentId=22872356#comment-22872356">http://www.openremote.org/pages/viewpage.action?pageId=21860717&amp;focusedCommentId=22872356#comment-22872356</a></p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mb at Jun 06, 2013 15:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

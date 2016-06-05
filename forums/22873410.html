@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : whats wrong with this log statement using fact property??</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : whats wrong with this log statement using fact property??
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jun 27, 2013 by <font color="#0050B2">jmspooner</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I've been experimenting with the rules engine and have the rules below.  Everything works fine except when I uncomment the log line towards the end in the "House not occupied" rule.  There are NO errors reported in the logs, in fact nothing to suggest anything went wrong... problem is the log entry is not made and the sensors not updated so I know the rule has NOT run.</p>
+
+<p>FYI I'm working towards having a kind of fuzzy logic in place so using various bluetooth usb sticks round the house openremote can generally know when I'm about.  In time I'd have it so it only retracts the occupied fact when its seen no bluetooth pings for say 5 mins.  But there is no point continuing till I understand this problem.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+<span class="code-keyword">import</span> org.openremote.controller.Constants;
+<span class="code-keyword">import</span> org.openremote.controller.utils.Logger;
+
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Float</span>;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">System</span>;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Long</span>;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Integer</span>;
+<span class="code-keyword">import</span> java.util.Date;
+
+<span class="code-comment">//LOGGING FUNCTION
+</span>function void log(<span class="code-object">String</span> msg)
+{
+  Logger.getLogger(Constants.CONTROLLER_ROOT_LOG_CATEGORY + <span class="code-quote">".myRuleLog.log"</span>).info(msg);
+}
+
+declare Occupied
+  lastPinged : <span class="code-object">Long</span>
+end
+
+<span class="code-comment">// KEEP TRACK OF HOUSE OCCUPANCY
+</span>rule <span class="code-quote">"House occupied"</span>
+  when
+    Event( source == <span class="code-quote">"zoneOneState"</span>, value == <span class="code-quote">"on"</span> )
+    not Occupied()
+  then
+    Occupied occupied = <span class="code-keyword">new</span> Occupied();
+    occupied.setLastPinged(<span class="code-object">System</span>.currentTimeMillis() / 1000L);
+    insert (occupied);
+    execute.command(<span class="code-quote">"occupancyGet"</span>, <span class="code-quote">"on"</span>);
+    log(<span class="code-quote">"house is occupied"</span>);
+end
+
+rule <span class="code-quote">"House not occupied"</span>
+  when
+    Event( source == <span class="code-quote">"zoneOneState"</span>, value == <span class="code-quote">"off"</span> )
+    $occupied : Occupied()
+  then
+    execute.command(<span class="code-quote">"occupancyGet"</span>, <span class="code-quote">"off"</span>);
+    log(<span class="code-quote">"house is not occupied"</span>);
+    <span class="code-comment">//log(<span class="code-quote">"house is not occupied, last ping timestamp "</span> + $occupied.getLastPinged());
+</span>    retract ($occupied);
+end
+</pre>
+</div></div>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22873413"></a>
+                                    <font class="smallfont"><p>OMG!! theres a couple hours of my life I'll never get back!</p>
+
+<p>Just found if I comment out the one log statement and uncomment the other but this time STOP and START the openremote system it works!!!!  however until this point I'd simply been doing a reload (sync) using the button on the controller web interface and it was that which yielded the strange behaviour described above.  Hacked off is not the word!  if I cant trust doing re-syncs in order to reload all the conf files including rules then stopping/starting the whole service is a bit much... ho-hum</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jmspooner at Jun 27, 2013 13:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873441"></a>
+                                    <font class="smallfont"><p>Thanks for reporting, will take a look.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 28, 2013 15:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873442"></a>
+                                    <font class="smallfont"><p>I did have the thought it was the state of the Occupied fact getting in a twist perhaps persisting from one sync to another, but some checks afterwards suggested that was not the case.  Very odd behaviour.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jmspooner at Jun 28, 2013 15:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

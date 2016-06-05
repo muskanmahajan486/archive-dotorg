@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : GUI on phone not updating</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : GUI on phone not updating
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 13, 2013 by <font color="#0050B2">ralph</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I am just getting up and running with z-wave on OR and have now an issue; when changing a z-wave device state manually (flip a switch or change a dimer status) the GUI on te iPhone/iPad is not updated.</p>
+
+<p>The <a href="http://www.openremote.org/display/docs/Designer+2.0+-+Create+New+Z-Wave+Switch">documentation</a> states:</p>
+<blockquote>
+<p>Sensors can be linked to switches (so the switch user interface will update even when someone physically switches it on or off) but sensors can also be linked to image or label user interface elements - the latter will allow you to display current device state either as a textual description or an image without the control element.</p></blockquote>
+
+<p>This <a href="http://www.openremote.org/display/forums/SliderSwitch+not+updating+on+phone">page</a> (a couple of months old), seems to state that most/many z-wave devices don't send a status update command when manually (or via associations?) changed state. Indeed then OR has no knowledge of the changed state and consequently cannot update the GUI. As a solution a polling mechanism is proposed. If this is true then it would impose a battery lifetime problem for battery powered z-wave switches constantly being polled. Or alternatively these battery powered devices form the 'exception' and <b>do</b> transmit a status update when changed state. Then these devices should be excluded from the polling sequence to preserve battery life.</p>
+
+<ul>
+	<li>I suppose that OR is listening to device-initiated status updates. Is this indicated by the logging from zwave.log:<br/>
+  "DEBUG 2013-03-13 21:21:08,987 (1-WIRE): Node: 4 created, Type: Switch, Listening: true"<br/>
+  and other devices show:<br/>
+  "DEBUG 2013-03-13 21:21:08,932 (1-WIRE): Node: 3 created, Type: BinarySensor, Listening: false"</li>
+</ul>
+
+
+<ul>
+	<li>As polling test I created a macro that contains the status command for all devices and bind it to an 'update' button or other GUI event which results in 'only' requesting all devices statuses when required because the GUI is used. Unfortunately this causes many z-wave message locks logging and eventually a timeout. To get it up and running again I have to restart OR.</li>
+</ul>
+
+
+<p>My questions:</p>
+<ol>
+	<li>Can anyone confirm for sure that indeed (most) z-wave devices do not send a status update when operated manually or via associations? Is this documented which devices do/don't?</li>
+	<li>Is OR indeed listening for devices that transmit status updates and how can this be controlled? (see zwave.log part above?)</li>
+	<li>Is there already a proven solution with polling (and point me to a how-to?)</li>
+</ol>
+
+
+<p>Thanks!</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21858569"></a>
+                                    <font class="smallfont"><p>The OR Z-Wave native implementation does not read status. For example if I start OR after a few switches have been switched on, this status is not reflected on my screen. <br/>
+After an On of Off command most most switches will change their staus on screen. This depends on a number of factors; a) the brand of the switch, b) the local quality of the Zwave signal c) the controlling software. I have switches that actually do switch on, but don't show their stus on screen. The same type on an other location just works fine.<br/>
+(In Zwave.me the status is correctly shown most of the time, but also not always) </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Mar 13, 2013 22:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858588"></a>
+                                    <font class="smallfont"><p>With non-listening (battery operated) devices, the current implementation will wait until it receives a WAKE_UP_NOTIFICATION from the device (the wakeup frequency is usually configurable in the device). It will then send any queued commands that it has for that device and tell the device to go back to sleep.</p>
+
+<p>My thought on this is to always queue a status command for any device that is battery operated which doesn't proactively send one. My Horstmann thermostat is one such device <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> This shouldn't effect the battery as the device is already awake and waiting for a command. The Listening=true/false is telling you  whether the <b>device</b> is listening not OR (false means it is a battery operated device) </p>
+
+<p>As you have probably noticed, while z-wave is quite a 'tight' standard (compared to other protocols) manufacturers do have a certain leeway in their implementations. This means that the way OR currently discovers device capabilities by querying for the generic device class (switch, dimmer, binarysensor, thermostat) is not going to work 100% for all devices in that class and a more complete discovery method will be required. </p>
+
+<p>If a device pro-actively sends its status then OR will (should) correctly receive this status and update any attached sensors. For example my mains powered light switches work fine. </p>
+
+<p>What seems to cause the message locks is that if the controller sends a command that MUST receive a response (a status request for example), this command will block the queue until the correct response is received or it times-out (if it times-out, the command is placed at the back of the queue). This isn't the case with non-listening devices as the controller will NEVER send a command until it receives a wakeup message from the device. I am currently adding a lot more debugging code to my source tree so I can see what is happening in a bit more detail.</p>
+
+<p>I have only had the z-wave source code for a couple of weeks or so and I am still learning exactly how it all works myself <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Apologies if this is difficult to read, I have been adding/removing bits for the last 10 minutes and really need to press Post!</p>
+
+<p>Thanks</p>
+
+<p>Phil</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philetaylor at Mar 14, 2013 18:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858592"></a>
+                                    <font class="smallfont"><p>Hi Phil,</p>
+
+<p>Thanks for the great elaboration! Yes your explanation totally makes sense for battery powered devices. You indicate that the wake-up frequency can (often) be configured, as many other parameters in the z-wave devices. But I suspect that this is not yet implemented to be done via OR is it?</p>
+
+<p>Regarding all my mains powered test devices (1 Fibaro dimmer, a TKBHome switch, 2 different Aeon Labs dimmers) I was hoping that they do pro-actively send their status. Could I have made a mistake somewhere or must I conclude that all my devices simply do not send status updates? Can this be checked somehow in the logs?</p>
+
+<p>You mention that your mains powered light switch works fine. Which brand/type is this? There seems no collection/overview for all these devices and their supported/tested features with OR.</p>
+
+<p>Regarding the message lock and timeout, I understand your statement. In my case I have to check which device is constantly causing the response timeout since I am currently not using the battery powered devices in the network. But I will figure this out.</p>
+
+<p>Lastly, if you ever have the need for some tests and I can find the time I will be happy the assist.</p>
+
+<p>Thanks,</p>
+
+<p>Ralph</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ralph at Mar 14, 2013 19:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858593"></a>
+                                    <font class="smallfont"><p>Setting other parameters for z-wave devices isn't currently supported by OR. I tend to use z-wave.me to make any of these changes. It would be nice to be able to do it within controller but this is fairly low priority as typically these things are 'set and forget' so it isn't that much of a hardship to do it with z-wave.me.</p>
+
+<p>Most devices only send their status when the state changes. I have a Fibaro dimmer for example and that works perfectly once the state is changed. I guess that part of the device enumeration when OR first starts should also queue a 'status' request for each mains powered device? I will look at how feasible this is.</p>
+
+<p>Thanks for the offer of testing, I will definitely post when I have something!</p>
+
+<p>Phil</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philetaylor at Mar 14, 2013 20:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858594"></a>
+                                    <font class="smallfont"><p>A quick look at the code and it does already query each device for status on creation of the sensor and I have verified with my fibaro dimmer that OR has the correct level on startup!</p>
+
+<p>Thanks</p>
+
+<p>Phil </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by philetaylor at Mar 14, 2013 21:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858604"></a>
+                                    <font class="smallfont"><p>I'll test this again over the weekend. Maybe your code is more recent than mine. What I reported above is my experience from end of last year.<br/>
+Pieter<br/>
+PS: I am available for testing as I said before.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Mar 15, 2013 07:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

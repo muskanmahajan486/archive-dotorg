@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Controller TCP polling when no panel is connected</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Controller TCP polling when no panel is connected
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 29, 2012 by <font color="#0050B2">mewar</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>I jumped into your marvelous project and just at the beginning I discovered following problems:</p>
+
+
+<p>1) Controller is polling TCP server for sensors' value even if no panel is connected<br/>
+2) Controller is polling for ALL the sensors in ALL the panels and panels' screens<br/>
+3) Controller is closing/reopening the TCP connection for every sensor in each polling loop</p>
+
+<p>All of these increases a lot the traffic between the controller and the TCP server. My system is going to consist<br/>
+of 3 panels (android, iphone, web) each containing about 100 sensors (on 10 screens). I can't imagine that my server will stand that<br/>
+heavy load.</p>
+
+<p>Instead of having 300 connections per second, it could be something like 10. If controller would poll only the sensors<br/>
+from active screen of active panel.</p>
+
+<p>I found on this forum solution to 3) by using Richard's <img class="emoticon" src="images/icons/emoticons/help_16.gif" height="16" width="16" align="absmiddle" alt="" border="0"/> connection manager but I was not able to figure out how to solve 1) and 2).</p>
+
+<p>Could you guide me on that?</p>
+
+
+<p>Thanks and again I really like what you are doing <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19435272"></a>
+                                    <font class="smallfont"><p>If you reuse the same sensor for all panels, you should only have 100 sensors.<br/>
+It does not matter how many screens are using those sensors. So 2) should not be an issue already.</p>
+
+<p>The TCP protocol implementation is still based on our deprecated StatusCommand interface which means the socket request is performed every 500ms and the connection is closed and opened for each call. This will change to be based on our EventListener interface where (depending on the device) you can either define a polling interval or no polling is done but the device is informing about state changes while the connection stays open.</p>
+
+<p>This is on the list but I cannot give you a release time yet.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 29, 2012 13:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435279"></a>
+                                    <font class="smallfont"><p>OK. Thanks for the answer. It seems that this EventListener is going to resolve most of my problems. Bad luck it is not ready yet.</p>
+
+<p>Do you think that, for the moment, I would be able modify the Controller that it won't poll TCP server if any of the panels is not connected? I don't have an idea where to search...</p>
+
+<p>Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mewar at Jan 29, 2012 19:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435281"></a>
+                                    <font class="smallfont"><p>That would involve some deep code digging <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Right now the way it works is that the panel is only asking the status cache for the sensor values.<br/>
+The controller is responsible for updating the statuc cache. So there is no real connection between a connected panel and the sensor update.<br/>
+You could increase the polling interval if that would help in the moment.<br/>
+The value is defined in org.openremote.controller.protocol.ReadCommand</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 29, 2012 19:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435284"></a>
+                                    <font class="smallfont"><p>I've already increased the polling interval. This change and kind of connection manager which will keep the TCP connection must be enough for the moment. I'm not ready for exhaustive digging <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mewar at Jan 29, 2012 20:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451152"></a>
+                                    <font class="smallfont"><p>Yes, I vote for improvement here too. </p>
+
+<p>After doing some tests with capable devices - I ended up with over two hundred TCP/IP sensors per device (switches, various sensors etc). There could be 5-10 devices in a loop. Since current controller version 2.x pools every sensor regardless if is used or not - you can imagine how fast messages on Tomcat message window are scrolling <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> <br/>
+This unfortunately for some reason often causes panels not reacting upon user commands... Not sure if that's CPU issue or something else.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mlab at Sep 28, 2012 07:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037531"></a>
+                                    <font class="smallfont"><p>Hi all, <br/>
+I've got a similar problem: I'm trying to get openremote to talk with a TCP Server that I implemented on an openpicus Flyport. <br/>
+Openremote should use a sensor to get the status. Unfortunately the controller sends that request way to frequent (twice per second). <br/>
+Now I wanted to modify the polling interval in the file described obove:  org.openremote.controller.protocol.ReadCommand<br/>
+This file is a .class file, that I cannot ope with a text editor (only weird letters displayed). I tried to open it with eclipse, but i get an error and can't open. </p>
+
+<p>Please, can somebody explain me how to modify the TCP Polling interval? I'm new to java.. </p>
+
+<p>Thanks!!!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by strupp3003 at Nov 18, 2012 17:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037649"></a>
+                                    <font class="smallfont"><p>The other day I looked into Flyport. I noticed it supports a number of communication protocols, amongst which HTTP. In OpenRemote you can define the interval for HTTP calls. Is it an option for you to get your data out of Flyport with HTTP?<br/>
+Just my 2 cts<br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 21, 2012 12:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037689"></a>
+                                    <font class="smallfont"><p>Hello, <br/>
+Thanks for the idea of using http instead of tcp. <br/>
+I don't exactly know how to use http for communication, I think in Flyport it is mainly intended for the operation of the integrated webserver. <br/>
+I need to establish a connection between the Flyport and Openremote to send 2-3 commands from OR and receive the Status. <br/>
+How does the communication with http work? Do I have to build a normal web-page for the Flyport which offers Buttons (Commands) and displays values, and then OR will get the data from that page / send commands via that page? <br/>
+Thanks for your help!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by strupp3003 at Nov 22, 2012 15:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037691"></a>
+                                    <font class="smallfont"><p>If you are in control of the software on the flyport, you could save your data in an XML (or JSON) file. Then het them in OR Designer create a command using the http protocol. I have an example for that if you need it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 22, 2012 15:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037693"></a>
+                                    <font class="smallfont"><p>Yes, I'm currently writing the software. I want to use the Flyport to control an Husqvarna Automower Robot via WLAN.. <br/>
+Unfortunately my http / Html skills are very limited.<br/>
+I would really appreciate that example! </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by strupp3003 at Nov 22, 2012 15:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037698"></a>
+                                    <font class="smallfont"><p>Send me an email, and I'll return a little document. (push on my avatar for email address. Please mind the characters .@ you have to replace)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 22, 2012 15:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

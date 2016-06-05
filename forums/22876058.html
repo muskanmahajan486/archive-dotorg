@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Rules break my sensors?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Rules break my sensors?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 07, 2013 by <font color="#0050B2">moad</font>.
+				    </div>
+
+				    <p>Trying to work out adding rules for XBMC, I am just testing it by adding in a command + sensor to retrieve the volume. I have the regex set (tested and working) as the volume, I have the sensor (TestVolHolder) with a default value and then a second command (Test Message) that is fired.</p>
+
+<p>My rule looks like this </p>
+
+<p>rule</p>
+
+<p>when </p>
+
+<p>Event( source == "TestVolHolder", value == "100" )</p>
+
+<p>then</p>
+
+<p>execute.command( "TestMessage" );</p>
+
+
+<p>Not only does the rule not work but it also breaks my other sensors?!</p>
+
+<p>Am I missing something?</p>
+
+<p>Cheers,</p>
+
+<p>Nick.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22876060"></a>
+                                    <font class="smallfont"><p>OK so removed the rule and my volume sensor (separate to the test above) was still broken. I then removed the test sensor and my original one worked again.</p>
+
+<p>The original sensor uses the JSONPath to extract the volume, is there some kind of conflict between them?</p>
+
+<p>Edit:</p>
+
+<p>just found this thread...sorry!</p>
+
+<p><a href="http://openremote.org/pages/viewpage.action?pageId=22872779">http://openremote.org/pages/viewpage.action?pageId=22872779</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moad at Sep 07, 2013 00:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876067"></a>
+                                    <font class="smallfont"><p>Thought I'd share this as it took me a little while to figure out and it is still fresh in my mind.</p>
+
+<p>This is just a test so that when I hit 100 volume on xbmc a message displays with the volume level (to begin developing commands based on playerid)</p>
+
+
+<p>-------------------------------------------------------------------------------------------------------------------------------------------------<br/>
+package org.openremote.controller.protocol</p>
+
+<p>import org.openremote.controller.model.event.*;</p>
+
+<p>global org.openremote.controller.statuscache.CommandFacade execute;</p>
+
+
+<p>rule "Range Event Command Execution"</p>
+
+<p>when</p>
+
+<p> $evt:  Range ( source == "Display Volume", value == 100 )</p>
+
+<p>then</p>
+
+<p>  execute.command ("TestMSG", $evt.getValue());</p>
+
+<p>end</p>
+
+
+<p>--------------------------------------------------------------------------------------------------------------</p>
+
+<p>I have a command that grabs the current volume from XBMC and uses JSONPATH to extract the result. </p>
+
+<p>Then I created a sensor called "Display Volume" which is a Range from 0 - 100. I use this in a slider on my remote to set the volume as well</p>
+
+<p>Then I created a command called TestMSG which has the message as ${param) - this means it will display the volume value that is pulled from the first command.</p>
+
+<p>Then I entered the rule above, refreshed the controller and voila! A message pops up (with the volume value as the message) when I set the volume in XBMC to 100.</p>
+
+<p>Hope this helps someone! Mods you might like to change the thread title to assist in searching?</p>
+
+<p>Nick.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by moad at Sep 07, 2013 01:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876130"></a>
+                                    <font class="smallfont"><p>I've just caused something similar.</p>
+
+<p>My lights have an "On/Off" 'state' and a "Reachable" 'state'.</p>
+
+<p>I've set a sensor for reachability, so that my UI informs a user to turn the mains power onto the device before they can control it (via a label).   If I cut mains power, and wait long enough (5-30 seconds, depends on the zigbee polling), the sensor trips and displays the label.  This sensor is set to run every 5 seconds.</p>
+
+<p>Separately, I've got an off/off UI switch, which uses the on/off state via a sensor.</p>
+
+<p>I then set a Rule to issue a state -&gt; "Power Off" command, so that the zigbee controller would be updated to an "Off" state, my separate power sensor would then pick up "off" correctly and update the power switch UI.  This sensor runs every 1 second.</p>
+
+<p>The FIRST time the rule fires, the label appears and the power switch shows "off".</p>
+
+<p>However, if I then "flick the UI switch", it sends the on command, so the switch UI shows on.  However in 5s time, the Reachable sensor should fire and show "No".  The label stays on the screen, but the switch stays "on".</p>
+
+<p>So I changed the timings so that reachability sensor ran every 1s, and power state ran every 5s.  It still doesn't work....once the switch overrides the state after my rule has run, it never resets.</p>
+
+<p>Clues?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ptruman at Sep 07, 2013 20:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

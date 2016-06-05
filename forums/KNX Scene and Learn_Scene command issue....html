@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNX Scene and Learn_Scene command issue...</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNX Scene and Learn_Scene command issue...
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 19, 2012 by <font color="#0050B2">teknoir</font>.
+				    </div>
+
+				    <p>Ok, I've gotten the hang of ETS and OpenRemote Controller 2.0.0. All my programming is working fine except the SCENE commands.</p>
+
+<p>I've tried to debug this problem but I'm not sure about the results.</p>
+
+<p>Comparing the values I get when I use ETS to set the scene and using OR I thought I had the solution.</p>
+
+<p>For example using an OR command:<br/>
+SCENE 1<br/>
+17.001</p>
+
+<p>Generates in the groupdiagnostics in ETS:<br/>
+RAW DP value: $81<br/>
+(should be $00, that is wat works and what ETS sets for above example)</p>
+
+<p>My idea was that it had got mixed up with LEARN_SCENE, but I'm a bit confused.</p>
+
+<p>Looking at the code:<br/>
+    return new ApplicationProtocolDataUnit(<br/>
+        ApplicationLayer.Service.GROUPVALUE_WRITE,<br/>
+        new Unsigned8Bit(<br/>
+          DataPointType.Unsigned8BitValue.VALUE_1_UCOUNT,<br/>
+          learn ? value : 0x80 | value)<br/>
+    );</p>
+
+<p>It looks correct in my eyes and I've checked the calls and it seems to set learn correctly.<br/>
+I also tried to outsmart the system and put in LEARN_SCENE 1 but it still got $81.<br/>
+If I try different scene numbers it seems to always bitwise include 0x80, so I see another problem. It should be -1 swell.</p>
+
+<p>Any ideas anyone?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21037564"></a>
+                                    <font class="smallfont"><p>Hi,<br/>
+there is mistake in controller. Try learn_scene inspite of scene. Take also minus 1. Eg to play scene 18 -&gt; learn_scene 17 with 18.001 inspite of 17.001<br/>
+BR<br/>
+Grzegorz</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by profox at Nov 19, 2012 20:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037582"></a>
+                                    <font class="smallfont"><p>Hi!</p>
+
+<p>Yes that worked! Thank you! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>I forgot to put in 18.001 with LEARN_SCENE and -1 on the number. Now my scenes works perfect. </p>
+
+<p>Cheers!<br/>
+Anders</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by teknoir at Nov 20, 2012 06:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037583"></a>
+                                    <font class="smallfont"><p>Fell free to submit a patch <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 20, 2012 08:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037586"></a>
+                                    <font class="smallfont"><p>I'll set up a dev environment on a virtual machine this weekend. I need to be able to test the changes be4 submitting a patch.</p>
+
+<p>I would love to make a contribution to this wonderful project!</p>
+
+<p>Cheers!<br/>
+Anders</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by teknoir at Nov 20, 2012 08:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039098"></a>
+                                    <font class="smallfont"><p>I added a patch in this forum post:
+<a href="http://www.openremote.org/display/forums/Status+scene+change%2C+telnet+status%2C+key+press+delay?focusedCommentId=21039096#comment-21039096">http://www.openremote.org/display/forums/Status+scene+change%2C+telnet+status%2C+key+press+delay?focusedCommentId=21039096#comment-21039096</a><br/>
+The patch is for the 2.1-developer-snapshot.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 26, 2012 23:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

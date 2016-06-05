@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : IP device with JSON interface</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : IP device with JSON interface
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 02, 2012 by <font color="#0050B2">mekri</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>I'm new to OpenRemote, so I'm still struggling with finding my way. Installation and setup wend well.</p>
+
+<p>I've a IP device which I would like to control with OpenRemote. The device has a Restful JSON interface. <br/>
+So with a specific URL, a method e.g. GET, PUT,DELETE and a body e.g. {"action":{"on": true, "dimm":128}}.<br/>
+For each message, a response is send back e.g. [ "action success"]</p>
+
+<p>In the forums, I find a lot of posts about JSON, but I think they are internal related and not to a device...</p>
+
+<p>What is the best way to control this device via OpenRemote?</p>
+
+<p>Thanks in advance for your feedback!</p>
+
+<p>Kind regards,</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19440115"></a>
+                                    <font class="smallfont"><p>Hi All, (Kris)</p>
+
+<p>bump</p>
+
+<p>Im also looking for an JSON interface, i like to see XBMC template connection.<br/>
+is there a way to add JSON and/or XBMC as a protocol.</p>
+
+<p>i like to help with the development / testing / debugging of the protocol</p>
+
+<p>Kris &lt; Did you already come up with a solution for your equipment?</p>
+
+<p>Greatz RWest (netherlands)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rwest at Apr 08, 2012 21:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440120"></a>
+                                    <font class="smallfont"><p>The current HTTP implementation only allows a GET method and no extra data (JSON workload) to be transmitted. <br/>
+We want to rewrite the HTTP implementation to be more flexible to allow this.<br/>
+If you know Java you can try yourself.</p>
+
+<p>UPDATE: I will spend some time on this now and see if I can implement basic REST support:</p>
+<ul class="alternate" type="square">
+	<li>HTTP methods: GET, POST, PUT, DELETE</li>
+	<li>String as workload for JSON data</li>
+	<li>Maybe JSON parser to extract some data from a returned JSON result</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 09, 2012 09:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440176"></a>
+                                    <font class="smallfont"><p>A new version of HTTPCommand is available in my SVN workspace ".../workspace/mredeker/Controller_2_0_0_Fixes" it supports three new parameter:</p>
+<ul class="alternate" type="square">
+	<li>"method" to define one of GET, POST, PUT and DELETE (if none is given GET is default)</li>
+	<li>"workload" which can be String (eg. JSON data) which is send with the POST and PUT methods</li>
+	<li>"jsonpath" which can be used to extract data from a JSON response, examples can be found here: <a href="http://code.google.com/p/json-path/">http://code.google.com/p/json-path/</a></li>
+</ul>
+
+
+<p>I was able to control the latest XBMC with this <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> <br/>
+Here is an example to Play/Pause the XBMC Player with ID '0':</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    &lt;command id=<span class="code-quote">"26"</span> protocol=<span class="code-quote">"http"</span>&gt;
+      &lt;property name=<span class="code-quote">"workload"</span> value=<span class="code-quote">"{&amp;quot;jsonrpc&amp;quot;: &amp;quot;2.0&amp;quot;, &amp;quot;method&amp;quot;: &amp;quot;Player.PlayPause&amp;quot;, &amp;quot;params&amp;quot;: {&amp;quot;playerid&amp;quot;: 0}, &amp;quot;id&amp;quot;: 1}"</span> /&gt;
+      &lt;property name=<span class="code-quote">"username"</span> value=<span class="code-quote">"xbmc"</span> /&gt;
+      &lt;property name=<span class="code-quote">"method"</span> value=<span class="code-quote">"POST"</span> /&gt;
+      &lt;property name=<span class="code-quote">"password"</span> value=<span class="code-quote">"xbmc"</span> /&gt;
+      &lt;property name=<span class="code-quote">"url"</span> value=<span class="code-quote">"http:<span class="code-comment">//localhost:8888/jsonrpc"</span> /&gt;
+</span>      &lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"XBMC_Player_PlayPause"</span> /&gt;
+    &lt;/command&gt;
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 13, 2012 14:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

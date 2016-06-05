@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : More Rules Help...</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : More Rules Help...
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 28, 2012 by <font color="#0050B2">flipit</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>It's been a while since I used OR, but now the Rules engine is in place I think I can finally achieve what I wanted only I´m not sure how. I´ve read the exmaples and the forum posts and still really have no idea where to start.</p>
+
+<p>Here's the situation. (pre-rules)</p>
+
+<p>I have an Amp (Onkyo) that provides an ASCII reponse to a Command queston. I wanted to create a volume slider so I created a Sensor (VolumeSensor) from a VolumeStatus TCP/IP command: !MVLQSTN<br/>
+Next I created a Slider (VolumeSlider) with the VolumeSensor from above and a new command VolumeWriter using command !1MVL$<div class="error"><span class="error">Unknown macro: {param}</span> </div></p>
+
+<p>First issue the status response from the sensor is in the form of an ASCII string e.g. !MVLxx. (OK so I overcame this partially with the regexp branch to only return the int val of the reponse.) However that lead to a bigger problem, that I think only rules can resolve, so never went any further.  If I add another sensor say PowerSensor from the command !PWRQSTN since both sensors are linked to the same IP/PORT the reponse goes to both, which causes some strange undesired behaviour, so here's what I need now (post-rules)and not sure about the best way to go about it.</p>
+
+<p>I need to be able to take a command !MVLQSTN and covert it´s reponse !MVLxx to and integer to update a Slider (VolumeSensor) but the rules should only update the sensor if the reponse starts with !MVL. Then I´m free to create other rules of a simlar nature that only update say if the reponse to their specific question i.e. a PowerSwitch where the sensor command is !PWRQSTN and the reponse is !PWR00 or !PWR01.</p>
+
+<p>In rules how do I take the value of the response to the sensor command,say VolumeSensor (!MVLxx), parse it, check the first part,(if eq !MVL) then convert the remainder to an integer (int) and 'publish' that value as the sensor output so that the Slider updates.</p>
+
+<p>I'm really lost here an going round in circles. </p>
+
+<p>Help much appreciated. </p>
+
+<p>Phill</p>
+
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19988509"></a>
+                                    <font class="smallfont"><p>Maybe you can take this rule as a hint:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Float</span>;
+
+rule <span class="code-quote">"test 1"</span>
+when
+CustomState(source == <span class="code-quote">"Temp1Sensor"</span>, val : value, eval(<span class="code-object">Float</span>.valueOf(val) &gt; 24.000) &amp;&amp; eval(<span class="code-object">Float</span>.valueOf(val) &lt; 26))
+then
+<span class="code-object">System</span>.out.println(<span class="code-quote">"between 24 and 26"</span>);
+end
+</pre>
+</div></div>
+
+<p>You should be able to take the source name and put that into a variable. After that perform an eval(xxx.startsWith("!MVL").<br/>
+There is a very extensive documentation available on the Drools website and our testsuite also has a lot examples already.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 04, 2012 08:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

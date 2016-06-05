@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : AUTOSTART OPEN REMOTE VIA CRONTAB</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : AUTOSTART OPEN REMOTE VIA CRONTAB
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 23, 2013 by <font color="#0050B2">othmark</font>.
+				    </div>
+
+				    <p>I am trying to start OpenRemote via a crontab process, so that after a reboot the controller comes back up automatically.<br/>
+The problem is, that I cannot get the ../webapps/controller/controller.xml file loaded when starting OpenRemote from outside the OpenRemote.../bin  directory. (Crontab starts at the user home directory). I believe I set PATH and environment variables correct:</p>
+
+<p>export PATH="$HOME/shProject:$HOME/shProject/ORC/bin:$HOME/shProject/ORC/webapps/controller:$PATH"<br/>
+export CATALINA_HOME="$HOME/shProject/ORC"<br/>
+export JAVA_HOME="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home"</p>
+
+<p>The server starts, however the controller definition file ../webapps/controller/../webapps/controller/controller.xml is not loaded. (Of course it is there, and when starting the server from within the OpenRemote.../bin directory everything loads.)</p>
+
+<p>The error message from the server is:</p>
+
+<p>Could not find a controller definition to load at path '../webapps/controller/controller.xml' (for version 2.0)<br/>
+INFO 2013-05-23 10:33:13,436 : Controller Definition File Watcher for Default Deployer started.</p>
+
+<p>Is there some other environment variable or PATH I need to specify?</p>
+
+<p>I am running OS X 10.8.3, but I assume the problem for Linux would be similar.</p>
+
+<p>Any hint would be appreciated.</p>
+
+<p>Best regards,</p>
+
+<p>Othmar</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22414776"></a>
+                                    <font class="smallfont"><p>I've zero knowledge of crontab: on Linux side the scripts do change to bin directory before starting. Maybe it is necessary for crontab to change the working directory as well? The PATH variable is not used when resolving the location of the controller.xml but it is a relative path instead. This is defined in the <a href="http://svn.code.sf.net/p/openremote/code/tags/project/Controller/Controller_2_0_2/config/config.properties">config.properties</a>:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>##
+# RESOURCE FILE CONFIGURATION:
+#
+#  The resource path below points to a directory where the controller
+#  looks for all  configuration files  (XML files),  images and other 
+#  resources for panels and controllers.
+#
+#  With the default  distribution of  OpenRemote controller,  it is not 
+#  necessary to change this location.
+##
+resource.path=../webapps/controller
+</pre>
+</div></div>
+
+
+<p><a href="Automated start on linux server.html" title="Automated start on linux server">Automated start on linux server</a></p>
+
+
+<p>HTH</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 23, 2013 12:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414872"></a>
+                                    <font class="smallfont"><p>When using cron to start programs via crontab there is a different PATH variable used. Please study this post <a href="http://stackoverflow.com/questions/10129381/crontab-path-and-user">http://stackoverflow.com/questions/10129381/crontab-path-and-user</a> </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 24, 2013 14:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414890"></a>
+                                    <font class="smallfont"><p>Juha, Michal,</p>
+
+<p>thanks for your help. As Juha proposed I am now using a shell script, which is changing to the OR working directory:</p>
+
+
+<p>#!/bin/sh<br/>
+cd /Users/smarthome/shproject/ORC/bin<br/>
+./openremote.sh run</p>
+
+<p>This script then I start with crontab at reboot, with its output logging to orReboot.log</p>
+
+<p>@reboot /Users/smarthome/orBoot.sh &gt; /Users/smarthome/orReboot.log 2&gt;&amp;1</p>
+
+<p>Thanks again,</p>
+
+<p>Othmar</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by othmark at May 24, 2013 19:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:40</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

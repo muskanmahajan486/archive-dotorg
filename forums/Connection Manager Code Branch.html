@@ -1,0 +1,1901 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Connection Manager Code Branch</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Connection Manager Code Branch
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 13, 2011 by <font color="#0050B2">kurrazyman</font>.
+				    </div>
+
+				    <p>I have been working on a connection manager implementation for quite some time and I have finally got round to making it compatible with the existing controller.xml without any modifications needed to the controller.xml (although to get the most out of this branch then you should look at modifying the controller.xml).</p>
+
+<h3><a name="ConnectionManagerCodeBranch-Whatdoesitdo%3F"></a>What does it do?</h3>
+
+<p>This code, uses a connection manager for each connection to a server.</p>
+
+<p>In the existing code each time a command needs to be sent to the server or a sensor value needs to be updated a new connection is made to the server and after the command has been executed the server is then disconnected. If you have lots of sensors that connect to the same server you quickly run into issues as multiple simultaneous connections are made to the same server and commands fail to execute.</p>
+
+<p>The connection manager introduced here, does exactly what it says on the tin. It manages the connection to the individual servers and then all commands are routed through this connection. At present a permanent connection is made to the server so when the controller starts it opens the connection and when the controller is stopped it closes the connection.</p>
+
+<p>The connection manager also supports command scripting (currently JavaScript) and multiple command actions (a single command can consist of any number of command send, read or script Actions; send actions send a message to the server, read actions read data from the server and script actions run a script that allows you to process the data retrieved from the server and convert it into the correct format for updating a sensor value for example.</p>
+
+<div class='panelMacro'><table class='tipMacro'><colgroup><col width='24'><col></colgroup><tr><td valign='top'><img src="images/icons/emoticons/check.gif" width="16" height="16" align="absmiddle" alt="" border="0"></td><td>Making use of the scripting functionality requires manual changes to the command definition in the controller.xml; if you are interested in trying this then let me know and I'll give you some pointers, this is all still in development but it does give you a lot of power to write more complicated commands.</td></tr></table></div>
+
+<h3><a name="ConnectionManagerCodeBranch-WhatProtocolsaresupported%3F"></a>What Protocols are supported?</h3>
+
+<p>Currently supported protocols: -</p>
+
+<ul>
+	<li>Telnet</li>
+	<li>UDP</li>
+	<li>HTTP</li>
+	<li>TCP</li>
+</ul>
+
+
+<p>Any supported protocols in your controller.xml file will be filtered through the connection manager, other command protocols will continue to work as they did before using the old mechanism.</p>
+
+<h3><a name="ConnectionManagerCodeBranch-WherecanIfindit%3F"></a>Where can I find it?</h3>
+
+<p><a href="http://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha11_Manager/">http://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha11_Manager/</a></p>
+
+<h3><a name="ConnectionManagerCodeBranch-HowdoIcompileit%3F"></a>How do I compile it?</h3>
+
+<p>Building code from the repository has been explained in the page below, just checkout the branch listed above: -</p>
+
+<p><a href="http://openremote.org/display/docs/Building+OpenRemote+2.0+Developer+Releases">http://openremote.org/display/docs/Building+OpenRemote+2.0+Developer+Releases</a></p>
+
+<h3><a name="ConnectionManagerCodeBranch-HowdoIuseit%3F"></a>How do I use it?</h3>
+
+<p>Once compiled it should run just like the existing controller but you will notice in the console window some different messages appearing. When one or more commands are found that use a protocol supported by the gateway manager a new gateway connection is created for each unique server (for Telnet it is the host IP address and port that make it unique), when this gateway connection is started a message is output to the console window: -</p>
+
+<blockquote><p> -------- GATEWAY: Started gateway for (Telnet 192.168.1.71:6601)  ThreadThread\-22,5,main</p></blockquote>
+
+<p>If a connection is lost then the gateway manager will try to re-establish the connection at an increasing interval from 5-60seconds and a message like below will appear in the console window: -</p>
+
+<blockquote><p>Cannot establish Gateway connection <span class="error">&#91;Telnet 192.168.1.71:6601&#93;</span> so going to sleep for 5 seconds.</p></blockquote>
+
+<h5><a name="ConnectionManagerCodeBranch-AdditionalGatewayParameters"></a>Additional Gateway Parameters</h5>
+
+<p>The connection manager also accepts some additional gateway parameters that will apply to all commands that use that gateway: -</p>
+
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'>Parameter</td>
+<td class='confluenceTd'>Description</td>
+<td class='confluenceTd'>Value</td>
+</tr>
+<tr>
+<td class='confluenceTd'>defaultPollingInterval</td>
+<td class='confluenceTd'>This sets the default time between polling requests for the sensors that use this gateway.</td>
+<td class='confluenceTd'>Seconds: 1-86400 (Default = 1)</td>
+</tr>
+<tr>
+<td class='confluenceTd'>connectTimeout</td>
+<td class='confluenceTd'>Sets the time allowed to make the connection to the server.</td>
+<td class='confluenceTd'>Milliseconds: 1-60000 (Default = 1000)</td>
+</tr>
+<tr>
+<td class='confluenceTd'>readTimeout</td>
+<td class='confluenceTd'>Sets the time allowed to read data from server.</td>
+<td class='confluenceTd'>Milliseconds: 1-5000 (Default = 200)</td>
+</tr>
+<tr>
+<td class='confluenceTd'>sendTerminator</td>
+<td class='confluenceTd'>Sets the characters used at the end of a send command.</td>
+<td class='confluenceTd'>String (Default = "\n")</td>
+</tr>
+</tbody></table>
+
+<p>These parameters are optional and if you need them they should be set within the first command element in the controller.xml that the gateway will load, using the standard property Element format, for example: -</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+    <span class="code-tag">&lt;command id=<span class="code-quote">"1"</span> protocol=<span class="code-quote">"telnet"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"6601"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"OK|status"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.71"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"defaultPollingInterval"</span> value=<span class="code-quote">"10000"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"connectTimeout"</span> value=<span class="code-quote">"20000"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"readTimeout"</span> value=<span class="code-quote">"1000"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"sendTerminator"</span> value=<span class="code-quote">"\r"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+<h5><a name="ConnectionManagerCodeBranch-AdditionalCommandParameters"></a>Additional Command Parameters</h5>
+
+<p>The connection manager also accepts some additional command parameters, that need to be set for each command if desired.</p>
+
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'>Parameter</td>
+<td class='confluenceTd'>Description</td>
+<td class='confluenceTd'>Value</td>
+</tr>
+<tr>
+<td class='confluenceTd'>pollingInterval</td>
+<td class='confluenceTd'>This sets the time between polling requests for just this command.</td>
+<td class='confluenceTd'>Seconds: 1-86400 (Default = 1)</td>
+</tr>
+</tbody></table>
+
+<p>Building on the command element example above if you wanted to also change the polling interval just for that command then: -</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+    <span class="code-tag">&lt;command id=<span class="code-quote">"1"</span> protocol=<span class="code-quote">"telnet"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"6601"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"OK|status"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.71"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"defaultPollingInterval"</span> value=<span class="code-quote">"10000"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"connectTimeout"</span> value=<span class="code-quote">"20000"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"readTimeout"</span> value=<span class="code-quote">"1000"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"sendTerminator"</span> value=<span class="code-quote">"\r"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"pollingInterval"</span> value=<span class="code-quote">"1000"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+<h3><a name="ConnectionManagerCodeBranch-Whyusethisbranch%3F"></a>Why use this branch?</h3>
+
+<p>In it's basic form you will not notice any performance differences with the existing controller, but if you start using scripting and multiple command actions then it opens up another world of functionality. Some reasons you may want to use this code: -</p>
+
+<ul>
+	<li>If you have been experiencing connection issues with the existing controller because you have lots of sensors that use the same server.</li>
+	<li>You need the connection to be kept open at all times.</li>
+	<li>If you need to format the response from the server before feeding the value back into a sensor.</li>
+	<li>You want to change how often all the sensor values are updated.</li>
+	<li>You want to change how often a single sensor value is updated.</li>
+</ul>
+
+
+<h3><a name="ConnectionManagerCodeBranch-Canthishelpinmysituation%3F"></a>Can this help in my situation?</h3>
+
+<p>It you have a particular need that can't be met by the existing code and would like to know if this branch could help, feel free to ask, if it's not currently possible but your situation is not too specific and can benefit others then I may be able to incorporate it for you.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/15533260/17825793.gif">telnet.gif</a> (image/gif)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-16023573"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>Many thanks for supplying this update to Telnet it is working for me now and I have a few questions.</p>
+
+<p>You say in your dOc that there should be additional messages in the consol window, I am not seeing any.</p>
+
+<p>I presume I should also see them in the controler log file as well?</p>
+
+<p>You state in your doc that you can supply some information on scripting to process the data retrieved. I woul</p>
+
+<p>be very interested in this.</p>
+
+<p>At present I am receiving some data back when I send a command but not all that I would expect. Is there a limit on the length of the data string</p>
+
+<p>which is returned?</p>
+
+<p>Many thanks once again for a great job</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 28, 2011 23:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023578"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>Glad you've had a chance to try this code. If everything is working for you, then all you will see in the console window is a line similar to below for each telnet server you are connecting to (The thread numbers will vary): -</p>
+
+<blockquote><p>-------- GATEWAY: Started gateway for (Telnet 192.168.1.71:6601) Thread Thread\-22,5,main</p></blockquote>
+
+<p>Assuming you have this then yes the gateway code will be making a single connection to each server.</p>
+
+<p>There is no limit to how much data can be returned (I have being experimenting with the PulseAudio Telnet server which returns about 33K of text for one of my commands), obviously if a large amount of data is being retrieved then this can slow down the response of your panel(s) but there are work arounds that you can use with the gateway code which I can explain if you so wish.</p>
+
+<p>With regards to the command scripting I am currently at work and need to check the code when I get home this evening, once I have done this I will give you some instructions on how to use the scripting functionality. This does mean that you have to manually enter the information into the controller.xml as this can't be done in the online designer at the moment but I'm sure that's not an issue for you esp. having played with my previous modified Telnet branch.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Mar 29, 2011 07:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023592"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>I am not seeing any messages when running your script. Neither on screan or in the Log file.</p>
+
+<p>I am als not seeing the messages which I should see from the application I am Telnetting to</p>
+
+<p>Have you any ideas why this should be.</p>
+
+<p>Would it be possable to have a command to disconnect the telnet sesion as this would begood to</p>
+
+<p>be able to end the sesion when finished.</p>
+
+<p>Regards</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 29, 2011 17:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023600"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>I have connected to my device using Putty and can confirm that it is sending back a string of text</p>
+
+<p>as expected so what I am connecting to is working ok. I still cannot see any text in the controler log file.</p>
+
+<p>I started up Openremote without having my device ready to responde to telnet requests and I can see error messages</p>
+
+<p>in the console window cannot extablish gateway connection. Do I have to have the device powered up and ready to receive telnet</p>
+
+<p>messages before I start OpenRemote.</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 29, 2011 20:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023601"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>The fact you are getting the cannot establish connection messages shows that the gateway code is working.</p>
+
+<p>You do not need your telnet server running before you start the controller, if you start it after you start the controller the gateway manager will re-establish the connection when your server is ready.</p>
+
+<p>I'm not sure what you mean in your previous post:</p>
+
+<blockquote><p>Would it be possable to have a command to disconnect the telnet sesion as this would begood to</p></blockquote>
+
+<p>When/why would you want it to disconnect?</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Mar 29, 2011 20:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023603"></a>
+                                    <font class="smallfont"><p>Pierce,</p>
+
+<p>I have a lot on this evening so will hopefully be able to provide you with some information about scripting tomorrow.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Mar 29, 2011 21:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023604"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>The way I would see the remote working would be you would scrole to a screan on your remote</p>
+
+<p>The first button you would press would open the Telnet connection you would then press other buttons to</p>
+
+<p>turn up Volume etc and when you nove to another page the telnet session would close.</p>
+
+<p>Does that make sence</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 29, 2011 21:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023685"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>could you give me an example of how I can send multible commands in the one string</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Apr 01, 2011 17:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023686"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>To send multiple commands you can either use the existing command syntax: -</p>
+
+<p>    &lt;command id="1" protocol="telnet"&gt;<br/>
+      &lt;property name="port" value="1234" /&gt;<br/>
+      &lt;property name="command" value="null|command1|null|command2|null|command3" /&gt;<br/>
+      &lt;property name="ipAddress" value="0.0.0.0" /&gt;<br/>
+    &lt;/command&gt;</p>
+
+<p>The null part of the command is the waitForString (my gateway code doesn't use this).</p>
+
+<p>Or you can use the new gateway syntax (this isn't finalised but give you a bit more control: -</p>
+
+<p>    &lt;command id="1" protocol="telnet"&gt;<br/>
+      &lt;property name="port" value="1234" /&gt;<br/>
+      &lt;property name="ipAddress" value="0.0.0.0" /&gt;<br/>
+      &lt;property name="send" value="command1" /&gt;<br/>
+      &lt;property name="send" value="command2" /&gt;<br/>
+      &lt;property name="send" value="command3" /&gt;<br/>
+      &lt;property name="read" value="" /&gt;<br/>
+    &lt;/command&gt;</p>
+
+<p>The read property at the end is needed for commands that are used by sensors (to read the response from the server), if you don't add the read property the gateway will insert one for you automatically.</p>
+
+<p>Apologies for not getting back about the scripting, had a busy week and Juha is making some big changes to the controller at the moment so I want to try and work with him and develop a unified scripting API. Will keep you posted.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Apr 01, 2011 17:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023688"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>will designer create the xml for multible commands for your interface or will it have to be xml have to be edited manually</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Apr 01, 2011 17:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023690"></a>
+                                    <font class="smallfont"><p>The designer can't generate the new command xml format so if you want to use the designer just use the old command format:</p>
+
+<p>&lt;command id="1" protocol="telnet"&gt;<br/>
+&lt;property name="port" value="1234" /&gt;<br/>
+&lt;property name="command" value="null|command1|null|command2|null|command3" /&gt;<br/>
+&lt;property name="ipAddress" value="0.0.0.0" /&gt;<br/>
+&lt;/command&gt;</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Apr 01, 2011 18:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023691"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>should the second example work with your new version of telnet?</p>
+
+<p>I tried using the new format but it did not work</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Apr 01, 2011 18:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023695"></a>
+                                    <font class="smallfont"><p>It appears that I broke the support for the new command format when I added support for the old format; I have now fixed this and uploaded the fix to the repository.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Apr 01, 2011 18:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023728"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>many thanks for the quick fix it woorks great.</p>
+
+<p>Have you any time lines for when the scripting might be available</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Apr 04, 2011 19:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023729"></a>
+                                    <font class="smallfont"><p>Glad it is now working for you.</p>
+
+<p>I will try and get some information from Juha about the work he is doing as I'm hoping we can link my command scripting with his event scripting plans (should be lots of exciting functionality in the next release of OpenRemote).</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Apr 04, 2011 20:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023732"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>many thanks for the update. I have one further question should I be able to <br/>
+see the reply in OpenRemote from what I am telnetting to. I know it is sending<br/>
+a reply because I tested it using Putty.<br/>
+I have inserted &lt;property name="read" value="" /&gt; </p>
+
+<p>I have looked in the controller log but I cannot see the reply.</p>
+
+<p>Am I looking in the correct place</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Apr 04, 2011 22:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023740"></a>
+                                    <font class="smallfont"><p>You won't see the response from the server in the log file; generally only errors/warnings are written there. If all the server responses were added to the log file they would grow very quickly!</p>
+
+<p>The only place to see the response is to use it in a sensor (custom sensor for string responses), you can then use the REST API to see the response in a web browser.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Apr 05, 2011 07:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482420"></a>
+                                    <font class="smallfont"><p>Hi, I have just discovered this project. This branch looks like a very interesting feature. I have a Pioneer SC-LX82 that requires telnet so would like to help test this out.</p>
+
+<p>I have tried to build your feature/Controller_2_0_0_Alpha11_Manager/ branch but seem to be missing GatewayCreatorUtil</p>
+
+<p>javac /Users/matbic/openremote/OpenRemote_Boss_2_0_0_Alpha8/Controller_2_0_0_Alpha11/src/org/openremote/controller/service/impl/ControllerXMLChangeServiceImpl.java:45: cannot find symbol<br/>
+    javac symbol  : class GatewayCreatorUtil<br/>
+    javac location: package org.openremote.controller.utils<br/>
+    javac import org.openremote.controller.utils.GatewayCreatorUtil;</p>
+
+<p>I think it is missing from the repository? Or have I misunderstood something? Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mandp at May 24, 2011 20:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482421"></a>
+                                    <font class="smallfont"><p>Hi Mat,</p>
+
+<p>You've done nothing wrong, I cleaned up some of the code and hadn't fully committed it.....should work now if you checkout again.</p>
+
+<p>Haven't worked on this in some time but should all be working, the information in this thread should explain the basics.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at May 24, 2011 20:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482423"></a>
+                                    <font class="smallfont"><p>Thanks for the quick reply. It now builds without errors. However on starting tomcat I get a:</p>
+
+<p>SEVERE: Error listenerStart</p>
+
+<p>and then /controller startup fails.</p>
+
+<p>Any suggestions on how to fix this? I suspect we are still missing some things from the repository (in controller/gateway/protocol there is no http directory) because in the logs I find:</p>
+
+<p>May 24, 2011 11:12:04 PM org.apache.catalina.core.StandardContext listenerStart<br/>
+SEVERE: Error configuring application listener of class org.openremote.controller.statuscache.InitCachedStatusDBListener<br/>
+org.springframework.beans.factory.CannotLoadBeanClassException: Cannot find class org.openremote.controller.gateway.protocol.http.HttpProtocolBuilder for bean with name 'httpProtocolBuilder' defined in class path resource applicationContext.xml; nested exception is java.lang.ClassNotFoundException: org.openremote.controller.gateway.protocol.http.HttpProtocolBuilder<br/>
+Caused by: java.lang.ClassNotFoundException: org.openremote.controller.gateway.protocol.http.HttpProtocolBuilder<br/>
+	at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1387)</p>
+
+<p>...</p>
+
+<p>May 24, 2011 11:12:04 PM org.apache.catalina.core.StandardContext listenerStart<br/>
+SEVERE: Error configuring application listener of class org.openremote.controller.gateway.InitConnectionManager<br/>
+org.springframework.beans.factory.CannotLoadBeanClassException: Cannot find class org.openremote.controller.gateway.protocol.http.HttpProtocolBuilder for bean with name 'httpProtocolBuilder' defined in class path resource applicationContext.xml; nested exception is java.lang.ClassNotFoundException: org.openremote.controller.gateway.protocol.http.HttpProtocolBuilder<br/>
+Caused by: java.lang.ClassNotFoundException: org.openremote.controller.gateway.protocol.http.HttpProtocolBuilder<br/>
+	at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1387)</p>
+
+<p>...</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mandp at May 24, 2011 23:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482431"></a>
+                                    <font class="smallfont"><p>Hi Mat,</p>
+
+<p>There is definitely a http folder in the protocol package so I'm not sure about your checked out files; I have run the Manager branch on my PC and it works OK.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at May 25, 2011 17:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482432"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I have just checked everything through, did a fresh check out etc. but still same error.</p>
+
+<p>In ^/branches/feature/Controller_2_0_0_Alpha11_Manager<br/>
+on <a href="http://openremote.svn.sourceforge.net/svnroot/openremote">http://openremote.svn.sourceforge.net/svnroot/openremote</a></p>
+
+<p>The only http folder I can see is in ... src/org/openremote/controller/protocol</p>
+
+<p>But, the error message is looking for one in ... src/org/openremote/controller/<b>gateway</b>/protocol</p>
+
+<p>and I don't see one there.</p>
+
+<p>Or again am I wrong. Thanks for the help.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mandp at May 25, 2011 18:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482435"></a>
+                                    <font class="smallfont"><p>Sorry Mat, would help if I read things properly wouldn't it!</p>
+
+<p>You're spot on about the missing files, I have now rectified the problem...honest...bit of an SVN glitch.</p>
+
+<p>Basically I have implemented the telnet, udp and http protocols using this connection manager branch, other protocols will revert to using the old (un-managed) mechanism for connection. Hence why there are protocols inside the gateway package.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at May 25, 2011 20:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482436"></a>
+                                    <font class="smallfont"><p>Great the server starts up! Now for the fun bit - setting it all up! Thanks so much for this wonderful project. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mandp at May 25, 2011 23:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482470"></a>
+                                    <font class="smallfont"><p>I have found a small bug, do you want me to send you a patch file?</p>
+
+<p>Works much better now! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+Index: Gateway.java
+===================================================================
+--- Gateway.java	(revision 4403)
++++ Gateway.java	(working copy)
+@@ -372,7 +372,7 @@
+             <span class="code-keyword">this</span>.connectionState = EnumGatewayConnectionState.CONNECTED;
+             
+             <span class="code-comment">// Disconnect unless connection type is permanent
+</span>-            <span class="code-keyword">if</span> (<span class="code-keyword">this</span>.connectionType != EnumGatewayConnectionType.PERMANENT || <span class="code-keyword">this</span>.connectionType != EnumGatewayConnectionType.TIMED) {
++            <span class="code-keyword">if</span> (<span class="code-keyword">this</span>.connectionType != EnumGatewayConnectionType.PERMANENT &amp;&amp; <span class="code-keyword">this</span>.connectionType != EnumGatewayConnectionType.TIMED) {
+                protocolDisconnect();
+             }
+          } <span class="code-keyword">catch</span> (GatewayConnectionException e) {
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mandp at May 30, 2011 15:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482474"></a>
+                                    <font class="smallfont"><p>Hi Mat,</p>
+
+<p>Well spotted, unfortunately I was making some changes to this code a couple of months ago and then I discovered that Juha is/has been working on some fundamental changes to the controller and so I dropped what I was doing until I had an understanding of where things were heading long term.</p>
+
+<p>As such I was 'mid flow' with the work on the Connection Manager when I stopped work on it and I imagine there are a few bugs in there as you've already discovered one. I'll add you're change to SVN though.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at May 30, 2011 15:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482477"></a>
+                                    <font class="smallfont"><p>That's OK.</p>
+
+<p>Can you give me some pointers on how to set up a script. Reading through the source code is quite slow!</p>
+
+<p>I think I have figured out the following:</p>
+
+<ol>
+	<li>Create a JavaScript file (I see you send in statusCache and the args, but have not jet figured out how to manipulate them in the script, if you had an example that would be really very helpful)</li>
+	<li>Put the JavaScript file in a scripts directory under controller.xml</li>
+	<li>Edit controller.xml (not sure what exactly to do here)</li>
+</ol>
+
+
+<p>Any example would be great. If you like I can write up the documentation to help others.</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mandp at May 30, 2011 16:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482478"></a>
+                                    <font class="smallfont"><p>Hi Mat,</p>
+
+<p>It's all very experimental stuff that I developed to meet my needs to interface with PulseAudio and MPD on Linux and the scripting gives you a lot of power but due to the experimental nature there is no standard on what controller objects are accessible from inside the scripts but if you have a need for this and would like to try it out the following will help: -</p>
+
+<p>Script Locations - As you say they go in a folder called scripts in the Tomcat controller webapps folder (depends on your CATALINA_HOME environment variable definition, but this will be the same folder that the controller.xml and panel.xml files are loaded from). At present JavaScript is supported and script files should be saved with a .js extension.</p>
+
+<p>Usage - As you've spotted the statusCache instance is passed into the script as well as the Key Value pairs (args) the args come from the command definition in the controller.xml. An example script command definition and the script that it uses is shown below: -</p>
+
+<h4><a name="ConnectionManagerCodeBranch-Controller.xmlCommandDefinition"></a>Controller.xml Command Definition</h4>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+   <span class="code-tag">&lt;command id=<span class="code-quote">"858"</span> protocol=<span class="code-quote">"telnet"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"6602"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"host"</span> value=<span class="code-quote">"192.168.1.71"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"send"</span> value=<span class="code-quote">"command=status"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"read"</span> value="" /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"script"</span> value=<span class="code-quote">"scriptName=getStringAfterWord.js;word=volume"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+
+<h4><a name="ConnectionManagerCodeBranch-Script%28getStringAfterWord.js%29"></a>Script (getStringAfterWord.js)</h4>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-javascript">
+<span class="code-keyword">function</span> run(currentValue) {
+   <span class="code-keyword">var</span> result = "";
+   <span class="code-keyword">if</span> (word != <span class="code-keyword">null</span>) {
+      <span class="code-keyword">var</span> re = <span class="code-keyword">null</span>;
+      eval("re = <span class="code-keyword">new</span> RegExp(/^.*" + word + ".\\s(\\-*\[\\d|\\w]+).*$/im);");
+      <span class="code-keyword">if</span> (re != <span class="code-keyword">null</span>) {
+         <span class="code-keyword">var</span> match = re.exec(currentValue);
+         <span class="code-keyword">if</span> (match) {
+            result = match[1];
+         }
+      }
+   }
+   <span class="code-keyword">return</span> result;
+}
+</pre>
+</div></div>
+
+<p>The script must contain a function called run which takes the current command value as its' only argument (this is the value returned from the previous command action, should be a read action). This script applies a regex to a load of text received from a telnet server after issuing the command 'status', the argument 'word' that is defined in the controller.xml allows me to re-use the script depending on what I want to filter out.</p>
+
+<p>To explain something, sending the statusCache instance into the script was a kludge on my part because in my environment I have a sensor that reads a load of data from a telnet server (PulseAudio) and the command returns 33k of text, as you can imagine it slows down the controller somewhat (especially as I have 10 sensors that issue the same command!); I added pollingInterval control to the connection Manager so each command can be customised to only run every n Seconds but this wasn't enough on this occasion because my sensor was connected to a toggle button so by increasing the polling interval of the sensor command what happened was that when I clicked the button it's state wouldn't update until the next time the sensor command was executed (this caused big delays and caused my panel to not be in sync with what was actually happening). So I decided to kludge it by updating the statusCache as part of my button action command and I set the sensor command to a pollingInterval of 60 Seconds, this meant that when I clicked the button on the panel its' state would update instantly but just in case things lost sync (very unlikely but just in case) the sensor command once a minute actually queries the telnet server and retrieves the state.</p>
+
+<p>There was an issue with this, I couldn't find a way of easily determining the sensor ID that the toggle button was linked to when the 'onPress' button command was being executed. So I ended up feeding in the sensor ID as an argument which is no good long term because as soon as the controller.xml changes the sensor ID would need to be altered to match. The work Juha is doing on the controller will help resolve this long term but this kludge works for me in the meantime. Below is a controller.xml command and a script demonstrating this statusCache kludge.</p>
+
+<h4><a name="ConnectionManagerCodeBranch-Controller.xmlCommandDefinition"></a>Controller.xml Command Definition</h4>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+    <span class="code-tag">&lt;command id=<span class="code-quote">"854"</span> protocol=<span class="code-quote">"telnet"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"5050"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"host"</span> value=<span class="code-quote">"192.168.1.71"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"send"</span> value=<span class="code-quote">"command=set-sink-input-volume 22 ${param}"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"script"</span> value=<span class="code-quote">"scriptName=SetSensorValue.js;setValue=${param};sensorId=755;"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+<h4><a name="ConnectionManagerCodeBranch-Script%28SetSensorValue.js%29"></a>Script (SetSensorValue.js)</h4>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-javascript">
+<span class="code-keyword">function</span> run(currentValue) {
+   <span class="code-keyword">if</span>(setValue != <span class="code-keyword">null</span> &amp;&amp; sensorId != <span class="code-keyword">null</span>) {
+      statusCache.setValue(sensorId, setValue);
+   }
+   <span class="code-keyword">return</span> <span class="code-keyword">null</span>;
+}
+</pre>
+</div></div>
+
+<p>Hope this helps,</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at May 30, 2011 17:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482480"></a>
+                                    <font class="smallfont"><p>Hi Mat</p>
+
+<p>if you were to documentation how this works it would be a great help as I would<br/>
+also like to get this feature to work</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at May 30, 2011 18:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039643"></a>
+                                    <font class="smallfont"><p>Hi Rich,</p>
+
+<p>What's the status with this branch? I've basically written a TCPProtocol.java imp  for you to add (another C/P of your work on telenet but saves you the bother)<br/>
+It compiles fine, but I'm unable to test it as following the gateway layout described in your below posts, it results in the following log error:</p>
+
+<p>Controller2011-06-25 12:32:49,503 WARN main org.openremote.controller.service.impl.GatewayManagerServiceImpl.initGatewaysWithControllerXML(107) | Error retrieving gateway elements from controller.xml.</p>
+
+<p>Looking  at the GatewayBuilder.java code, it looks like your intention is/was to define a gateway tag in the controller.xml </p>
+
+<ul>
+	<li>&lt;pre&gt;<div class="error"><span class="error">Unknown macro: {@code
+ * &lt;gateway protocol = &quot;protocol-id&quot; &gt;
+ *   &lt;property name = &quot;argname1&quot; value = &quot;...&quot;/&gt;
+ *   &lt;property name = &quot;argname2&quot; value = &quot;...&quot;/&gt;
+ *   &lt;property name = &quot;argnameX&quot; value = &quot;...&quot;/&gt;
+ * &lt;/gateway&gt;
+ * }</span> </div>&lt;/pre&gt;</li>
+</ul>
+
+
+<p>Only this isn't defined in the xml schema so throws a SAX parser error.... I'm confused about how the controller.xml should now look.</p>
+
+<p>I'd really like to test this TCPProtocol imp to confirm it works and add it to your branch for all to benefit from, that is if the branch is still active.</p>
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Jun 25, 2011 11:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039645"></a>
+                                    <font class="smallfont"><p>Hi Phil,</p>
+
+<p>Apologies for not replying to your question the other day about the telnet branch location; as you discovered it has been merged back into the trunk and is now defacto for everyone.</p>
+
+<p>With this manager branch yes I did intend for a different xml schema but it also works with the old/current xml schema for backwards compatibility. There are a couple of classes in the utils package that try to convert the current xml controller.xml into the format I intended for this branch (but this was something I bolted on last minute so users could use this branch without having to alter the controller.xml and so it isn't as robust as I'd like).</p>
+
+<p>I assume the work you have done on the TCP protocol read method is along the same lines as what I did in the telnet branch, in this case your work can be put into the existing trunk (if you email your two .java files to Juha or even ask him by mail where you can commit these files to he can help you out).</p>
+
+<p>As you say it would be great if everyone can benefit from your efforts.</p>
+
+<p>Hope this helps,</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 25, 2011 13:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039646"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>some time ago you were able to help me with multible Telnet commands and I used</p>
+
+
+<p>&lt;command id="1" protocol="telnet"&gt;<br/>
+&lt;property name="port" value="1234" /&gt;<br/>
+&lt;property name="ipAddress" value="0.0.0.0" /&gt;<br/>
+&lt;property name="send" value="command1" /&gt;<br/>
+&lt;property name="send" value="command2" /&gt;<br/>
+&lt;property name="send" value="command3" /&gt;<br/>
+&lt;property name="read" value="" /&gt;<br/>
+&lt;/command&gt;</p>
+
+<p>Is this now merged into the main branch</p>
+
+<p>Regards</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jun 25, 2011 15:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039647"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>The multiple command actions within a single command is something I created in this Manager branch only; it is not available in the main version unfortunately.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 25, 2011 16:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039648"></a>
+                                    <font class="smallfont"><p>Hi Rich,</p>
+
+<p>Ok, I patched GatewayManagerServiceImpl.java &amp; ApplicationContext.xml, and created SocketProtocol.java &amp; SocketProtocolBuilder.java based on your version of the telnetprotocol.</p>
+
+<p>All appears to be working fine. Not fully tested, but certainly updated my basic panel.</p>
+
+<p>Patches against svn diff sent to Juha for inclusion in the branch.</p>
+
+<p>Thanks</p>
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Jun 25, 2011 17:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039649"></a>
+                                    <font class="smallfont"><p>Hi Phill,</p>
+
+<p>Once again well done for taking the initiative on this.</p>
+
+<p>If the work you have done is for the Manager branch (i.e. the protocol changes you made reside in the controller.gateway.protocol.tcp package rather than the controller.protocol.tcp package) then it will only be compatible with this Manager branch if this is the case then I can commit your changes to this branch if you wish.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 25, 2011 18:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039650"></a>
+                                    <font class="smallfont"><p>Hi Rich, Yes this patch is for your Manager branch (I got carried away with socket code and updated both the trunk and your manager branch...)</p>
+
+<p>How can I send you the patch ?</p>
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Jun 25, 2011 18:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039651"></a>
+                                    <font class="smallfont"><p>That's good work, there isn't that much difference between the code you need in each protocol implementation so well done for sorting them both. You can either send me a diff of your changes to the Manager branch or send me the SocketProtocol.java &amp; SocketProtocolBuilder.java files and I will commit them to the branch.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 25, 2011 19:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17629196"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>Using the latest release and telnet when I send a command the sensor send a string for on or off<br/>
+ie 0021003000380040    OHCAObjectFlag.Get-1 is on<br/>
+   0021003000380040    OHCAObjectFlag.Get-0 is Off</p>
+
+<p>How can I read this do I put the string in Default Read Response: or do I have to use Read Regex Filter:<br/>
+What should I enter under Read Regex Group:</p>
+
+<p>Do I have to make any manual changes to the XML</p>
+
+<p>Any help would be appriciated</p>
+
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jun 28, 2011 22:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956867"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>You can use the following (I haven't tested this but should work):-</p>
+
+<p>Read Regex Filter: ^(?i)(?s)(?m).*get.(\d)$<br/>
+Read Regex Group: 1<br/>
+Default Read Response: 0 (This is the value the read command returns if no match can be found)</p>
+
+<p>The above will cause the read command to return a 0 or 1 value.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 29, 2011 19:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956868"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>many thanks for that info. </p>
+
+<p>For aswitch I will need Yes or No how can I translate 0 to No and 1 to Yes</p>
+
+<p>Many thanks</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jun 29, 2011 19:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956869"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>For switch sensors you need an 'on' or 'off' response I believe, if you're lucky it might accept the 0 or 1 (give it a try), if it does not then there is no way to convert the value using the standard controller, you would have to use my connection manager branch and use a javaScript to do the conversion.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 29, 2011 19:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956870"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>I tried ^(?i)(?s)(?m).*get.(\d)$ in Regex and it did not work</p>
+
+<p>Can you please look at ist again</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jun 29, 2011 20:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956871"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>in my example I had a "-" Get and 1</p>
+
+<p>it should read 0021003000380040 OHCAObjectFlag.Get1</p>
+
+<p>Can you tell me what I should change</p>
+
+<p>Pierce</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jun 29, 2011 20:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956873"></a>
+                                    <font class="smallfont"><p>The regex I gave you should work for either a "-" or a "." you could try the below to make the regex more flexible (I tried this using an online regex tester and it works ok):</p>
+
+<p>^(?i)(?s)(?m).<b>get.(\d).</b>$</p>
+
+<p>How do you know it is not working; have you tried using the command as a source for a custom sensor and then using the custom sensor in a label on your panel (you will see the value that the read command returns then displayed on your panel).</p>
+
+<p>Rich</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 29, 2011 20:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956874"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>I have set it up as you describe using the command as a source for a custom sensor and then using the custom sensor in a label on your panel (you will see the value that the read command returns then displayed on your panel).</p>
+
+<p>I am not getting the desplay to change with a "0" or "1"</p>
+
+<p>It does not change.</p>
+
+<p>Either it is not getting passed on or OP wont work with 0 and 1</p>
+
+<p>Is there any way to log what if it is sending 1 or 0</p>
+
+
+<p>Regards</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jun 29, 2011 21:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956875"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>Sorry I noticed that the regex I gave you in my previous post has been changed by the wiki engine:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+^(?i)(?s)(?m).*get.(\d).*$
+</pre>
+</div></div>
+
+<p>Try that</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 29, 2011 22:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956914"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>I have now changed the responce I get for on and off and I would be greatfull<br/>
+if you could give me the correct regex for the following</p>
+
+<p>0021003000380048    0HCAObjectFlag.GetButtonAOff<br/>
+0021003000380048    0HCAObjectFlag.GetButtonAOn</p>
+
+<p>I believe if you can give me this I should have it working</p>
+
+<p>Many thanks</p>
+
+<p>Pierce</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jun 30, 2011 21:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956916"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+^(?i)(?s)(?m).*getbuttona(\w{2,3}).*$
+</pre>
+</div></div>
+
+<p>Tested at: -</p>
+
+<p><a href="http://www.regexplanet.com/simple/index.html">http://www.regexplanet.com/simple/index.html</a></p>
+
+<p>Useful guide for learning Regex:</p>
+
+<p><a href="http://www.regular-expressions.info/reference.html">http://www.regular-expressions.info/reference.html</a></p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jun 30, 2011 22:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956917"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>many thanks for the string I tested it and it gives on or off depending on the <br/>
+different strings.</p>
+
+<p>I have put the string in under "Read Regex Filter:"<br/>
+I have entered 1 ubder "Read Regex Group:"<br/>
+and 0 under "Default Read Response:"</p>
+
+<p>It still does not change the state of the switich </p>
+
+<p>I can see the string with no errors in the controler log</p>
+
+<p>Have you any other ideas as to what I might be dooing wrong</p>
+
+<p>Many thanks</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 01, 2011 01:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956921"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>I'm not sure without looking at the source code but maybe it's because your telnet responses have a capital letter at the start (i.e. On insead of on, Off instead of Off). Maybe the sensor is case sensitive.</p>
+
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 01, 2011 07:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956928"></a>
+                                    <font class="smallfont"><p>Hi I have tested On and on </p>
+
+<p>I see the following error in controler log</p>
+
+<p>Controller2011-07-01 12:53:11,738 ERROR HTTP\-Thread\-2 org.openremote.controller.protocol.telnet.TelnetCommand.setResponseFilterGroup(218) | filter group property in controller.xml is not an integer<br/>
+java.lang.NumberFormatException: For input string: "^(?i)(?s)(?m).<b>getbuttona(\w<div class="error"><span class="error">Unknown macro: {2,3}</span> </div>).</b>$"<br/>
+	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:48)</p>
+
+<p>Can you tell me what this refers to</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 01, 2011 13:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956929"></a>
+                                    <font class="smallfont"><p>The log message suggests that you have put the regex in the Response Filter Group?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 01, 2011 14:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956933"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>tis is the xml can you see where I am going wrong</p>
+
+<p>Pierce</p>
+
+<p>&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br/>
+&lt;openremote xmlns="http://www.openremote.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openremote.org <a href="http://www.openremote.org/schemas/controller.xsd">http://www.openremote.org/schemas/controller.xsd</a>"&gt;<br/>
+  &lt;components&gt;<br/>
+    &lt;switch id="62"&gt;<br/>
+      &lt;on&gt;<br/>
+        &lt;include type="command" ref="64" /&gt;<br/>
+      &lt;/on&gt;<br/>
+      &lt;off&gt;<br/>
+        &lt;include type="command" ref="64" /&gt;<br/>
+      &lt;/off&gt;<br/>
+      &lt;include type="sensor" ref="63" /&gt;<br/>
+    &lt;/switch&gt;<br/>
+  &lt;/components&gt;<br/>
+  &lt;sensors&gt;<br/>
+    &lt;sensor id="63" name="Button A" type="switch"&gt;<br/>
+      &lt;include type="command" ref="66" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+  &lt;/sensors&gt;<br/>
+  &lt;commands&gt;<br/>
+    &lt;command id="64" protocol="telnet"&gt;<br/>
+      &lt;property name="port" value="2000" /&gt;<br/>
+      &lt;property name="statusDefault" value="1" /&gt;<br/>
+      &lt;property name="command" value="null|HCA0002010000001|null|002500350051    HCAObjectProgram.OnRemote - ButtonA|null|00180027    HCAAppTerminate|" /&gt;<br/>
+      &lt;property name="statusFilter" value="1" /&gt;<br/>
+      &lt;property name="statusFilterGroup" value="1" /&gt;<br/>
+      &lt;property name="timeout" value="99" /&gt;<br/>
+      &lt;property name="ipAddress" value="192.168.1.7" /&gt;<br/>
+    &lt;/command&gt;<br/>
+    &lt;command id="66" protocol="telnet"&gt;<br/>
+      &lt;property name="port" value="2000" /&gt;<br/>
+      &lt;property name="statusDefault" value="0" /&gt;<br/>
+      &lt;property name="command" value="null|HCA0002010000001|null|002500330040    HCAObjectFlag.GetButtonA|" /&gt;<br/>
+      &lt;property name="statusFilter" value="^(?i)(?s)(?m).<b>getbuttona(\w<div class="error"><span class="error">Unknown macro: {2,3}</span> </div>).</b>$" /&gt;<br/>
+      &lt;property name="statusFilterGroup" value="1" /&gt;<br/>
+      &lt;property name="timeout" value="99" /&gt;<br/>
+      &lt;property name="ipAddress" value="192.168.1.7" /&gt;<br/>
+    &lt;/command&gt;<br/>
+  &lt;/commands&gt;<br/>
+  &lt;config&gt;<br/>
+    &lt;property name="controller.roundrobin.tcpserver.port" value="20000" /&gt;<br/>
+    &lt;property name="multicast.address" value="224.0.1.100" /&gt;<br/>
+    &lt;property name="controller.roundrobin.multicast.port" value="10000" /&gt;<br/>
+    &lt;property name="multicast.port" value="3333" /&gt;<br/>
+    &lt;property name="controller.groupname" value="floor20" /&gt;<br/>
+    &lt;property name="Macro.IR.Execution.Delay" value="500" /&gt;<br/>
+    &lt;property name="controller.roundrobin.multicast.address" value="224.0.1.200" /&gt;<br/>
+    &lt;property name="lircd.conf.path" value="/etc/lircd.conf" /&gt;<br/>
+    &lt;property name="controller.groupmember.autodetect.on" value="true" /&gt;<br/>
+    &lt;property name="webapp.port" value="8080" /&gt;<br/>
+    &lt;property name="copy.lircd.conf.on" value="true" /&gt;<br/>
+    &lt;property name="irsend.path" value="/usr/local/bin/irsend" /&gt;<br/>
+    &lt;property name="resource.upload.enable" value="true" /&gt;<br/>
+    &lt;property name="controller.applicationname" value="controller" /&gt;<br/>
+  &lt;/config&gt;<br/>
+&lt;/openremote&gt;</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 01, 2011 17:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956936"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>When pasting code into your message you need to use the following braces around the code:</p>
+
+<p>{code}</p>
+
+<p>{code}</p>
+
+<p>I can't see what would have caused the error you were getting but for all of your commands, in the command property I don't think you want the '|' at the end and for the switch sensor command the statusDefault property should 'on' or 'off'.</p>
+
+<p>For example: -</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;command id=<span class="code-quote">"66"</span> protocol=<span class="code-quote">"telnet"</span>&gt;
+&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"2000"</span> /&gt;
+&lt;property name=<span class="code-quote">"statusDefault"</span> value=<span class="code-quote">"off"</span> /&gt;
+&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"<span class="code-keyword">null</span>|HCA0002010000001|<span class="code-keyword">null</span>|002500330040 HCAObjectFlag.GetButtonA"</span> /&gt;
+&lt;property name=<span class="code-quote">"statusFilter"</span> value=<span class="code-quote">"^(?i)(?s)(?m).getbuttona(\w{2,3}).$"</span> /&gt;
+&lt;property name=<span class="code-quote">"statusFilterGroup"</span> value=<span class="code-quote">"1"</span> /&gt;
+&lt;property name=<span class="code-quote">"timeout"</span> value=<span class="code-quote">"99"</span> /&gt;
+&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.7"</span> /&gt;
+&lt;/command&gt;
+</pre>
+</div></div>
+
+<p>As I don't have a telnet server that produces the same output as yours there's only so much I can do my end. Have you tried my suggestion from before of creating a custom sensor and using it to set the value of a label on your panel (or you could interrogate the sensor value using the REST API), you should see either 'on' or 'off' being displayed.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 01, 2011 20:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956938"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>I have set up 2 sensors but the status does not change. i am receiving the correct string<br/>
+This is an extract from the Controler Log.</p>
+
+<p>Pierce</p>
+
+<p>Controller2011-07-01 22:08:32,629 INFO Thread\-3 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: HCA0202010003074<br/>
+Controller2011-07-01 22:08:32,629 INFO Thread\-3 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: 002500330040    HCAObjectFlag.GetButtonA<br/>
+Controller2011-07-01 22:08:32,629 INFO Thread\-4 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: HCA0302010003074<br/>
+Controller2011-07-01 22:08:32,629 INFO Thread\-4 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: 002500330040    HCAObjectFlag.GetButtonB<br/>
+Controller2011-07-01 22:08:33,629 INFO Thread\-3 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: 0021003000380048    0HCAObjectFlag.GetButtonAoff<br/>
+Controller2011-07-01 22:08:33,629 INFO Thread\-4 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: 0021003000380048    0HCAObjectFlag.GetButtonBoff<br/>
+Controller2011-07-01 22:08:33,629 INFO Thread\-4 org.openremote.controller.protocol.telnet.TelnetCommand.read(372) | Telnet Read Status: No Match using Regex: '^(?i)(?s)(?m).<b>getbuttona(\w<div class="error"><span class="error">Unknown macro: {2,3}</span> </div>).</b>$' on response from command 'null|HCA0002010000001|null|002500330040    HCAObjectFlag.GetButtonB|'</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 01, 2011 22:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956939"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>I just spotted why it was giving that error the string need b instead of a</p>
+
+<p>So now I know that the string is received and read why is it not updating the display?</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 01, 2011 22:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956940"></a>
+                                    <font class="smallfont"><p>It could be a bug with your designer account (I have had this happen to me); this causes the panel.xml and controller.xml to lose sync.</p>
+
+<p>I would suggest quickly creating another online designer account and quickly add a custom sensor with your read command and use a label to see if you can see the value.</p>
+
+<p>If this works then Juha may be able to help sort your designer account out or you'd have to delete everything and start again (depends how many panels, sceens, etc you have defined).</p>
+
+<p>Rich</p>
+
+<p>P.S: Still don't think you should have the '|' at the end of your 'null|HCA0002010000001|null|002500330040 HCAObjectFlag.GetButtonB|' command (just in case it causes problems).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 01, 2011 22:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956941"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>I tried another account but still the same</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 01, 2011 23:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956943"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>You said above:</p>
+
+<blockquote>
+<p>I have set up 2 sensors but the status does not change. i am receiving the correct string</p></blockquote>
+
+<p>Does that mean when you tried using a label on your panel and setting the label command to one of your read commands the label displayed either 'on' or 'off' on the panel when it was running?</p>
+
+<p>If the answer is yes then there is no reason why the switch shouldn't update if the answer is no then your problem must be in the command itself. In the console window if the regex fails to find a match you will see messages like below:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[Controller] 2011-07-02 08:45:33,022 ERROR [<span class="code-object">Thread</span>-1870] org.openremote.controller.protocol.telnet.TelnetCommand.read(372) | Telnet Read Status: No Match using Regex: '^(?i)(?m)(?s).*volume.\s(\d+).*$' on response from command 'OK|status'
+</pre>
+</div></div>
+
+<p>Do you see any messages like that in the console window?</p>
+
+<p>What code branch and revision are you running?</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 02, 2011 08:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956949"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>Just to confirm I have set up a label and the status of this does not change.</p>
+
+<p>I am receiving no errors on the Console Window or in the Controler Log file.</p>
+
+<p>I have changed the data string which is returned to OpenRemote when it asks for<br/>
+the status. I now get No Match using Regex in the Controler log file and no <br/>
+errors in the Console Window.</p>
+
+<p>I believe I am receiving back the correct string and Regex is getting a match<br/>
+and nothing happins.</p>
+
+<p>I appriciate all your help on this</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 02, 2011 15:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956950"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>I would recommend querying the controller directly using the REST XML API: -</p>
+
+<p><a href="http://openremote.org/display/docs/Controller+2.0+HTTP-REST-XML#Controller2.0HTTP-REST-XML-SensorStatusRequest">REST XML API</a></p>
+
+<p>So assuming your controller is running on the PC you are using you'd type in: -</p>
+
+<p><a href="http://localhost:8080/controller/rest/status/\{sensor_id\}">http://localhost:8080/controller/rest/status/{sensor_id}</a></p>
+
+<p>Replace {sensor_id} with the switch or custom sensor id from your controller.xml</p>
+
+<p>See what gets returned.</p>
+
+<p>Rich</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 02, 2011 16:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956951"></a>
+                                    <font class="smallfont"><p>Hi Richart</p>
+
+<p>This is my XML<br/>
+  &lt;components&gt;<br/>
+    &lt;button id="70"&gt;<br/>
+      &lt;include type="command" ref="72" /&gt;<br/>
+    &lt;/button&gt;<br/>
+    &lt;label id="68"&gt;<br/>
+      &lt;include type="sensor" ref="71" /&gt;<br/>
+    &lt;/label&gt;<br/>
+  &lt;/components&gt;<br/>
+    &lt;sensors&gt;<br/>
+    &lt;sensor id="71" name="Button A" type="switch"&gt;<br/>
+      &lt;include type="command" ref="73" /&gt;<br/>
+      &lt;state name="on" /&gt;<br/>
+      &lt;state name="off" /&gt;<br/>
+    &lt;/sensor&gt;</p>
+
+<p>I tried 
+<a href="http://localhost:8080/controller/rest/status/<div class="error"><span class="error">Unknown macro: {sensor_71}</span> </div>">http://localhost:8080/controller/rest/status/<div class="error"><span class="error">Unknown macro: {sensor_71}</span> </div></a>
+<a href="http://localhost:8080/controller/rest/status/<div class="error"><span class="error">Unknown macro: {switch_71}</span> </div>">http://localhost:8080/controller/rest/status/<div class="error"><span class="error">Unknown macro: {switch_71}</span> </div></a>
+<a href="http://localhost:8080/controller/rest/status/<div class="error"><span class="error">Unknown macro: {71}</span> </div>">http://localhost:8080/controller/rest/status/<div class="error"><span class="error">Unknown macro: {71}</span> </div></a></p>
+
+<p>All returned the same message<br/>
+&lt;message&gt;No such sensor whose id is :%7Bswitch_71%7D&lt;/message&gt;</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 02, 2011 17:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956952"></a>
+                                    <font class="smallfont"><p>The URL should be:</p>
+
+<p><a href="http://localhost:8080/controller/rest/status/71">http://localhost:8080/controller/rest/status/71</a></p>
+
+<p>Not:</p>
+
+<p><a href="http://localhost:8080/controller/rest/status/\{sensor_71\}">http://localhost:8080/controller/rest/status/{sensor_71}</a></p>
+
+<p>Or:</p>
+
+<p><a href="http://localhost:8080/controller/rest/status/\{switch_71\}">http://localhost:8080/controller/rest/status/{switch_71}</a></p>
+
+<p>Or:</p>
+
+<p><a href="http://localhost:8080/controller/rest/status/\{71\}">http://localhost:8080/controller/rest/status/{71}</a></p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 02, 2011 17:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956953"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p><a href="http://localhost:8080/controller/rest/status/71">http://localhost:8080/controller/rest/status/71</a></p>
+
+<p>&lt;status id="71"&gt;off&lt;/status&gt;</p>
+
+<p>The string which is being received is<br/>
+0021003000380047    0HCAObjectFlag.GetButtonaon<br/>
+this should make the Sensor On.</p>
+
+<p>I also sent an Off commang string and still got<br/>
+&lt;status id="71"&gt;off&lt;/status&gt;</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 02, 2011 17:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956954"></a>
+                                    <font class="smallfont"><p>Edit your controller.xml and set the default read response to "on" then query the REST API again: -</p>
+
+<p><a href="http://localhost:8080/controller/rest/status/71">http://localhost:8080/controller/rest/status/71</a></p>
+
+<p>If you see:</p>
+
+<p>&lt;status id="71"&gt;on&lt;/status&gt;</p>
+
+<p>Then you are likely not getting a regex match, The response from your Telnet server that you wrote above:</p>
+
+<blockquote>
+<p>0021003000380047 0HCAObjectFlag.GetButtonaon</p></blockquote>
+
+<p>Is different to what you said before (before there was a '.' before the 'on') this makes a difference to your regex so you need to be exact.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 02, 2011 17:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956955"></a>
+                                    <font class="smallfont"><p>Hi Richard </p>
+
+<p>no change still responds with &lt;status id="71"&gt;off&lt;/status&gt;</p>
+
+<p>Regarding the change in the string I changed "A" to "a" to see if it made any difference.</p>
+
+<p>I tested both and both work OK giving the corredt result</p>
+
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 02, 2011 17:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956956"></a>
+                                    <font class="smallfont"><p>The regex I gave you is case insensitive (for some reason I thought you had a '.' after the getbuttona).</p>
+
+<p>If you are still getting an 'off' response then it must mean that the regex is finding a matching 'off' at the end of the response from the server.</p>
+
+<p>Try removing the regex stuff from your command and query the REST API again just to be sure you are getting on and off responses from your telnet server when you switch on/off the device being queried.</p>
+
+<p>Something like:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;command id=<span class="code-quote">"71"</span> protocol=<span class="code-quote">"telnet"</span>&gt;
+&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"2000"</span> /&gt;
+&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"<span class="code-keyword">null</span>|HCA0002010000001|<span class="code-keyword">null</span>|002500330040 HCAObjectFlag.GetButtonA"</span> /&gt;
+&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.7"</span> /&gt;
+&lt;/command&gt;
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 02, 2011 17:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956958"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>We have set the default setting to On and after your last mail I changed the string which is being sent to<br/>
+Openremote Regex was unable to decode it and now when I send
+<a href="http://localhost:8080/controller/rest/status/71">http://localhost:8080/controller/rest/status/71</a></p>
+
+<p>I get &lt;status id="71"&gt;on&lt;/status&gt;.</p>
+
+<p>So It would appear that the Regex is decoding both the on and off message as off.</p>
+
+<p>I tested both messages and I received the correct responce On and Off.</p>
+
+<p>0021003000380047    0HCAObjectFlag.GetButtonaon  <br/>
+"for On"</p>
+
+<p>0021003000380048    0HCAObjectFlag.GetButtonaoff<br/>
+ "for Off"</p>
+
+<p>I have re tested these and the responce is correct.<br/>
+I also tested using "A" and they also gave the correct answer</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 02, 2011 18:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956965"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>I don't understand how the regex can be returning off even when the response from your server is '0021003000380047 0HCAObjectFlag.GetButtonaon' because the string doesn't even contain the characters 'off'.</p>
+
+<p>I have tested the below regex and it should work for buttonA and buttonB and will return 'on' or 'off' if the response format is correct.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+^(?i)(?s)(?m).*getbutton.(\w{2,3}).*$
+</pre>
+</div></div>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 03, 2011 10:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956968"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>I have tested this new string and it gives the same results as the last one</p>
+
+
+<p>For some reason the Regex is  sending  "off" each time</p>
+
+<p>How can we proceed now</p>
+
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 03, 2011 13:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956977"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>Can you confirm which revision of the controller you have checked out of the repository so I can make sure I am running the same.</p>
+
+<p>The only other thing I would suggest is use the remote debugging within Eclipse so you can see exactly why 'off' is always being returned.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 04, 2011 17:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956979"></a>
+                                    <font class="smallfont"><p>Hi Richard</p>
+
+<p>the version I am currently running is OpenRemote-Controller-2.0.0_SNAPSHOT_20110611\bin</p>
+
+<p>I have not used Eclipse before can you point me in the right direction</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jul 04, 2011 21:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956980"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>I shall try that branch tomorrow and see what I get with my telnet servers.</p>
+
+<p>I'll see if the branch works OK for me before you need to go down the eclipse debugging route.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 04, 2011 22:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17957010"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>I have downloaded the branch you are using and it works OK for me so all I can suggest is that there is something strange with your setup and the only option you would have is to go down the debugging route: -</p>
+
+<ul>
+	<li>Install Eclipse (can download off the net...it's free)</li>
+	<li>Import the controller source code as an existing project</li>
+	<li>Start the apache server using the jpda run arguments ('openremote.bat jdpa run') this puts it into debug mode</li>
+	<li>Create a remote java application debugging configuration in Eclipse, the defaults should be ok (change host to PC running controller if not localhost)</li>
+	<li>You should then be able to specify break points in the source code within Eclipse and you'll be able to see all of the controller variables</li>
+</ul>
+
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jul 06, 2011 17:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20449508"></a>
+                                    <font class="smallfont"><p>Hi Richard,</p>
+
+<p>what is the status of this branch?<br/>
+I just checked-out and compiled but I don't see where you make the link between the "regular" telnet command and the "protocol" telnet command.<br/>
+It looks like your gateway stuff is not touched if I deploy regular setup from the designer.<br/>
+You are implementing a ProtocolBuilder but normally a CommandBuilder is used.</p>
+
+<p>Thanks,<br/>
+--Marcus</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 31, 2012 20:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450371"></a>
+                                    <font class="smallfont"><p>Hey Marcus,</p>
+
+<p>Only just saw your question (don't think I got an email to let me know for some reason but just happened to look through the Design Forum).</p>
+
+<p>I haven't looked at this for over a year (the Web Console has been keeping me occupied) but I'll try and jog my memory.</p>
+
+<p>All the code I created in this branch sits inside the Gateway package to avoid conflicts with existing code and it was initiated by my own needs to have connection management specifically for Telnet but more generally also.</p>
+
+<p>I only implemented the Telnet, UDP, HTTP and TCP protocols into the gateway code so any other protocols will behave as normal.</p>
+
+<p>Any commands that use the four implemented protocols should use the connection manager code, and this should be apparent by the messages produced in the console window. A thread is created for each server and protocol (I call these gateways) and then all commands that use that gateway are associated with it and the Gateway Manager deals with command requests and connecting/disconnecting from the server.</p>
+
+<p>Regarding the ProtocolBuilder, I wanted to get away from the idea of the Commands containing protocol related information, hence the extra layer of abstraction, to deal with this and to work with the existing controller.xml schema the gateway manager re-writes the XML on the fly to add in new gateway and protocol elements (have a look at org.openremote.controller.service.impl.GatewayManagerServiceImpl.java for details of what is going on).</p>
+
+<p>Not sure why you don't see anything happening but I will fire it up my end tomorrow evening and see what is going on.</p>
+
+<p>Rich</p>
+
+
+
+<p>into the connection management (gateway) code and yes you are right that if you supply in a standard controller.xml from the designer my gateway code won't do much and the standard mechanisms will do the work (this was all to allow my code to co-exist with the current code).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Sep 05, 2012 21:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450372"></a>
+                                    <font class="smallfont"><p>Hi Rich,<br/>
+thanks for the answer. Do you have an example of a controller.xml where your code is used?<br/>
+--Marcus</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 05, 2012 22:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Carriage Return with TCP-IP</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Carriage Return with TCP-IP
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 14, 2013 by <font color="#0050B2">stif</font>.
+				    </div>
+
+				    <p>Hi Folks,</p>
+
+<p>I am completely out of luck with sending a Carriage Return over TCP/IP.</p>
+
+<p>I use a Global Cache iTach IP2SL and want to control a DVD Player which need a command like "STOP&lt;CR&gt;&lt;LF&gt;"<br/>
+The iTach Documentation says it does no conversation at all and sends data received by TCP as is to RS232.</p>
+
+<p>In Order to isolate the problem i also removed the iTach and send the Command to a TCP Server running locally on Port 4999 (Hercules from HW-group.com)</p>
+
+<p>No matter how i try to escape the Carriage Return / Line Feed, everytime the TCP Server receives a literal string and no control characters at all.<br/>
+I tried to the following inputs in the command window (without the quotes): </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> <span class="code-quote">"STOP\r\n"</span>, <span class="code-quote">"STOP\\r\\n"</span>, <span class="code-quote">"STOP\x0D\x0A"</span>, <span class="code-quote">"STOP/x0D/x0A"</span>, <span class="code-quote">"STOP0x0D0x0A"</span>, <span class="code-quote">"STOP\0x0D\0x0A"</span>,<span class="code-quote">"STOP&amp;#10;&amp;#13;"</span> <span class="code-quote">"STOP&amp;#xD;&amp;#xA;"</span>, <span class="code-quote">"STOP$0D$0A"</span>, <span class="code-quote">"STOP%0D%0A"</span>, etc 
+</pre>
+</div></div>
+<p>and also complete Hex strings like "0x50574F4E0D" but none of this inputs where converted to control characters while sending it.</p>
+
+<p>I also searched the forum for possible answers, and find some people with the same problem, but so far without any solution.</p>
+
+<p>So my question(s):<br/>
+Is it possible to send control characters over TCP/IP, UDP or Telnet. And if so how to Escape them?<br/>
+Is OpenRemote capable of sending an RS232 carriage return via Global Cache iTach IP2SL?</p>
+
+<p>It would be great if anybody can answer my questions, since i am trying to solve this issue since 2 days now <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22414330"></a>
+                                    <font class="smallfont"><p>With regards to TCP, I will need to check and run some tests.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 16, 2013 08:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414372"></a>
+                                    <font class="smallfont"><p>Hi Juha, thanks for your answer.</p>
+
+<p>To solve this issue i took a look at the source code and changed following line in the function RequestSocket() in the file TCPSocketCommand.java</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+out.write((cmd + <span class="code-quote">"\r\n"</span>).getBytes());
+</pre>
+</div></div>
+
+<p>I know this is a dirty workaround, but at least the setup is working right now <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Anyway i am still interested in a clean solution how to send control characters via TCP.</p>
+
+<p>cheers and keep up all the great work,<br/>
+Stefan</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stif at May 16, 2013 18:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879608"></a>
+                                    <font class="smallfont"><p>Hello Stefan,</p>
+
+<p>can you tell me where I find source code or more specific the TCPSocketCommand.java? I need to have a look inside for sorting out an other problem I have at the moment.</p>
+
+<p>Marc</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by hennemarc at Nov 08, 2013 09:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879613"></a>
+                                    <font class="smallfont"><p>Hello Marc,</p>
+
+<p>Depends on what version you are using.<br/>
+For the Controller 2.0.2 Stable, here is the source directory for TCPSocketCommand.java: 
+<a href="http://sourceforge.net/p/openremote/code/HEAD/tree/tags/project/Controller/Controller_2_0_2/src/org/openremote/controller/protocol/socket/">http://sourceforge.net/p/openremote/code/HEAD/tree/tags/project/Controller/Controller_2_0_2/src/org/openremote/controller/protocol/socket/</a></p>
+
+<p>See also this page for building the project with your own modification:
+<a href="http://www.openremote.org/display/docs/Building+OpenRemote+2.0+Developer+Releases">http://www.openremote.org/display/docs/Building+OpenRemote+2.0+Developer+Releases</a></p>
+
+<p>cheers,<br/>
+stefan</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by stif at Nov 08, 2013 13:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:40</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

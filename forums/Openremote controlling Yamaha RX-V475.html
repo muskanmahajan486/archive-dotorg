@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Openremote controlling Yamaha RX-V475</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Openremote controlling Yamaha RX-V475
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 21, 2013 by <font color="#0050B2">richsb</font>.
+				    </div>
+
+				    <p>Has anyone had success controlling a Yamaha RX-V475 using TCP/IP with openremote? I made a few test buttons in designer sent over port 80 but no luck so far.</p>
+
+<p>the command I tried was- POST /YamahaRemoteControl/ctrl&#xD;&#xA;Content-Type: text/plainl&#xD;&#xA;Content-length: 126l&#xD;&#xA;Host: 10.0.0.1l&#xD;&#xA;l&#xD;&#xA;&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;YAMAHA_AV cmd="PUT"&gt;&lt;Main_Zone&gt;&lt;Vol&gt;&lt;Up_Down&gt;Up&lt;/Up_Down&gt;&lt;/Vol&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22880167"></a>
+                                    <font class="smallfont"><p>Looking at this thread: <a href="http://www.openremote.org/display/forums/Controling+Yamaha+RX+V2065+over+TCPIP">http://www.openremote.org/display/forums/Controling+Yamaha+RX+V2065+over+TCPIP</a><br/>
+and remembering talking to Pierce, I think the latest version of our HTTP command can be used which is easier as TCP.</p>
+
+<p>Try the HTTP command where <br/>
+URL: http://&lt;ip of amp&gt;/YamahyRemoteContol/ctrl<br/>
+Metthod: PUT<br/>
+Content-Type: text/plain<br/>
+Workload: &lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;YAMAHA_AV cmd="PUT"&gt;&lt;Main_Zone&gt;&lt;Vol&gt;&lt;Up_Down&gt;Up&lt;/Up_Down&gt;&lt;/Vol&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 22, 2013 08:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880182"></a>
+                                    <font class="smallfont"><p>Marcus,</p>
+
+<p>thanks for the info. I'm not quite there yet. Here's what is running on our openremote controller-</p>
+
+<p>from controller.xml<br/>
+&lt;commands&gt;<br/>
+    &lt;command id="173" protocol="http"&gt;<br/>
+      &lt;property name="workload" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&lt;YAMAHA_AV cmd=&quot;PUT&quot;&gt;&lt;Main_Zone&gt;&lt;Vol&gt;&lt;Up_Down&gt;Up&lt;/Up_Down&gt;&lt;/Vol&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;" /&gt;<br/>
+      &lt;property name="method" value="PUT" /&gt;<br/>
+      &lt;property name="url" value="http://172.19.24.23/YamahaRemoteContol/ctrl" /&gt;<br/>
+      &lt;property name="name" value="vol-up" /&gt;<br/>
+    &lt;/command&gt;</p>
+
+<p>the http log has the following error-<br/>
+ERROR 2013-11-22 11:42:21,248 (HTTP): ClientProtocolException when executing HTTP method<br/>
+org.apache.http.client.HttpResponseException: Bad Request</p>
+
+<p>any ideas?<br/>
+best, richb</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richsb at Nov 22, 2013 16:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880186"></a>
+                                    <font class="smallfont"><p>Maybe because the Content-Type is missing.<br/>
+By the way do you have some documentation regarding the protocol and commands which can be sent to the receiver?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 22, 2013 20:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880188"></a>
+                                    <font class="smallfont"><p>I've used wireshark to capture the correct commands using the yamahas iOS app. here's the volume up command-</p>
+
+<p>&lt;commands&gt;<br/>
+    &lt;command id="173" protocol="http"&gt;<br/>
+      &lt;property name="workload" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&lt;YAMAHA_AV cmd=&quot;PUT&quot;&gt;&lt;Main_Zone&gt;&lt;Volume&gt;&lt;Lvl&gt;&lt;Val&gt;-180&lt;/Val&gt;&lt;Exp&gt;1&lt;/Exp&gt;&lt;Unit&gt;dB&lt;/Unit&gt;&lt;/Lvl&gt;&lt;/Volume&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;" /&gt;<br/>
+      &lt;property name="method" value="POST" /&gt;<br/>
+      &lt;property name="url" value="http://172.19.24.23/YamahaRemoteContol/ctrl" /&gt;<br/>
+      &lt;property name="name" value="vol-up" /&gt;<br/>
+    &lt;/command&gt;</p>
+
+<p>I'm getting a not found error now. is content type set as another property? thanks for the assistance. -richb</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richsb at Nov 22, 2013 21:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880189"></a>
+                                    <font class="smallfont"><p>You changed PUT to POST now. In the other thread PUT is mentioned.<br/>
+Content-Type is only available in the staging version of the modeler: <a href="https://composer.openremote.org/staging/">https://composer.openremote.org/staging/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 22, 2013 21:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880192"></a>
+                                    <font class="smallfont"><p>we've tried both put and post with same error. currently the command is-</p>
+
+<p>&lt;commands&gt;<br/>
+&lt;command id="173" protocol="http"&gt;<br/>
+&lt;property name="workload" value="&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;YAMAHA_AV cmd="PUT"&gt;&lt;Main_Zone&gt;&lt;Volume&gt;&lt;Lvl&gt;&lt;Val&gt;-180&lt;/Val&gt;&lt;Exp&gt;1&lt;/Exp&gt;&lt;Unit&gt;dB&lt;/Unit&gt;&lt;/Lvl&gt;&lt;/Volume&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;" /&gt;<br/>
+&lt;property name="method" value="Put" /&gt;<br/>
+&lt;propert name="contentType" value="text/plain" /&gt;<br/>
+&lt;property name="url" value="http://172.19.24.23/YamahaRemoteContol/ctrl" /&gt;<br/>
+&lt;property name="name" value="vol-up" /&gt;<br/>
+&lt;/command&gt;</p>
+
+<p>the receiver responds 404 not found. also I noticed some Header checksum errors in wireshark as well.<br/>
+the same commands sent using the socket protocol respond with a bad request</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richsb at Nov 22, 2013 23:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880201"></a>
+                                    <font class="smallfont"><p>Response 404 would mean that the URL is not correct.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 23, 2013 19:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880398"></a>
+                                    <font class="smallfont"><p>We never did get http to work with this amp but the socket protocol did finally do the job-</p>
+
+<p>&lt;command id="456" protocol="socket"&gt;<br/>
+      &lt;property name="port" value="80" /&gt;<br/>
+      &lt;property name="command" value="POST /YamahaRemoteControl/ctrl HTTP/1.1&#xD;&#xA;Content-Type: text/plain&#xD;&#xA;Content-length: 142&#xD;&#xA;Host: 10.0.0.1&#xD;&#xA;&#xD;&#xA;&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&lt;YAMAHA_AV cmd=&quot;PUT&quot;&gt;&lt;Main_Zone&gt;&lt;Power_Control&gt;&lt;Power&gt;On&lt;/Power&gt;&lt;/Power_Control&gt;&lt;/Main_Zone&gt;&lt;/YAMAHA_AV&gt;" /&gt;<br/>
+      &lt;property name="ipAddress" value="172.19.24.23" /&gt;<br/>
+      &lt;property name="name" value="power" /&gt;<br/>
+    &lt;/command&gt;</p>
+
+<p>adding HTTP/1.1 finally got the receiver to accept the post</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richsb at Nov 27, 2013 21:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OpenRemote ISY-99 Sensor Limit</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OpenRemote ISY-99 Sensor Limit
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 02, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>I just started designing some test panels for my ISY-99 using OpenRemote. Sensors work fine for status until I exceed 5 sensors. After 5 sensors the behavior becomes very sluggish and the following error appears in the log periodically.</p>
+
+<div style="max-width:700px;"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ERROR 2012-09-18 17:59:23,718 (ISY-99): IOException while reading data from ISY-99
+org.apache.http.conn.HttpHostConnectException: Connection to http://192.168.1.50 refused
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:127)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:147)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:576)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:554)
+	at org.openremote.controller.protocol.isy99.Isy99Command.read(Isy99Command.java:222)
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.read(Sensor.java:682)
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Sensor.java:608)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: java.net.ConnectException: Connection timed out: connect
+	at java.net.DualStackPlainSocketImpl.connect0(Native Method)
+	at java.net.DualStackPlainSocketImpl.socketConnect(Unknown Source)
+	at java.net.AbstractPlainSocketImpl.doConnect(Unknown Source)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(Unknown Source)
+	at java.net.AbstractPlainSocketImpl.connect(Unknown Source)
+	at java.net.PlainSocketImpl.connect(Unknown Source)
+	at java.net.SocksSocketImpl.connect(Unknown Source)
+	at java.net.Socket.connect(Unknown Source)
+	at org.apache.http.conn.scheme.PlainSocketFactory.connectSocket(PlainSocketFactory.java:123)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:123)
+	... 10 more
+</pre>
+</div></div></div>
+
+<p>Has anyone else seen this behavior? Is there some sensor limit?</p>
+
+<p>Thanks!</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20450740"></a>
+                                    <font class="smallfont"><p>There is no limit on sensors.<br/>
+Maybe out HTTP impl does not close connections correct and your ISY-99 device has a limit for concurrent connections?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 20, 2012 08:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450862"></a>
+                                    <font class="smallfont"><p>Thanks for your reply Marcus. </p>
+
+<p>I've never noticed anything in the ISY API that indicated a connection limit, but I would expect some type of limit.</p>
+
+<p>Also I thought that error went away with 5 sensors or less, but I was wrong. Currently I have 2 sensors setup and the error is still occurring.</p>
+
+<p>The HTTP implementation you mentioned it is in the OpenRemote code or the Apache code?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kpurney at Sep 23, 2012 02:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450901"></a>
+                                    <font class="smallfont"><p>I met the way how OpenRemote is using the apache httpclient. Right now we are just performing a regular "execute()" on the DefaultHTTPClient. Maybe there is a way of specifying that the connection should be closed or something.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 24, 2012 08:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450965"></a>
+                                    <font class="smallfont"><p>I added client.getConnectionManager().shutdown(); to Isy99Command.java and it seems to have eliminated the error I was getting.</p>
+
+<p>More research and testing is probably necessary to confirm that this is a proper fix.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kpurney at Sep 26, 2012 04:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451048"></a>
+                                    <font class="smallfont"><p>Kevin,</p>
+
+<p>Thanks for taking the initiative on this.</p>
+
+<p>We've currently very limited on users/testers/developers on ISY-99 due to its availability in the US (or 110V) market only. If at all possible to submit patches and test the implementation otherwise (improve it, patch it, rewrite it) then by all means do so. That would be of great help.</p>
+
+<p>If you have any questions don't hesitate to contact me at juha at openremote dot org</p>
+
+<p>Thanks,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 27, 2012 01:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857834"></a>
+                                    <font class="smallfont"><p>That sounds perfectly reasonable to me. When I was writing the ISY-99 protocol with Andrew Puch, we did not know enough about the internals of the ISY-99's web server to know whether HTTP keep-alive would be a good idea or not. We just used the default settings for the Apache HTTP client.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at Feb 20, 2013 17:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857985"></a>
+                                    <font class="smallfont"><p>I am running into this exact problem right now.  My controller started getting bogged down and sluggish as soon as I had added a handful of sensors to my ISY implementation.  Like Kevin, my log files also indicated the connection was refused by the ISY.  </p>
+
+<p>Thank you,</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bluckey at Feb 24, 2013 19:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857996"></a>
+                                    <font class="smallfont"><p>Kevin,</p>
+
+<p>What line did you add the shutdown command to in the Isy99Command.class file?  I thought i could figure it out earlier, but I'm having trouble.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bluckey at Feb 24, 2013 21:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858001"></a>
+                                    <font class="smallfont"><p>I'm <b>guessing</b> but in <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/tags/project/Controller/Controller_2_0_1/src/org/openremote/controller/protocol/isy99/Isy99Command.java">tags/project/Controller/Controller_2_0_1/src/org/openremote/controller/protocol/isy99/Isy99Command.java</a></p>
+
+<p>The read() and send() methods, should be at the end of the method for send() (ideally in a finally block so connections are closed even in case of errors) when the 'client' reference is no longer needed, and in the finally block of the read() method (around in the middle in the send() implementation).</p>
+
+<p>Some example code for HTTP client is also included in the <a href="http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/client/HttpClient.html">HttpClient JavaDoc</a> which shows the shutdown() usage at the end of the example.</p>
+
+<p>HTH</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 25, 2013 03:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858061"></a>
+                                    <font class="smallfont"><p>I added client.getConnectionManager().shutdown(); to the read method of Isy99Command.java. Initially it appeared to work, but after a few more test I still got the connection refused errors. Haven't had anymore time to investigate it further.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kpurney at Feb 26, 2013 17:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858064"></a>
+                                    <font class="smallfont"><p>If you do it on read() side only it could be that number of sends() eventually eats up the connection count &#8211; depending if in your tests you did anything that also involved sends?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 26, 2013 17:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858065"></a>
+                                    <font class="smallfont"><p>Have y'all by any chance also checked whether there are firmware updates available for the ISY-99 itself? There was at least one that fixed some concurrency issues.</p>
+
+<p>Also, I have been wanting to incorporate the "collapsable message queue" that is used for Lutron Homeworks into the ISY-99 protocol implementation. This could help avoid overwhelming the device with requests, especially with the collapsing part. Essentially, users of this message queue implementation can specify that one or more messages are essentially the same. If they are queued up, then only one will be sent.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at Feb 26, 2013 17:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858070"></a>
+                                    <font class="smallfont"><p>I am currently using the latest version of the firmware, 3.3.10.  Beta for 4.0.1 has just been released, but I have not tried it yet.  </p>
+
+<p>3.3.10<br/>
+<a href="http://forum.universal-devices.com/viewtopic.php?f=25&amp;t=10602">http://forum.universal-devices.com/viewtopic.php?f=25&amp;t=10602</a></p>
+
+<p>4.0.1 beta<br/>
+<a href="http://forum.universal-devices.com/viewtopic.php?f=25&amp;t=10770">http://forum.universal-devices.com/viewtopic.php?f=25&amp;t=10770</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bluckey at Feb 26, 2013 19:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858242"></a>
+                                    <font class="smallfont"><p>Andrew,</p>
+
+<p>Do we necessarily have to reinvent the wheel for this?  I may not have the technical expertise needed to back up this suggestion, but it would appear to be possible to leverage what UDAjax already does?  Essentially each ISY-99x has a built in home page that displays current statuses for installed nodes, scenes, programs, etc.  Would it be possible for ISY-99 sensors within OpenRemote to pull statuses directly from UDAjax?   </p>
+
+<p>Full documentation on UDAjax can be found on the Universal Devices Developers website.<br/>
+<a href="http://www.universal-devices.com/isy-developers/">http://www.universal-devices.com/isy-developers/</a></p>
+
+<p>ISY Default Web Interface<br/>
+<a href="http://wiki.universal-devices.com/index.php?title=ISY-99i/ISY-26_INSTEON:Initial_Browser_Screen">http://wiki.universal-devices.com/index.php?title=ISY-99i/ISY-26_INSTEON:Initial_Browser_Screen</a></p>
+
+<p>Thanks,<br/>
+Bob</p>
+
+<p>P.S.<br/>
+If relying on the UDAjax homed on the ISY-99x is not desirable, it may be possible to directly copy the needed portions of UDAjax directly into OpenRemote as it is distributed with a opensource MIT license.    </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bluckey at Mar 05, 2013 17:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858251"></a>
+                                    <font class="smallfont"><p>I finally tried client.getConnectionManager().shutdown() in the send method and it had no effect. What I believe is happening is 5 sensor events are simultaneously connecting to the ISY and all additional status request events are being rejected.</p>
+
+<p>I've changed the read method to cache the complete ISY node status locally and only periodically request an update from the ISY. This has eliminated the connection refused errors, but has introduced a delay in status updates. Currently the delay is any where from 1 to 8 seconds. Still running further test and looking for better alternatives.</p>
+
+
+<p>Kevin</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kpurney at Mar 05, 2013 23:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859518"></a>
+                                    <font class="smallfont"><p>Bob, Andrew,</p>
+
+<p>Kevin seems to have found a solution to this issue. Waiting on the SVN commit/patch at the moment.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 02, 2013 10:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860018"></a>
+                                    <font class="smallfont"><p>The binary for Kevin's patch is available here : <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.0.2_ORCJAVA-325.zip/download">OpenRemote-Controller-2.0.2_ORCJAVA-325.zip</a>. Bob, would appreciate a lot if you were able to test it too. Andrew, your review would also be much appreciated <a href="http://lists.openremote.org/pipermail/openremote-svn/2013-April/008150.html">R8128</a>.</p>
+
+<p>There are some slight adjustments to use standard Java naming conventions that should be made but nothing that should impact the implementation itself.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 10, 2013 08:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860313"></a>
+                                    <font class="smallfont"><p>Bump.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 15, 2013 13:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860330"></a>
+                                    <font class="smallfont"><p>I just read R8128 &#8211; looks good to me! If I understand correctly, it waits 5 seconds between requests, possibly on multiple threads?</p>
+
+<p>How has testing gone? I don't have an ISY-99 locally, although I could probably arrange to get it sent to Chicago or ask really nicely for testing in Durham.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cortextual at Apr 15, 2013 16:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860350"></a>
+                                    <font class="smallfont"><p>It works for Kevin. Was hoping for a second user confirmation before pushing to releases.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 15, 2013 19:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860396"></a>
+                                    <font class="smallfont"><p>I just had a chance to try this out and I'm getting the same errors.  </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2013-04-16 10:15:29,712 (ISY-99): IOException <span class="code-keyword">while</span> reading data from ISY-99
+org.apache.http.conn.HttpHostConnectException: Connection to http:<span class="code-comment">//192.168.41.65 refused
+</span>        at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:127)
+        at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:147)
+        at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+        at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+        at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+        at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:576)
+        at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:554)
+        at org.openremote.controller.protocol.isy99.Isy99StatusReader$QueryTask.run(Isy99StatusReader.java:141)
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+        at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:304)
+        at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:180)
+        at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:295)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+        at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:722)
+Caused by: java.net.ConnectException: Connection timed out
+        at java.net.PlainSocketImpl.socketConnect(Native Method)
+        at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:344)
+        at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:205)
+        at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:187)
+        at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:391)
+        at java.net.Socket.connect(Socket.java:578)
+        at org.apache.http.conn.scheme.PlainSocketFactory.connectSocket(PlainSocketFactory.java:123)
+        at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:123)
+        ... 14 more
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bluckey at Apr 16, 2013 18:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860527"></a>
+                                    <font class="smallfont"><p>Hmm, too bad. I was hoping we could have squashed this.</p>
+
+<p>What number of sensors are you using?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 18, 2013 05:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860564"></a>
+                                    <font class="smallfont"><p>That's interesting. I haven't seen that error since the fix and I using 58 sensors.</p>
+
+<p>If another instance of the controller is running with the old classes this error would occur.</p>
+
+<p>Bob, Any other information you can provide would be helpful to investigate this issue.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kpurney at Apr 18, 2013 23:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884262"></a>
+                                    <font class="smallfont"><p>Hi Guys,</p>
+
+<p>I have implemented ISY access using the java library that Universal Devices publishes for developers.  With this I get callbacks when a device state changes, and the sensors are updated appropriately.  The downside of my approach vs the http implementation is the jar file provided by Universal Devices is required for the build and deployment of the controller.</p>
+
+<p>I was motivated by Dan's work with the Omnipro and I have also implemented auto-discover within the modeller.  This just uses the REST interface so there isn't the library dependency issue.</p>
+
+<p>Is anyone else interested in the java library integration?  I have read there support for subscribing via web services to the ISY for device updates, but that's not something I have time to figure out right now.  If someone could pull that off, the dependency on the jar could be removed.</p>
+
+<p>The jar is about 620k in size.  </p>
+
+<p>Is there enough interest in this interation that the jar could be bundled with the controller?</p>
+
+<p>cheers,<br/>
+craig</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Feb 12, 2014 02:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884284"></a>
+                                    <font class="smallfont"><p>I was interested in this route, but there was a licensing problem. Universal Devices doesn't make the libraries source code available and Juha Lindfors said that would likely be an issue with the OpenRemote license.</p>
+
+<p>My inquiry was probably almost a year ago. Maybe something has changed.</p>
+
+
+<p>Kevin</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kpurney at Feb 13, 2014 01:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884287"></a>
+                                    <font class="smallfont"><p>I don't recall the details of the UDI license but if it's not compatible to GPL then it would be best to be kept out of the source repository and as a separate download to keep the distributions clear with regards to licensing.</p>
+
+<p>Is there a link to a published license to the UD SDK?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 13, 2014 06:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884855"></a>
+                                    <font class="smallfont"><p>I decided to learn a little about Soap and I just checked in some code which now uses the Soap Subscription for status changes instead of polling.  </p>
+
+<p>Here is a post announcement:
+<a href="http://www.openremote.org/pages/viewpage.action?pageId=22884852">http://www.openremote.org/pages/viewpage.action?pageId=22884852</a></p>
+
+<p>This avoids the jar as it just uses http.</p>
+
+<p>regards,<br/>
+craig</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Feb 27, 2014 03:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884900"></a>
+                                    <font class="smallfont"><p>Even better! Much appreciated, Craig. Thank you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 27, 2014 16:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

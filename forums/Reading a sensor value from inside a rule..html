@@ -1,0 +1,276 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Reading a sensor value from inside a rule.</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Reading a sensor value from inside a rule.
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 26, 2013 by <font color="#0050B2">aktur</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I know how to get a sensor value in a rule when it is passed as an event. However, as a single event can trigger a different action based on a system state I would like to be able to readout other sensors which were not passed in the event. Is it possible?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22415040"></a>
+                                    <font class="smallfont">
+<p>This?</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+when
+
+  $s1 : Switch( source == <span class="code-quote">"sensor 1"</span>)
+  $s2 : Switch( source == <span class="code-quote">"sensor 2"</span>)
+  
+  Switch( source == <span class="code-quote">"FOO"</span>, value == <span class="code-quote">"on"</span>)
+
+then
+
+  <span class="code-comment">// <span class="code-keyword">do</span> something with $s1.getValue() or $s2.getValue() ?
+</span>
+end
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 26, 2013 15:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415045"></a>
+                                    <font class="smallfont"><p>Until now I've used only Event(). Switch() seems not working for me:</p>
+
+<div style="max-width: 800px;"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>2013-05-26 17:14:43,427 ERROR [Controller Definition File Watcher for Default Deployer]: Rule definition 'modeler_rules.drl' could not be deployed. See errors below.
+2013-05-26 17:14:43,434 ERROR [Controller Definition File Watcher for Default Deployer]: Unable to resolve ObjectType 'Switch'
+2013-05-26 17:14:43,436 ERROR [Controller Definition File Watcher for Default Deployer]: Unable to resolve ObjectType 'Switch'
+2013-05-26 17:14:43,439 ERROR [Controller Definition File Watcher for Default Deployer]: There was an error parsing the rule definition 'modeler_rules.drl' : Could not parse knowledge.
+java.lang.IllegalArgumentException: Could not parse knowledge.
+</pre>
+</div></div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 26, 2013 16:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415046"></a>
+                                    <font class="smallfont"><p>Event will work too, the Switch doesn't really add anything to the API that you're likely to need (but in case for the future, an import statement should fix that error: import org.openremote.controller.model.event.*)</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 26, 2013 16:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415052"></a>
+                                    <font class="smallfont"><p>Does not work, rule is not triggered. The problem is that I need to read a status of static sensor. It seems that the rule is triggered when all events happen concurrently.</p>
+
+<p>I need something like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+when
+  $evt:Event(source==<span class="code-quote">"ROCKER_AO"</span>)
+then
+  <span class="code-keyword">if</span>(SourceSensor!=<span class="code-quote">"TV"</span>)
+    execute.command(<span class="code-quote">"SwitchTVon"</span>);
+  <span class="code-keyword">else</span>
+    execute.command(<span class="code-quote">"TVChannelUp"</span>);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 26, 2013 16:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415054"></a>
+                                    <font class="smallfont"><p>No it's not triggered when all events happend concurrently but when all listed events in the <b>when</b> section currently have the desired state.</p>
+
+<p>The example was lifted fairly straight from the test suite, so I know it works <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>You need to think of rule engine as a working memory that contains the current state of all your sensors. <b>When</b> all the conditions of your sensors are true <b>then</b> do something.</p>
+
+<p>Here's another example that takes color values from three separate sensors and then executes a function based on the values, maybe that will give you some idea how to accomplish what you're looking for?</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+<span class="code-keyword">import</span> java.awt.Color
+
+global org.openremote.controller.statuscache.CommandFacade execute
+
+function <span class="code-object">int</span> getRedComponent(<span class="code-object">int</span> rgb)
+{
+  Color c = <span class="code-keyword">new</span> Color(rgb);
+  <span class="code-keyword">return</span> c.getRed();
+
+  <span class="code-comment">// you can <span class="code-keyword">do</span> conditional logic here too but haven't tested <span class="code-keyword">if</span> the globals are available ?
+</span>}
+
+rule <span class="code-quote">"Color Manipulation Functions"</span>
+
+when
+
+  Range ( source == <span class="code-quote">"hue"</span>, $hue : value )
+  Level ( source == <span class="code-quote">"saturation"</span>, $sat : value )
+  Level ( source == <span class="code-quote">"brightness"</span>, $bri : value )
+
+then
+
+  execute.command(
+      <span class="code-quote">"count"</span>, getRedComponent( Color.HSBtoRGB(
+          <span class="code-keyword">new</span> <span class="code-object">Float</span>($hue) / 100,
+          <span class="code-keyword">new</span> <span class="code-object">Float</span>($sat) / 100,
+          <span class="code-keyword">new</span> <span class="code-object">Float</span>($bri) / 100 )
+      )
+  );
+
+  <span class="code-comment">// ternary logic would probably parse fine <span class="code-keyword">for</span> the above but haven't tried
+</span>
+end
+</pre>
+</div></div>
+
+<p><a href="http://www.openremote.org/display/docs/Advanced+Rule+Examples" title="Advanced Rule Examples">Advanced Rule Examples</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 26, 2013 17:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880909"></a>
+                                    <font class="smallfont"><p>JUHA, when I use switch in the code, the code stops working correctly.</p>
+
+<p>1. I saved worjing code in a separate file.<br/>
+2. Set switch, trying to use it.<br/>
+3. Code is dead now and stops working.<br/>
+4. I delete switch.<br/>
+5. Gues what? Code is dead. Nothing will help now.<br/>
+6. I get the code from svaed file in case I can't restore it correctly.<br/>
+7. Gues what? Code is dead. Nothing will help now.<br/>
+8. I close OpenRemote window on server and start it again.<br/>
+9. Bingo! Code is working now!<br/>
+OpenRemote downloaded 3 days ago - version is the last.</p>
+
+<p>Trust me, it is really strange. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Please fix it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 07, 2013 22:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880914"></a>
+                                    <font class="smallfont"><p>Hi Alexey,</p>
+
+<p>If you can find a more precise steps to reproduce the issue, that would help. With regards to switches, <a href="http://svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617/test/org/openremote/controller/fixture/statuscache/rules/switch/rules/SwitchMods.drl">this test</a> is working so it's not the use of switches per se that causes an issue. It must be a more specific set of conditions that causes your issue.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 08, 2013 03:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880925"></a>
+                                    <font class="smallfont"><p>Thank you. I will try these examples.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 08, 2013 11:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881102"></a>
+                                    <font class="smallfont"><p>Juha, you were right.</p>
+
+<p>Switch is workin. The problem was in case sensative switch values.<br/>
+If in Command we have off, then in switch we must have the same:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Switch( source == <span class="code-quote">"Boiler"</span>, value == <span class="code-quote">"off"</span>) <span class="code-comment">// and not Off!</span>
+</pre>
+</div></div>
+
+<p>Could you please also tell how to read the value in this case:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Trace water usage starts"</span>
+when
+  CustomState (source == <span class="code-quote">"SensLiters"</span>, Liters : value, eval(<span class="code-object">Integer</span>.valueOf((<span class="code-object">String</span>)Liters) &lt; 3495) )
+
+then
+  sStLiters = <span class="code-object">String</span>.valueOf($SensLiters.getValue());
+  execute.command(<span class="code-quote">"WaterStartLit"</span>,  sStLiters);
+end
+</pre>
+</div></div>
+
+<p>I saw such example but not shure that <br/>
+==&gt; source == "SensLiters", Liters<br/>
+can be later used as <br/>
+==&gt; sStLiters = String.valueOf($SensLiters.getValue());</p>
+
+<p>I spent about 4 hours to find solution, but nothing was found. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Thank you!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sattva at Dec 11, 2013 15:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : HowTo Sonos Radio Metadata</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : HowTo Sonos Radio Metadata
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 27, 2015 by <font color="#0050B2">glennl</font>.
+				    </div>
+
+				    <p>For the benefit of @jules_bike and possibility other members, here is a rough a dirty way to get Radio metedata to show using JSON Path.</p>
+
+<p>This assumes you are using jishi -node-sonos-http-api to get the information in the first place, the problem with radio stations is the metadata is stored in different fields.</p>
+
+<p>This becomes problematic when switching from local tracks to radio tracks for example radio is under streamInfo, while we usually look for title, album and artist.</p>
+
+<p>The solution is to simply replace those fields when we notice that type = radio.</p>
+
+<p>My code has no validation but should give you a very good idea on how to start, in my local version i have added additional fields for retrieving album art if not visible.</p>
+
+<p>To use the script you do the following</p>
+
+<p><a href="http://web">http://web</a> address of php script/?ip=(ip of node-sonos)&amp;room=(room name)</p>
+
+<p>Example would be
+<a href="http://192.168.1.15/?ip=192.168.1.15&amp;room=Glenn">http://192.168.1.15/?ip=192.168.1.15&amp;room=Glenn</a></p>
+
+
+<p>Let me know if you need any help, by adding PHP to OpenRemote you can do much more as it's very flexible and customizable, I run this all on a Raspberry Pi 2 and have no issues </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&lt;?php
+
+$ip = $_GET['ip'];
+$room = $_GET['room'];
+
+$sonos = 'http:<span class="code-comment">//' . $ip . ':5005/' . $room .  '/state';
+</span>
+$json = json_decode(file_get_contents(trim($sonos)));
+
+
+<span class="code-comment">//type radio or song
+</span>$type=$json-&gt;currentTrack-&gt;type;
+$radiosong=$json-&gt;currentTrack-&gt;streamInfo;
+
+<span class="code-comment">//Album Info
+</span>$title = $json-&gt;currentTrack-&gt;title;
+$artist=  $json-&gt;currentTrack-&gt;artist;
+$album= $json-&gt;currentTrack-&gt;album;
+
+<span class="code-comment">//AlbumArt
+</span>$albumart =  $json-&gt;currentTrack-&gt;albumArtURI;
+$absoluteart = $json-&gt;currentTrack-&gt;absoluteAlbumArtURI;
+
+
+<span class="code-keyword">if</span> ($type == <span class="code-quote">"radio"</span>) {
+	$album = substr($json-&gt;currentTrack-&gt;radioShowMetaData,0,-8);
+	$artist =  $radiosong;
+}
+
+
+$metadata = array
+  (
+  <span class="code-quote">"currentTrack"</span> =&gt; array('title' =&gt; $title, 'artist' =&gt; $artist, 'album' =&gt; $album,  'albumArtURI' =&gt; $albumart,'absoluteAlbumArtURI' =&gt; $absoluteart ),
+  );
+
+
+echo json_encode($metadata);
+
+
+?&gt;
+</pre>
+</div></div>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23597980"></a>
+                                    <font class="smallfont"><p>Hi Glenn thanks for the help  - just for clarification in OR do you create a command using the http protocol which polls this address and uses a json path expression to extract the data?  </p>
+
+<p>What do I name the script?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Apr 27, 2015 17:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597984"></a>
+                                    <font class="smallfont"><p>Got it in one, you can name it whatever you want.</p>
+
+<p>All that matters is that its HTTP GET in OR and it includes the JSON Path expression</p>
+
+<p>Last me know how you go</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glennl at Apr 28, 2015 02:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

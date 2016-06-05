@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : EEE Date format to integer (range value, monday to 1) in a Rules</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : EEE Date format to integer (range value, monday to 1) in a Rules
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 29, 2015 by <font color="#0050B2">ludodoucet</font>.
+				    </div>
+
+				    <p>Hello,</p>
+
+<p>I would like to have the number of the day today , for example today we are Thursday , I want to get 4.<br/>
+I choose a day from the 7 a week. I triggered the events the day before or not.<br/>
+My debian have locale fr_FR but show Thursday, I've seen "mercredi" yesterday.</p>
+
+<p>My current code, a bit messy sorry:</p>
+
+<p>///////////////// <br/>
+rule "JourJeudi"<br/>
+  timer (cron: 0 0/1 * * * ?)<br/>
+when</p>
+
+<p>     CustomState( source == "DisplJourSemaine", value== "Thursday" ) ///// NOT WORK but it walking when i've seen "mercredi" yesterday.<br/>
+then<br/>
+    execute.command( "DisplayNoJourDeLaSemaine", 4 );<br/>
+end<br/>
+/////////////// WORK:<br/>
+rule "veille du retour"<br/>
+  timer (cron: 0 0/1 * * * ?)<br/>
+when<br/>
+   CustomState(source=="GVJourRetour", $jr:value)<br/>
+    CustomState(source=="DisplayNoJourDeLaSemaine", $dms:value )<br/>
+then<br/>
+  // veille du retour<br/>
+    log("assignation du declencheur veille");<br/>
+    Integer DeclencheurV = Integer.parseInt($jr.toString()) - Integer.parseInt($dms.toString());</p>
+
+<p>   execute.command("DeclencheurVeilleInt", DeclencheurV );</p>
+
+<p>end</p>
+
+<p>rule "pas delester"<br/>
+  timer (cron: 0 0 21 * * ?)</p>
+
+<p>when<br/>
+    Range(source=="DeclencheurVeilleInt", value== 1)<br/>
+  log("ne pas delester retour demain");</p>
+
+<p>  execute.command("GVJourRetour", 100 );<br/>
+end<br/>
+//////////////////WORK</p>
+
+<p>/////////// dev.log:<br/>
+2015-01-29 08:14:22,489 TRACE <span class="error">&#91;Polling thread for sensor: Display JourDeLaSemaine&#93;</span>: Processed 'Thursday', received 'Thursday' ///////// Date time format EEEE<br/>
+////////////</p>
+
+<p>Do you have an idea to do that in drools? DayToDay to integer?</p>
+
+<p>Thank you.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23596111"></a>
+                                    <font class="smallfont"><p>I'll try to build from source , maybe the local parameters of the controller does not correspond to my parameters on my linux install.<br/>
+en_US for openremote<br/>
+fr_FR for linux<br/>
+I had to install 2.1 from zip.</p>
+
+<p>After coming back to you , if you have an idea , to have the result by a line of code drl , I am always taking . </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ludodoucet at Jan 30, 2015 09:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596372"></a>
+                                    <font class="smallfont"><p>I solved my problem by compiling from source , it works</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ludodoucet at Feb 06, 2015 06:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:35</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Help on how to calculate values and put them in a fact in Rules</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Help on how to calculate values and put them in a fact in Rules
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 21, 2014 by <font color="#0050B2">niraviry</font>.
+				    </div>
+
+				    <p>Hi.</p>
+
+<p>I was out of the business for a long time. No I am trying to do few things I had in mind.<br/>
+One of them is to manipulate the data coming out of the weather station in order to automatically enable/disable the need to water tank heating.</p>
+
+<p>The is the rule (part of a few of them). I need help in updating the accumulated temp and light as a decision criteria.<br/>
+I am reading the Weather station each half an hour and would like to accumulate the results into a fact. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Heat WT Factor"</span>  
+timer (cron: 0 0/30 10-16 * * ?)
+when
+    $wt_factors : Water_Tank_Factors()
+    CustomState ( source == <span class="code-quote">"Roof Temp (Status)"</span>, $val_T : value);
+    CustomState ( source == <span class="code-quote">"Roof Brightness (Status)"</span>, $val_L : value);
+then  
+    
+    $wt_factors.setAcc_temp() = $wt_factors.getAcc_temp() + $val_T.toLong();  <span class="code-comment">// ******
+</span>    $wt_factors.setAcc_light() = $wt_factors.getAcc_light() + $val_L.toLong(); <span class="code-comment">// ******
+</span>    insert ($wt_factors);
+    <span class="code-object">System</span>.out.println ( _TimeStamp()+ <span class="code-quote">":  Water Tank factors logged: "</span> + $val_T.toString() + <span class="code-quote">"  "</span> + $val_L.toString());
+    <span class="code-object">System</span>.out.println ( _TimeStamp()+ <span class="code-quote">":  Water Tank factors sum: "</span> + $wt_factors.getAcc_temp() + <span class="code-quote">"  "</span> + $wt_factors.getAcc_light());
+end
+</pre>
+</div></div>
+
+<p>The rule engine runs without any errors but if the 2 lines marked with //***** are not comments, the rule does not do anything but shown no error. If these lines are commented the rule runs nicely and I can see the values each half an hour.</p>
+
+<p>Does anybody have an idea what seems to be the problem.</p>
+
+<p>Need help.</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22888151"></a>
+                                    <font class="smallfont"><p>Are you sure you don't have errors? stderrout.log is buffered so you will not get errors immediately. It does not look like correct rule to me, but I am not an expert. I would change the lines either this way:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+$wt_factors.setAcc_temp($wt_factors.getAcc_temp() + $val_T.toLong());
+$wt_factors.setAcc_light($wt_factors.getAcc_light() + $val_L.toLong());
+</pre>
+</div></div>
+<p>or this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+$wt_factors.acc_temp = $wt_factors.acc_temp + $val_T.toLong();
+$wt_factors.acc_light = $wt_factors.acc_light + $val_L.toLong();
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by druciak at Aug 21, 2014 20:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888353"></a>
+                                    <font class="smallfont"><p>Hi KRZYSZTOF.</p>
+
+<p>Actually the syntax you mentioned creates errors. Both my options (original and the following does not.  </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+$wt_factors.setAcc_temp($wt_factors.getAcc_temp() + <span class="code-object">Float</span>.parseFloat($val_T.toString()));
+$wt_factors.setAcc_light($wt_factors.getAcc_light() + <span class="code-object">Long</span>.parseLong($val_T.toString()));
+</pre>
+</div></div>
+
+<p>Without these two lines it runs great and reports the temp and light level every 30 minutes. The LHS has nothing to do with the facts (accumulating temp and Light).</p>
+
+<p>I have set the crone to fire every 1 minute and rule is still asleep.</p>
+
+<p>Need help.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Aug 30, 2014 18:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888416"></a>
+                                    <font class="smallfont"><p>As I said, I am not an expert. You need to either debug your rule (more logging) or make changes until it works. Also it will be hard to help you without full listing of the rule, including the fact declaration, imports, etc.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by druciak at Sep 01, 2014 10:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888501"></a>
+                                    <font class="smallfont"><p>I add the relevant code.<br/>
+The issue is that once the RHS calculation are added (marked between the lines with ++++++, the rule stops firing. Without it it works every 30 minutes just fine.<br/>
+I have tried many ways, some created errors and some where OK, which means no errors and the rule engine runs fine with all other rules.</p>
+
+<p>I really have no idea why a simple calculation is doing such a mess except for a bug.<br/>
+The code here is a part of a long rules file which a part of this issue works great for many months now.<br/>
+I will appreciate help from someone.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+global org.openremote.controller.statuscache.RangeFacade ranges;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*;
+<span class="code-keyword">import</span> org.openremote.controller.Constants;
+<span class="code-keyword">import</span> org.openremote.controller.utils.Logger;
+
+<span class="code-keyword">import</span> java.util.Properties;
+<span class="code-keyword">import</span> javax.mail.Message;
+<span class="code-keyword">import</span> javax.mail.MessagingException;
+<span class="code-keyword">import</span> javax.mail.PasswordAuthentication;
+<span class="code-keyword">import</span> javax.mail.Session;
+<span class="code-keyword">import</span> javax.mail.Transport;
+<span class="code-keyword">import</span> javax.mail.internet.InternetAddress;
+<span class="code-keyword">import</span> javax.mail.internet.MimeMessage;
+
+<span class="code-comment">// <span class="code-keyword">import</span> java.io.*;
+</span><span class="code-keyword">import</span> java.util.Date;
+<span class="code-keyword">import</span> java.util.Timer;
+<span class="code-keyword">import</span> java.util.TimerTask;
+<span class="code-keyword">import</span> java.util.concurrent.TimeUnit;
+
+<span class="code-keyword">import</span> java.lang.<span class="code-object">System</span>;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Float</span>;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Integer</span>;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Long</span>;
+
+<span class="code-keyword">import</span> java.text.DecimalFormat;
+<span class="code-keyword">import</span> java.text.Format;
+<span class="code-keyword">import</span> java.text.DateFormat;
+<span class="code-keyword">import</span> java.text.SimpleDateFormat;
+<span class="code-comment">//------------------------------------------------------------------------------------------
+</span>declare Water_Tank_Factors
+    acc_temp : <span class="code-object">float</span>
+    acc_light : <span class="code-object">long</span>
+    heat_needed : <span class="code-object">int</span>
+    acc_zero : <span class="code-object">int</span>
+    acc_lock_reading : <span class="code-object">int</span>
+end
+declare Activated_time
+    milliseconds : <span class="code-object">long</span>
+    the_time_SS : <span class="code-object">long</span>
+    the_time_MM : <span class="code-object">long</span>
+    the_time_HH : <span class="code-object">long</span>
+    the_time_GMT : <span class="code-object">int</span>
+    fired : <span class="code-object">int</span>
+end
+declare Email_Text_Message
+    email_text: <span class="code-object">String</span>
+	email_send: <span class="code-object">int</span>
+end
+<span class="code-comment">//-----------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Init eMail"</span>
+no-loop
+when
+    eval ( <span class="code-keyword">true</span> )
+then
+    Email_Text_Message $em_message = <span class="code-keyword">new</span> Email_Text_Message();
+    $em_message.setEmail_text("");
+    $em_message.setEmail_send (0);
+    insert ( $em_message );
+    <span class="code-object">System</span>.out.println ( <span class="code-quote">"  "</span> );
+    <span class="code-object">System</span>.out.println ( <span class="code-quote">"eMail Vars Initiated"</span> );
+end
+<span class="code-comment">//----------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Init_WT_Factors"</span>
+no-loop
+when
+    eval (<span class="code-keyword">true</span>)
+then
+    Water_Tank_Factors $factors = <span class="code-keyword">new</span> Water_Tank_Factors();
+    $factors.setAcc_temp(0);
+    $factors.setAcc_light(0);
+    $factors.setHeat_needed(0);   <span class="code-comment">//  ---- Update:  summer=0, winter=1  !!!!
+</span>    $factors.setAcc_zero(0);
+    $factors.setAcc_lock_reading(0);
+    insert ( $factors );
+    <span class="code-object">System</span>.out.println ( <span class="code-quote">"  "</span> );
+    <span class="code-object">System</span>.out.println ( <span class="code-quote">"Water Timing Factors initiated"</span>);
+end
+<span class="code-comment">//----------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Init_Time_Stamp"</span>
+no-loop
+when
+    eval ( <span class="code-keyword">true</span> )
+then
+    Activated_time $t = <span class="code-keyword">new</span> Activated_time();
+    $t.setMilliseconds (0);
+    $t.setThe_time_SS (0);
+    $t.setThe_time_MM (0);
+    $t.setThe_time_HH (0);
+    $t.setThe_time_GMT (2);
+    $t.setFired (0);
+    insert ( $t );
+    <span class="code-object">System</span>.out.println ( <span class="code-quote">"  "</span> );
+    <span class="code-object">System</span>.out.println ( <span class="code-quote">"Time Stamp Var Initiated"</span> );
+end
+<span class="code-comment">//----------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Print_Event_Time"</span>
+lock-on-active <span class="code-keyword">true</span>
+when
+    $wt_timer : Water_Tank_Timer()
+    $t : Activated_time()
+    $sw : Irrigation_Control()
+    eval ( $wt_timer.getRead_time() &gt; 0)
+then
+    $t.setMilliseconds ( <span class="code-object">System</span>.currentTimeMillis());
+    $t.setThe_time_SS ( $t.getMilliseconds() / 1000); <span class="code-comment">// Convert to Seconds
+</span>    $t.setThe_time_MM ( $t.getThe_time_SS() / 60 ); <span class="code-comment">// Convert to Minutes
+</span>    $t.setThe_time_HH ( ( $t.getThe_time_MM() /  60 ) +2 + $sw.getSummer()); <span class="code-comment">// Convert to houres in current time zone
+</span>    <span class="code-object">System</span>.out.println ( <span class="code-quote">"Time was switched at "</span> + ($t.getThe_time_HH() % 24) +<span class="code-quote">":"</span>+ ($t.getThe_time_MM() %60 ) + <span class="code-quote">":"</span>+ ($t.getThe_time_SS () % 60)+<span class="code-quote">"."</span>+($t.getMilliseconds() % 1000 ));
+    <span class="code-object">System</span>.out.println ( <span class="code-quote">" "</span> );
+	modify ($wt_timer)
+    {
+        setRead_time(0);
+    }
+end
+<span class="code-comment">//----------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Send Email"</span>
+lock-on-active
+when
+    $em_message : Email_Text_Message()
+    eval( $em_message.getEmail_send() == 1)
+then
+    <span class="code-object">System</span>.out.println ( _TimeStamp()+ <span class="code-quote">": Processing eMail !"</span>);
+    <span class="code-keyword">final</span> <span class="code-object">String</span> username = <span class="code-quote">"AAAAAAAAAAAAA@gmail.com"</span>;
+    <span class="code-keyword">final</span> <span class="code-object">String</span> password = <span class="code-quote">"XXXXXXXXXXXXX"</span>;
+    Properties props = <span class="code-keyword">new</span> Properties();
+    props.put(<span class="code-quote">"mail.smtp.host"</span>, <span class="code-quote">"smtp.gmail.com"</span>); 
+    props.put(<span class="code-quote">"mail.smtp.socketFactory.port"</span>, <span class="code-quote">"465"</span>);
+    props.put(<span class="code-quote">"mail.smtp.socketFactory.class"</span>,<span class="code-quote">"javax.net.ssl.SSLSocketFactory"</span>);
+    props.put(<span class="code-quote">"mail.smtp.auth"</span>, <span class="code-quote">"<span class="code-keyword">true</span>"</span>);
+    props.put(<span class="code-quote">"mail.smtp.port"</span>, <span class="code-quote">"465"</span>);
+
+    Session session = Session.getInstance
+	(props, <span class="code-keyword">new</span> javax.mail.Authenticator()
+	{
+		<span class="code-keyword">protected</span> PasswordAuthentication getPasswordAuthentication()
+		{
+			<span class="code-keyword">return</span> <span class="code-keyword">new</span> PasswordAuthentication(username, password);
+		}
+    }
+	);
+    <span class="code-keyword">try</span>
+	{
+		Message message = <span class="code-keyword">new</span> MimeMessage(session);
+		message.setFrom(<span class="code-keyword">new</span> InternetAddress(<span class="code-quote">"AAAAAAAAAAAAAA@gmail.com"</span>));
+		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(<span class="code-quote">"NNNNNNNN@gmail.com"</span>));
+		message.setSubject(<span class="code-quote">"KNX Activity Message"</span>);
+        message.setText($em_message.getEmail_text());
+		Transport.send(message);
+		<span class="code-object">System</span>.out.println(_TimeStamp()+ <span class="code-quote">" Mail was sent !"</span>);
+	} 
+	<span class="code-keyword">catch</span> (MessagingException e)
+	{
+		<span class="code-keyword">throw</span> <span class="code-keyword">new</span> RuntimeException(e);
+	}
+	modify($em_message)
+	{
+		setEmail_text("");
+	}
+	modify($em_message)
+	{
+	    setEmail_send(0);
+	}
+end
+<span class="code-comment">//------------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Get WT Factors"</span>  
+<span class="code-comment">// lock-on-active <span class="code-keyword">true</span>
+</span>timer (cron: 0 0/30 9-18 * * ?)
+when
+    $wt_factors : Water_Tank_Factors()
+    eval ($wt_factors.getAcc_lock_reading() == 0 )
+    CustomState ( source == <span class="code-quote">"Roof Temp (Status)"</span>, $val_T : value)
+    CustomState ( source == <span class="code-quote">"Roof Brightness (Status)"</span>, $val_L : value)
+then
+    <span class="code-comment">// +++++++++++++++++++++++++++++++++++++++++++  The RHS problem start
+</span>    modify ($wt_factors)
+    {
+       setAcc_temp ( $wt_factors.getAcc_temp() + <span class="code-object">Float</span>.valueOf((<span class="code-object">String</span>)$val_T));
+    }
+    modify ($wt_factors)
+    {
+        setAcc_light ( $wt_factors.getAcc_light() + <span class="code-object">Long</span>.valueOf((<span class="code-object">String</span>)$val_L));
+    }
+    <span class="code-comment">//  +++++++++++++++++++++++++++++++++++++++++   The RHS problem end
+</span>
+    <span class="code-object">System</span>.out.println ( _TimeStamp()+ <span class="code-quote">":  Water Tank factors logged: "</span> + $val_T.toString() + <span class="code-quote">"  "</span> + $val_L.toString());
+    <span class="code-object">System</span>.out.println ( _TimeStamp()+ <span class="code-quote">":  Water Tank factors sum: "</span> + $wt_factors.getAcc_temp() + <span class="code-quote">"  "</span> + $wt_factors.getAcc_light());
+    modify ($wt_factors)
+    {
+	setAcc_lock_reading( 1 );
+    }
+end
+<span class="code-comment">//------------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Clear Single Factors Read"</span>  
+timer (cron: 0 2/32 9-18 * * ?)
+when
+    $wt_factors : Water_Tank_Factors()
+    eval ($wt_factors.getAcc_lock_reading() == 1 )
+then
+    modify ($wt_factors)
+    {
+	setAcc_lock_reading( 0 );
+    }
+    <span class="code-object">System</span>.out.println ( _TimeStamp()+ <span class="code-quote">":  Water Tank factors lock reading was zeroed"</span>);
+end
+<span class="code-comment">//------------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Stop Accomulating"</span>  
+lock-on-active <span class="code-keyword">true</span>
+timer (cron: 0 40 18 * * ?)
+when
+    $wt_factors : Water_Tank_Factors()
+    eval ($wt_factors.getAcc_zero() == 0)
+then
+    modify ($wt_factors)
+    {
+	setAcc_zero( 1 );
+    }
+    modify ($wt_factors)
+    {
+	setAcc_lock_reading( 0 );
+    }
+end
+<span class="code-comment">//------------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Calc <span class="code-keyword">if</span> Heat Needed"</span>  
+lock-on-active <span class="code-keyword">true</span>
+timer (cron: 0 35 18 * * ?)
+
+when
+    $wt_factors : Water_Tank_Factors()
+    eval (($wt_factors.getAcc_light() + ($wt_factors.getAcc_temp() * 4000)) &lt; 1500000)
+    eval (($wt_factors.getAcc_light() + ($wt_factors.getAcc_temp() * 4000)) &gt; 0)
+    eval ($wt_factors.getAcc_zero() == 0 )
+then
+    modify ($wt_factors)
+    {
+	setHeat_needed(1);
+    }
+    <span class="code-object">System</span>.out.println ( _TimeStamp()+ <span class="code-quote">":  Water Tank Heat was set to On"</span>);
+end
+<span class="code-comment">//------------------------------------------------------------------------------------------
+</span>rule <span class="code-quote">"Zero_WT_Factor"</span>  
+lock-on-active <span class="code-keyword">true</span>
+timer (cron: 0 0 07 * * ?)
+when
+    $wt_factors : Water_Tank_Factors()
+    eval ($wt_factors.getAcc_zero() == 1 )
+then
+    modify ($wt_factors)
+    {
+	setAcc_temp(0);
+    }
+    modify ($wt_factors)
+    {
+	setAcc_light(0);
+    }
+    modify ($wt_factors)
+    {
+	setHeat_needed(0);
+    }
+    modify ($wt_factors)
+    {
+	setAcc_zero(0);
+    }
+    <span class="code-object">System</span>.out.println ( _TimeStamp()+ <span class="code-quote">":  Daily cleared WT factors"</span>);
+end
+<span class="code-comment">//------------------------------------------------------------------------------------------
+</span>function <span class="code-object">String</span> _TimeStamp(){
+  Date now;
+  now = <span class="code-keyword">new</span> Date();
+  SimpleDateFormat dateFormatter = <span class="code-keyword">new</span> SimpleDateFormat(<span class="code-quote">"HH:mm:ss"</span>);
+  <span class="code-keyword">return</span>(dateFormatter.format(now));
+}
+
+</pre>
+</div></div>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Sep 04, 2014 15:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888507"></a>
+                                    <font class="smallfont"><p>Wow, this is really impressive! I thought you are a beginner, but definitely I was wrong. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+Anyway I take out a part of your script and it worked, so not sure what is wrong. Here is the code:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*;
+
+<span class="code-keyword">import</span> java.util.Date;
+<span class="code-keyword">import</span> java.text.SimpleDateFormat;
+
+declare Water_Tank_Factors
+    acc_temp : <span class="code-object">float</span>
+    acc_light : <span class="code-object">long</span>
+    heat_needed : <span class="code-object">int</span>
+    acc_zero : <span class="code-object">int</span>
+    acc_lock_reading : <span class="code-object">int</span>
+end
+
+rule <span class="code-quote">"Init_WT_Factors"</span>
+no-loop
+when
+    eval (<span class="code-keyword">true</span>)
+then
+    Water_Tank_Factors $factors = <span class="code-keyword">new</span> Water_Tank_Factors();
+    $factors.setAcc_temp(0);
+    $factors.setAcc_light(0);
+    $factors.setHeat_needed(0);   <span class="code-comment">//  ---- Update:  summer=0, winter=1  !!!!
+</span>    $factors.setAcc_zero(0);
+    $factors.setAcc_lock_reading(0);
+    insert ( $factors );
+    <span class="code-object">System</span>.out.println ( <span class="code-quote">"  "</span> );
+    <span class="code-object">System</span>.out.println ( <span class="code-quote">"Water Timing Factors initiated"</span>);
+end
+
+rule <span class="code-quote">"Get WT Factors"</span>  
+no-loop
+timer (cron: 0/10 * * * * ?)
+when
+    $wt_factors : Water_Tank_Factors()
+    eval ($wt_factors.getAcc_lock_reading() == 0 )
+    CustomState(source == <span class="code-quote">"TempP00"</span>, $val_T: value)
+then
+    modify ($wt_factors)
+    {
+	setAcc_lock_reading( 1 );
+    }
+    <span class="code-object">String</span> val_L = <span class="code-quote">"1"</span>;
+    <span class="code-comment">// +++++++++++++++++++++++++++++++++++++++++++  The RHS problem start
+</span>    modify ($wt_factors)
+    {
+        setAcc_temp ($wt_factors.getAcc_temp() + <span class="code-object">Float</span>.valueOf($val_T.toString()));
+    }
+    modify ($wt_factors)
+    {
+        setAcc_light ($wt_factors.getAcc_light() + <span class="code-object">Long</span>.valueOf(val_L));
+    }
+    <span class="code-comment">//  +++++++++++++++++++++++++++++++++++++++++   The RHS problem end
+</span>
+    <span class="code-object">System</span>.out.println ( _TimeStamp() + <span class="code-quote">":  Water Tank factors sum: "</span> + $wt_factors.getAcc_temp() + <span class="code-quote">"  "</span> + $wt_factors.getAcc_light());
+end
+
+rule <span class="code-quote">"Clear Single Factors Read"</span>  
+no-loop
+timer (cron: 5/10 * * * * ?)
+when
+    $wt_factors : Water_Tank_Factors()
+    eval ($wt_factors.getAcc_lock_reading() == 1 )
+then
+    modify ($wt_factors)
+    {
+	setAcc_lock_reading( 0 );
+    }
+    <span class="code-object">System</span>.out.println ( _TimeStamp()+ <span class="code-quote">":  Water Tank factors lock reading was zeroed"</span>);
+end
+
+function <span class="code-object">String</span> _TimeStamp()
+{
+  Date now;
+  now = <span class="code-keyword">new</span> Date();
+  SimpleDateFormat dateFormatter = <span class="code-keyword">new</span> SimpleDateFormat(<span class="code-quote">"HH:mm:ss"</span>);
+  <span class="code-keyword">return</span>(dateFormatter.format(now));
+}
+</pre>
+</div></div>
+<p>The only important difference is "$val_T.toString()" instead of "(String) $val_T".<br/>
+However it does not work well, as rules sometimes get fired more than once at the time. Here's the output:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Water Timing Factors initiated
+20:59:50:  Water Tank factors sum: 23.1875  1
+20:59:55:  Water Tank factors lock reading was zeroed
+21:00:00:  Water Tank factors sum: 46.375  2
+21:00:05:  Water Tank factors lock reading was zeroed
+21:00:10:  Water Tank factors sum: 69.5625  3
+21:00:15:  Water Tank factors lock reading was zeroed
+21:00:15:  Water Tank factors lock reading was zeroed
+21:00:20:  Water Tank factors sum: 92.75  4
+21:00:25:  Water Tank factors lock reading was zeroed
+21:00:25:  Water Tank factors lock reading was zeroed
+21:00:30:  Water Tank factors sum: 115.9375  5
+21:00:30:  Water Tank factors sum: 139.125  6
+21:00:35:  Water Tank factors lock reading was zeroed
+21:00:35:  Water Tank factors lock reading was zeroed
+21:00:40:  Water Tank factors sum: 162.3125  7
+21:00:40:  Water Tank factors sum: 185.5  8
+21:00:40:  Water Tank factors sum: 208.6875  9
+</pre>
+</div></div>
+<p>Not sure what is the reason, maybe after clean controller start it would work better, but didn't have more time check that.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by druciak at Sep 04, 2014 20:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888528"></a>
+                                    <font class="smallfont"><p>Hi.</p>
+
+<p>Thanks. I think I have tried that but I will have a look and let you know in a few minutes.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Sep 05, 2014 16:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888529"></a>
+                                    <font class="smallfont"><p>Hi.<br/>
+It does work the way you put it. I am pretty sure this was my 1st version. <br/>
+The only thing that is different is the name of the sensor but mine is fine as the my LHS is the same as was originally.</p>
+
+<p>Now I have set the light accumulation as well and it looks like this is the reason the rule does not work.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-object">Long</span>.valueOf($val_L.toString())
+</pre>
+</div></div>
+<p>This code does not generate an error but it stops this rule from running.<br/>
+Digging into it, it looks like I always work on it during the evening. I did not notice the the light during the evening is X.X and conversion to long does not work.<br/>
+During the day it is around XXXXX and it appears as an integer. I need to use a float as well.<br/>
+Now it works.<br/>
+Thanks.</p>
+
+<p>Now I can move to the shades challenge as a macro is the only way I found way back to tackle the problem but now I got a new idea - using the duration attribute to distinguish between a short and a long press of a button. This is what the H/W is doing in my KNX system.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Sep 05, 2014 17:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888537"></a>
+                                    <font class="smallfont"><p>I'm glad you finally get it working. This is really big piece of code and not easy to debug. Good luck with this new challenge. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by druciak at Sep 05, 2014 22:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22888595"></a>
+                                    <font class="smallfont"><p>BTW: I just noticed you have GMail credentials in your code. You should remove that and immediately change your password on that account, before somebody takes over it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by druciak at Sep 08, 2014 18:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:36</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

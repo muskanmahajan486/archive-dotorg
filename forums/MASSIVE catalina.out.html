@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : MASSIVE catalina.out</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : MASSIVE catalina.out
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 28, 2012 by <font color="#0050B2">mbarne36</font>.
+				    </div>
+
+				    <p>Hi all</p>
+
+<p>My Raspberry Pi just fell over quite dramatically, and so I got under the hood and tried to figure out why.</p>
+
+<p>Basically, the rootfs was full - I mean 7.8GB Full. SO I ran some diagnostics to find out who the culprit(s) were.</p>
+
+<p>It turns out that Catalina.out in Openremote controller was over 5.8GB. Ouch.</p>
+
+<p>It seemed to be full of stdout messages containing lots of information (some useful, and some not-so). I have a Panel running which communicates with a Python Script on the Pi, and the Python Script was not running. So when it is not running, my TCP/IP polling from the OpenRemote Controller creates an error which creates debug output into Catalina.out, which over a few hours fills up the rootfs.</p>
+
+<p>(here's a sample of the error messages).<br/>
+    ERROR Polling Sensor Thread ID = 868, Name ='Number3Sensor': Socket event could not execute<br/>
+    java.net.ConnectException: Connection refused</p>
+
+<p>Can the debug messages be turned off? Or can we cap the size of Catalina.out?</p>
+
+<p>thanks in advance.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21037898"></a>
+                                    <font class="smallfont"><p>You can replace the OpenRemote-Controller/conf/logging.properties with this to limit the logs to 10MB size:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>handlers = 1runtime.java.util.logging.FileHandler, 2localhost.java.util.logging.FileHandler, java.util.logging.ConsoleHandler
+
+.handlers = 1runtime.java.util.logging.FileHandler, java.util.logging.ConsoleHandler
+
+############################################################
+# Handler specific properties.
+# Describes specific configuration info for Handlers.
+############################################################
+
+1runtime.java.util.logging.FileHandler.level = FINE
+1runtime.java.util.logging.FileHandler.pattern = ${catalina.base}/logs/runtime.log.%g
+1runtime.java.util.logging.FileHandler.limit = 10000000
+1runtime.java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter
+
+2localhost.java.util.logging.FileHandler.level = FINE
+2localhost.java.util.logging.FileHandler.pattern = ${catalina.base}/logs/localhost.log.%g
+2localhost.java.util.logging.FileHandler.limit = 10000000
+2localhost.java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter
+
+java.util.logging.ConsoleHandler.level = INFO
+java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter
+
+
+############################################################
+# Facility specific properties.
+# Provides extra control for each logger.
+############################################################
+
+org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = INFO
+org.apache.catalina.core.ContainerBase.[Catalina].[localhost].handlers = 2localhost.java.util.logging.FileHandler
+
+#org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/host-manager].level = INFO
+#org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/host-manager].handlers = 5host-manager.org.apache.juli.FileHandler
+
+# For example, set the com.xyz.foo logger to only log SEVERE
+# messages:
+#org.apache.catalina.startup.ContextConfig.level = FINE
+#org.apache.catalina.startup.HostConfig.level = FINE
+#org.apache.catalina.session.ManagerBase.level = FINE
+#org.apache.catalina.core.AprLifecycleListener.level=FINE
+</pre>
+</div></div>
+
+
+<p>You can set the logging levels to higher thresholds with values 'INFO', 'WARNING' or 'SEVERE'.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 28, 2012 13:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037899"></a>
+                                    <font class="smallfont"><p>I'll give it a go... thanks Juha</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Nov 28, 2012 13:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038314"></a>
+                                    <font class="smallfont"><p>Thank you for the config file, Juha!</p>
+
+<p>May I request that this be rolled into OpenRemote as default? I've also come across a 60GB catalina.out on a desktop installation, and one crashed Raspberry Pi due to the same issue of a catalina.out at 12GB.</p>
+
+<p>It just seems hazardous for the default config to be as it is.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 10, 2012 17:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038316"></a>
+                                    <font class="smallfont"><p>This was included in the 2.0.1 update as well as part of 2.1 release branch, see <a href="http://www.openremote.org/display/project/2012/11/21/OpenRemote+Controller+2.0.1+Released" title="OpenRemote Controller 2.0.1 Released">OpenRemote Controller 2.0.1 Released</a> for more details.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Dec 10, 2012 18:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038321"></a>
+                                    <font class="smallfont"><p>So it is, thank you! Despite frequenting the forums, I managed to miss the release announcement <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 10, 2012 20:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038327"></a>
+                                    <font class="smallfont"><p>A freshly downloaded and cleanly installed 2.0.1 has now been running for one evening, and catalina.out has already grown to ~26MB in size. Could it be that this conf does not properly limit its file-size?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 10, 2012 23:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038330"></a>
+                                    <font class="smallfont"><p>There seems to be a discrepancy between using 'openremote run' and 'openremote start' to start the controller &#8211; the latter is still creating catalina.out &#8211; need to investigate why.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 11, 2012 05:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038331"></a>
+                                    <font class="smallfont"><p>This looks to be from a standard OS (bash) level redirect of standard out and error streams to a file :</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&gt;&gt; <span class="code-quote">"$CATALINA_BASE"</span>/logs/catalina.out 2&gt;&amp;1 &amp;
+</pre>
+</div></div>
+
+<p>It's therefore not going through the logging.properties configuration and not limited. You can for the time being remove this line from openremote.sh file &#8211; you can look at the code branch for 'run' for example (it does not redirect standard streams, as it prints them on the console).</p>
+
+<p>Not sure yet which way to resolve this &#8211; the standard out and error streams are being used by the console logging that is configured in logging.properties and it makes sense when 'run' is used so disabling them completely doesn't seem good either &#8211; and adding two separate log properties for both 'run' and 'start' is annoyingly redundant.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 11, 2012 05:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038332"></a>
+                                    <font class="smallfont"><p>Thanks for reporting this btw.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 11, 2012 05:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038360"></a>
+                                    <font class="smallfont"><p>My pleasure! Although I can't say I understand the difference or benefit of having two different commands to launch the process <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 11, 2012 22:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038377"></a>
+                                    <font class="smallfont"><p>Jani</p>
+
+<p>My understanding is that 'run' is blocking, and 'start' is not. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mbarne36 at Dec 12, 2012 10:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594888"></a>
+                                    <font class="smallfont"><p>is there already a fix for this? im using OpenRemote-Controller-2.2.0_TTS-Email-Serial.zip   and my catalina.out is 1,5GB already</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Dec 24, 2014 14:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

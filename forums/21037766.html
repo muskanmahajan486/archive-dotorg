@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Reading KNX value changes?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Reading KNX value changes?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 25, 2012 by <font color="#0050B2">frand</font>.
+				    </div>
+
+				    <p>Hi everyone,</p>
+
+<p>In this KNX-installation, the lighting is mostly controlled by triggering two presets.<br/>
+Preset 1: Set brightness to 1%<br/>
+Preset 2: Set brightness to 50%</p>
+
+<p>The reason I avoid using the actual switch-functionality is because of mechanical relays which click loudly when triggered, and this would be an audible irritation in the apartment.</p>
+
+<p>Using presets to control lighting would otherwise work fine, but the value changes for Preset 1 (KNX Telegram 0) and Preset 2 (KNX Telegram 1) do not trigger an automatic status update message from the switch element, so OpenRemote sensors don't pick it up.</p>
+
+<p>I can determine that the values change properly using the ETS4 group monitor, but the changed values are picked up by the sensor only after I manually force a read-command to the groups in question.</p>
+
+<p>How would I accomplish this in OpenRemote? It seems that to work around the problem I'd either need to:</p>
+
+<ul class="alternate" type="square">
+	<li>Manually trigger a read-command to a group, or</li>
+	<li>Specify a polling frequency to sensors, or</li>
+	<li>Manually cause a sensor to read a group</li>
+</ul>
+
+
+<p>The components used in the KNX installation in question are less than year old ABB SD/S4.16.1 dimmer switches, and Schneider Exxact-series light switches. ABBs won't auto-trigger from preset changes, and Exxacts will not auto-trigger for anything.</p>
+
+<p>Hopefully someone has wrestled with a similar problem successfully.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21037794"></a>
+                                    <font class="smallfont"><p>If you use a dimmer there should be no relays clicking ??<br/>
+I am surprised that a less than a year old KNX device cannot configured to sent it's current value after a change.<br/>
+Our KNX impl does not support polling (so far we had no device that was not able to sent it's values).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 26, 2012 08:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037800"></a>
+                                    <font class="smallfont"><p>To avoid said relay clicking, I've configured the wall light switches (and OpenRemote!) to flip between two dimming presets instead of the default on/off switching.</p>
+
+<p>However, the ABB dimmer switch only reports the following through status feedback objects:</p>
+<ul class="alternate" type="square">
+	<li>Change in power switch state (on/off)</li>
+	<li>Change in dimming (4-bit message)</li>
+	<li>Change in brightness value (as 8-bit dimming value)</li>
+</ul>
+
+
+<p>What I'd need for the OpenRemote switch sensor to work is on/off messages for calling presets, but those aren't provided by the switch status feedback object since power always remains on.</p>
+
+<p>The ABB dimmer does have an output for "Call Preset 1 and 2", and if I read it, I can verify that it has changed state according to which preset has been last triggered. However, this message is not auto-sent, and can only be read.</p>
+
+<p>I've also tried (in a moment of desperation) to link the OpenRemote sensor to the Indicator LED status on the wall light switches. For some reason, the 1 and 0 telegrams from the "Call Preset 1 and 2" output do manage to flip the LED status correctly. Still, the wall switch does not send any values out either (aside from those triggered by physically touching the switch), so I'm out of luck there as well.</p>
+
+<p>Perhaps I'm missing something obvious? I've tried enabling the Transmit flag for various outputs in ETS, but that did not help either.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Nov 26, 2012 12:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037801"></a>
+                                    <font class="smallfont"><p>Ok, looking at the specs of the ABB device, now I understand. <br/>
+The device is 0-10V dimmer and includes relays to complete remove power from the 0-10V ballasts.</p>
+
+<p>You can probably solve your problem with virtual in memory commands and rules.<br/>
+Create a virtual device which has "on", "off" and "status".<br/>
+Create a rule which is triggered when linked sensor goes to "on" -&gt; trigger KNX Command to activate preset 1%<br/>
+Create a rule which is triggered when linked sensor goes to "off" -&gt; trigger KNX Command to activate preset 50%</p>
+
+<p>The problem with this is, that OpenRemote will be out off sync once you use your wall switches.<br/>
+You could try to create a KNX status command and listen on the group address which is used to trigger the preset.<br/>
+Based on the value received on that group address you could set the virtual command.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 26, 2012 12:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037802"></a>
+                                    <font class="smallfont"><p>Thank Marcus, I actually already did exactly that (rules with virtual device), and ran to the problem you described with OR falling out of sync when wall switches were used.</p>
+
+<p>I've tried to set a sensor to listen to the preset trigger group address, that was my original first attempt, but for some reason the on/off telegrams don't register with the sensor.</p>
+
+<p>I'll keep trying, but as a feature request it would be totally awesome if we were able to create a KNX "Read" command to a group address - that would simply trigger the outputs to send their current state messages, which in turn would work with the existing sensors already. That wouldn't need an active polling at all, and as far as I understand no changes to OR sensors would be needed.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Nov 26, 2012 14:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858931"></a>
+                                    <font class="smallfont"><p>Tracking the request, is this feature request still relevant &#8211; an explicit group read command ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 19, 2013 17:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858934"></a>
+                                    <font class="smallfont"><p>Yes, it would still be helpful. With a read command I'd be able to create toggle switches instead of the current separate on/off buttons for a number of lighting elements.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Mar 19, 2013 19:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858957"></a>
+                                    <font class="smallfont"><p>I also think it would be a really good feature.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kenta at Mar 20, 2013 06:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

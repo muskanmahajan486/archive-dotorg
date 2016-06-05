@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : NoSuchElementException during startup</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : NoSuchElementException during startup
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 08, 2010 by <font color="#0050B2">matz</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I am trying to run the OpenRemote Boss 1.0.2 from the extracted standard installation. However, during startup "controller" reports failure to start. The stacktrace listed in "controller.log" is the following:</p>
+
+<p><blockquote>
+<p>2010-03-08 21:15:41,143 ERROR [main] org.springframework.web.context.ContextLoader.initWebApplicationContext(205) &#124; Context initialization failed<br/>
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'knxEventBuilder' defined in ServletContext resource [/WEB-INF/classes/applicationContext.xml]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Could not instantiate bean class [org.openremote.controller.protocol.knx.KNXEventBuilder]: Constructor threw exception; nested exception is java.util.NoSuchElementException<br/>
+Caused by:<br/>
+org.springframework.beans.BeanInstantiationException: Could not instantiate bean class [org.openremote.controller.protocol.knx.KNXEventBuilder]: Constructor threw exception; nested exception is java.util.NoSuchElementException<br/>
+Caused by:<br/>
+java.util.NoSuchElementException<br/>
+&nbsp;&nbsp;&nbsp; at java.util.HashMap$HashIterator.nextEntry(Unknown Source)<br/>
+&nbsp;&nbsp;&nbsp; at java.util.HashMap$KeyIterator.next(Unknown Source)<br/>
+&nbsp;&nbsp;&nbsp; at org.openremote.controller.protocol.knx.KNXConnectionManager.start(KNXConnectionManager.java:236)<br/>
+&nbsp;&nbsp;&nbsp; at org.openremote.controller.protocol.knx.KNXEventBuilder.&lt;init&gt;(KNXEventBuilder.java:112)<br/>
+&nbsp;&nbsp;&nbsp; at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)<br/>
+&nbsp;&nbsp;&nbsp; at sun.reflect.NativeConstructorAccessorImpl.newInstance(Unknown Source)<br/>
+&nbsp;&nbsp;&nbsp; at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(Unknown Source)<br/>
+&nbsp;&nbsp;&nbsp; at java.lang.reflect.Constructor.newInstance(Unknown Source)<br/>
+&nbsp;&nbsp;&nbsp; at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:82)<br/>
+&nbsp;&nbsp;&nbsp; at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:59)</p></blockquote>(cut it from there)</p>
+
+
+<p>I have the 32-bit and 64-bit JRE installed in parallel on Windows Seven x64. I tried both, but no change. Any ideas?</p>
+
+<p>Best regards,<br/>
+Matthias</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-9601242"></a>
+                                    <font class="smallfont"><p>This looks like it might be due to it failing to find any valid IPv4 network interfaces on your machine that it could use (as to why is still a question mark).</p>
+
+<p>The fact that it propagates the issue up the call stack and prevents controller from starting is my bad. It shouldn't.</p>
+
+<p>But the obvious questions first &#8211; is there an IPv4 interface installed on your machine? Anything else related to KNX in your logs?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Mar 09, 2010 15:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-9601244"></a>
+                                    <font class="smallfont"><p>Beside the stacktrace, I find lots of log entries like this:
+<blockquote>
+<p>2010-03-10 01:01:09,421 INFO [main] org.openremote.controller.protocol.knx.KNXConnectionManager.isCandidate(575) &#124; Skipping disabled NIC: name:net12 (Belkin 54g Wireless USB Network Adapter-WFP LightWeight Filter-0000) index: 29 addresses:<br/>
+2010-03-10 01:01:09,437 INFO [main] org.openremote.controller.protocol.knx.KNXConnectionManager.isCandidate(575) &#124; Skipping disabled NIC: name:eth13 (Realtek PCIe GBE Family Controller-agnitum firewall driver-0000) index: 30 addresses:<br/>
+2010-03-10 01:01:09,437 INFO [main] org.openremote.controller.protocol.knx.KNXConnectionManager.isCandidate(575) &#124; Skipping disabled NIC: name:eth14 (Realtek PCIe GBE Family Controller-WFP LightWeight Filter-0000) index: 31 addresses:<br/>
+2010-03-10 01:01:09,452 INFO [main] org.openremote.controller.protocol.knx.KNXConnectionManager.isCandidate(575) &#124; Skipping disabled NIC: name:eth15 (Realtek PCIe GBE Family Controller-Shrew Soft Lightweight Filter-0000) index: 32 addresses:</p></blockquote>I have 2 on-board network adapters and a USB connected wireless adapter. Since I currently do not have access to a wired infrastructure with this system, the on-board adapters are unused. I deactivated them, and now there is the same messages as discussed in <a href="http://www.openremote.org/display/forums/KNX+conn.+manager+fails+to+start">this thread</a>. Using the patch mentioned there, I can get the server to start. If you need more detailed information to work on the error handling, please let me know.</p>
+
+
+<p>Thanks<br/>
+Matthias</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by matz at Mar 10, 2010 00:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:51</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

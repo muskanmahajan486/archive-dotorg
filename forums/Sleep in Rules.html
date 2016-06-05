@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Sleep in Rules</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Sleep in Rules
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 15, 2013 by <font color="#0050B2">orjo</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>since it is not possible to call macros in a rule, how can i define sleep times in a rule?<br/>
+I need a sleep of 100ms in a rule.</p>
+
+<p>execute.command("ABC")<br/>
+sleep(100ms)<br/>
+execute.command("DEF")</p>
+
+<p>Thank you very much.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22881248"></a>
+                                    <font class="smallfont"><p>It is Java so you can do this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">import</span> java.util.concurrent.TimeUnit;
+...
+  execute.command(<span class="code-quote">"ABC"</span>);
+  TimeUnit.MILLISECONDS.sleep(100);
+  execute.command(<span class="code-quote">"DEF"</span>);
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 15, 2013 17:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881258"></a>
+                                    <font class="smallfont"><p>Thank you, it works.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Dec 15, 2013 20:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881329"></a>
+                                    <font class="smallfont"><p>Out of curiosity. Is OR halted during this sleep period or are other rules still running in the background along with the rest of OR say UDP or tcp etc?</p>
+
+<p>Neil.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nwe at Dec 17, 2013 10:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881334"></a>
+                                    <font class="smallfont"><p>The rule engine is stopped and the thread it is running too. Some other parts running in different threads will be running though. Anyway, this solution is suitable for really short delays, like 100ms, I would say up to 1s. If you need more delay in rules, like minutes, hours or even more then a proper approach would be:</p>
+
+<p>1. Make 2 rules and declare a new fact.<br/>
+2. In the first rule insert the new fact defined previously.<br/>
+3. In the second rule do the following:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"second rule"</span>
+timer(<span class="code-object">int</span>: 1h)
+when
+  $r: NewFact()
+then
+  execute.command(<span class="code-quote">"delayed command by 1h"</span>);
+  retract($r);
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 17, 2013 11:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881538"></a>
+                                    <font class="smallfont"><p>I did a little testing with using sleep in rules.<br/>
+The goal to achieve was to run macros to control an AV-Scene. (Turn On AV-Receiver - Turn on TV - Turn on Satellite Receiver - wait 4s to turn on - Send Input HDMI1 to AV-Receiver)</p>
+
+<p>I have the following rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"WATCH_TV_TV_ON"</span>
+when
+  $evt : Event(source==<span class="code-quote">"UDPL_HIFI"</span>, value==<span class="code-quote">"WATCH_TV_TV_ON"</span>)
+then
+   log(<span class="code-quote">"rule: WATCH_TV_TV_ON"</span>);
+   TimeUnit.MILLISECONDS.sleep(4000);
+   log(<span class="code-quote">"rule: WATCH_TV_TV_ON starts NOW"</span>);
+   execute.command(<span class="code-quote">"(ON)_IMVC_AV"</span>);
+   execute.command(<span class="code-quote">"(ON)_IMVC_TV"</span>);
+   execute.command(<span class="code-quote">"(ON)_IMVC_SAT"</span>);
+   execute.command(<span class="code-quote">"(OFF)_IMVC_SCREEN"</span>);
+   execute.command(<span class="code-quote">"(OFF)_IMVC_DVD"</span>);
+   execute.command(<span class="code-quote">"(OFF)_IMVC_BEAMER"</span>);
+   log(<span class="code-quote">"rule: WAIT 4s <span class="code-keyword">for</span> devices"</span>);
+   TimeUnit.MILLISECONDS.sleep(4000);
+   log(<span class="code-quote">"rule: Go On"</span>);
+   execute.command(<span class="code-quote">"(HDMI 3) [AV-Receiver]"</span>);
+   log(<span class="code-quote">"rule: WATCH_TV_TV_ON is ON"</span>);
+end</pre>
+</div></div>
+
+<p>Alle the InMemory Virtual Command-Rules look like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">rule <span class="code-quote">"AV_IMVC_ON"</span>
+when
+   $evt : Event(source==<span class="code-quote">"(SENSOR)_IMVC_AVPOWER"</span>, value==<span class="code-quote">"on"</span>)
+then
+   log(<span class="code-quote">"rule: AV_IMVC_ON"</span>);
+   execute.command(<span class="code-quote">"(ON) [AV-Receiver]"</span>);
+   log(<span class="code-quote">"rule: AV_IMVC_ON is ON"</span>);
+end
+</pre>
+</div></div>
+
+<p>There is no sleep in any of them. Every IMVC-Rule writes an Log-Entry before and after executing the "Real" command.<br/>
+The created Log looks like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+INFO 2013-12-22 19:29:36,274 : rule: WATCH_TV_TV_ON
+INFO 2013-12-22 19:29:40,274 : rule: WATCH_TV_TV_ON starts NOW
+INFO 2013-12-22 19:29:40,275 : rule: WAIT 4s <span class="code-keyword">for</span> devices
+INFO 2013-12-22 19:29:44,275 : rule: Go On
+INFO 2013-12-22 19:29:44,432 : rule: WATCH_TV_TV_ON is ON
+INFO 2013-12-22 19:29:44,434 : rule: UDPL Hifi Reset
+INFO 2013-12-22 19:29:44,934 : rule: SAT_IMVC_ON
+INFO 2013-12-22 19:29:45,098 : rule: SAT_IMVC_ON is ON
+INFO 2013-12-22 19:29:45,100 : rule: TV_IMVC_ON
+INFO 2013-12-22 19:29:45,371 : rule: TV_IMVC_ON is ON
+INFO 2013-12-22 19:29:45,373 : rule: AV_IMVC_ON
+INFO 2013-12-22 19:29:45,528 : rule: AV_IMVC_ON is ON
+</pre>
+</div></div>
+
+<p>THe first Sleep is OK but why are the IMVC-Rules called after the Sleep-Time of 4seconds? In the Main-Rule it is called after sending all the IMVC-Rules. </p>
+
+<p>Any Ideas?</p>
+
+<p>@Michal Rutka: Could you post a complete Code-Sample of the two Rules for non Programmers (like me)</p>
+
+
+<p>Thank you in advance. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Dec 22, 2013 18:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881557"></a>
+                                    <font class="smallfont"><p>This is expected behavior. A single rule execution blocks other rules and the whole sensor thread. To add delays without blocking you need to do the following: (not tested so beware of typos)</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare DelayEvent
+  @role(event)
+  source: <span class="code-object">String</span>
+  value: <span class="code-object">String</span>
+end
+
+rule <span class="code-quote">"Rule 1"</span>
+when
+  Event($s: source, $v: value, source==<span class="code-quote">"UDPL_HIFI"</span>, value==<span class="code-quote">"WATCH_TV_TV_ON"</span>)
+then
+  insert(<span class="code-keyword">new</span> DelayEvent($s.toString(), $v.toString()));
+  <span class="code-comment">// <span class="code-keyword">do</span> <span class="code-keyword">rest</span> here without delay
+</span>end
+
+rule <span class="code-quote">"Rule 2"</span>
+  timer (<span class="code-object">int</span>: 4s)
+when
+  DelayEvent(source==<span class="code-quote">"UDPL_HIFI"</span>, value==<span class="code-quote">"WATCH_TV_TV_ON"</span>)
+then
+  <span class="code-comment">// <span class="code-keyword">do</span> something after 1st delay of 4s
+</span>end
+
+rule <span class="code-quote">"Rule 3"</span>
+  timer (<span class="code-object">int</span>: 8s)
+when
+  $de : DelayEvent(source==<span class="code-quote">"UDPL_HIFI"</span>, value==<span class="code-quote">"WATCH_TV_TV_ON"</span>)
+then
+  <span class="code-comment">// <span class="code-keyword">do</span> something after 2nd delay of 8s
+</span>  retract($de); <span class="code-comment">// retract delay when all done
+</span>end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 23, 2013 09:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881721"></a>
+                                    <font class="smallfont"><p>Thank you Michael, that works perfect.<br/>
+I will try to adopt this to my other scenes.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Dec 26, 2013 08:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

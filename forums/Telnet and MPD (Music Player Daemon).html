@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Telnet and MPD (Music Player Daemon)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Telnet and MPD (Music Player Daemon)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 17, 2014 by <font color="#0050B2">andersonffv</font>.
+				    </div>
+
+				    <p>Hi everyone!</p>
+
+<p>I'm trying to integrate <a href="http://www.musicpd.org/">MPD</a> with the OR via Telnet.</p>
+
+<p>The "currentsong" command returns: </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+file: sacd/Dire Straits/Brothers in Arms (1985)/1.02. Money For Nothing.dsf
+Last-Modified: 2014-02-25T02:40:44Z
+Time: 506
+Artist: Dire Straits
+AlbumArtist: Dire Straits
+Title: Money For Nothing
+Album: Brothers in Arms
+Track: 2/9
+Date: 1985
+Genre: Rock
+Disc: 1/1
+Pos: 1
+Id: 374
+OK
+</pre>
+</div></div>
+
+<p>So I'm using the following regex to extract artist name:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+(?m)^\s*Artist:\s*(.+)$
+</pre>
+</div></div>
+
+<p>However the OR returns "N / A". The telnet seems to be working, but the Regex expression not.<br/>
+I´ve tried to test on <a href="http://www.regexplanet.com/">http://www.regexplanet.com/</a> and it worked.</p>
+
+<p>Any ideas?<br/>
+And is this integration method is the most suitable? (telnet, regex)</p>
+
+<p>Thanks everyone.</p>
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22885330"></a>
+                                    <font class="smallfont"><p>Not sure if "(?m)" will work for you in Java... open to correction I believe its more common place to use "(?s)". I would try the following:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">(?s)^.*Artist:(.*)AlbumArtist.*$ </pre>
+</div></div>
+
+<p>I did use Telnet (and TCP/IP) to integrate MPD once and it worked fine. <br/>
+I then changed my setup to have MPD running on a separate machine to my OR install so I converted my TCP commands into shell scripts that opened an SSH session first (authenticated via key exchange) to the foreign machine and then delivered the command. You can then execute these in OR using the Shell Execution Protocol. This did technically work for me but was ultimately too slow due to the ssh authentication and encryption overheads involved with SSH. In the end, I found a purpose made python library on the MPD site (<a href="http://mpd.wikia.com/wiki/Client_Libraries">http://mpd.wikia.com/wiki/Client_Libraries</a>) that you can wrap up in shell scripts. These do all the hard-work for you and are easy to work with once you get used to them. </p>
+
+<p>I just used Python because I am familiar with it. There is also mention of a JAVA library on the  site, but i never got around to following it up. I think it should be possible to integrate this all into the rules engine, or if not, you could still execute Shell script wrappers for the JAVA library calls. This would keep the Java theme going, inline with OR itself. But as its open-source, what ever works for you is fine!</p>
+
+<p>MPD is an excellent music player, and well worth the time spent on integrating it. You can run it on almost anything, Raspberry Pis, Beaglebones, NAS etc. A bit time consuming, but ultimately worth it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by holeymoley at Mar 18, 2014 13:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

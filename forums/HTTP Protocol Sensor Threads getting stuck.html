@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : HTTP Protocol Sensor Threads getting stuck</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : HTTP Protocol Sensor Threads getting stuck
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 08, 2016 by <font color="#0050B2">aspalshikar</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>  I have created my own set of Arduino based modules which are used to turn on/off various electrical loads in my home. I have created a Java application that exposes REST APIs to achieve this and talks to arduino modules over wifi to execute commands.</p>
+
+<p>  For the front-end and automation needs, I have installed OpenRemote 2.1.1 and am using the HTTP protocol based commands to created sensors and switches in OpenRemote designer. These HTTP commands use REST APIs exposed by my Java application.</p>
+
+<p>  While the setup works in general as expected, after some time, some of my switches on Webconsole or Android/iOS apps stop reflecting the correct current state (On/Off). After investigating this a bit further by looking at OpenRemote logs (http.log and dev.log), I noticed that OpenRemote was only polling a few sensors and not all. Upon further inspection, it appears that the threads for some of the sensors get stuck in RUNNABLE state in socket.read and they never come out of that state until openremote is restarted. This is fairly easy to reproduce since after half an hour of starting OpenRemote, some of my switches stop reflecting current status.</p>
+
+<p>  In terms of environment, I have around 30 HTTP sensors issuing a GET command with basic authentication with a polling interval of 1 second. At present, both OpenRemote and my java application are running on Raspberry Pi Model 2 on Oracle JRE8.0 under Raspbian OS. From what I understand, this configuration translates into openremote creating 30 Sensor threads each issuing 1 HTTP GET command every second. This may be heavy on Raspberry Pi which also hosts my java application and a mysql server. But the average CPU utilization when everything is running fine is under 70%.</p>
+
+<p> To isolate the problem, I tried moving OpenRemote server to a Synology Diskstation NAS I have on my network. But the problem remains the same, so it does not seem to be related to hardware limitations.</p>
+
+<p> I also tried to look at logs and thread dumps on my Java application side to see if it was causing the socket connections to be stuck in an incorrect state, but I could not see anything that indicated the same.</p>
+
+<p> Is there a way to provide some sort of timeout to the polling threads that would allow them to come out of this state? Or any other suggestions as to what might be going wrong here?</p>
+
+<p> Following is the example thread dump for sensors that are no longer working as well as sensors which are working in one of the trials</p>
+
+<p> Sensors that have stopped polling, all of them stuck at the same place</p>
+
+<p> "Polling thread for sensor: KitchenFanSensor" #45 prio=5 os_prio=0 tid=0x63973000 nid=0x28c4 runnable 0x62bd5000<br/>
+   java.lang.Thread.State: RUNNABLE<br/>
+        at java.net.SocketInputStream.socketRead0(Native Method)<br/>
+        at java.net.SocketInputStream.read(SocketInputStream.java:150)<br/>
+        at java.net.SocketInputStream.read(SocketInputStream.java:121)<br/>
+        at org.apache.http.impl.io.AbstractSessionInputBuffer.fillBuffer(AbstractSessionInputBuffer.java:130)<br/>
+        at org.apache.http.impl.io.SocketInputBuffer.fillBuffer(SocketInputBuffer.java:127)<br/>
+        at org.apache.http.impl.io.AbstractSessionInputBuffer.readLine(AbstractSessionInputBuffer.java:233)<br/>
+        at org.apache.http.impl.conn.DefaultResponseParser.parseHead(DefaultResponseParser.java:98)<br/>
+        at org.apache.http.impl.io.AbstractMessageParser.parse(AbstractMessageParser.java:210)<br/>
+        at org.apache.http.impl.AbstractHttpClientConnection.receiveResponseHeader(AbstractHttpClientConnection.java:271)<br/>
+        at org.apache.http.impl.conn.DefaultClientConnection.receiveResponseHeader(DefaultClientConnection.java:227)<br/>
+        at org.apache.http.impl.conn.AbstractClientConnAdapter.receiveResponseHeader(AbstractClientConnAdapter.java:209)<br/>
+        at org.apache.http.protocol.HttpRequestExecutor.doReceiveResponse(HttpRequestExecutor.java:292)<br/>
+        at org.apache.http.protocol.HttpRequestExecutor.execute(HttpRequestExecutor.java:126)<br/>
+        at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:483)<br/>
+        at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)<br/>
+        at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:576)<br/>
+        at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:554)<br/>
+        at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:237)<br/>
+        at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:260)<br/>
+        at java.lang.Thread.run(Thread.java:744)</p>
+
+<p> "Polling thread for sensor: PassageLightSensor" #43 prio=5 os_prio=0 tid=0x63970400 nid=0x28c2 runnable 0x62c75000<br/>
+   java.lang.Thread.State: RUNNABLE<br/>
+        at java.net.SocketInputStream.socketRead0(Native Method)<br/>
+        at java.net.SocketInputStream.read(SocketInputStream.java:150)<br/>
+        at java.net.SocketInputStream.read(SocketInputStream.java:121)<br/>
+        at org.apache.http.impl.io.AbstractSessionInputBuffer.fillBuffer(AbstractSessionInputBuffer.java:130)<br/>
+        at org.apache.http.impl.io.SocketInputBuffer.fillBuffer(SocketInputBuffer.java:127)<br/>
+        at org.apache.http.impl.io.AbstractSessionInputBuffer.readLine(AbstractSessionInputBuffer.java:233)<br/>
+        at org.apache.http.impl.conn.DefaultResponseParser.parseHead(DefaultResponseParser.java:98)<br/>
+        at org.apache.http.impl.io.AbstractMessageParser.parse(AbstractMessageParser.java:210)<br/>
+        at org.apache.http.impl.AbstractHttpClientConnection.receiveResponseHeader(AbstractHttpClientConnection.java:271)<br/>
+        at org.apache.http.impl.conn.DefaultClientConnection.receiveResponseHeader(DefaultClientConnection.java:227)<br/>
+        at org.apache.http.impl.conn.AbstractClientConnAdapter.receiveResponseHeader(AbstractClientConnAdapter.java:209)<br/>
+        at org.apache.http.protocol.HttpRequestExecutor.doReceiveResponse(HttpRequestExecutor.java:292)<br/>
+        at org.apache.http.protocol.HttpRequestExecutor.execute(HttpRequestExecutor.java:126)<br/>
+        at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:483)<br/>
+        at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)<br/>
+        at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:576)<br/>
+        at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:554)<br/>
+        at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:237)<br/>
+        at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:260)<br/>
+        at java.lang.Thread.run(Thread.java:744)</p>
+
+<p>  Sensors that continue to poll</p>
+
+<p>  "Polling thread for sensor: DryTerraceLightSensor" #44 prio=5 os_prio=0 tid=0x63971c00 nid=0x28c3 waiting on condition 0x62c25000<br/>
+   java.lang.Thread.State: TIMED_WAITING (sleeping)<br/>
+        at java.lang.Thread.sleep(Native Method)<br/>
+        at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:308)<br/>
+        at java.lang.Thread.run(Thread.java:744)</p>
+
+<p>  "Polling thread for sensor: CommonBathLightSensor" #46 prio=5 os_prio=0 tid=0x63974800 nid=0x28c5 waiting on condition 0x62b85000<br/>
+   java.lang.Thread.State: TIMED_WAITING (sleeping)<br/>
+        at java.lang.Thread.sleep(Native Method)<br/>
+        at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:308)<br/>
+        at java.lang.Thread.run(Thread.java:744)</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23605919"></a>
+                                    <font class="smallfont"><p>Hi! Has anyone solved this problem ?<br/>
+I have the same situation http sensors</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ellab at Mar 01, 2016 15:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605987"></a>
+                                    <font class="smallfont"><p>Yes, this can happen. Not only with HTTP protocol but almost with any protocol which counts on something from outside of Openremote (HTTP, command execute, TCP/IP, etc). This is because Openremote does not implement any timeout for command execution and can wait for an answer indefinitely. I don't have a clean solution yes, and all I do is a watchdog. Restarting the controller in regular intervals also helps a lot. For me, once a week is enough, but I remember a time where I've had a bad combination of sensors and needed to restart the controller every few hours. Nowadays, I usually make a simple Python web server, run it on localhost and access external sources through it. This way, Openremote which makes calls to localhost only is very robust.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Mar 08, 2016 12:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605992"></a>
+                                    <font class="smallfont"><p>Thank you Michal! <br/>
+My situation is that problems occur with devices that are connected to the network on technology wi fi bridge (WDS). On some devices, often with high ping on others less. But even ping = 30 already critical of the cable are all well. As I solve this problem discovery controller.xml file is saved and closed. But I do not like this approach. Is it possible to implement a timeout waiting for feedback during a certain time? What is interesting is that mistakes happen after the switch (the command from the controller), rest of the time there are no errors.<br/>
+I have a third-party application performs http requests REST API (click button) to the controller (they are on the same PC and the team is localhost).</p>
+
+<p>Michal on the webserver on Pyton not quite understand what you mean?<br/>
+I would be happy for any suggestions!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ellab at Mar 08, 2016 17:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

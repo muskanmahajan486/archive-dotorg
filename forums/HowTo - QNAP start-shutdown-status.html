@@ -1,0 +1,545 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : HowTo - QNAP start-shutdown-status</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : HowTo - QNAP start-shutdown-status
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 04, 2013 by <font color="#0050B2">orjo</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>as described in another Thread some weeks ago, i created some scripts which can be run via the OR Shell execution protocol.<br/>
+In the following you`ll find the english translation from my blog-post.</p>
+
+
+<div class = "note">
+  <img class="noteimage" src="attachments/11960350/12582917.png"/>Currently i`m using it with a QNAP NAS-system TS-859 which works fine. I can not guarantee that it works with other qnaps too but i`m pretty sure. Please only do this if you know what                                     you`re doing. I`m not responsible for any kind of problems which might occure when using the scripts.
+</div>
+
+
+
+
+<p>The scripts allow you to </p>
+
+<ul class="alternate" type="square">
+	<li>start your qnap via WOL.</li>
+	<li>shutdown your qnap.</li>
+	<li>get the current status of your qnap (ON/OFF).</li>
+</ul>
+
+
+<p>You`ll need:</p>
+<ul class="alternate" type="square">
+	<li>Openremote controller running on a linux-machine</li>
+</ul>
+
+
+
+<p>To use the scripts i created the directory <b>/scripts.</b> All of the scripts will be put in this directory.</p>
+
+
+
+
+<div style="margin: 40px;"><div class="panel" style="border-width: 1px;"><div class="panelContent">
+<div class='toc'>
+<ul>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Scripts'>Scripts</a></li>
+<ul>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-StartingtheQNAP'>Starting the QNAP</a></li>
+<ul>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Packageinstallation'>Package installation</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Startupscript'>Startup script</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Runningthescript'>Running the script</a></li>
+</ul>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-ShuttingdowntheQNAP%3A'>Shutting down the QNAP:</a></li>
+<ul>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Packageinstallation'>Package installation</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Shutdownscript'>Shutdown script</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Runningthescript'>Running the script</a></li>
+</ul>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Status%3A'>Status:</a></li>
+<ul>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Statusscript'>Status script</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Runningthescript'>Running the script</a></li>
+</ul>
+</ul>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-OpenRemoteintegration'>OpenRemote integration</a></li>
+<ul>
+<ul>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Start%2FShutdowncommands'>Start/Shutdown commands</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Statuscommand'>Status command</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Sensor'>Sensor</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Switch'>Switch</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-NewSwitchinUIDesigner'>New Switch in UI-Designer</a></li>
+    <li><a href='#HowTo-QNAPstart-shutdown-status-Labelfordebuggingpurposes'>Label for debugging purposes</a></li>
+</ul>
+</ul>
+</ul></div>
+</div></div></div>
+
+
+
+<h2><a name="HowTo-QNAPstart-shutdown-status-Scripts"></a>Scripts</h2>
+<h3><a name="HowTo-QNAPstart-shutdown-status-StartingtheQNAP"></a>Starting the QNAP</h3>
+
+<p>Starting the QNAP will work by sending a <b>Magic Packet</b> over your LAN. If you don`t already have installed the WOL-Pakage on your system do it by running the follwing command:</p>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Packageinstallation"></a>Package installation</h4>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">sudo apt-get install wakeonlan</pre>
+</div></div>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Startupscript"></a>Startup script</h4>
+<p>Create a new shell script with the following content and save it as e.g. wol_server.sh</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#!/bin/bash
+destination=<span class="code-quote">"$1"</span>
+wakeonlan $destination
+</pre>
+</div></div>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Runningthescript"></a>Running the script</h4>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+user@host:/scripts$ ./wol-server.sh 00:11:22:33:44:55
+</pre>
+</div></div>
+
+<h3><a name="HowTo-QNAPstart-shutdown-status-ShuttingdowntheQNAP%3A"></a>Shutting down the QNAP:</h3>
+<p>Shutting down the QNAP is a little bit more complicated. The script is run by attaching the username, the hostname of the qnap and the ssh-password.<br/>
+To use this you have to enable the SSH-Service on the webinterface of your QNAP (Networking Service/Telnet|SSH)</p>
+
+<div class = "note">
+  <img class="noteimage" src="attachments/11960350/12582917.png"/><p>I`m accessing my home network from outside of the lan only by using a encrypted VPN-tunnel. So for me it is no problem to attach the ssh-password from the QNAP to the script.<br/>
+BUT:<br/>
+If someone gets access to you openremote builder, in which the password is unencrypted too, he has the Password for your qnap. If you then have any port redirections on your internet router, it`s easy to access the nas with the password. So please do this only if you know exactly what you`re doing.</p>
+</div>
+
+
+
+<p>For running the script successfully and redirecting the password to the ssh-session you`ll need a package called "sshpass".</p>
+<h4><a name="HowTo-QNAPstart-shutdown-status-Packageinstallation"></a>Package installation</h4>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+sudo apt-get install sshpass
+</pre>
+</div></div>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Shutdownscript"></a>Shutdown script</h4>
+<p>Create a new shell script with the following content and save it as e.g. shutdown-qnap.sh</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#!/bin/bash
+username=<span class="code-quote">"$1"</span>
+hostname=<span class="code-quote">"$2"</span>
+password=<span class="code-quote">"$3"</span>
+sshpass -p <span class="code-quote">"$password"</span> ssh <span class="code-quote">"$username"</span>@<span class="code-quote">"$hostname"</span> /sbin/poweroff
+</pre>
+</div></div>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Runningthescript"></a>Running the script</h4>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">user@host:/scripts$ ./shutdown-qnap.sh Benutzer Hostname/IP-Adresse SSH-Passwort</pre>
+</div></div>
+
+<h3><a name="HowTo-QNAPstart-shutdown-status-Status%3A"></a>Status:</h3>
+<p>At the moment there is sent an Ping-Package to the qnap. If there is an answer, the QNAP is ON otherwise it is OFF. Maybe i will add the possibility to look after a samba share and only if this is availible the status is ON.</p>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Statusscript"></a>Status script</h4>
+<p>Create a new shell script with the following content and save it as e.g. ping-remote.sh</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+#!/bin/bash
+exec=<span class="code-quote">"ping -c 1"</span>
+
+function ping_remote(){
+ping -c 1 $1 -w 1 &gt;&gt; /dev/<span class="code-keyword">null</span>
+<span class="code-keyword">if</span> [ $? == 0 ]
+then
+echo <span class="code-quote">"on"</span>
+<span class="code-keyword">else</span>
+echo <span class="code-quote">"off"</span>
+fi
+}
+
+run_function=$(ping_remote $1)
+echo <span class="code-quote">"$run_function"</span>
+</pre>
+</div></div>
+
+<p>When using Switch-Sensors in openremote it is important that OR wants to have "on" or "off" as return value. Be careful with the capital letters.</p>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Runningthescript"></a>Running the script</h4>
+
+<p>When you run the following</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">user@host:/scripts$ ./ping-remote.sh IP-Adresse/Hostname</pre>
+</div></div>
+<p>the script returns "on" or "off" depending on your nas is started or not.</p>
+
+<h2><a name="HowTo-QNAPstart-shutdown-status-OpenRemoteintegration"></a>OpenRemote integration</h2>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Start%2FShutdowncommands"></a>Start/Shutdown commands</h4>
+<p>Create a new device in the openremote designer and assign two new commands for switching on and off the qnap.<br/>
+As path give the full path to the executable shell script<br/>
+as parameter enter the according parameters. The ON-Command needs the MAC-Adress of the QNAP, the OFF-Command needs the QNAP-user the IP of the QNAP and the Password (seperated by blanks)<br/>
+<div align="center"><img src="attachments/22874382/23035998.png" border="0"/></div><br/>
+<div align="center"><img src="attachments/22874382/23035999.png" border="0"/></div></p>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Statuscommand"></a>Status command</h4>
+<p>After that you can add the command to get the qnap status. In this case you need the IP-address of the QNAP as the command parameter. As against the ON/OFF-commands this command shall be executed repeating. For this behaviour give the command a polling interval e.g. 5m for 5 minutes.<br/>
+<div align="center"><img src="attachments/22874382/23036000.png" border="0"/></div></p>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Sensor"></a>Sensor</h4>
+<p>After that create a new sensor which in the end calls the status and assign the previously created "status" command.<br/>
+<div align="center"><img src="attachments/22874382/23036001.png" border="0"/></div></p>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Switch"></a>Switch </h4>
+<p>Now create a new switch and assign the sensor to this switch<br/>
+<div align="center"><img src="attachments/22874382/23036002.png" border="0"/></div></p>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-NewSwitchinUIDesigner"></a>New Switch in UI-Designer</h4>
+<p>In the UI-Designer put a new switch to your template and assign the above created switch as the SwitchCommand<br/>
+<div align="center"><img src="attachments/22874382/23036003.png" border="0"/></div></p>
+
+<h4><a name="HowTo-QNAPstart-shutdown-status-Labelfordebuggingpurposes"></a>Label for debugging purposes</h4>
+<p>If you want to have a label to display the current status, e.g. for debugging purposes, add a label and assign the created sensor and an ON/OFF-Text<br/>
+<div align="center"><img src="attachments/22874382/23036004.png" border="0"/></div></p>
+
+
+<p>After synchronizing the Builder with your local controller you will be able to start and shutdown your qnap via the webconsole or your android-tablet.</p>
+
+<p>Good Luck <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23035998.png">or_new_device7.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23035999.png">or_new_device8.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036009.png">or_new_device6.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036001.png">or_new_device10.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036002.png">or_new_device11.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036003.png">or_new_device12.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036004.png">or_new_device13.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036005.png">or_new_device.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036006.png">or_new_device2.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036007.png">or_new_device3.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036008.png">or_new_device4.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22874382/23036000.png">or_new_device6.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22874414"></a>
+                                    <font class="smallfont"><p>Thanks for your feedback.<br/>
+Did you ever try the internal "WOL" protocol?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Aug 05, 2013 09:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874418"></a>
+                                    <font class="smallfont"><p>Wonderful work, Johannes.</p>
+
+<p>If you don't mind, we should move this to a more permanent location in the wiki?</p>
+
+<p>Best regards,</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 05, 2013 10:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874552"></a>
+                                    <font class="smallfont"><p>Johannes (and other QNAP users):</p>
+
+<p>there's a new community contribution for QNAP that creates a QNAP install package for OpenRemote posted here: <a href="http://forum.qnap.com/viewtopic.php?f=132&amp;t=79104">http://forum.qnap.com/viewtopic.php?f=132&amp;t=79104</a> (unfortunately registration is required).</p>
+
+<p>Would that be something of interest to you? Or could you take a look at it, and see how it's working, or if anything needs to be adjusted or any other feedback you might have?</p>
+
+<p>Best regards,</p>
+
+<p>&#8211; Juha</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Aug 08, 2013 16:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874577"></a>
+                                    <font class="smallfont"><p>@ Markus:  I didn`t try the integrated WOL-Function but i was looking for it. Maybe i`ve overlooked it. Will try if it works.</p>
+
+<p>@ JUHA: Thank you, you can move it to the wiki. Definately the better location for refinding the information.<br/>
+  I`m using the Controller not on the QNAP. But i will have a look at it when i have free time. I will report back later if it`s working.</p>
+
+<p>Johannes</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Aug 09, 2013 10:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876191"></a>
+                                    <font class="smallfont"><p>There`s a litte update.<br/>
+For some reason the shutdown-script wasn`t working for me anymore. I found out that the problem lies in there that the script is called as root. The OpenRemote Controller is also started as root.</p>
+
+<p>To get it working i had to tell the script to run the sshpass command as a normal user. To do this you have to update the shutdown_qnap.sh:</p>
+
+<p>Only add <b>sudo -u user</b> (user=normal system user) in front of the shpass-command</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">#!/bin/bash
+username=<span class="code-quote">"$1"</span>
+hostname=<span class="code-quote">"$2"</span>
+password=<span class="code-quote">"$3"</span>
+sudo -u user sshpass -p <span class="code-quote">"$password"</span> ssh <span class="code-quote">"$username"</span>@<span class="code-quote">"$hostname"</span> /sbin/poweroff
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Sep 10, 2013 18:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876294"></a>
+                                    <font class="smallfont"><p>Thanks for the update. I can't remember if I moved the page to the general wiki as I had promised already &#8211; will need to check. We are updating some QNAP related pages currently anyhow, will keep this on the list.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 13, 2013 23:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876314"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>I'm currently doing some testing on the qnap.<br/>
+Regarding this i'm in contact with Pierre.<br/>
+He asked me to update the Howto-Qnap pages.</p>
+
+<p>I'm going to put the information to the page the next days.</p>
+
+<p>Regards Johannes</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Sep 14, 2013 07:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876326"></a>
+                                    <font class="smallfont"><p>Ok, with regards to the main QNAP how to page, go ahead.</p>
+
+<p>However, the content above in this thread should be a part of a separate page, probably a sub-page of the main how-to. I can create that page structure for you if you prefer? That's where I was planning to move the content in this thread anyhow.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 14, 2013 10:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876327"></a>
+                                    <font class="smallfont"><p>That would be great. Just tell me Ehen you finished creating the  page structure and i will fill in the content.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Sep 14, 2013 10:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876333"></a>
+                                    <font class="smallfont"><p>It is here: <a href="http://www.openremote.org/display/docs/Remote+Control+QNAP+Start%2C+Shutdown+and+Status" title="Remote Control QNAP Start, Shutdown and Status">Remote Control QNAP Start, Shutdown and Status</a></p>
+
+<p>Struggling a bit with the page title since it actually teaches to do three separate things but that's what I ended up with.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 14, 2013 10:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876675"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>i just wanted to add all information i currently have about QNAP+OR to the howto pages but i`m a little bit confused about the page titles.</p>
+
+<p>I`m thinking of adding a main page for qnap where you will then find all the additional information.<br/>
+Something like this:</p>
+
+<p>QNAP &amp; Openremote</p>
+<ul class="alternate" type="square">
+	<li>Installing OpenRemote Controller (manually)                   Already existing</li>
+	<li>Installing OpenRemote Controller (automatically,QPKG)         Written from me</li>
+	<li>Remote Control QNAP with Openremote (Start,Shutdown,Status)   Written from me</li>
+	<li>Other QNAP Stuff</li>
+</ul>
+
+
+<p>What do you think about this?</p>
+
+<p>Regards Johannes</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Sep 22, 2013 16:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876676"></a>
+                                    <font class="smallfont"><p>We need to work it in a way where the current <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Controller+on+QNAP+NAS" title="OpenRemote 2.0 How To - Controller on QNAP NAS">OpenRemote 2.0 How To &#45; Controller on QNAP NAS</a> page becomes the main page. This is mainly due to how it is being referenced externally at the moment.</p>
+
+<p>On the above page the introduction should stay, as well as the "Hardware" and "Configuration of the System" sections.</p>
+
+<p>The steps 1 to 3 should move into their own sub-page as soon as the instruction to install from QPKG is in place. The former is then only relevant to those who want to install development releases by themselves.</p>
+
+<p>The remote control QNAP should also remain the a sub-page (as it is today).</p>
+
+<p>I can move the manual install steps 1-3 in their own subsection for now, until you have time to finish the QPKG steps and once those are done, I'll move the manual steps into their own sub-page.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 22, 2013 16:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876681"></a>
+                                    <font class="smallfont"><p>Done with the page structure change. Left a TODO there for QPKG.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 22, 2013 16:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876686"></a>
+                                    <font class="smallfont"><p>Or alternatively, we leave all the actual installation pages as sub-pages. So after the configuration of system section there's just links to :</p>
+
+<ul class="alternate" type="square">
+	<li>Install QPKG</li>
+	<li>Manual Install</li>
+	<li>Remote Cntrol</li>
+	<li>Other QNAP stuff</li>
+</ul>
+
+
+<p>Whichever you prefer. I'm fine with both. Right now the QPKG TODO however is on the main page.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 22, 2013 16:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876687"></a>
+                                    <font class="smallfont"><p>I think the second way would be better.<br/>
+I`ll transfer the two pages from the qnap/OR-forum and then the page titles could be adjusted.</p>
+
+<p>Is there any way to contact you via email to discuss theese things to keep the oversight in thsi thread?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by orjo at Sep 22, 2013 17:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876705"></a>
+                                    <font class="smallfont"><p>You can email me at juha at openremote dot org. Also on skype 'juhalindfors' we have a contributors group chat that is useful for quick questions and back and forth.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 22, 2013 20:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:41</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

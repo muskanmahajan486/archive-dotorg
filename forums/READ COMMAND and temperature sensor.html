@@ -1,0 +1,267 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : READ COMMAND and temperature sensor</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : READ COMMAND and temperature sensor
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 11, 2010 by <font color="#0050B2">emmedibi</font>.
+				    </div>
+
+				    <p>HI,</p>
+
+<p>i would like to create a sensor measuring temperature, using a group referred to a float number - i suppose - 2 byte, probably 9.001). Is it already possible?</p>
+
+<p>Even if it was an integer number, how could i define a READ command to read it first (in your guide you explain write command, at least i didn't find read ones). Is it maybe the Status command? i have tried defining a status command with 9.001 type and, of course, OR control failed (as you explain in your section on supported data type).</p>
+
+
+<p>After, i would like to recording an historycal sequens of this values: can i use your openremote control to store it? Shoud i use a device (such as i-phone) or is it possible to use local application on the same PC i have OR Control?</p>
+
+
+<p>Thank you,</p>
+
+<p>Mauro</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-13697407"></a>
+                                    <font class="smallfont"><p>Hi Mauro,</p>
+
+<p>Haven't had time to add 2 byte (DPT 9.xxx) or other earlier requested DPTs yet. Thanks for letting us know you've need for it.</p>
+
+<p>For storing historical data values, you will need to add your own plugin into the OR software &#8211; at the moment written in Java. There's no support we offer out-of-the-box yet, though working on similar requirements at the moment. Also relevant is how you wish to use this data later with the application?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 15, 2010 05:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697417"></a>
+                                    <font class="smallfont"><p>Hi, Juha,<br/>
+I'm also interested in the topic of collecting data and visualize it on clients. I imagine this as a read command with some parameters (i.e. sensor id, start time, end time, resolution). For example the REST could look something like this:</p>
+
+<p>/rest/collected-status/{sensor_id},{start-time-in-millis-since-1970},{end-time-in-millis-since-1970},{resolution}</p>
+
+<p>The resolution parameter is to tell OR in how many segments have to return the result. For example if we want to show a sensor data from the last 24 hours and see how data was changed every hour we could use something like this:</p>
+
+<p>Example: /rest/collected-status/1,1292420978189,1292507378189,24 (read the collected data from sensor 1 from December 15 2010, 15:49 to December 16, 15:49 in resolution 24)</p>
+
+
+<p>This command could return something like this:</p>
+
+<p>&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br/>
+&lt;openremote xmlns="http://www.openremote.org" <br/>
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" <br/>
+            xmlns:schemaLocation="http://www.openremote.org/panel.xsd"&gt;<br/>
+    &lt;collected-status id="1"&gt;<br/>
+          &lt;data name="Dec 15, 15:49"&gt;23&lt;/data&gt;<br/>
+          &lt;data name="Dec 15, 16:49"&gt;22&lt;/data&gt;<br/>
+          &lt;data name="Dec 15, 17:49"&gt;21&lt;/data&gt;<br/>
+          &lt;data name="Dec 15, 18:49"&gt;25&lt;/data&gt;<br/>
+          &lt;data name="Dec 15, 19:49"&gt;23&lt;/data&gt;<br/>
+          &lt;data name="Dec 15, 20:49"&gt;27&lt;/data&gt;<br/>
+          &lt;data name="Dec 15, 21:49"&gt;26&lt;/data&gt;<br/>
+          &lt;data name="Dec 15, 22:49"&gt;23&lt;/data&gt;<br/>
+          &lt;data name="Dec 15, 23:49"&gt;20&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 00:49"&gt;19&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 01:49"&gt;22&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 02:49"&gt;23&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 03:49"&gt;24&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 04:49"&gt;25&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 05:49"&gt;29&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 06:49"&gt;25&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 07:49"&gt;23&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 08:49"&gt;21&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 09:49"&gt;18&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 10:49"&gt;17&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 11:49"&gt;19&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 12:49"&gt;21&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 13:49"&gt;23&lt;/data&gt;<br/>
+          &lt;data name="Dec 16, 14:49"&gt;24&lt;/data&gt;<br/>
+    &lt;/collected-status&gt;<br/>
+&lt;/openremote&gt;</p>
+
+
+
+<p>Then that data could be used to feed a chart component and show the data nicely.</p>
+
+<p>Just my 2 cents <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mishoboss at Dec 15, 2010 14:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697429"></a>
+                                    <font class="smallfont"><p>Hi Juha.</p>
+
+<p>I wish to use historical sequences of degrees only in a view mode, for checking temperature function in some rooms where i need particular conditions. So i will need only a browser or a kind of viewer to see them. (But it was nice to use client, like iPhone).</p>
+
+
+<p>More in general, i would like to monitor all my knx data values for statistics on my house, f. i. how many hours is the heater on during a month, the same for klights. I hoped OR had a log-system, a simple log-file. Everyone could build over it different interfaces for different needs and the system could have a general monitor to control the log file. You should activate or switch-off the log file parametrizing the OR. I don't know if OR snif the whole trafic or not, but i suppose it cand do it.</p>
+
+<p>thanks,</p>
+
+<p>Mauro</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by emmedibi at Dec 15, 2010 20:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697436"></a>
+                                    <font class="smallfont"><p>Hi Mauro,</p>
+
+<p>We can do logging fairly easily yes (we're using widely known logging framework in the controller).</p>
+
+<p>I've been meaning to clearly separate KNX logging, and we can indeed log all the way down to the wire formats if necessary.</p>
+
+<p>Logging theshold, filtering, directing to files/emails/syslogd is also provided by the logging framework and we need to document the use of it.</p>
+
+<p>Thanks for your input &#8211; if there's something very specific you'd need in the logging, let us know.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 16, 2010 10:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697459"></a>
+                                    <font class="smallfont"><p>There is Java version based on the RRDTool which is doing data logging and aggregation, chart rendering and much more.<br/>
+The Java version found here: <a href="http://www.jrobin.org/index.php/Main_Page">http://www.jrobin.org/index.php/Main_Page</a></p>
+
+<p>I never looked at it but it sounds promising.</p>
+
+<p>Once I have my 1-wire protocol support finished, I would like to look into this to visualize and track the data of my temperature sensors.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 17, 2010 08:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697471"></a>
+                                    <font class="smallfont"><p>Great. With that kind of knx log file we can issue any kind of report, using RRDT for istance.</p>
+
+<p>i've checked at log directory: at the moment seems we have only system monitor log and not knx sniffed messages.</p>
+
+<p>Step B could be to realize alerting on verified conditions (a particular message on the net, a value data over a threshold, etc.) sending e-mail or other warning.</p>
+
+<p>Step C could consist in a Logical Unit sniffing all trafic and programmable not only for sending alert, but even to send knx messages in home systems, realizing scenario and substituting many knx logic appliance, using a sort of trigger in logging framework.</p>
+
+<p>No particular suggestion on what to log: i think we need the whole knx message and all messages (they are not too heavy, i think).</p>
+
+<p>i'm sorry i am no more a programmer since many years, but i can test and give suggestion.</p>
+
+<p>Thank you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by emmedibi at Dec 18, 2010 10:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697472"></a>
+                                    <font class="smallfont"><p>I think the right way here is to start implementing a whole "Rules engine" (i.e. step C). That's the best approach in long term. I'm not a Java programmer, but I'm sure there are good Java libraries out there that could help developing a pretty powerful logic engine in no time. The hard part I think is building the interface of that logic engine in Designer. I like the way Prmise (another open source HA project) do that job - <a href="http://www.cocoontech.com/w/images/8/82/Premise_ObjectDiagram.png">http://www.cocoontech.com/w/images/8/82/Premise_ObjectDiagram.png</a> However this is not an easy interface to recreate with web technologies. Maybe something like the Drupal Rules module is more appropriate and easy - <a href="http://more.zites.net/morefiles/rules-sceenshot.png">http://more.zites.net/morefiles/rules-sceenshot.png</a></p>
+
+<p>I think that's the right way. More work, but OR definitely needs a powerful rules engine to compete with the others.</p>
+
+<p>P.S. A quick search of "GWT Rules engine" lead me to this - <a href="http://www.jboss.org/drools/drools-expert.html">http://www.jboss.org/drools/drools-expert.html</a><br/>
+As I said, Java is not in my skill list, but maybe that could do the job for OR Rules Engine?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mishoboss at Dec 18, 2010 12:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434609"></a>
+                                    <font class="smallfont"><p>Any news about RRDT implementation? Anyone has it working with openremote and 1-wire sensors?</p>
+
+
+<p>It would be nice too to have some current meters to display with RRDT some information about electricity consumption on openremote.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aerodolphin at Dec 27, 2011 13:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434615"></a>
+                                    <font class="smallfont"><p>I started to look at RRDT and there was some other work done for a client's project where we used a MySQL database to collect sensor values and use the "web" element in the designer to generate graphs. It did not make it into the coming 2.0 release but is on our list <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Drools as a rule engine will be in 2.0 release, though.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 27, 2011 14:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434616"></a>
+                                    <font class="smallfont"><p>Great news. So with the "web" element we can do virtualy anything, right? Is like an web frame? We can show webpages in a frame?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aerodolphin at Dec 27, 2011 17:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434617"></a>
+                                    <font class="smallfont"><p>Yes, it's like a webframe. The designer does not support it yet but there is a thread on the forums how to use it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 27, 2011 18:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 11:01</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

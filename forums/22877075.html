@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Upgrade to Drools 5.5?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Upgrade to Drools 5.5?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 27, 2013 by <font color="#0050B2">maq100</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm running OR on Raspberry Pi with Java 8 early access. The rules in OR do not seem to work and I suspect the reason is Drools incompatibility with Java 8. I know that the Drools 5.5.0 is compatible with Java 8, however OpenRemote is distributed with Drools 5.1.1.</p>
+
+<p>In order to get the rules working - do I have to downgrade to Java 6 or rather upgrade Drools to 5.5.0? If so - how do I do it? (bear in mind the Raspberry Pi). Please help <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22877150"></a>
+                                    <font class="smallfont"><p>After  some time spend trying to see what version of Java will work with Drools 5.1.1 on Raspberry Pi with Raspbian Wheezy I found that:</p>
+<ul class="alternate" type="square">
+	<li>Java 8 SE 108 Linux ARMv6/7 VFP HardFP ABI works "to some extent" - simple rules work, however introduction of Event object methods such as getValue() and getSource() gives "wrong class format" error, in such case the code does not seem to compile. The modeler_rules.drl file does not update after introducing those methods to the code in designer</li>
+</ul>
+
+
+<p>This post is about very similar behaviour: <a href="https://www.java.net/forum/topic/jdk/java-se-snapshots-project-feedback/drools-stop-working-java-8">https://www.java.net/forum/topic/jdk/java-se-snapshots-project-feedback/drools-stop-working-java-8</a></p>
+
+<ul class="alternate" type="square">
+	<li>the new Java SE Development Kit 7u40 Linux ARM v6/v7 VFP Hard Float ABI - rules did not work at all, I received the below error:</li>
+</ul>
+
+
+<p>ERROR 2013-09-29 20:26:46,713 : Cannot start event processor 'Drools Rule Engine' : Unable to load dialect 'org.drools.rule.builder.dialect.java.JavaDialectConfiguration:java:org.drools.rule.builder.dialect.java.JavaDialectConfiguration'<br/>
+org.drools.RuntimeDroolsException: Unable to load dialect 'org.drools.rule.builder.dialect.java.JavaDialectConfiguration:java:org.drools.rule.builder.dialect.java.JavaDialectConfiguration'<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.addDialect(PackageBuilderConfiguration.java:283)<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.buildDialectConfigurationMap(PackageBuilderConfiguration.java:268)<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.init(PackageBuilderConfiguration.java:181)<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.&lt;init&gt;(PackageBuilderConfiguration.java:159)<br/>
+	at org.drools.compiler.PackageBuilder.&lt;init&gt;(PackageBuilder.java:210)<br/>
+	at org.drools.compiler.PackageBuilder.&lt;init&gt;(PackageBuilder.java:143)<br/>
+	at org.drools.builder.impl.KnowledgeBuilderFactoryServiceImpl.newKnowledgeBuilder(KnowledgeBuilderFactoryServiceImpl.java:34)<br/>
+	at org.drools.builder.KnowledgeBuilderFactory.newKnowledgeBuilder(KnowledgeBuilderFactory.java:47)<br/>
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:484)<br/>
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)<br/>
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)<br/>
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)<br/>
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:659)<br/>
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:858)<br/>
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)<br/>
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)<br/>
+	at java.lang.Thread.run(Thread.java:724)<br/>
+Caused by: org.drools.RuntimeDroolsException: value '1.7' is not a valid language level<br/>
+	at org.drools.rule.builder.dialect.java.JavaDialectConfiguration.getDefaultLanguageLevel(JavaDialectConfiguration.java:162)<br/>
+	at org.drools.rule.builder.dialect.java.JavaDialectConfiguration.init(JavaDialectConfiguration.java:57)<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.addDialect(PackageBuilderConfiguration.java:279)<br/>
+	... 18 more</p>
+
+<p>Is there any chance to fix it in near future? Otherwise, for OR rules a Raspberry with Raspbian Wheezy is unusable.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by maq100 at Sep 29, 2013 20:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878077"></a>
+                                    <font class="smallfont">
+<p>Hi, with a small patch I managed to get drools 5.1.1 running with java version 7, that is now shipped with Raspbian (<a href="http://www.raspberrypi.org/archives/4920">http://www.raspberrypi.org/archives/4920</a>)</p>
+
+<p>Try it at own risk from here: <a href="https://docs.google.com/file/d/0Bz2MoNbzcgBVMWZsRWlLeFR2S2M/edit?usp=sharing">https://docs.google.com/file/d/0Bz2MoNbzcgBVMWZsRWlLeFR2S2M/edit?usp=sharing</a></p>
+
+<p>Replace the existing drools-compiler-5.1.1.jar file by the one found in the link above.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by belio at Oct 13, 2013 17:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878359"></a>
+                                    <font class="smallfont"><p>It works, thank you very much! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by maq100 at Oct 16, 2013 22:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878407"></a>
+                                    <font class="smallfont"><p>Would be good if the team would consider including this patch in the upcoming release, so people can finally upgrade their JAVA installations to a less dangerous level.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 18, 2013 09:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879299"></a>
+                                    <font class="smallfont"><p>I'm struggling with the same problem, running OR 2.1.0.0713 on a Qnap TS-419 ARM. Downgraded    JRE from version 7 to 6 as I understood the OR rules engine is not compatible with Java 7?:</p>
+
+<p>Below the Java version I installed:<br/>
+ejre-7u45-fcs-b15-linux-arm-sflt-headless-26_sep_2013.tar.gz</p>
+
+
+<p>Unfortunately without success, still the same error as below. Also tried to upgrade the 'drools-compiler-5.1.1.jar' patch from Erwin (with Java still on 6 though) but also no succes. I'm lost now as I seem to have tried everything I could find on the different forums. </p>
+
+<p>OR works fine with both JRE 6 and 7 and I have been able to use all functionality so far apart from rules which I can't get to work.</p>
+
+<p>Any suggestion would be much appreciated.</p>
+
+<p>DEBUG 2013-11-03 11:08:29,476 : Initializing event processor: Drools Rule Engine<br/>
+DEBUG 2013-11-03 11:08:29,478 : Adding Rule 'modeler_rules.drl'...<br/>
+ERROR 2013-11-03 11:08:29,536 : Cannot start event processor 'Drools Rule Engine' : Unable to load dialect 'org.drools.rule.builder.dialect.java.JavaDialectConfiguration:java:org.drools.rule.builder.dialect.java.JavaDialectConfiguration'<br/>
+org.drools.RuntimeDroolsException: Unable to load dialect 'org.drools.rule.builder.dialect.java.JavaDialectConfiguration:java:org.drools.rule.builder.dialect.java.JavaDialectConfiguration'<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.addDialect(PackageBuilderConfiguration.java:283)<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.buildDialectConfigurationMap(PackageBuilderConfiguration.java:268)<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.init(PackageBuilderConfiguration.java:181)<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.&lt;init&gt;(PackageBuilderConfiguration.java:159)<br/>
+	at org.drools.compiler.PackageBuilder.&lt;init&gt;(PackageBuilder.java:210)<br/>
+	at org.drools.compiler.PackageBuilder.&lt;init&gt;(PackageBuilder.java:143)<br/>
+	at org.drools.builder.impl.KnowledgeBuilderFactoryServiceImpl.newKnowledgeBuilder(KnowledgeBuilderFactoryServiceImpl.java:34)<br/>
+	at org.drools.builder.KnowledgeBuilderFactory.newKnowledgeBuilder(KnowledgeBuilderFactory.java:47)<br/>
+	at org.openremote.controller.statuscache.rules.RuleEngine.getValidKnowledgePackages(RuleEngine.java:484)<br/>
+	at org.openremote.controller.statuscache.rules.RuleEngine.start(RuleEngine.java:253)<br/>
+	at org.openremote.controller.statuscache.EventProcessorChain.start(EventProcessorChain.java:112)<br/>
+	at org.openremote.controller.statuscache.StatusCache.start(StatusCache.java:120)<br/>
+	at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:659)<br/>
+	at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:557)<br/>
+	at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:154)<br/>
+	at org.openremote.controller.service.Deployer.startup(Deployer.java:858)<br/>
+	at org.openremote.controller.service.Deployer.softRestart(Deployer.java:440)<br/>
+	at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1324)<br/>
+	at java.lang.Thread.run(Thread.java:744)<br/>
+Caused by: org.drools.RuntimeDroolsException: value '1.7' is not a valid language level<br/>
+	at org.drools.rule.builder.dialect.java.JavaDialectConfiguration.getDefaultLanguageLevel(JavaDialectConfiguration.java:162)<br/>
+	at org.drools.rule.builder.dialect.java.JavaDialectConfiguration.init(JavaDialectConfiguration.java:57)<br/>
+	at org.drools.compiler.PackageBuilderConfiguration.addDialect(PackageBuilderConfiguration.java:279)<br/>
+	... 18 more<br/>
+DEBUG 2013-11-03 11:08:29,541 : Initializing event processor: RRD4J Data Logger<br/>
+INFO 2013-11-03 11:08:29,625 : Initialized event processor : RRD4J Data Logger<br/>
+DEBUG 2013-11-03 11:08:29,625 : Initializing event processor: EmonCMS Data Logger<br/>
+INFO 2013-11-03 11:08:29,625 : Initialized event processor : EmonCMS Data Logger<br/>
+DEBUG 2013-11-03 11:08:29,739 : Created object model for sensor 'Testje' (ID = '3,602,146').<br/>
+INFO 2013-11-03 11:08:29,740 : Registered sensor : Sensor (Name = 'Testje', ID = '3602146', State Mappings: {})<br/>
+INFO 2013-11-03 11:08:29,783 : Startup complete.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bunster at Nov 03, 2013 11:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879510"></a>
+                                    <font class="smallfont"><p>Hi<br/>
+Please see it you can apply patch as mentioned above. This link provides some explanation of the issue <a href="http://stackoverflow.com/questions/7837663/no-support-for-java-7-in-drools-runtimedroolsexception-value-1-7-is-not-a">http://stackoverflow.com/questions/7837663/no-support-for-java-7-in-drools-runtimedroolsexception-value-1-7-is-not-a</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by maq100 at Nov 06, 2013 14:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880174"></a>
+                                    <font class="smallfont"><p>I can only confirm that rules that are reading sensor values are not working on Oracle SE 8:</p>
+
+<p>rule "Show Event" when<br/>
+  $evt : Event(source == "TestAlarmTriggerStatus")<br/>
+then<br/>
+  execute.command("LogStatus", $evt.getValue().toString() );<br/>
+end</p>
+
+<p>The only working Java edition for a Raspberry Pi that works together with OpenRemote and with the RaZberyy ZWave platform is OpenJDK (IcedTea6 Zero VM).<br/>
+The RaZberry software requires a hard-float installation which excludes the Oracle SE 6 VM (only available for soft float configuration).<br/>
+Oracle SE 7 is incompatible with the Drools rule engine 5.1.1 that is currently used by OpenControl 2.0, 2.1 (and soon 2.2).<br/>
+I tried to apply the fixes proposed on this page for Oracle Java SE 7 and 8 without any success.<br/>
+OpenJDK (IcedTea6 Zero VM) is slower than Oracle Java, but it is available for hard float installation and the Drools rule engine 5.1.1 works.<br/>
+I hope OpenRemote will be soon updated to Drools 5.5 that should again be compatible with Oracle Java 8.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by drolli at Nov 22, 2013 15:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22889055"></a>
+                                    <font class="smallfont"><p>Hi,<br/>
+ has anyone new information about update Drools to 5.5  or how reading sensor values /getValue()/ in java 8 ?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by svalent at Sep 29, 2014 14:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596296"></a>
+                                    <font class="smallfont"><p>I have the same problem and can hardly wait for Drools 5.5.0.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mschrauf at Feb 02, 2015 23:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602924"></a>
+                                    <font class="smallfont"><p>Thanks to the here above post of Erwin, I could make drools 5.1.1 running with java 1.7 on raspberry, after applying the proposed patch. Just need to reboot to make it work.<br/>
+After spending a incredible time to try to make it running, this is finally the case.</p>
+
+<p>Nevertheless, it becomes urgent to get Drools 5.5 to be able to run OR with the latest Java release ( 1.8 and future )</p>
+
+<p>Any news about that from the developer community ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by phil1348 at Dec 31, 2015 13:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23603202"></a>
+                                    <font class="smallfont"><p>Hello</p>
+
+<p>This changed file (drools-compiler-5.1.1.jar) works with java 7 or is it absolutely necessary to openjdk 7.</p>
+
+<p>Because I can not do has worked this rule, yet I have no errors in the logs</p>
+
+
+
+
+<p>rule "test" </p>
+
+<p>  timer (cron: 00 30 17-23 * * ?)</p>
+
+<p>when</p>
+
+<p>  Event( source == "lum_status", value == "off" )</p>
+
+<p>then</p>
+
+<p>  execute.command( "chauffage_off" );</p>
+
+<p>end</p>
+
+
+
+
+<p>Thank you</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre2302 at Jan 18, 2016 01:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

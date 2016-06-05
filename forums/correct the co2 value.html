@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : correct the co2 value</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : correct the co2 value
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 15, 2013 by <font color="#0050B2">keithmmt</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I would like to offset the value of co2 sensor, for an example when sensor shown 1678 and want to subtract 800 which becomes to 878.<br/>
+I had also checking pervious topic articles and found similar solutions as below, but not properly showing the value, hope help to advise how can do that for this case.<br/>
+many thanks,<br/>
+Keith </p>
+
+
+<p>rule "Correct CO2"<br/>
+when<br/>
+   $evt : Event(source=="co2sensor")<br/>
+then<br/>
+   double correctedValue = Double.parseDouble($evt.getValue().toString()) - 800;<br/>
+   execute.command("VirtualWrite", Double.toString(correctedValue));<br/>
+end</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22876392"></a>
+                                    <font class="smallfont"><p>Your rule seems to be OK if your virtual sensor is of type 'custom' (without custom state items).</p>
+
+<p>In case of a virtual range sensor try the following:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+execute.command(<span class="code-quote">"VirtualWrite"</span>, <span class="code-object">Integer</span>.toString((<span class="code-object">int</span>)correctedValue));
+</pre>
+</div></div>
+
+<p>In general I'ld suggest the following procedure to get it running:</p>
+
+<ol>
+	<li>Add logging:
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> 
+<span class="code-object">System</span>.out.println(<span class="code-quote">"Rule : Correct CO2"</span>);
+</pre>
+</div></div>
+<p>You should see this message in the console
+<br clear="all" /> <br clear="all" /></p></li>
+	<li>Play around with constants:
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> 
+execute.command(<span class="code-quote">"VirtualWrite"</span>, <span class="code-quote">"820"</span>);
+</pre>
+</div></div></li>
+</ol>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Sep 15, 2013 12:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876442"></a>
+                                    <font class="smallfont"><p>I've using the custom sensor without state and changed as following but still not properly show the value.<br/>
+please help to check.</p>
+
+<p>rule "Correct co2"<br/>
+when<br/>
+$evt : Event(source=="co2sensor")<br/>
+then<br/>
+double correctedValue = Double.parseDouble($evt.getValue().toString()) - 800;<br/>
+execute.command("VirtualWrite", Integer.toString((int)correctedValue));<br/>
+System.out.println("Rule : Correct co2");<br/>
+end</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by keithmmt at Sep 16, 2013 10:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876462"></a>
+                                    <font class="smallfont"><p>As I've already said your original rule is OK if you use a custom sensor. The following rule should work:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Correct CO2"</span>
+
+when
+
+  $evt : Event(source==<span class="code-quote">"co2sensor"</span>)
+
+then
+
+  <span class="code-object">double</span> correctedValue = <span class="code-object">Double</span>.parseDouble($evt.getValue().toString()) - 800;
+  execute.command(<span class="code-quote">"VirtualWrite"</span>, <span class="code-object">Double</span>.toString(correctedValue));
+
+end
+</pre>
+</div></div>
+
+<p>If it doesn't work simplify your rule and check if the rule is triggered:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Correct CO2"</span>
+
+when
+
+  $evt : Event(source==<span class="code-quote">"co2sensor"</span>)
+
+then
+
+  <span class="code-object">System</span>.out.println(<span class="code-quote">"Rule : Correct CO2"</span>);
+
+end
+</pre>
+</div></div>
+<p>If you do not see the log message "Rule : Correct CO2" in the console your CO2 sensor doesn't send data or there is something wrong with the source name "co2sensor".</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rhitz at Sep 16, 2013 20:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876476"></a>
+                                    <font class="smallfont"><p>Hi Rainer,</p>
+
+<p>Thanks help! I've simplify the rule and doesn't showing the message. <br/>
+i will double checking source "co2sensor"</p>
+
+<p>Many thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by keithmmt at Sep 17, 2013 07:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:40</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

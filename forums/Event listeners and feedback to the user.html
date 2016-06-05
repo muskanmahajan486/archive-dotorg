@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Event listeners and feedback to the user</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Event listeners and feedback to the user
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 12, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <blockquote>
+<p>Juhan wrote:<br/>
+The current Drools integration is here: <a href="http://svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617/src/org/openremote/controller/statuscache/rules/RuleEngine.java">http://svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617/src/org/openremote/controller/statuscache/rules/RuleEngine.java</a></p>
+
+<p>It was thrown together pretty quickly, and not cleaned up. There's a TODO comment left there for adding a listener for the events/logging Drools provides as it evaluates rules. The thinking at the time was to try to drill into the Drools algorithms with the listener interfaces provided in <a href="http://docs.jboss.org/jbpm/v5.1/javadocs/org/drools/event/rule/package-tree.html">http://docs.jboss.org/jbpm/v5.1/javadocs/org/drools/event/rule/package-tree.html</a></p>
+
+<p>However, reviewing them now I'm not at all sure if we can find anything there that helps the typical user's case. But maybe you can suggest something? The challenge will be to find the right bits of data from these events that provide some reasonable output to the user to try to figure out what's happening. An alternative is to try to reformat the rule parser error messages in a way that is more clear to the user how to interpret them (another common issue).</p></blockquote>
+
+<blockquote>
+<p>Isaac wrote:<br/>
+Event listeners are the best way to get information out of drools in drools 5. We will want to hook event listeners up to the drools keywords which modify the working memory (update, insert, retract). With those, we can output any information we want. Values of the lhs, meta info like the rule name, whatever. Normally you would hook this up to the slf4j implementation in drools to do logging and dump it all to some file, but there is no reason you couldn't route it elsewhere as well, say to a database which is being polled by the ui, or to the ui itself. If your drools do not universally modify the working memory, we can get a little creative.</p></blockquote>
+
+
+<blockquote>
+<p>Juhan wrote:<br/>
+Users inserting new facts from within their own rules is still not a widely used use case. Couple of reasons for this: We haven't documented or talked about this possibility yet on our website (much), so most users are unaware of this functionality. Only those who actually took the time to go through the Drools rule language documentation know about this or are using it. Partly this is also because didn't want to overwhelm the users initially so focus first on getting them very comfortable with scheduling/timers and simple if-then constructs.</p>
+
+<p>As far as inserting and retracting, apart from those users who do use their own fact insertion or modification, there's only the "Event" objects that we insert as part of the OR framework which are values arriving from various sensors and devices. </p>
+
+<p>So logging of insert/update/retract is something we should do but won't have an immediate impact on most users.</p>
+
+<p>The two parts where users seem to trip up the most is:</p>
+
+<p>1) why didn't my rule fire<br/>
+2) why is it firing too often</p>
+
+<p>So basically a failure on their reasoning or definition of the declarative logic.  If there's anything in the event listener that helps us bring clarity to the two issues above, then it's worth doing immediately with immediate benefit for large part of the userbase. </p>
+
+<p>Otherwise, our efforts might be best spent on the UI side which helps reduce the second major source of errors with Drools: syntax errors in the DRL file.</p></blockquote>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22876204"></a>
+                                    <font class="smallfont"><p>1) why didn't my rule fire<br/>
+This is a really hard one to make easy. I think doing this well might require several approaches simultaneously. </p>
+
+<p>The thing that would probably really help this situation is if users were writing JUnit tests for their drools before actually writing the drool. I realize this is way more than what the average user should be expected to be interested in doing. </p>
+
+<p>Barring unit tests, off the top of my head I would suggest creating a record of all the objects which passed through the Working Memory and their various states. This is potentially a lot of information, so we could limit it in scope somehow. Maybe the user requests a time frame, or maybe it only runs in unit tests, or it only runs when the program is started in a certain mode. We would probably also have to limit exactly what information about the object it is outputting (we don't care about the memory address!). We could then create simplified models of what objects <b>should</b> be present in order to trigger the rule of interest. The user could then compare the object they should have to the objects which existed in working memory. If they were on the right track at all in the first place then there will probably be an object that looks really similar to the expected object. </p>
+
+<p>Another thing that would help a bit is having a non-verbose and reasonably verbose log of all the drools that fire. The challenge here is in deciding what to put in each log. Once I have a development environment set up I'll do a simple implementation of logging in order to get a better feel of everything which is available.</p>
+
+<p>2)why is it firing too often<br/>
+I think the approaches I mentioned above should help with this one. I think that your suggestion of creating a ui layer over the drools files is great. It would prevent the users from making syntax errors and constrain them into using only expressions which are useful in the context of OpenRemote. I'm not as excited about doing web ui as I am about doing that logging, but I wouldn't mind approaching it in the future. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by melchoir55 at Sep 11, 2013 05:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876230"></a>
+                                    <font class="smallfont"><p>Thank you for sharing this interesting piece of information. Gave me a bit more insight on the relation Drools&lt;&gt;OR.<br/>
+Does this discussion mean that you and/or Juhan are actually working or prepare to work on this?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 12, 2013 09:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876239"></a>
+                                    <font class="smallfont"><p>I'm glad you found it interesting! I'm planning to get started on improving the drools logging and feedback to user soon. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by melchoir55 at Sep 12, 2013 17:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876240"></a>
+                                    <font class="smallfont"><p>Ah, that's great. Looking forward to it. With Drools I have the feeling that we are caught in the <a href="http://en.wikipedia.org/wiki/Law_of_the_instrument">Hammer-Nail</a> syndrome, because it serves so many purposes. We might need to rethink some needed basic functionalities, logic, data processing, scheduling apart from the tooling at hand.<br/>
+Anyhow a more modest goal to improve logging and feedback is a very good and welcome starting point.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 12, 2013 18:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876246"></a>
+                                    <font class="smallfont"><p>I feel like drools is more of a toolkit, or framework, rather than an individual tool. The big strengths I see for drools are in the efficient execution of huge rulebases, effective organization of those rulebases, and the potential for non-technical people to write those rules.  If you only needed one of those things then I'd say drools might be too heavy. OpenRemote seems to me a great use case for it. That being said, there are definitely things one is going to want to do which shouldn't be shoehorned into a drool. They should instead be written into the Java code which is encapsulating drools. This is all pretty abstract because I'm not familiar with your codebase or architecture. I hope it makes sense.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by melchoir55 at Sep 13, 2013 04:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876251"></a>
+                                    <font class="smallfont"><p>I do agree with the essence of what you say, but here,</p>
+<blockquote><p>and the potential for non-technical people to write those rules</p></blockquote>
+<p>I disagree, and I believe the threads clearly demonstrate it is a nightmare for those people. The great majority of potential users of OR are just comfortable to configure devices and screens with designer. When it comes to schedules and logic they are lost, and unfortunately OR loses them. In the Zwave world they chose Zipabox, Fibaro Home Center, etc. And, I admit, some get frustrated there as well, because it doesn't exactly do what they want. <br/>
+With the rethinking I did not mean doing away with Drools, but additionaly offering limited functionality via a GUI in Designer. Many would be happy if they only had a simple commands scheduler template there. See for example <a href="http://www.openremote.org/display/forums/Blockly+-+Visual+programming+editor">Eduardo's suggestion on using blockly</a>.<br/>
+Well sorry for hijacking this thread, I'll stop now. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 13, 2013 08:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876284"></a>
+                                    <font class="smallfont"><p>Totally agree with you. Drools out of the box is more of a skeleton than a ready-to-go solution. It needs to be customized heavily for each use case. OR hasn't done that yet, but by gum it's going to! Your reference to a GUI which offers functionality sufficient for the vast majority of users is exactly what needs to be done. Drools is set up for this sort of layer. We just need to make it! </p>
+
+<p>You might know about it already, but drools devs created an example of a user interface layer on top of the drools dialect. This is the excel decision table. They are still too general and low level for the OR case, but they are an example of what we need to do (layer a simplified interface on top of the drl files). I think Juha is hoping for a web based ui. I like that idea, myself.</p>
+
+<p>We should talk more about a user interface in a separate thread.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by melchoir55 at Sep 13, 2013 17:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876321"></a>
+                                    <font class="smallfont"><p>Later today I'll continue with a response in Eduardo's thread</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 14, 2013 09:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876359"></a>
+                                    <font class="smallfont"><p>The other aspect of "rethinking" I had in mind, but could not trace yesterday, was the issue of what goes conceptually in the device definition, and what in the system smartness.<br/>
+A nice example is <a href="http://openremote.org/pages/viewpage.action?pageId=22414523">Michal Rutka's problem of correcting a sensor value</a>. It is a nice example of what Drools can do for you, but for me it feels like overkill. If his data were XML a simple XPATH expression would do. <br/>
+I did come across Jira issue <a href="http://jira.openremote.org/browse/ORCJAVA-250">ORCJAVA-250</a> a long time ago. Actually it belongs to a series (<b>ORCJAVA247-251</b>) of related issues for different protocols to provide some scripting interface for "polishing" the collected data. (If I understood correctly).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 14, 2013 14:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876612"></a>
+                                    <font class="smallfont"><p>Being able to debug is one of the basic aspects of writing any code. For my coding of rules in OR I use a simple event monitor which gives me feedback in UI. To do this do the following:</p>
+
+<p>1. Create in memory variable, "Vtmp" with a command status.<br/>
+2. Create sensor with this device command, type custom.<br/>
+3. In UI create label and tie it to the sensor.<br/>
+4. Create rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Show Event"</span>
+when
+  $e : Event(source != <span class="code-quote">"Vtmp"</span>)
+then
+  <span class="code-object">String</span> e = $e.getSource().toString();
+  <span class="code-object">String</span> v = $e.getValue().toString();
+  execute.command(<span class="code-quote">"Vtmp"</span>, _TimeStamp()+<span class="code-quote">": "</span>+e+<span class="code-quote">" "</span>+v);
+end
+</pre>
+</div></div>
+
+<p>The _TimeStamp() is a local function which you can skip or add to drl:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">import</span> java.util.Date
+<span class="code-keyword">import</span> java.text.SimpleDateFormat;
+function <span class="code-object">String</span> _TimeStamp(){
+  Date now = <span class="code-keyword">new</span> Date();
+  SimpleDateFormat dateFormatter = <span class="code-keyword">new</span> SimpleDateFormat(<span class="code-quote">"d H:mm:ss"</span>);
+  <span class="code-keyword">return</span>(dateFormatter.format(now));
+}
+</pre>
+</div></div>
+
+<p>After this you will see all events which come inside the rule engine in UI. Very handy for field tests.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 21, 2013 10:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876613"></a>
+                                    <font class="smallfont"><p>For me the most important addition, directly improving efficiency, would be to add a feedback to user when drl compiling errors occur during sync. Right now you get happy sync complete message and if there were any errors in drools you must go to log files. Sometimes it is not possible if you are after firewall and no ssh access to the controller. It should not be very difficult as error reporting mechanism during sync is already there. It only not works with drools.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 21, 2013 11:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

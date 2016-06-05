@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNX via Android (beginners question)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNX via Android (beginners question)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 01, 2011 by <font color="#0050B2">daendekerk</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>I admit: I'm pretty new to KNX and OpenRemote, I'm getting the basics, but I still need to learn a lot.</p>
+
+<p>This is the current situation:<br/>
+I have a working KNX home automation at home. Using ETS 3 and an IP router, I'm able to change the configuration. I'm now taking steps to control everything using Openremote.<br/>
+I've installed the OpenRemote app on my Android. I've also successfully installed the OpenRemote Controller on my Windows PC (if I get that working, I'll see if I can get it working on my Synology).<br/>
+Looking at the logs, I see that the Controller successfully finds the IP router:<br/>
+"Found a KNX IP interface at /192.168.3.5:3671"<br/>
+The Andoid application also auto-detects my controller.<br/>
+So that all sounds good. But now the hard part. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>As a start, I want to turn on/off the light in the room I'm current in using my Android. How ambitious is that! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>As you can see in the <a href="http://img198.imageshack.us/img198/3258/knx.jpg" title="screenshot">screenshot</a>, this light has the following settings:<br/>
+  Group Address: 0/0/18<br/>
+  Data type: 1.001 (switch)<br/>
+  Value: on/off</p>
+
+<p>I created the settings in the OpenRemote Boss 2.0, and this is the outcome: <a href="http://dl.dropbox.com/u/16028211/openremote_dries.zip" title="OpenRemote Configuration">openremote.zip</a></p>
+
+<p>When actually opening this via Android, I get the following error: "Polling Error - Controller did not recognize the sent command id". I even get the error before pressing any button. </p>
+
+<p>Anyone knows what I did wrong?</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19432681"></a>
+                                    <font class="smallfont"><p>Your sensor is linked to the "on" command. But you need to create an extra command "status" where  the group address is the one where you KNX actuator returns the status on.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 01, 2011 19:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432686"></a>
+                                    <font class="smallfont"><p>Hmm...<br/>
+I can't find the group address where the KNX actuator returns the status on, I assume it is not 0/0/18? I guess that is the group address of the actuator itself?<br/>
+How can I find that address in ETS3?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by daendekerk at Oct 01, 2011 21:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432689"></a>
+                                    <font class="smallfont"><p>In ETS when you select the actuator in your project you should see the differen communication objects and the linked group addresses. Do you habe a group address assigned to the "status" object?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 01, 2011 22:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432690"></a>
+                                    <font class="smallfont"><p>Ok,<br/>
+Things are becoming more clear now. Apparantly, no statusses were defined initially, but I was able to assign the status of the actuator to a new group address.</p>
+
+<p>This is what I did: <a href="http://dl.dropbox.com/u/16028211/KNX.jpg" title="KNX config">see picture</a>.</p>
+
+<p>So I defined a new group address 0/2/18 that reads the status of the light. In ETS3 that seems to work.</p>
+
+<p>Now back to the Openremote Controller. I adjusted the sensor so it is linked to the new status-command. <a href="http://dl.dropbox.com/u/16028211/openremote_dries.zip" title="Openremote controller config">See zip file.</a>. However I wasn't sure what to fill in when defining the status command. This is what I did:<br/>
+     Group Address: 0/2/18<br/>
+     KNX Command: ON (not sure about that, but don't know any other command);<br/>
+     DTP: 1.001</p>
+
+<p>However, I still get the same error as above. I guess my config is not 100% correct.</p>
+
+<p>My logs show this:</p>
+
+<p>Controller2011-10-02 10:46:52,426 INFO HTTP\-Thread\-17 org.openremote.controller.service.impl.FileServiceImpl.downloadOpenremoteZipFromBeehiveAndUnzip(172) | <a href="http://beehive.openremote.org/3.0/alpha5/rest/user/daendekerk/openremote.zip">http://beehive.openremote.org/3.0/alpha5/rest/user/daendekerk/openremote.zip</a> is available.<br/>
+Controller2011-10-02 10:46:52,847 INFO HTTP\-Thread\-17 org.openremote.controller.service.impl.FileServiceImpl.writeZipAndUnzip(114) | unzip C:\Openremote\bin\..\webapps\controller\openremote.zip success.<br/>
+Controller2011-10-02 10:46:52,878 INFO HTTP\-Thread\-17 org.openremote.controller.service.impl.ControllerXMLChangeServiceImpl.refreshController(72) | Controller.xml of Controller changed, refreshing controller.xml<br/>
+Controller2011-10-02 10:46:52,909 INFO HTTP\-Thread\-17 org.openremote.controller.bootstrap.Startup$Log4jRedirect.publish(221) | Created KNX Command FRAME L_Data.req 0.0.0 -&gt; 0/2/18 Data: 0x01 for group address '0/2/18'<br/>
+Controller2011-10-02 10:46:52,909 INFO HTTP\-Thread\-17 org.openremote.controller.service.impl.ControllerXMLChangeServiceImpl.refreshController(96) | Finished refreshing controller.xml failed <br/>
+Controller2011-10-02 10:47:02,207 INFO HTTP\-Thread\-18 org.openremote.controller.rest.RoundRobinRESTServlet.doPost(63) | Start RoundRobin group member REST service. at 2011-10-02 10:47:02<br/>
+Controller2011-10-02 10:47:02,222 INFO Thread\-13 org.openremote.controller.net.RoundRobinUDPServer$UDPServerDealThread.run(131) | UDP Server : Received the controller multicast request from the same group floor20<br/>
+Controller2011-10-02 10:47:02,222 INFO Thread\-7 org.openremote.controller.net.RoundRobinTCPServer.run(52) | TCP Server : a new groupmember socket established...<br/>
+Controller2011-10-02 10:47:02,222 INFO Thread\-14 org.openremote.controller.net.RoundRobinTCPServer$AppendGroupMemberThread.run(79) | TCP Server deal thread : Ready for receiving groupmember url ...<br/>
+Controller2011-10-02 10:47:02,222 INFO Thread\-14 org.openremote.controller.net.RoundRobinTCPServer$AppendGroupMemberThread.run(83) | TCP Server deal thread : received a groupmember url : <a href="http://192.168.3.103:8080/controller">http://192.168.3.103:8080/controller</a><br/>
+Controller2011-10-02 10:47:02,238 ERROR HTTP\-Thread\-21 org.openremote.controller.rest.StatusCommandRESTServlet.doPost(106) | CommandException occurs<br/>
+org.openremote.controller.exception.NoSuchComponentException: No such component in status cache : 13<br/>
+	at org.openremote.controller.statuscache.StatusCache.queryStatuses(StatusCache.java:96)<br/>
+	at org.openremote.controller.service.impl.StatusCacheServiceImpl.queryStatuses(StatusCacheServiceImpl.java:43)<br/>
+	at org.openremote.controller.service.impl.StatusCommandServiceImpl.readFromCache(StatusCommandServiceImpl.java:97)<br/>
+	at org.openremote.controller.rest.StatusCommandRESTServlet.doPost(StatusCommandRESTServlet.java:103)<br/>
+	at org.openremote.controller.rest.StatusCommandRESTServlet.doGet(StatusCommandRESTServlet.java:68)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:65)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)<br/>
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)<br/>
+	at java.lang.Thread.run(Thread.java:662)<br/>
+Controller2011-10-02 10:47:02,737 INFO HTTP\-Thread\-18 org.openremote.controller.rest.RoundRobinRESTServlet.doPost(86) | Finished RoundRobin group member REST service.  at 2011-10-02 10:47:02</p>
+
+
+
+
+<p>Any idea in which direction I need to look?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by daendekerk at Oct 02, 2011 09:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432692"></a>
+                                    <font class="smallfont"><p>You have to use "status" as command for the status command.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 02, 2011 15:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432696"></a>
+                                    <font class="smallfont"><p>Hey,</p>
+
+<p>Haha, I should have guessed that, sorry! <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>I've applied the adjustment, and I can turn on the light using my Android, great!</p>
+
+<p>Some things that I need to investigate further (hints welcome):</p>
+<ul>
+	<li>Im using the "switch" in my graphical designer, where you can define different images for "on" and "off". Regardless of the light being on/off, the image in my openremote shows "off".</li>
+	<li>I can only turn the light "on", I cannot turn it off. Probably because Openremote thinks it is off (cfr off-image).</li>
+</ul>
+
+
+<p>Any idea?<br/>
+Anyway, this proof of concept is sufficient for me to start installing openremote on my Synology NAS to have a real homeserver (only a lot cheaper then Gira's solution). </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by daendekerk at Oct 02, 2011 20:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432702"></a>
+                                    <font class="smallfont"><p>Let me summarize what you need. It looks like the commands and needed objects might still have a glitch.</p>
+
+<ul class="alternate" type="square">
+	<li>one command "on"</li>
+	<li>one command "off"</li>
+	<li>one command "status"</li>
+	<li>one sensor of type switch in building designer</li>
+	<li>one switch in building designer linked to the switch sensor and the on/off commands</li>
+	<li>one UI switch in UI designer linked to the switch from building designer</li>
+	<li>the UI switch can get the graphics for on and off</li>
+</ul>
+
+
+<p>You can see a demo here: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+KNX+Switches">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+KNX+Switches</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 03, 2011 14:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432706"></a>
+                                    <font class="smallfont"><p>Hi Marcus,<br/>
+Thanks for the tutorial, I didn't saw that one before.</p>
+
+<p>But I think (also thanks to the input I got here), that I already was that far.</p>
+
+<p>Reconsidering everything, I think that the polling-error was caused by the fact that I had ET3 open, the bus/group monitor active and after that I started the openremote controller. I think this controller was able to find the KNX interface, but unable to set up an active connection. Could that be possible? I also noticed the reverse: if I first start up the openremote controller and then try to activate the bus monitor in ET3, I also receive an error. I think my IP router can only handle one connection at a time. </p>
+
+<p>So I think the polling-error is solved by not having ET3 open. But she status-indicator is still not working. But I'm not sure how to troubleshoot this further. If I check the status in ET3 using group address 0/2/18, that seems to work (<a href="http://dl.dropbox.com/u/16028211/KNX.jpg">see screenshot</a>). </p>
+
+<p>Any idea?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by daendekerk at Oct 03, 2011 18:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432707"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>yes it is correct that only one device (either ETS or ORB) can connect to KNX IP gateway. There are few new models which allow up to 4 connections but most of the KNX IP gateway don't support that.</p>
+
+<p>Your screenshot shows that your actuator is responding on the status read but you also have to configure it that way that it automatically responds with the status if you eg use  the light switch on the wall. This is a setting on the parameters page of your device in ETS.</p>
+
+<p>Regards,<br/>
+--Marcus</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 03, 2011 19:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432710"></a>
+                                    <font class="smallfont"><p>Hey Marcus,</p>
+
+<p>That was what I was missing. I've changed these parameters and it's working! I can turn on/off the light and the status is showing nicely in the openremote controller.</p>
+
+<p>Thanks alot!!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by daendekerk at Oct 03, 2011 21:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879525"></a>
+                                    <font class="smallfont"><p>Hello,</p>
+
+<p>I have a similar problem but I don't know what to do in ETS4 to make this happen: </p>
+
+<p>"you also have to configure it that way that it automatically responds with the status if you eg use the light switch on the wall. This is a setting on the parameters page of your device in ETS."</p>
+
+
+<p>Today i can switch on the light but I have a problem to get the status updated. I know that I have to change one parameter in ETS but I don't know which one. <br/>
+Could someone help?</p>
+
+<p>Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fpitoune at Nov 06, 2013 22:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879532"></a>
+                                    <font class="smallfont"><p>That depends on your KNX actuator.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 06, 2013 23:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879553"></a>
+                                    <font class="smallfont"><p>It's a Schneider Switch Actuator.<br/>
+If I'm remember well it will be this one: REG-K/12x/10 with manual mode = MTN649912.<br/>
+I will check tonight.</p>
+
+<p>Please tell me that I will be able to have status on this switch actuator; I read yesterday that some product do not offer thus option ...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fpitoune at Nov 07, 2013 08:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:49</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

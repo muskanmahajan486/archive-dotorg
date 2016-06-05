@@ -1,0 +1,341 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Event based status (KNX)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Event based status (KNX)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 10, 2010 by <font color="#0050B2">trondk</font>.
+				    </div>
+
+				    <p>As explained in other posts I have with some success been able to get some basic OR functionality working with my KNX installation, hence have been able to play around with it a bit.</p>
+
+<p>At the moment it seems like the status objects (sensors) are kept up to date by means of polling, once a second as far as I can see.</p>
+
+<p>When scaling up from my simple tests (with one dimmer and one switch) this would mean that for lighting control in my system with (soon to have) between 30-50 dimmer channels, I am looking at 120-200 KNX telegrams per second on the KNX bus (read request and response for switch + dimmer for every dimmer channel.)</p>
+
+<p>I am not sure I think that is the sanest approach.</p>
+
+<p>For one thing, even if the KNX bus as such may have no problems with it (I don't know really, have not looked at the specs), it will for sure create a lot of "noise" in my telegram monitoring log (I log all traffic on the bus, to be able to do visualisation for stuff like heating control etc.)</p>
+
+<p>I would think that an alternative would be to do the status objects by means of listening on the bus to any telegrams to the relevant group addresses, and update the status based on that?</p>
+
+<p>Is there already plans for exploring such an approach? Would anybody be adversed to me hacking a bit in that area?</p>
+
+<p>Also, if you agree that it would be nice to have this as an alternative way of handling status (e.g. configurable), do you think that this would be best done as a general mechanism for all protocols, or do you prefer a solution that is KNX only?</p>
+
+
+<p>Anyone with opinions on this subject?</p>
+
+
+<p>/Trond</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-12847263"></a>
+                                    <font class="smallfont"><p>Yes, start hacking.</p>
+
+<p>It is actually already based on listening on the bus, in the KNXConnectionManager (<a href="https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/KNXConnectionManager.java">https://openremote.svn.sourceforge.net/svnroot/openremote/trunk/Controller/src/org/openremote/controller/protocol/knx/KNXConnectionManager.java</a>)</p>
+
+<p>A lot of it is unfinished, I put it in place quickly and was distracted to other things.</p>
+
+<p>What you will want to do is to throttle the protocol implementation, i.e. even if the system does request status updates (once a second, or whatever else you configure for it &#8211; this config also needs to be externalized), it doesn't mean that it <b>has to</b> translate to a request on the bus &#8211; it could return the status from its 'internalState' where we have the latest info received from the KNX bus.</p>
+
+<p>Further, adding callbacks to the API for protocols to push events to status cache instead of using polling is on the list of things to do. If you want to start hacking on that, go ahead. It involves API changes so send stuff to review where you can.</p>
+
+<p>Thanks for taking the initiative.</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  /**
+   * TODO
+   *
+   */
+  <span class="code-keyword">private</span> class KNXBusListener <span class="code-keyword">implements</span> KNXListener
+  {
+
+    <span class="code-keyword">private</span> KNXnetIPTunnel connection = <span class="code-keyword">null</span>;
+    <span class="code-keyword">private</span> Map&lt;GroupAddress, ApplicationProtocolDataUnit.ResponseAPDU&gt; internalState =
+        <span class="code-keyword">new</span> ConcurrentHashMap&lt;GroupAddress, ApplicationProtocolDataUnit.ResponseAPDU&gt;(1000);
+
+
+
+    <span class="code-keyword">private</span> KNXBusListener(KNXnetIPTunnel connection)
+    {
+      <span class="code-keyword">this</span>.connection = connection;
+
+    }
+
+    <span class="code-keyword">public</span> void frameReceived(FrameEvent event)
+    {
+      <span class="code-keyword">try</span>
+      {
+        log.debug(<span class="code-quote">"RECEIVED: "</span> + event.getFrame());
+
+        <span class="code-object">byte</span>[] frame = event.getFrame().toByteArray();
+
+        <span class="code-comment">// TODO : properly handle AdditionalInfo field when AddInfo is present (currently breaks <span class="code-keyword">this</span> impl.)
+</span>
+        <span class="code-keyword">if</span> (DataLink.isDataIndicateFrame(frame[KNXCommand.CEMI_MESSAGECODE_OFFSET]))
+        {
+          GroupAddress address = <span class="code-keyword">new</span> GroupAddress(
+              frame[KNXCommand.CEMI_DESTADDR_HIGH_OFFSET],
+              frame[KNXCommand.CEMI_DESTADDR_LOW_OFFSET]
+          );
+
+          <span class="code-object">byte</span> dataLen    = frame[KNXCommand.CEMI_DATALEN_OFFSET];
+          <span class="code-object">byte</span> apciHi     = frame[KNXCommand.CEMI_TPCI_APCI_OFFSET];
+          <span class="code-object">byte</span> apciLoData = frame[KNXCommand.CEMI_APCI_DATA_OFFSET];
+
+          <span class="code-comment">// sanity checks -- is a response?
+</span>
+          <span class="code-keyword">if</span> (!ApplicationProtocolDataUnit.isGroupValueResponse(<span class="code-keyword">new</span> <span class="code-object">byte</span>[] { apciHi, apciLoData }))
+          {
+            log.debug(<span class="code-quote">"Ignoring frame: "</span> + event.getFrame());
+
+            <span class="code-comment">// TODO : should handle write requests coming to gateway, e.g. motion sensors
+</span>
+            <span class="code-keyword">return</span>;
+          }
+          
+          ApplicationProtocolDataUnit.ResponseAPDU apdu = <span class="code-keyword">null</span>;
+
+          <span class="code-keyword">if</span> (dataLen == 1)
+          {
+            apdu = ApplicationProtocolDataUnit.ResponseAPDU.create6BitResponse
+            (
+                <span class="code-keyword">new</span> <span class="code-object">byte</span>[] { apciHi, apciLoData }
+            );
+          }
+
+          <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dataLen == 2)
+          {
+            apdu = ApplicationProtocolDataUnit.ResponseAPDU.create8BitResponse
+            (
+                <span class="code-keyword">new</span> <span class="code-object">byte</span>[] { apciHi, apciLoData, frame[KNXCommand.CEMI_DATA1_OFFSET] }
+            );
+          }
+
+          <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dataLen == 3)
+          {
+            apdu = ApplicationProtocolDataUnit.ResponseAPDU.createTwoByteResponse
+            (
+                <span class="code-keyword">new</span> <span class="code-object">byte</span>[] {
+                    apciHi, apciLoData,
+                    KNXCommand.CEMI_DATA1_OFFSET,
+                    KNXCommand.CEMI_DATA2_OFFSET
+                }
+            );
+          }
+
+          <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dataLen == 4)
+          {
+            apdu = ApplicationProtocolDataUnit.ResponseAPDU.createThreeByteResponse
+            (
+                <span class="code-keyword">new</span> <span class="code-object">byte</span>[] {
+                    apciHi, apciLoData,
+                    KNXCommand.CEMI_DATA1_OFFSET,
+                    KNXCommand.CEMI_DATA2_OFFSET,
+                    KNXCommand.CEMI_DATA3_OFFSET
+                }
+            );
+          }
+
+          <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dataLen == 5)
+          {
+            apdu = ApplicationProtocolDataUnit.ResponseAPDU.createFourByteResponse
+            (
+                <span class="code-keyword">new</span> <span class="code-object">byte</span>[] {
+                    apciHi, apciLoData,
+                    KNXCommand.CEMI_DATA1_OFFSET,
+                    KNXCommand.CEMI_DATA2_OFFSET,
+                    KNXCommand.CEMI_DATA3_OFFSET,
+                    KNXCommand.CEMI_DATA4_OFFSET
+                }
+            );
+          }
+          
+          <span class="code-keyword">else</span>
+          {
+            <span class="code-object">byte</span>[] data = <span class="code-keyword">new</span> <span class="code-object">byte</span>[dataLen];
+            <span class="code-object">System</span>.arraycopy(frame, KNXCommand.CEMI_DATA1_OFFSET, data, 0, data.length);
+
+            apdu = ApplicationProtocolDataUnit.ResponseAPDU.createStringResponse(data);
+          }
+
+          log.debug(<span class="code-quote">"Adding to internal state "</span> + event.getFrame());
+
+          internalState.put(address, apdu);
+        }
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Nov 11, 2010 04:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13303811"></a>
+                                    <font class="smallfont"><p>Thanks for the pointer!</p>
+
+<p>I have barely started to dig into this, so it may take a while before I have something generic.</p>
+
+<p>Howver, I managed to cook up a "workaround" patch that seems to work fairly well for my KNX setup. It works by basically storing everything received from the KNX bus in the internal cache, and then just avoid sending read-requests if there already is a value in the cache for the relevant address. </p>
+
+
+<p>Regards,<br/>
+Trond</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Index: src/org/openremote/controller/protocol/knx/KNXConnectionManager.java   
+===================================================================           
+--- src/org/openremote/controller/protocol/knx/KNXConnectionManager.java        (revision 3159)
++++ src/org/openremote/controller/protocol/knx/KNXConnectionManager.java        (working copy) 
+@@ -925,11 +925,11 @@                                                                          
+                                                                                               
+           <span class="code-keyword">if</span> (!ApplicationProtocolDataUnit.isGroupValueResponse(<span class="code-keyword">new</span> <span class="code-object">byte</span>[] { apciHi, apciLoData }))
+           {                                                                                        
+-            log.debug(<span class="code-quote">"Ignoring frame: "</span> + event.getFrame());                                      
++            <span class="code-comment">//log.warn(<span class="code-quote">"Ignoring frame: "</span> + event.getFrame());                                     
+</span>                                                                                                    
+             <span class="code-comment">// TODO : should handle write requests coming to gateway, e.g. motion sensors          
+</span>                                                                                                    
+-            <span class="code-keyword">return</span>;                                                                                
++            <span class="code-comment">//<span class="code-keyword">return</span>;                                                                              
+</span>           }                                                                                        
+                                                                                                    
+           ApplicationProtocolDataUnit.ResponseAPDU apdu = <span class="code-keyword">null</span>;                                    
+@@ -997,8 +997,15 @@                                                                                
+             apdu = ApplicationProtocolDataUnit.ResponseAPDU.createStringResponse(data);            
+           }                                                                                        
+                                                                                                    
+-          log.debug(<span class="code-quote">"Adding to internal state "</span> + event.getFrame());                               
++          <span class="code-object">String</span> sourceAddr = IndividualAddress.formatToAreaLineDevice(                            
++            <span class="code-keyword">new</span> <span class="code-object">byte</span>[] { frame[4/*CEMI_SOURCEADDR_HIGH_OFFSET*/],                                  
++                         frame[5/*CEMI_SOURCEADDR_LOW_OFFSET*/] }                                  
++            );                                                                                     
++                                                                                                   
++          <span class="code-keyword">if</span>( !sourceAddr.equals(<span class="code-quote">"0.0.0"</span>) )                                                        
++          {                                                                                        
+-          internalState.put(address, apdu);                                                        
++            internalState.put(address, apdu);
++          }
+         }
+
+ /*
+@@ -1093,9 +1100,22 @@
+
+     <span class="code-keyword">public</span> ApplicationProtocolDataUnit read(GroupValueRead command)
+     {
+-      <span class="code-keyword">this</span>.sendInternal(command);
+-
++      <span class="code-comment">// First check <span class="code-keyword">if</span> we already have a cached value <span class="code-keyword">for</span> <span class="code-keyword">this</span>
+</span>+      <span class="code-comment">// address...
+</span>       ApplicationProtocolDataUnit.ResponseAPDU response = busListener.internalState.get(command.getAddress());
+
++      <span class="code-keyword">if</span> (response != <span class="code-keyword">null</span>)
++      {
++        log.debug(<span class="code-quote">"############## Using cached value <span class="code-keyword">for</span> address "</span>
++                  + command.getAddress() + <span class="code-quote">": "</span>
++                  + response.resolve(command.getDataPointType()));
++      }
++      <span class="code-keyword">else</span>
++      {
++        <span class="code-keyword">this</span>.sendInternal(command);
++
++        response = busListener.internalState.get(command.getAddress());
++      }
++
+       <span class="code-keyword">if</span> (response == <span class="code-keyword">null</span>)
+       {
+Index: src/org/openremote/controller/statuscache/PollingMachineThread.java
+===================================================================
+--- src/org/openremote/controller/statuscache/PollingMachineThread.java (revision 3159)
++++ src/org/openremote/controller/statuscache/PollingMachineThread.java (working copy)
+@@ -32,7 +32,7 @@
+
+   <span class="code-keyword">private</span> Sensor sensor;
+        <span class="code-keyword">private</span> StatusCacheService statusCacheService;
+-       <span class="code-keyword">private</span> <span class="code-keyword">static</span> <span class="code-keyword">final</span> <span class="code-object">long</span> INTERVAL = 500;
++       <span class="code-keyword">private</span> <span class="code-keyword">static</span> <span class="code-keyword">final</span> <span class="code-object">long</span> INTERVAL = 200;
+        <span class="code-keyword">private</span> <span class="code-object">boolean</span> alive = <span class="code-keyword">true</span>;
+
+        /** milliseconds */
+Index: src/org/openremote/controller/statuscache/StatusCache.java
+===================================================================
+--- src/org/openremote/controller/statuscache/StatusCache.java  (revision 3159)
++++ src/org/openremote/controller/statuscache/StatusCache.java  (working copy)
+@@ -65,8 +65,8 @@
+    <span class="code-keyword">public</span> <span class="code-keyword">synchronized</span> void saveOrUpdateStatus(<span class="code-object">Integer</span> componentID, <span class="code-object">String</span> status) {
+       <span class="code-object">String</span> oldStatus = sensorStatus.get(componentID);
+       <span class="code-keyword">if</span> (status == <span class="code-keyword">null</span> || "".equals(status)) {
+-         logger.info(<span class="code-quote">"Status is <span class="code-keyword">null</span> or \"</span>\<span class="code-quote">" <span class="code-keyword">while</span> calling saveOrUpdateStatus in statusCache."</span>);
+-         <span class="code-keyword">return</span>;
++        <span class="code-comment">//logger.info(<span class="code-quote">"Status is <span class="code-keyword">null</span> or \"</span>\<span class="code-quote">" <span class="code-keyword">while</span> calling saveOrUpdateStatus in statusCache."</span>);
+</span>+        <span class="code-comment">//<span class="code-keyword">return</span>;
+</span>       }
+
+       <span class="code-object">boolean</span> needNotify = <span class="code-keyword">false</span>;
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by trondk at Nov 11, 2010 20:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594413"></a>
+                                    <font class="smallfont"><p>Hi Trond,</p>
+
+<p>could you explain me how you solved it?</p>
+
+<p>i want to use your code as well on my raspberry pi. But i don't know how to start.</p>
+
+<p>your help will really be appreciated.</p>
+
+<p>thx a lot</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by wuytens at Dec 04, 2014 19:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

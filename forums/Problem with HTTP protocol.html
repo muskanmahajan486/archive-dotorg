@@ -1,0 +1,358 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Problem with HTTP protocol</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Problem with HTTP protocol
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 06, 2013 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <p>I have a problem with the HTTP protocol. To get the status of a binary switch on Razberry I Post the following URL</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">http:<span class="code-comment">//raspberry:8083/JS/Run/zway.devices%5B2%5D.Basic.data.level.value%3F<span class="code-quote">"on"</span>:<span class="code-quote">"off"</span></span></pre>
+</div></div>
+<p>If I submit that URL via Chrome or FF I do get the values "on" or "off" returned as expected.</p>
+
+<p>However the <em>custom</em> sensor SB that uses the same URL in a HTTP POST command with a polling interval of 5s, results in the following error:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">ERROR [Polling thread <span class="code-keyword">for</span> sensor: SB]: ClientProtocolException when executing HTTP method
+org.apache.http.client.HttpResponseException: Internal Server Error
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:735)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:709)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:700)
+	at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(Unknown Source)
+	at org.openremote.controller.protocol.http.HttpGetCommand.run(Unknown Source)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:662)</pre>
+</div></div>
+<p>Similar <a href="http://www.openremote.org/display/forums/Z-Wave+control+with+Razberry?focusedCommentId=21859700#comment-21859700">commands to switch on/off do work fine</a>.<br/>
+What can I be doing wrong?<br/>
+<b>edit</b>: The %3F stands for a question mark. With a straight ? it does not work in Chrome/FF either<br/>
+<b>edit2</b>: A bit of progress; I did move the part %3F"on":"off" from the URL to the Workload. The screen now says N/A</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21859720"></a>
+                                    <font class="smallfont"><blockquote>
+<p>org.apache.http.client.HttpResponseException: Internal Server Error</p></blockquote>
+
+<p>This usually means that the server has failed to process the request (usually HTTP 5xx class errors). Maybe there's a log on the razberry that will tell you why the http server failed to process the request. It sounds like it might be expecting something as part of the HTTP, or is not correctly handling the incoming request and then fails on the request.</p>
+
+<p>If the same request works from the web browser, then it may be a difference in HTTP headers. None of this should usually end up with internal server errors but with some more appropriate http error codes. If you have a way to log the HTTP requests then comparing the browser vs controller requests and responses might reveal differences.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 06, 2013 08:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859721"></a>
+                                    <font class="smallfont"><p>@Juha Thanks for the response. I'll look into that, but I have to first familiarise myself with the Razberry size. Big log files with lots of hex responses. The problem with the Razberry log seems to be that it is written in blocks from different buffered sources, which means that it does not represent chronological order.</p>
+
+<p>In the log I found this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">Executing script: zway.devices%5B2%5D.Basic.data.level.value%3F<span class="code-quote">"on"</span>:<span class="code-quote">"off"</span>
+JavaScript compilation error: Uncaught SyntaxError: Unexpected token ILLEGAL
+JavaScript compilation error: Uncaught SyntaxError: Unexpected token ILLEGAL
+Executing script: zway.devices%5B2%5D.Basic.data.level.value%3F<span class="code-quote">"on"</span>:<span class="code-quote">"off"</span>
+JavaScript compilation error: Uncaught SyntaxError: Unexpected token ILLEGAL
+JavaScript compilation error: Uncaught SyntaxError: Unexpected token ILLEGAL</pre>
+</div></div>
+<p>Unfortunately no time stamps, but as there are very many of them I think they come from OpenRemote. I'll see what the Razberry people think of this.</p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 06, 2013 09:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859746"></a>
+                                    <font class="smallfont"><p>In the meantime I have tried a different approach to get my binary switch work. Instead off:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">http:<span class="code-comment">//raspberry:8083/JS/Run/zway.devices%5B2%5D.Basic.data.level.value%3F<span class="code-quote">"on"</span>:<span class="code-quote">"off"</span></span></pre>
+</div></div>
+<p>I do submit the same basic call without the mapping parameters:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">http:<span class="code-comment">//raspberry:8083/JS/Run/zway.devices%5B2%5D.Basic.data.level.value</span></pre>
+</div></div>
+<p>This call returns either <em>0 or 255</em>. In the following experiment I made a <em>custom sensor</em> which translates these values in <em>off and on</em> respectively.</p>
+
+<p>If I use this sensor in a binary switch it will not work, because I guess the status read from the switch comes to fast. I do get the swith to work if I add a short polling interval to the status command. A value of 2 seconds is desirable for a good visual response, but would unneccesarily overload the systems.</p>
+
+<p><b>Questions</b></p>
+<ul class="alternate" type="square">
+	<li>Is there a way to delay the "Read Status" in the switch command?</li>
+	<li>Or alternatively (and possibly better) an extra attribute to specify the delay for dispatching a HTTP call?</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 06, 2013 13:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859825"></a>
+                                    <font class="smallfont"><p>The switch does not execute the status command automatically.<br/>
+Either your status command needs a polling interval or the protocol implementation supports some kind of listener which of course is not the case when you use HTTP as a protocol.<br/>
+The only solution I see is the 2 seconds polling interval.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 07, 2013 20:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859835"></a>
+                                    <font class="smallfont"><p>Marcus,</p>
+<ul class="alternate" type="square">
+	<li>Thank you for correcting my misconception on switch behaviour.</li>
+	<li>The standard HTTP protocol seemed the only option for me to interact with their stack. (Apart from develop a specific protocol for Razberry, for which I lack the necessary skils).</li>
+	<li>Do you, with your Z-Wave experience, think it is worthwhile if I continue with this HTTP exercise applied to DLC and a couple of other devices like fibaro switches, Universal Sensor? My aim is to ultimately deploy some 25-30 devices.<br/>
+Thanks, Pieter</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 07, 2013 22:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859839"></a>
+                                    <font class="smallfont"><p>If you will be able to control all your Z-Wave devices with their stack using HTTP, that would be great.<br/>
+The only issue I see is the frequent polling if you need one request for each sensor.</p>
+
+<p>Don't they support one request which returns a structure that includes all information?<br/>
+If that is the case we could adapt the HTTP protocol to be able to bind multiple sensors to one status request and fill all attached sensor from the same command. I did something like that for shellexe protocol already.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 07, 2013 23:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859873"></a>
+                                    <font class="smallfont"><p>Thanks for the encouragement.<br/>
+Afaik they do have indeed the possibility to pull data from multiple sensors. I'll look into that and report back here.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 08, 2013 07:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860042"></a>
+                                    <font class="smallfont"><p>Marcus,<br/>
+With the help of the Razberry developers I have the following solution to get the statuses of multiple devices (I have as yet only two) in one single call.<br/>
+Their Z-WAY API allows to execute some Java Script on the server side, and retrieve that with a single HTTP call:<br/>
+So I did store on the Raspberry PI the JS code for </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">OR_Get = function() {
+  <span class="code-keyword">return</span> {
+   <span class="code-quote">"device1"</span>: zway.devices[2].SwitchBinary.data.level.value,
+   <span class="code-quote">"device2"</span>: zway.devices[3].SwitchBinary.data.level.value,
+  };
+}</pre>
+</div></div>
+<p><b>HTTP call</b> as used in my OR read StatusAll command"</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">http:<span class="code-comment">//raspberry:8083/JS/Run/OR_Get()</span></pre>
+</div></div>
+<p><b>results in</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">{<span class="code-quote">"device1"</span>:255,<span class="code-quote">"device2"</span>:0}</pre>
+</div></div>
+<p>Would something like this fit with your thoughts on extending the HTTP protocol? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 10, 2013 12:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860072"></a>
+                                    <font class="smallfont"><p>Now we would need a REGEX that can extract '255' and '0' from the result or we need multiple JSONPath statements to extract the data.<br/>
+Do you still need the single .get() call before?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 10, 2013 20:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860077"></a>
+                                    <font class="smallfont"><p>In Razberry, if you do a .Basic.Set(N) command, the corresponding .Basic.Get() is automatically issued. However there are at least two more events that I have to recognise:</p>
+<ul class="alternate" type="square">
+	<li>As far as I can see, the Razberry software does not detect a manual switch operation. I do not see changes in their demo web interface. ( I posted a <a href="http://en.z-wave.me/comment/1515#comment-1515">question about that</a> on their forum)</li>
+	<li>Some of the binary switches can be programmed to fall off after a certain time. That also goes undetected.</li>
+</ul>
+
+
+<p>We can change the OR_Get function to deliver <b>{"2Sensor":255,"3Sensor":0}</b> where xSensor is the sensor name in Designer, and the x stands for the device number. <br/>
+I think it is conceivable that with RegEx we can get for example value pairs of the form <b>2:255,3:0</b> , where <b>2</b> and <b>3</b> do stand for the device number. How do you see those ultimately end up in the appropriate sensors?</p>
+
+<p><b>edit 20130412-12:00</b> Put the returned sting in {} and the device numbers in "". changed some of the wording.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 10, 2013 23:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860091"></a>
+                                    <font class="smallfont"><p>If you read through this thread you can find some information on how this is done in the shellexe protocol: <a href="http://www.openremote.org/display/forums/Velleman+K8055+Experiment+USB+board">http://www.openremote.org/display/forums/Velleman+K8055+Experiment+USB+board</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 11, 2013 08:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860331"></a>
+                                    <font class="smallfont"><ul class="alternate" type="square">
+	<li>I have read this thread on K8055 with interest. However it does not become clear to me how that mechanism passes a list of values to the appropriate sensors.</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 15, 2013 16:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860332"></a>
+                                    <font class="smallfont"><p>I still have difficulty to understand the control of the <em>switch</em> element. I wonder why in the OpenRemote native Z-Wave implementation my switches do get the correct status immediately most of the time. There is no regular sensor status polling in Z-Wave similar to what I have to do in my http solution for Razberry. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 15, 2013 16:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860398"></a>
+                                    <font class="smallfont"><p>From a discussion with Marcus I understood in the meantime that the Z-Wave protocol does switch the status of a binary switch immediately to <em>on</em> or <em>off</em> on the basis of the command given. <em>Not</em> on the basis of the status retrieved from the device. I guess this is done because not every device is capable to return a status value.</p>
+
+<p>The present solution to control binary switches via HTTP on Razberry is to have separate on\off commands and a status command which needs to be polled every 1-2 seconds in order to get accdeptable feedback. This frequent polling seems a waste of system resources better spent on more intelligent tasks.</p>
+
+<p>The Zway API of the Razberry seems to allow us to create our own switch command that after processing an on/off command will return the new switch status value. We still need polling to capture device status to cope with manual switching and switches falling off automatically. However imho it is acceptable to do that at a 1 minute intervals.</p>
+
+<p>As one of my goals is to avoid frequent polling, I wondered if it would be possible to initiate a HTTP call for status using a UDP message generated by the Razberry. Not necessarily for a single device, update all device statuses would be acceptible to at the moment.</p>
+
+<p>PS: I am looking for generic solutions, no specifics for Razberry.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 16, 2013 19:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414304"></a>
+                                    <font class="smallfont"><p>Today I read the <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Execute+Shell+commands" title="OpenRemote 2.0 How To - Execute Shell commands">Howto ShellExe</a> tutorial again, and now I understand what you meant. The field <b>Sensors</b> would be very useful with the HTTP command (and solve <a href="http://jira.openremote.org/browse/ORCJAVA-337">ORCJAVA-337</a>), as argued in an other thread.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at May 15, 2013 16:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414308"></a>
+                                    <font class="smallfont"><p>You still need an explicit status command. It's just the you can fill multiple sensors.<br/>
+ORCJAVA-337 goes one step further where the action command (turn light on) can already update the sensor.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 15, 2013 20:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414309"></a>
+                                    <font class="smallfont"><p>Thanks for the explanation. (I was just looking at shellexe for a different purpose when my eye was attracted by the sensors field)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at May 15, 2013 20:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414353"></a>
+                                    <font class="smallfont"><p>If i understand correctly what you actually want is somethig like a ZwaveListener which can change the switch value when it receieves a message.<br/>
+Can OR change the status of the switch on receiving a message through UDPListener? If so, and until (and if), a zwave listener appears could you run a small separate utility that reads the zwave messages and forwards via UDP to trigger the switch change?</p>
+
+<p>I'm considering something similar to prevent constant TCP/telnet polling of my AVR and XBMC</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bryanchicken at May 16, 2013 11:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414356"></a>
+                                    <font class="smallfont"><p>For the time being I continue to use the HTTP protocol with Razberry. I hope somebody will soon pick up the <a href="http://jira.openremote.org/browse/ORCJAVA-337">ORCJAVA-337</a> task that would allow to set a sensor directly from e.g. a <b>HTTP</b> switch on/off command. My primary goal is to keep integration as simple as possible for users. <br/>
+What remains to be solved is to get on time a status change if e.g. a switch is manually changed. As described above my <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-Wave+with+Razberry" title="OpenRemote 2.0 How To - Z-Wave with Razberry">RaZ-OR module</a> could be extended to return all statuses in one JSON blurp. The problem is how to pass all those values to the OpenRemote sensors. It is conceivable that at any change of a device status on Razberry it sends something to an UPD listener, which through a rule would fire the status collecting HTTP protocol. So far the dreaming...<br/>
+At the moment I am familiarising myself with Drools.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at May 16, 2013 12:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

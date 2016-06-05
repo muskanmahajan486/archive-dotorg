@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Misterhouse and Switch Set Up</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Misterhouse and Switch Set Up
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 02, 2012 by <font color="#0050B2">doucga</font>.
+				    </div>
+
+				    <p>Hi Guys</p>
+
+<p>I have a Misterhouse server that I've been running for a number of years. It has excellent support for the Insteon protocol. Also, OpenRemote can run any command available from Misterhouse. So, OpenRemote and Misterhouse is a killer combination.</p>
+
+<p>I've generally been successful getting them to work together but I'm having trouble getting a switch to toggle state in the UI.</p>
+
+<p>I've got OpenRemote talking to Misterhouse over Telnet and am receiving the state of the device.</p>
+
+<p>Controller2012-01-01 22:10:13,172 INFO Thread\-4971 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: status Deck_Lights<br/>
+Controller2012-01-01 22:10:14,181 INFO Thread\-4971 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: 0</p>
+
+<p>When I press the button to turn the light on...</p>
+
+<p>Controller2012-01-01 22:14:30,210 INFO Thread\-4971 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: status Deck_Lights<br/>
+Controller2012-01-01 22:14:30,641 INFO HTTP\-Thread\-3 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: deck lights on<br/>
+Controller2012-01-01 22:14:31,211 INFO Thread\-4971 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: 0<br/>
+Controller2012-01-01 22:14:31,713 INFO Thread\-4971 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: status Deck_Lights<br/>
+Controller2012-01-01 22:14:32,714 INFO Thread\-4971 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: 1</p>
+
+<p>My Misterhouse log shows:</p>
+
+<p>01/01/12 10:14:14 PM Running: Deck Lights off<br/>
+01/01/12 10:14:14 PM Ran telnet command: deck lights off</p>
+
+<p>everything seems to be ok but the switch will only send an on command from then on and won't toggle. </p>
+
+<p>Things I tried:</p>
+
+<p>setting up the sensor as a switch as well as a custom sensor with 0 as off and 1 as on,<br/>
+changed the return data from Misterhouse from 1 to 'on' and 0 to 'off'.</p>
+
+<p>My telnet command is "null|status Deck_Lights" and I have 'read timeout' set to 5.</p>
+
+<p>Any suggestions on what could be wrong or what else I could try?</p>
+
+<p>Best regards,</p>
+
+<p>Garry</p>
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19434715"></a>
+                                    <font class="smallfont"><p>In general for a OpenRemote switch to work you need three commands (on,off,status), one sensor and one switch object.<br/>
+The status command has to return on or off.<br/>
+The switch sensor has to be linked to the status command.<br/>
+The switch object has to be linked to the on and off commands and also to the switch sensor.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 02, 2012 12:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434719"></a>
+                                    <font class="smallfont"><p>Hi Garry,</p>
+
+<p>I als have had problems getting a switch to display correctly.</p>
+
+<p>Have a look at my post</p>
+
+<p>"Telnet Regex Question"</p>
+
+<p>And see does it offer any help</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jan 02, 2012 19:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434725"></a>
+                                    <font class="smallfont"><p>Hi Guys</p>
+
+<p>I think I might be making headway but I'm not sure.</p>
+
+<p>I was having a problem with the controller cutting off the response from Misterhouse telnet server. I'm not using regex:</p>
+
+<p>Controller2012-01-02 14:35:17,823 INFO Thread\-44193 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: status Deck_Lights<br/>
+Controller2012-01-02 14:35:18,824 INFO Thread\-44193 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: off</p>
+
+<p>Controller2012-01-02 14:35:19,325 INFO Thread\-44193 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: status Deck_Lights<br/>
+Controller2012-01-02 14:35:20,326 INFO Thread\-44193 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: o</p>
+
+<p>It seems the polling is happening too quickly and I wasn't able to figure out how to get either side to wait for each other. Since I wasn't getting a consistent state change from the polling, I decided to go with a boolean 0 for off and 1 for on response from Misterhouse and that made for a much more consistent response. I then set up a custom sensor as follows: name=1/value=on and name=0/value=off and tied that to a switch.</p>
+
+<p>But the UI still won't toggle the switch.</p>
+
+<p>Can anyone see anything in the log output below that might lend a further clue?</p>
+
+<p>Garry</p>
+
+
+<p>Controller2012-01-02 15:17:09,173 INFO Thread\-45945 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: status Deck_Lights<br/>
+Controller2012-01-02 15:17:09,905 INFO HTTP\-Thread\-4 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: deck lights on<br/>
+Controller2012-01-02 15:17:10,173 INFO Thread\-45945 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: 0</p>
+
+<p>Controller2012-01-02 15:17:10,174 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(121) | Had waited the skipped sensor ids of statuses in DEVICEID:c1cd86edd8abae1471a32888d0b3172c693cf668 sensorID:1305statusChangedSensorID:1305<br/>
+Controller2012-01-02 15:17:10,175 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedStatusesFromCachedStatusTable(134) | Querying changed data from StatusCache...<br/>
+Controller2012-01-02 15:17:10,175 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedStatusesFromCachedStatusTable(138) | Have queried changed data from StatusCache.<br/>
+Controller2012-01-02 15:17:10,176 INFO HTTP\-Thread\-2 org.openremote.controller.rest.StatusPollingRESTServlet.doPost(112) | Return the polling status.<br/>
+Controller2012-01-02 15:17:10,176 INFO HTTP\-Thread\-2 org.openremote.controller.rest.StatusPollingRESTServlet.doPost(116) | Finished polling at 2012-01-02 15:17:10</p>
+
+<p>Controller2012-01-02 15:17:10,241 INFO HTTP\-Thread\-2 org.openremote.controller.rest.StatusPollingRESTServlet.doPost(77) | Started polling at 2012-01-02 15:17:10<br/>
+Controller2012-01-02 15:17:10,242 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...<br/>
+Controller2012-01-02 15:17:10,242 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: <span class="error">&#91;device =&gt; c1cd86edd8abae1471a32888d0b3172c693cf668, sensorIDs =&gt; 1305&#93;</span> in ChangedStatus table.<br/>
+Controller2012-01-02 15:17:10,242 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:c1cd86edd8abae1471a32888d0b3172c693cf668  sensorID:1305statusChangedSensorID:[]Waiting...<br/>
+Controller2012-01-02 15:17:10,675 INFO Thread\-45945 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: status Deck_Lights<br/>
+Controller2012-01-02 15:17:11,676 INFO Thread\-45945 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: 0<br/>
+Controller2012-01-02 15:17:11,676 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(121) | Had waited the skipped sensor ids of statuses in DEVICEID:c1cd86edd8abae1471a32888d0b3172c693cf668 sensorID:1305statusChangedSensorID:1305<br/>
+Controller2012-01-02 15:17:11,679 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedStatusesFromCachedStatusTable(134) | Querying changed data from StatusCache...<br/>
+Controller2012-01-02 15:17:11,679 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedStatusesFromCachedStatusTable(138) | Have queried changed data from StatusCache.<br/>
+Controller2012-01-02 15:17:11,680 INFO HTTP\-Thread\-2 org.openremote.controller.rest.StatusPollingRESTServlet.doPost(112) | Return the polling status.<br/>
+Controller2012-01-02 15:17:11,680 INFO HTTP\-Thread\-2 org.openremote.controller.rest.StatusPollingRESTServlet.doPost(116) | Finished polling at 2012-01-02 15:17:11</p>
+
+<p>Controller2012-01-02 15:17:11,770 INFO HTTP\-Thread\-2 org.openremote.controller.rest.StatusPollingRESTServlet.doPost(77) | Started polling at 2012-01-02 15:17:11<br/>
+Controller2012-01-02 15:17:11,771 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...<br/>
+Controller2012-01-02 15:17:11,771 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: <span class="error">&#91;device =&gt; c1cd86edd8abae1471a32888d0b3172c693cf668, sensorIDs =&gt; 1305&#93;</span> in ChangedStatus table.<br/>
+Controller2012-01-02 15:17:11,772 INFO HTTP\-Thread\-2 org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:c1cd86edd8abae1471a32888d0b3172c693cf668  sensorID:1305statusChangedSensorID:[]Waiting...<br/>
+Controller2012-01-02 15:17:12,177 INFO Thread\-45945 org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: status Deck_Lights<br/>
+Controller2012-01-02 15:17:13,178 INFO Thread\-45945 org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: 1</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by doucga at Jan 03, 2012 00:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434727"></a>
+                                    <font class="smallfont"><p>I am not to sure if a switch works with a custom sensor.<br/>
+It might only work with a switch sensor and that needs "on" and "off" as a result of the command. <br/>
+The polling interval is currently 500ms which could be too fast for the telnet to work, as you suggested.</p>
+
+<p>We will update the telnet and tcp protocols to our new EventListener implementation where you can also define your own pollingInterval.<br/>
+But this will take a little longer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 03, 2012 11:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19434733"></a>
+                                    <font class="smallfont"><p>OK</p>
+
+<p>Thanks Marcus.</p>
+
+<p>Garry</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by doucga at Jan 03, 2012 16:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

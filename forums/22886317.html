@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Strange Rule? Error</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Strange Rule? Error
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 07, 2014 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <p>I have this rule which controls a Z-Wave plugin switch:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-comment">// For my sore bones
+</span>
+rule <span class="code-quote">"Blanket on"</span>
+  timer (cron: 0 0 22 * * ?) when eval (<span class="code-keyword">true</span>) then
+  execute.command(<span class="code-quote">"Switch4On"</span>); 
+end
+
+rule <span class="code-quote">"Blanket off"</span>
+  timer (cron: 0 59 23 * * ?) when eval (<span class="code-keyword">true</span>) then
+  execute.command(<span class="code-quote">"Switch4Off"</span>); 
+end</pre>
+</div></div>
+
+<p>The rule seems to work OK, as it does switch on/off at the specified time. As some off my other rules are not working reliably, I have looked into my logs and found the following error message related to this rule in the dev.log:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2014-05-06 23:59:00,107 ERROR [pool-15-thread-1]: ClientProtocolException when executing HTTP method
+org.apache.http.client.HttpResponseException: Internal Server Error
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:735)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:709)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:700)
+	at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(Unknown Source)
+	at org.openremote.controller.protocol.http.HttpGetCommand.send(Unknown Source)
+	at org.openremote.controller.model.Command.execute(Unknown Source)
+	at org.openremote.controller.model.Command.execute(Unknown Source)
+	at org.openremote.controller.statuscache.CommandFacade.command(Unknown Source)
+	at org.openremote.controller.statuscache.CommandFacade.command(Unknown Source)
+	at org.openremote.controller.model.event.Rule_Blanket_off_0.defaultConsequence(Rule_Blanket_off_0.java:13)
+	at org.openremote.controller.model.event.Rule_Blanket_off_0DefaultConsequenceInvoker.evaluate(Rule_Blanket_off_0DefaultConsequenceInvoker.java:25)
+	at org.drools.common.DefaultAgenda.fireActivation(DefaultAgenda.java:917)
+	at org.drools.common.Scheduler$ActivationTimerJob.execute(Scheduler.java:73)
+	at org.drools.time.impl.JDKTimerService$JDKCallableJob.call(JDKTimerService.java:147)
+	at org.drools.time.impl.JDKTimerService$JDKCallableJob.call(JDKTimerService.java:125)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:178)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:292)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)
+</pre>
+</div></div>
+
+<p><a class="confluence-thumbnail-link 393x192" href='http://www.openremote.org/download/attachments/22886317/Switch4Off.PNG'><img src="attachments/thumbnails/22886317/23036571" align="right" border="0"/></a> The Command <b>execute.command("Switch4Off")</b> used in the rule refers to an http GET command to the Raspberry Pi RaZ-OR module. Anybody out here who has a clue what's happening?</p>
+
+<p><b>edit</b>: other rules with similar cron construct have similar errors<br/>
+<b>edit2</b>: My controller is a Pro 1.0.13 received for test a couple of weeks ago.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22886317/23036571.png">Switch4Off.PNG</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22886333"></a>
+                                    <font class="smallfont"><p>Do you see anything on the RaZ-OR module side ?</p>
+
+<p>The error indicates that the HTTP request went to the server and came back with an error code indicating an error on the server side.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 08, 2014 07:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22886335"></a>
+                                    <font class="smallfont"><p>Thanks. <br/>
+Yes RaZ-OR was the problem. The binary on/off commands in the RaZor modules do return a status. In earlier versions of Z-Way after a <em>set command</em> the <em>status</em> was automagically returned. Version 1.4.1 apparantly does not do that anymore, hence the error that was returned.<br/>
+So I removed the status from my commands. If called from Firefox, the commands now nicely return null.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at May 08, 2014 08:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

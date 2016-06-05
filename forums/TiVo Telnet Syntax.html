@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : TiVo Telnet Syntax</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : TiVo Telnet Syntax
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 27, 2011 by <font color="#0050B2">jammastercd</font>.
+				    </div>
+
+				    <p>I'm working on adding telnet control of my TiVoHD (Series 3) via OR.  I've enabled network control on my TiVo, and I can successfully send telnet commands via a terminal on my laptop.  For example, after opening a telnet session, I can send the command IRCODE GUIDE, which opens the TiVo guide.  Sending it again closes the guide.  My question is what is the syntax needed in the Online Designer?  I've created a new command using the telnet protocol and entered some of the following variations:<br/>
+&gt;&gt;IRCODE GUIDE<br/>
+&gt;&gt;null|IRCODE GUIDE<br/>
+&gt;&gt;null| IRCODE GUIDE<br/>
+&gt;&gt;#| IRCODE GUIDE|#</p>
+
+<p>None of which appear to work.  Any thoughts on the correct syntax would be much appreciated!</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-18972690"></a>
+                                    <font class="smallfont"><p>When you telnet from your laptop what do you see as prompt from the Tivo after starting the telnet session? <br/>
+Do you have to enter a username or password?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 27, 2011 08:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18972698"></a>
+                                    <font class="smallfont"><p>The only thing that comes up after opening a telnet session with TiVo is a status like this:<br/>
+CH_STATUS &lt;CHANNEL&gt; &lt;STATUS&gt;</p>
+
+<p>I can then immediately type in a command like this:<br/>
+IRCODE GUIDE<br/>
+This would bring up the guide on the screen.</p>
+
+<p>No user authentication (username/password) is required.</p>
+
+<p>I checked with a colleague at work about telnet in general, and he was wondering if I needed to include a short wait before issuing the command or include the 'send' keyword.  This may make the command in Online Designer look something like:<br/>
+send IRCODE GUIDE</p>
+
+<p>Or is there something else about the syntax I'm missing?  I've configured my MythTV commands like this:<br/>
+'# |jump livetv|#'<br/>
+I am able to successfully control the MythTV using OR.</p>
+
+<p>So I tried this same syntax for TiVo:<br/>
+'# |IRCODE GUIDE|#'<br/>
+It didn't work, though.</p>
+
+<p>Thoughts?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jammastercd at Jul 27, 2011 17:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18972700"></a>
+                                    <font class="smallfont"><p>The text before the first "|" is what is expected after connect. In your case something like "CH_STATUS &lt;CHANNEL&gt; &lt;STATUS&gt;". I don't know if &lt;CHANNEL&gt; &lt;STATUS&gt; are always different which would make it complicated. Then comes the command "IRCODE GUIDE" and after the next "|" comes what the Tivo sends after executing the command.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 27, 2011 21:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18972701"></a>
+                                    <font class="smallfont"><p>Sorry for the dumb question, but why would I need to include CH_STATUS &lt;CHANNEL&gt; &lt;STATUS&gt; in the command text?  This is automatically rendered when I open a telnet session with TiVo; I'm not sending that as a command to TiVo via telnet.  Is this value compared to the actual output to ensure a successful connection was created?  If I use "null", is the value presented by TiVo ignored?</p>
+
+<p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jammastercd at Jul 27, 2011 22:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18972702"></a>
+                                    <font class="smallfont"><p>If "CH_STATUS &lt;CHANNEL&gt; &lt;STATUS&gt;" is written on your console after starting telnet then this is what you have to enter because we are looking for a string which appears after connect. So yes, we compare that with the output after a connect. "null" does not work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 27, 2011 23:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18972720"></a>
+                                    <font class="smallfont"><p>Sounds good.  Since CHANNEL and STATUS are dynamic values, any thoughts on the syntax I should use in the Online Designer command box?  Should I go ahead and try:</p>
+
+<p>"CH_STATUS &lt;CHANNEL&gt; &lt;STATUS&gt; | IRCODE GUIDE"</p>
+
+<p>A few questions I have are:<br/>
+-Is it correct to have a space before and after the pipe '|'?<br/>
+-If TiVo isn't expected to return a value, do I need the second pipe '|'?  If so, do I have any text after the second pipe, or is 'null' the right value?<br/>
+-Are there other possible options for CHANNEL and STATUS you might think of?</p>
+
+<p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jammastercd at Jul 28, 2011 19:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18972725"></a>
+                                    <font class="smallfont"><p>Right now the implementation is looking for a fixed string that needs to be in the answer. If only &lt;CHANNEL&gt; and &lt;STATUS&gt; are dynamic and "CH_STATUS" is always there, you could try "CH_STATUS|IRCODE GUIDE".</p>
+
+<p>If something is returned after the command is executed and before you could type something new, that would have to come after a second pipe. The space is only needed if a space is returned.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 28, 2011 20:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18972977"></a>
+                                    <font class="smallfont"><p>Sorry it's been a while, but I just recently got the chance to try your suggestions.  I'm still not getting a response via OR.  I found another thread that explained something about waiting for a response.  Any thoughts?</p>
+
+<p><a href="http://www.openremote.org/pages/viewpage.action?pageId=15532042&amp;focusedCommentId=15532044#comment-15532044">http://www.openremote.org/pages/viewpage.action?pageId=15532042&amp;focusedCommentId=15532044#comment-15532044</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jammastercd at Aug 19, 2011 03:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-18972980"></a>
+                                    <font class="smallfont"><p>Sorry, I did not follow the other thread. Looks like some changes were made to not wait on a string after connect. Maybe you can post there to have one of the guys answer? You could try to build the controller version which was mentioned in that thread.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Aug 19, 2011 09:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19431427"></a>
+                                    <font class="smallfont"><p>Sounds good.  Thanks again for the advice!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jammastercd at Aug 19, 2011 14:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 11:02</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

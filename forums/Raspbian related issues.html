@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Raspbian related issues</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Raspbian related issues
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 30, 2013 by <font color="#0050B2">dberenguer</font>.
+				    </div>
+
+				    <p>Working with OpenRemote Controller 2.1.0 snapshot for lagarto here.</p>
+
+<p>I've been able to run OR Controller (and interact with panStamps) on some conventional computers under Debian and Ubuntu. Now, after creating our own Raspbian image for panStamp I want to move OR Controller to the Raspberry too. I've followed your suggestion about installing icedtea-6-jre-cacao but I had to install openjdk-6-jdk too since I needed javac to build libjzmq.so (zeromq is used for the comms between lagarto and openremote controller). After that I removed openjdk-6-jdk and switched back to icedtea in order to avoid the problem with the JIT compiler.</p>
+
+<p>Well, I think that all this process has added some instability into Controller since I'm not able to connect from my Android device. My OR client is able to detect the controller but then, when I select the controller then no panel is suggested and I even get a message complaining about "Can not get panel identity list". After that, if I try to connect then I get this error from the Controller console:</p>
+
+<p>ERROR Thread\-11: Response failed! Can't create TCP socket on 192.168.1.51<br/>
+java.net.ConnectException: Connection refused<br/>
+	at java.net.PlainSocketImpl.socketConnect(Native Method)<br/>
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)<br/>
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)<br/>
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)<br/>
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)<br/>
+	at java.net.Socket.connect(Socket.java:546)<br/>
+	at java.net.Socket.connect(Socket.java:495)<br/>
+	at java.net.Socket.&lt;init&gt;(Socket.java:392)<br/>
+	at java.net.Socket.&lt;init&gt;(Socket.java:235)<br/>
+	at org.openremote.controller.net.IPResponseTCPClient.sendTcp(IPResponseTCPClient.java:81)<br/>
+	at org.openremote.controller.net.IPResponseTCPClient.run(IPResponseTCPClient.java:67)<br/>
+	at java.lang.Thread.run(Thread.java:679)<br/>
+Exception in thread "Thread-11" java.lang.NullPointerException: <br/>
+	at org.openremote.controller.net.IPResponseTCPClient.sendTcp(IPResponseTCPClient.java:86)<br/>
+	at org.openremote.controller.net.IPResponseTCPClient.run(IPResponseTCPClient.java:67)<br/>
+	at java.lang.Thread.run(Thread.java:679)</p>
+
+<p>192.168.1.51 is the IP address of my tablet.</p>
+
+<p>An user from our community has confirmed that he was able to use the http interface to read and write values so I think that this is due to some kind of incompatibility between icedtea-6-jre-cacao and other sources (libjzmq.so) build with a javac version coming from openjdk-6-jdk.</p>
+
+<p>Anyone having similar problems?<br/>
+Anyone having used javac for other purposes with OR under Raspbian?<br/>
+Any other idea?</p>
+
+<p>Thanks a lot guys!</p>
+
+<p>Daniel.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22413361"></a>
+                                    <font class="smallfont"><p>The last reports on the Pi suggect to use the Oracle Java which brings the best performance. It also comes with the compiler.<br/>
+Maybe a clean install using that would help. Although, you might run into issues when you want to distribute your image (Orcale licence).<br/>
+I don't see why libjzmq.so would cause your error.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 01, 2013 20:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413368"></a>
+                                    <font class="smallfont"><p>Thanks Marcus,</p>
+
+<p>I will test Oracle JDK tomorrow.</p>
+
+<p>I'm not sure that the problem comes from libjzmq.so but both native libraries libzmq.so and libjzmq.so and the JVM are the only differences with regards to other successful installations.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at May 01, 2013 22:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413490"></a>
+                                    <font class="smallfont"><p>I confirm that installing Oracle JDK8 for ARM and compiling libjzmq.so for it solves the problem. I followed this tutorial:
+<a href="http://www.savagehomeautomation.com/projects/raspberry-pi-installing-oracle-java-se-8-with-javafx-develop.html">http://www.savagehomeautomation.com/projects/raspberry-pi-installing-oracle-java-se-8-with-javafx-develop.html</a></p>
+
+<p>The overall sensation is that the Oracle JDK makes OpenRemote run faster than OpenJDK.</p>
+
+<p>Lagarto and OpenRemote are finally working on Raspbian. However, this JDK is a pre-production version and we are not allowed to redistribute it. Still trying to find a workaround...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at May 03, 2013 22:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413544"></a>
+                                    <font class="smallfont"><p>Finding an alternative JVM for ARM that still performs will be difficult but let us know how it goes.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 05, 2013 07:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413669"></a>
+                                    <font class="smallfont"><p>Referencing this thread from our Raspberry page here: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Install+Controller+on+Raspberry+Pi" title="OpenRemote 2.0 How To - Install Controller on Raspberry Pi">OpenRemote 2.0 How To &#45; Install Controller on Raspberry Pi</a>.</p>
+
+<p>Is there an alternative zeromq for ARM we should distribute for Raspberry or was the issue somewhere else?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 06, 2013 17:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413678"></a>
+                                    <font class="smallfont"><p>I think that libjzmq.so was the issue. This library needs to be compiled using the Javac provided by the JDK.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at May 06, 2013 18:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413706"></a>
+                                    <font class="smallfont"><p>Hmm, javac would produce jar archives or class files though, not so binaries.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 07, 2013 12:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413710"></a>
+                                    <font class="smallfont"><p>Yes, you're right, I meant the whole java library in fact</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dberenguer at May 07, 2013 12:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22413768"></a>
+                                    <font class="smallfont"><p>Ok, well let us know if there are alternative JAR or SO binaries we should point people to if they're installing on Raspbian.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 07, 2013 20:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

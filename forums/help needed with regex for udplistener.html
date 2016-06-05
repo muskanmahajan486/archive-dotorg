@@ -1,0 +1,491 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : help needed with regex for udplistener</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : help needed with regex for udplistener
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 24, 2015 by <font color="#0050B2">freddyc</font>.
+				    </div>
+
+				    <p>I have the following rule, modified from rules provided by Michal Rutka to PZ1. In my case the received message is 3 uppercase characters followed by a comma followed by "on" or "off" or a temperature value of ##.# (range of -9.9 to 99.9). eg, LCL,on or LAT,21.2<br/>
+I have tested the following regex rule on regex planet with no problems.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"UDPListener"</span>
+                                                                                      
+when
+  Event(source==<span class="code-quote">"UDP-1-Status"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile ([A-Z]{3}),([-1-9]?[0-9]?\.[0-9]|on|off)
+ java.util.regex.Matcher matcher = regexPattern.matcher ($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+  }
+end
+</pre>
+</div></div>
+
+<p>When I start the controller I get the following errors</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2015-11-25 09:19:55,783 ERROR [main]: Rule definition 'modeler_rules.drl' could not be deployed. See errors below.
+2015-11-25 09:19:55,784 ERROR [main]: Rule Compilation error Syntax error on token(s), misplaced construct(s)
+Syntax error, insert <span class="code-quote">")"</span> to complete Expression
+Syntax error on tokens, delete these tokens
+Syntax error on token <span class="code-quote">"?"</span>, Expression expected after <span class="code-keyword">this</span> token
+Syntax error on token <span class="code-quote">"?"</span>, Expression expected after <span class="code-keyword">this</span> token
+Syntax error on token <span class="code-quote">"|"</span>, ( expected
+Syntax error, insert <span class="code-quote">": Expression"</span> to complete Expression
+Syntax error, insert <span class="code-quote">": Expression"</span> to complete Expression
+Syntax error, insert <span class="code-quote">"}"</span> to complete ArrayInitializer
+Syntax error, insert <span class="code-quote">";"</span> to complete LocalVariableDeclarationStatement
+2015-11-25 09:19:55,786 ERROR [main]: There was an error parsing the rule definition 'modeler_rules.drl' : Could not parse knowledge.
+java.lang.IllegalArgumentException: Could not parse knowledge.
+</pre>
+</div></div>
+
+<p>However, at the end of controller startup I receive</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2015-11-25 09:19:55,843 INFO [main]: Initialized event processor : Drools Rule Engine
+2015-11-25 09:19:55,870 INFO [main]: Initialized event processor : RRD4J Data Logger
+2015-11-25 09:19:55,871 INFO [main]: Initialized event processor : EmonCMS Data Logger
+2015-11-25 09:19:55,887 WARN [main]: Unknown virtual protocol property '&lt;property name = <span class="code-quote">"name"</span> value = <span class="code-quote">"LCL"</span>/&gt;'.
+2015-11-25 09:19:55,900 INFO [main]: Registered sensor : Sensor (Name = 'UDP-1-Status', ID = '107672251', State Mappings: {})
+2015-11-25 09:19:55,901 INFO [main]: Registered sensor : Sensor (Name = 'LCL', ID = '107672861', State Mappings: {})
+2015-11-25 09:19:55,902 INFO [Polling Sensor <span class="code-object">Thread</span> ID = 107672861, Name ='LCL']: Started polling thread <span class="code-keyword">for</span> sensor (ID = 107,672,861, name = LCL).
+2015-11-25 09:19:55,903 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107672861, Name ='LCL']: Processed '', received ''
+2015-11-25 09:19:55,904 INFO [main]: Startup complete.
+2015-11-25 09:19:55,904 INFO [main]: Controller Definition File Watcher <span class="code-keyword">for</span> Default Deployer started.
+2015-11-25 09:19:56,409 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107672861, Name ='LCL']: Processed '', received ''
+</pre>
+</div></div>
+
+<p>Finally, when an input "LCL,on" is received I get</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2015-11-25 09:21:30,415 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107672861, Name ='LCL']: Processed '', received ''
+2015-11-25 09:21:30,519 INFO [HTTP-<span class="code-object">Thread</span>-4]: Querying changed state from ChangedStatus table...
+2015-11-25 09:21:30,519 INFO [HTTP-<span class="code-object">Thread</span>-4]: Found: [device =&gt; 651cbb27-f2cf-472e-89aa-1fbc9a97a714, sensorIDs =&gt; [107672251, 107672861]] in ChangedStatus table.
+2015-11-25 09:21:30,520 INFO [HTTP-<span class="code-object">Thread</span>-4]: ChangedStatusRecord:651cbb27-f2cf-472e-89aa-1fbc9a97a714-[107672251, 107672861] sensorID:[107672251, 107672861] statusChangedSensorID:[]Waiting...
+2015-11-25 09:21:30,915 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107672861, Name ='LCL']: Processed '', received ''
+</pre>
+</div></div>
+
+<p>Thanks.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23602357/23790000.png">UDPListeners.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23602357/23790001.png">UDPlistener.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23602357/23790002.png">UDPsensor.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23602357/23790003.png">Untitled.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23602357/23790008.png">Dev list.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23602357/23790009.png">ESP_1_Status sensor.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23602357/23790010.png">ESP_1_Status command.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23602361"></a>
+                                    <font class="smallfont"><p>Perhaps Python coder? <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> Anyway, you need more Java /syntax beauty/ to make it work. Try the rule below (not tested):</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"UDPListener"</span>
+                                                                                      
+when
+  Event(source==<span class="code-quote">"UDP-1-Status"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(<span class="code-quote">"([A-Z]{3}),([-1-9]?[0-9]?\\.[0-9]|on|off)"</span>);
+  java.util.regex.Matcher matcher = regexPattern.matcher ($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+  }
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 25, 2015 09:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602377"></a>
+                                    <font class="smallfont"><p>Thanks Michal, I haven't found anything to work yet so I took the easy way out and am trying (LCL|LFL|LRT|LCM),(on|off) .<br/>
+I think it is working because I don't get any error to say it is not.<br/>
+I am trying to link it to a label but ,even after reading quite a few posts in the forums (including your temperature example)<br/>
+I still find it difficult to understand linking imvc's to switches and labels.<br/>
+Thanks for your help.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Nov 26, 2015 01:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602403"></a>
+                                    <font class="smallfont"><p>Can anyone provide explanation of the following error.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2015-11-27 14:54:13,059 INFO [HTTP-<span class="code-object">Thread</span>-2]: ChangedStatusRecord:4cb484d7-b5cb-4948-a49b-9da190722a60-[107673053] sensorID:[107673053] statusChangedSensorID:[]Waiting...
+2015-11-27 14:55:03,059 INFO [HTTP-<span class="code-object">Thread</span>-2]: Had timeout <span class="code-keyword">for</span> waiting status change.
+</pre>
+</div></div>
+
+<p>This is the result from my custom sensor (LCLsensor) connected to a udplistener command with custom state items LCL,on mapped to on, and LCL,off mapped to off.<br/>
+sensorID:107673053 is the LCLsensor and it eppears to have received the command and changed state but what is it waiting for?<br/>
+Thanks, Fraser.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Nov 27, 2015 04:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602406"></a>
+                                    <font class="smallfont"><blockquote><p>I still find it difficult to understand linking imvc's to switches and labels.</p></blockquote>
+<p>Can you elaborate a bit more about <b>what</b> is difficult or confusing about this with reference<br/>
+to my descriptions about <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-wave+with+Razberry+via+UDP">UDP</a> and the <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+In-memory+Virtual+Command+Protocol">In Memory Virtual Commands</a>?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 27, 2015 10:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602409"></a>
+                                    <font class="smallfont"><p>I have studied your How To guide (and other forum posts on UDPlistener and imvc etc). I worked through your How to again today<br/>
+and this is what I ended up with.</p>
+
+<p>'Lounge Ceiling Light' device with<br/>
+  'LCLon' command type UDP<br/>
+  'LCLoff'      "<br/>
+  'LCL'   command type imvc status address lcl<br/>
+  'LCL'   sensor type custom using LCL status above<br/>
+  'LCLsw' binary switch</p>
+
+<p>'UDPListener-1'  device with<br/>
+   'ESP-1-Status' command protocol UDPlistener, UDP port 9034 Regex (.*)<br/>
+   'ESP-1-Status' sensor  type custom using "ESP-1-Status' command above.</p>
+
+<p>My simplified rules for simple people are</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"UDPListener-Lounge"</span>
+                                                                                      
+when
+  Event(source==<span class="code-quote">"ESP-1-Status"</span>, $v: value!="")
+then
+  java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile (LCL|LFL|LRT|LCM),(on|off);
+ java.util.regex.Matcher matcher = regexPattern.matcher ($v.toString());
+  <span class="code-keyword">if</span> (matcher.find()) {
+    execute.command(matcher.group(1), matcher.group(2));
+  }
+end
+</pre>
+</div></div>
+
+<p>Since I have made these changes I can't send command from my mobile anymore which I have not had problem with before.<br/>
+I do not see where the memory variable is set except directly in the status command in the switch.<br/>
+I tried putting an imvc status command under UDPListener name 'LCL to save the variable lcl and changed the<br/>
+switch status command to 'LCLstatus" type imvc address lcl, but made no difference.<br/>
+When I restart the controller I get an error that modeler rules could not be deployed but further on I grt<br/>
+message 'Initialized event processor : Drools Rule Engine'so I am guessing rules are deployed OK.<br/>
+When 'LCL,on' is received on UDP port I get message</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2015-11-28 11:21:55,876 INFO [HTTP-<span class="code-object">Thread</span>-1]: Querying changed state from ChangedStatus table...
+2015-11-28 11:21:55,876 INFO [HTTP-<span class="code-object">Thread</span>-1]: Not Found: [device =&gt; 4cb484d7-b5cb-4948-a49b-9da190722a60, sensorIDs =&gt; [107673053]] in ChangedStatus table.
+2015-11-28 11:21:55,876 INFO [HTTP-<span class="code-object">Thread</span>-1]: ChangedStatusRecord:4cb484d7-b5cb-4948-a49b-9da190722a60-[107673053] sensorID:[107673053] statusChangedSensorID:[]Waiting...
+</pre>
+</div></div>
+
+<p>A large part of my problem (I think) is I am not sure where the problems are. I think the message is received but is it correct?<br/>
+Is it my regex or how I try to store and use the IMVC's. I can see the message is sent from the ESP8266 device to the controller,<br/>
+but maybe the format is incorrect.<br/>
+Thanks again for your good work.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Nov 28, 2015 01:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602410"></a>
+                                    <font class="smallfont"><blockquote>
+<p> 'Initialized event processor : Drools Rule Engine'so I am guessing rules are deployed OK.</p></blockquote>
+<p>You are guessing wrongly. The rule is broken <a href="http://www.openremote.org/display/forums/help+needed+with+regex+for+udplistener?focusedCommentId=23602361#comment-23602361">(I've explained earlier where)</a> and it is never executed. Moreover, because of the syntax error the whole modeler_rules.drl file is discarded.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 28, 2015 06:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602463"></a>
+                                    <font class="smallfont"><p>Thanks Michal and Pieter. The best I have been able to do is to get controller to start without any errors. I do however get this warning</p>
+
+<p>"WARN main: Unknown virtual protocol property '&lt;property name = "name" value = "LCLstate"/&gt;'."</p>
+
+<p>LCLstate is the sensor associated with the switch and the IMVC LCLstate command to read memory address.<br/>
+Once the controller is running and a UDP message (e.g. LCL,on ) I get the following</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2015-12-03 08:42:53,695 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107673490, Name ='LCLstate']: Processed '', received ''
+2015-12-03 08:42:54,195 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107673490, Name ='LCLstate']: Processed '', received ''
+2015-12-03 08:42:54,423 ERROR [UDPListener Port: 9034]: Error in UDPListenerThread
+java.lang.IllegalStateException: No match found
+	at java.util.regex.Matcher.group(Matcher.java:468)
+	at org.openremote.controller.protocol.socket.UDPListenerCommand$UDPListenerThread.run(UDPListenerCommand.java:122)
+2015-12-03 08:42:54,695 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107673490, Name ='LCLstate']: Processed '', received ''
+2015-12-03 08:42:55,195 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107673490, Name ='LCLstate']: Processed '', received ''
+</pre>
+</div></div>
+<p>I have a Label that should display LCL-state which is UDPlistener sensor but it never displays anything (N/A)'<br/>
+I have tried sending the LCL,on and LCL,off from UDPsender on my phone with same result.<br/>
+Both UDP messages from the ESP8266 device and from my phone display correctly on wireshark.<br/>
+Sorry to bother you again but I am out of ideas completely.<br/>
+Thanks, Fraser.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Dec 02, 2015 22:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602473"></a>
+                                    <font class="smallfont"><blockquote><p>I have a Label that should display LCL-state which is UDPlistener sensor but it never displays anything (N/A)</p></blockquote>
+
+<p>Apparantly your UDPListener isn't receiving anything. I have two separate listeners for commands coming from two RaspberryPi devices.<br/>
+See monitor below<br/>
+<img src="attachments/23602357/23790000.png" align="left" border="0"/></p>
+
+<p>The one Pi I stopped also gives this N/A. You should fix that first (see if port numbers are correct, firewalls...)<br/>
+Please give screendumps of your UDPListener and the sensor that you based on that UDPListener</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 03, 2015 08:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602479"></a>
+                                    <font class="smallfont"><p>I agree, but I have not been able to find out why. I can use telnet or tcp on this port OK, and I have tried UDPlisteneron a port I used for tcp<br/>
+without any problems. In the code I included on my last post it definitely states "error in UDPlistener thread". I tried to send a 'new line' on the end<br/>
+of the string without success.<br/>
+Did you get 0,1,2 or more screen dumps of UDPListener and command? I haven't tried it before and I can't preview to see what happened.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Dec 03, 2015 09:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602480"></a>
+                                    <font class="smallfont"><p>First displaying your images<br/>
+<img src="attachments/23602357/23790003.png" align="left" border="0"/> <a class="confluence-thumbnail-link 381x249" href='http://www.openremote.org/download/attachments/23602357/UDPlistener.png'><img src="attachments/thumbnails/23602357/23790001" align="left" border="0"/></a><br/>
+<a class="confluence-thumbnail-link 364x434" href='http://www.openremote.org/download/attachments/23602357/UDPsensor.png'><img src="attachments/thumbnails/23602357/23790002" align="left" border="0"/></a></p>
+
+
+
+
+
+<p>To see the two images at the right better, do click on them!</p>
+
+<p>It looks like you are messing with the sensor and command names.<br/>
+Do not use dashes in names but use "CamelBack" style instead.<br/>
+The name of the UDPListener command does not correspond<br/>
+to the name in the hierarchy of the left most picture.<br/>
+To be compliant with that use name <b>Esp1Status</b> for both UDPListener command<br/>
+and sensor.<br/>
+What is the LCL command under UDPListener-1 supposed to do? If not used, remove!<br/>
+Do Use name 'LCL' only for your LoungeCeilingLights. Not with the Listener, that<br/>
+confuses yourself and us <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 03, 2015 10:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602504"></a>
+                                    <font class="smallfont"><p>Sorry Pieter, I have messed you about. The first image of device commands was out of date. When I did the other 2 I saw that and thought it would help to include it,<br/>
+not realising I had re-done all the commands. I am imcluding up to date screen dumps after changing names etc as you recommended.<br/>
+After a lot of further testing the main and only problem I am concerned with is not recognising the UDP packet.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2015-12-04 17:27:29,912 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107673490, Name ='LCL']: Processed '', received ''
+2015-12-04 17:27:30,412 TRACE [Polling Sensor <span class="code-object">Thread</span> ID = 107673490, Name ='LCL']: Processed '', received ''
+2015-12-04 17:27:30,576 ERROR [UDPListener Port: 9034]: Error in UDPListenerThread
+java.lang.IllegalStateException: No match found
+	at java.util.regex.Matcher.group(Matcher.java:468)
+	at org.openremote.controller.protocol.socket.UDPListenerCommand$UDPListenerThread.run(UDPListenerCommand.java:122)
+</pre>
+</div></div>
+
+<p>When I restart the controller it runs OK until a UDP packet is received giving the above error. I think the UDPlistener then shuts down.<br/>
+I have sent udp packets from the ESP-8266 back to a UDP tester on the port I am using, from the ESP-8266, and from a UDP tester on another PC using the same address and from a UDP tester on my Phone. I have tried just the LCL,on string, "LCL,on" (in quotes), also with cr and with lf and with cr &amp; lf. I also tried a longer string. Each time I tried something different I would shut down the controller and restart it. ( in the process I also found a problem with my code on the ESP-8266 but I will worry about that later)<br/>
+Everything worked to UDP test programs but OR gave me the same code error every time.<br/>
+So, everything normal - I am stuck again.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Dec 04, 2015 06:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602506"></a>
+                                    <font class="smallfont"><p>Sorry, I must leave this to those who have more in depth knowledge about UDPListener</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 04, 2015 07:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602524"></a>
+                                    <font class="smallfont"><p>The only thing I can think off in case you are following pz1's guidance is that the version of controller you have is outdated. I remember that there were problems with old controller builds and the UDPlistener protocol. In any case a sensor connected to the UDPlistener command should get something more than N/A.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 05, 2015 16:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602528"></a>
+                                    <font class="smallfont"><p>Thanks Michal, sounded like a good idea. I was running 2.1.0. I have only been using OR for a few months and assumed it was the latest version.<br/>
+When I checked on Sourceforge I found 2.1.1 which is not the version that downloads if you just click on the big download button.<br/>
+2.1.1 included the bugfix '  - Remerge issue ORCJAVA-392 to correctly<br/>
+                               include changes in UDP listener'<br/>
+so I got all excited. However, on testing it appears to do exactly the same as 2.1.0<br/>
+I then went back and downloaded 2.0.2 and that tested the same as well.<br/>
+I am just unzipping these downloads into the openremote/controller**** folder and deleting the old controller directory and then restart the controller.<br/>
+I will go back to an earlier version again and try it.<br/>
+Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Dec 05, 2015 23:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602534"></a>
+                                    <font class="smallfont"><p>Thank you for checking this. I made a note on <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Z-wave+with+Razberry+via+UDP">my Recipe page</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 06, 2015 09:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602537"></a>
+                                    <font class="smallfont"><blockquote><p>I am just unzipping these downloads into the openremote/controller**** folder and deleting the old controller directory and then restart the controller.</p></blockquote>
+<p>You should stop the controller before deleting/overwriting its folder. Otherwise some files can be locked and left behind.</p>
+
+<p>BTW, at what platform are you running?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 06, 2015 10:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602554"></a>
+                                    <font class="smallfont"><p>I have tested further with all controller versions on Sourceforge making sure I stop the controller and then delete before loading new controller,<br/>
+ saving from designer and syncing new controller. Still get same result on all.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Dec 08, 2015 00:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602559"></a>
+                                    <font class="smallfont"><blockquote><p>BTW, at what platform are you running?</p></blockquote>
+<p>It is in your own interest to answer the questions from those who try to help. We all are volunteers who do this in our free time.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 08, 2015 08:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602560"></a>
+                                    <font class="smallfont"><p>I am using Windows 7. I started another thread to see if anyone using OR free and windows has had any success.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Dec 08, 2015 08:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

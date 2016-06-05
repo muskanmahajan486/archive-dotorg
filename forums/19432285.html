@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNX Slider "tutorial" and open issue</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNX Slider "tutorial" and open issue
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 08, 2011 by <font color="#0050B2">rickcn</font>.
+				    </div>
+
+				    <p>Dear all,</p>
+
+<p>It took me a while to get it right but now I can make a KNX slider work and see the lights dim and brighten. As I spend so much time on it, I would like to share this with you to get a starting point. Although I did not solve everything (to this later more) the basics work. Hw did I do it?</p>
+
+<p>I have in ETS3 the following values for my dimmer:<br/>
+2/1/5 ON/OFF (1bit)<br/>
+2/2/5 Dimmer (4 bits)<br/>
+2/3/5 Value (1 Byte)<br/>
+2/4/5 Status (1 bit)</p>
+
+<p>I linked the Value (2/3/5) to a command with KNX command: Scale, type 5.001. I linked the Dimmer (2/2/5) to a command with KNX command: Status, type 5.001. Then to the Sensor I added this Dimmer (Status) command, and made it type Level (or Range). The slider uses this Sensor (with the Dimmer (4 bits)) and to setValue I used the Value (Scale) command. Hope this makes sense to you.  </p>
+
+<p>This is what I got as a result in the generated controller.xml:<br/>
+   &lt;command id="54" protocol="knx"&gt;<br/>
+      &lt;property name="command" value="Scale" /&gt;<br/>
+      &lt;property name="groupAddress" value="2/3/5" /&gt;<br/>
+      &lt;property name="DPT" value="5.001" /&gt;<br/>
+    &lt;/command&gt;<br/>
+    &lt;command id="56" protocol="knx"&gt;<br/>
+      &lt;property name="command" value="Status" /&gt;<br/>
+      &lt;property name="groupAddress" value="2/2/5" /&gt;<br/>
+      &lt;property name="DPT" value="5.001" /&gt;<br/>
+    &lt;/command&gt;</p>
+
+<p>Let me add some snapshots:</p>
+
+<p><img src="attachments/19432285/19398659.png" align="absmiddle" border="0"/></p>
+
+<p>However, while sliding it back and forth, it never switches the lights completely off when the slider hits "0".</p>
+
+<p>Also if I push the switches on the wall, the slider is not moving on the screen. If you have been making a slider yourself, and it works like in the video, please help. I am out of any ideas where to look to solve this</p>
+
+<p>Form the different posts it looks all similar and good, but my slider is not updating automagically. For completeness, I am running the OpenRemote controller  2.0.0_snapshot_20110611. </p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19432285/19398659.png">OR-slider.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19432287"></a>
+                                    <font class="smallfont"><p>I already posted in the other thread. Maybe that will help.</p>
+
+<p>Also, if your lights don't turn off when dimming to zero make sure your KNX dimmer device is configured correct. <br/>
+Normally these can be configured to allow turn off while dimming.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 08, 2011 11:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450162"></a>
+                                    <font class="smallfont"><p>Good tutorial!</p>
+
+<p>I don't know if the issue with the sliders not reading the correct value back has been solved and maybe described in another forum message?</p>
+
+<p>Otherwise, is there an update on this issue?</p>
+
+<p>Regards<br/>
+Nirvald</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nirvald at Aug 29, 2012 21:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450163"></a>
+                                    <font class="smallfont"><p>I am not sure about the issue but a 4bit DPT is wrong.<br/>
+For KNX dimmer to work properly with a slider you need a 1byte status object and a 1byte dim value object.<br/>
+The one returns the dimmer value 0-254 and the other one takes the value.<br/>
+Maybe this helps: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+KNX+ETS4+Import">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+KNX+ETS4+Import</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Aug 29, 2012 21:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21529043"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I know that it doesn't make any sense but its working for me.<br/>
+change &lt;property name="groupAddress" value="2/2/5" /&gt; to &lt;property name="groupAddress" value="2/3/5" /&gt;<br/>
+Don't use 2/2/5 at all.</p>
+
+<p>Good Luck</p>
+
+<p>Jay</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yodn at Jan 13, 2013 05:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:49</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

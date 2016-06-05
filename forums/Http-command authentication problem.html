@@ -1,0 +1,475 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Http-command authentication problem</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Http-command authentication problem
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 15, 2015 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <p><img src="attachments/23601288/23789971.png" align="right" border="0"/> I do have a <a href="http://forum.z-wave.me/viewtopic.php?f=3422&amp;t=22016">problem with this OpenRemote Http</a>-command and my ZWay (RaZberry) installation. Apparantly something is going wrong with the authentication. I do get a <b>Permission denied</b> message in my dev.log</p>
+
+<p>If I do issue the following <b>curl</b> command in my raspberrypi console, it does authenticate, and retruns the correct status:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+pi@quadras ~ $ curl -v -u JohnDoe:SeCret http:<span class="code-comment">//raspberrypi:zzzz/OpenRemote/SwitchBinaryStatus/9/0
+</span>* About to connect() to raspberrypi port zzzz (#0)
+*   Trying 192.168.xxx.yyy...
+* connected
+* Connected to raspberrypi (192.168.xxx.yyy) port zzzz (#0)
+* Server auth using Basic with user 'JohnDoe'
+&gt; GET /OpenRemote/SwitchBinaryStatus/9/0 HTTP/1.1
+&gt; Authorization: Basic Sm9obkRvZTpTZUNyZXQ=
+&gt; User-Agent: curl/7.26.0
+&gt; Host: raspberrypi:zzzz
+&gt; Accept: */*
+&gt;
+* additional stuff not fine transfer.c:1037: 0 0
+* HTTP 1.1 or later with persistent connection, pipelining supported
+&lt; HTTP/1.1 200 OK
+&lt; Access-Control-Allow-Origin: *
+&lt; Access-Control-Allow-Credentials: <span class="code-keyword">true</span>
+&lt; Connection: keep-alive
+&lt; Content-Type: application/json
+&lt; Content-Length: 4
+&lt; Transfer-Encoding: chunked
+&lt;
+* Connection #0 to host raspberrypi left intact
+<span class="code-quote">"on"</span>* Closing connection #0
+</pre>
+</div></div>
+
+<p>What am I missing in my Http call specification as in the image (top right)</p>
+
+<p>Thank you for your attention</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23601288/23789971.png">authenticate.PNG</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23601297"></a>
+                                    <font class="smallfont"><p>What exactly does the dev.log show?<br/>
+PermissionDenied could be something else. Do you see a HTTP error code?<br/>
+-Marcus</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 16, 2015 00:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601299"></a>
+                                    <font class="smallfont"><p>Sorry I should have been more precise with my wording. This is what the log says:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">    2015-09-15 19:04:54,938 ERROR [Polling Sensor <span class="code-object">Thread</span> ID = 248217, Name ='Duwi']: ClientProtocolException when executing HTTP method
+    org.apache.http.client.HttpResponseException: Forbidden
+       at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+       at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+       at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:735)
+       at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:709)
+       at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:700)
+       at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(Unknown Source)
+       at org.openremote.controller.protocol.http.HttpGetCommand.read(Unknown Source)
+       at org.openremote.controller.model.sensor.Sensor$DeviceReader.read(Unknown Source)
+       at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Unknown Source)
+       at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)</pre>
+</div></div>
+
+<p>The Zway developers suspect that OpenRemote does send the url in the form of <a href="http://user:passwd@host">http://user:passwd@host</a> instead of sending a "proper" http-header (see this <a href="http://forum.z-wave.me/viewtopic.php?f=3422&amp;t=22016&amp;p=58220#p58220">post</a>)<br/>
+I am using Pro 1.2.0</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 16, 2015 07:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601301"></a>
+                                    <font class="smallfont"><p>We do send proper HTTP header for basic authentication and do not include user and password in URL.<br/>
+Do you see anything in z-way logs?<br/>
+Is the machine you executed the curl command from and the machine running the controller the same machine?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 16, 2015 09:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601302"></a>
+                                    <font class="smallfont"><blockquote><p>We do send proper HTTP header for basic authentication and do not include user and password in URL.</p></blockquote>
+<p>Thanks that brings me one step further</p>
+<blockquote><p>Is the machine you executed the curl command from and the machine running the controller the same machine?</p></blockquote>
+<p>Just did a successfull <b>curl</b> on my Synology DS212+, where the OR controller resides</p>
+<blockquote><p>Do you see anything in z-way logs?</p></blockquote>
+<p>Yes, it is a cryptic error message from the OpenRemoteHelpers API module. As said without authentication on both sides this works just fine.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">[2015-09-15 20:50:18.677] [E] [8083] Callback execution error: TypeError: Cannot read property 'data' of undefined
+    at OpenRemote (automation/modules/OpenRemoteHelpers/index.js:155:65)
+    at WebServer.document_root (automation/Webserver.js:27:11)
+</pre>
+</div></div>
+<p>I am going to do some experiments with their JSON-API, and the vDev API to see how those two behave. I'll be back</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 16, 2015 10:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601304"></a>
+                                    <font class="smallfont"><p>I did get the OR authentication working for ZWaveAPI. So I think there is something wrong with the authentication via OpenRemoteHelpers</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 16, 2015 12:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601308"></a>
+                                    <font class="smallfont"><p>Marcus,<br/>
+Was to quick with my conclusion. It appears that ZWaveAPI does not (yet?) require authentication, so it was obvious it worked. But also the virtual device interface (ZAutomation) did not authenticate, so I can not yet pinpoint where the problem is.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">2015-09-16 14:18:44,903 ERROR [Polling Sensor <span class="code-object">Thread</span> ID = 248580, Name ='Duwitruth']: ClientProtocolException when executing HTTP method
+org.apache.http.client.HttpResponseException: Unauthorized
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:735)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:709)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:700)
+	at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(Unknown Source)
+	at org.openremote.controller.protocol.http.HttpGetCommand.read(Unknown Source)
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.read(Unknown Source)
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Unknown Source)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)
+</pre>
+</div></div>
+
+<p>Do you happen to have some recent dump of the http header that I can show as an example? I have looked into using wireshark, but the 200+ page manual is rather frightening, so I'd rather avoid that.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 16, 2015 13:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601315"></a>
+                                    <font class="smallfont"><p>I assume this is an issue on Zway side. You receive two different responses. The first is "403 Forbidden" and now you receive "401 Unauthorized".<br/>
+The first actually means that the user was authorized but has no rights wheres the 401 means user or password is wrong.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 16, 2015 21:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601319"></a>
+                                    <font class="smallfont"><p>I did check again. Kept user and pw, but changed url. Apparantly the different interfaces do give different responses. At least something seems to be wrong at the Zway side.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 17, 2015 09:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601323"></a>
+                                    <font class="smallfont"><p>I did run TCPDUMP (<a href="http://www.ronnutter.com/raspberry-pi-intro-to-tcpdump/">howto</a>) on the <b>RaspberryPi that hosts ZWay</b> and on <b>Synology DS212+ (OR controller)</b> to check if authentication data is being send. That seems not to be the case. (Pro 1.2.0)</p>
+
+<p>I gave the following command:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> sudo tcpdump -A -v -s 10240 'tcp port 8083 and (((ip[2:2] - ((ip[0]&amp;0xf)&lt;&lt;2)) - ((tcp[12]&amp;0xf0)&gt;&gt;2)) != 0)'</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 10240 bytes
+16:39:54.401620 IP (tos 0x0, ttl 64, id 28065, offset 0, flags [DF], proto TCP (6), length 217)
+    DS212.fritz.box.51536 &gt; raspberry.fritz.box.8083: Flags [P.], cksum 0x5f84 (correct), seq 1900776448:1900776613, ack 17874579, win 183, options [nop,nop,TS val 361883232 ecr 16443814], length 165
+E...m.@.@.H....!.....P..qK.........._......
+...`....GET /OpenRemote/SwitchBinaryStatus/9/0 HTTP/1.1
+User-Agent: OpenRemoteController
+Content-Type: application/text
+Host: raspberrypi:8083
+Connection: Keep-Alive
+
+
+16:39:54.423896 IP (tos 0x0, ttl 64, id 22326, offset 0, flags [DF], proto TCP (6), length 271)
+    raspberry.fritz.box.8083 &gt; DS212.fritz.box.51536: Flags [P.], cksum 0x848f (incorrect -&gt; 0x4413), seq 1:220, ack 165, win 470, options [nop,nop,TS val 16443816 ecr 361883232], length 219
+E...W6@.@._%.......!...P....qK.............
+.......`HTTP/1.1 403 Forbidden
+Connection: close
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: <span class="code-keyword">true</span>
+Content-Type: text/plain
+Content-Length: 17
+Transfer-Encoding: chunked
+
+11
+Permission denied
+0
+</pre>
+</div></div>
+
+<p><b>Same command issued on Synology DS212+ (OR controller):</b></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 10240 bytes
+19:06:39.556139 IP (tos 0x0, ttl 64, id 60154, offset 0, flags [DF], proto TCP (6), length 217)
+    DS212.49681 &gt; raspberry.fritz.box.8083: Flags [P.], cksum 0x8459 (incorrect -&gt; 0xff89), seq 2526527256:2526527421, ack 1226417713, win 183, options [nop,nop,TS val 362763759 ecr 17324330], length 165
+E.....@.@......!............I..1.....Y.....
+..U...Y*GET /OpenRemote/SwitchBinaryStatus/9/0 HTTP/1.1
+User-Agent: OpenRemoteController
+Content-Type: application/text
+Host: raspberrypi:8083
+Connection: Keep-Alive
+
+
+19:06:39.578540 IP (tos 0x0, ttl 64, id 65308, offset 0, flags [DF], proto TCP (6), length 271)
+    raspberry.fritz.box.8083 &gt; DS212.49681: Flags [P.], cksum 0xe418 (correct), seq 1:220, ack 165, win 470, options [nop,nop,TS val 17324332 ecr 362763759], length 219
+E.....@.@..&gt;.......!....I..1...............
+..Y,..U.HTTP/1.1 403 Forbidden
+Connection: close
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: <span class="code-keyword">true</span>
+Content-Type: text/plain
+Content-Length: 17
+Transfer-Encoding: chunked
+
+11
+Permission denied
+0
+</pre>
+</div></div>
+
+<p>I do not see any authentication information in the HTTP header. I must admit that I am totally new to this. So this may not be the right tool and/or command parameters</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 17, 2015 15:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601340"></a>
+                                    <font class="smallfont"><p>Unfortunately the http.log file does not give any more information about authentication <b>TRACE</b> mode:</p>
+<blockquote><p>INFO 2015-09-18 16:14:06,763 (HTTP): received message: <br/>
+DEBUG 2015-09-18 16:14:06,763 (HTTP): *** Out of read method: <br/>
+DEBUG 2015-09-18 16:14:11,769 (HTTP): read sensor: Sensor (Name = 'Duwi', ID = '248217', State Mappings: {null=${state.getName()}})<br/>
+ERROR 2015-09-18 16:14:11,797 (HTTP): ClientProtocolException when executing HTTP method<br/>
+org.apache.http.client.HttpResponseException: Forbidden<br/>
+	at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)<br/>
+etc.</p></blockquote></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 18, 2015 15:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601341"></a>
+                                    <font class="smallfont"><blockquote><p>I assume this is an issue on Zway side. You receive two different responses. The first is "403 Forbidden" and now you receive "401 Unauthorized".<br/>
+The first actually means that the user was authorized but has no rights wheres the 401 means user or password is wrong.</p></blockquote>
+<p>These different responses were an error on the ZWay side. Both those APIs have been harmonised in the meantime. <br/>
+Had nothing to do with my problem, which seems to be that no user credentials are being sent</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 18, 2015 15:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601344"></a>
+                                    <font class="smallfont"><p>Does the controller.xml show the correct information?<br/>
+You can find it in the controller/webapps/controller folder-</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 18, 2015 17:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601345"></a>
+                                    <font class="smallfont"><p>This is the Zway sensor that I am polling </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">   &lt;command id=<span class="code-quote">"2625"</span> protocol=<span class="code-quote">"http"</span>&gt;
+      &lt;property name=<span class="code-quote">"username"</span> value=<span class="code-quote">"JohnDoe"</span> /&gt;
+      &lt;property name=<span class="code-quote">"pollingInterval"</span> value=<span class="code-quote">"5s"</span> /&gt;
+      &lt;property name=<span class="code-quote">"method"</span> value=<span class="code-quote">"POST"</span> /&gt;
+      &lt;property name=<span class="code-quote">"contentType"</span> value=<span class="code-quote">"application/html"</span> /&gt;
+      &lt;property name=<span class="code-quote">"password"</span> value=<span class="code-quote">"SeCret"</span> /&gt;
+      &lt;property name=<span class="code-quote">"url"</span> value=<span class="code-quote">"http:<span class="code-comment">//raspberrypi:8083/OpenRemote/SwitchBinaryStatus/9/0"</span> /&gt;
+</span>      &lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"Duwi Status"</span> /&gt;
+      &lt;property name=<span class="code-quote">"urn:openremote:device-command:device-name"</span> value=<span class="code-quote">"Power Switches"</span> /&gt;
+      &lt;property name=<span class="code-quote">"urn:openremote:device-command:device-id"</span> value=<span class="code-quote">"304"</span> /&gt;
+    &lt;/command&gt;</pre>
+</div></div>
+
+<p>During the test above I had contentType application/text.</p>
+
+<p><b>update:</b> I had checked that already since I do get these repeating error messages in my boot.log (I did sent a mail to Eric about that)</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">TRACE 2015-09-18 19:32:57,677 : Unable to retrieve controller identity
+org.openremote.controller.exception.ConnectionException: The required password <span class="code-keyword">for</span> user 'XXXXXXXXX' was not found. Password manager error : Password <span class="code-keyword">for</span> user 'org.openremote.security.PasswordManager$PasswordNotFoundException: Implementation Error: password alias 'pieter' does not correspond to secret key entry in the keystore.' was not found
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.connect(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.httpRequest(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.httpPost(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.getControllerIdentity(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.getRemoteCommandService(Unknown Source)
+	at org.openremote.controller.service.BeehiveCommandCheckService$BeehiveCommandChecker.run(Unknown Source)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:745)
+Caused by: org.openremote.controller.service.Deployer$PasswordException: Password <span class="code-keyword">for</span> user 'org.openremote.security.PasswordManager$PasswordNotFoundException: Implementation Error: password alias 'XXXXXXX' does not correspond to secret key entry in the keystore.' was not found
+	at org.openremote.controller.service.Deployer.getPassword(Unknown Source)
+	... 7 more
+INFO 2015-09-18 19:32:57,678 : Unable to retrieve controller identity, retrying in 1,000 milliseconds...
+INFO 2015-09-18 19:32:57,678 : Unable to retrieve controller identity, retrying in 1,000 milliseconds...
+TRACE 2015-09-18 19:32:58,958 : Unable to retrieve controller identity</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 18, 2015 18:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601355"></a>
+                                    <font class="smallfont"><p>The BeehiveCommandChecker has nothing todo with the HTTP command for polling the sensor.<br/>
+You also use the pro 1.2.0 controller, right?<br/>
+I will try and check the HTTP command to make sure the authentication header is send.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 18, 2015 23:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601356"></a>
+                                    <font class="smallfont"><blockquote><p>You also use the pro 1.2.0 controller, right?</p></blockquote>
+<p>Yes</p>
+
+<p><b>Update</b> I did install a controller on a Win7 PC. TCPDUMP results are the same; no login credentials<br/>
+<b>Update 2</b> Similar http authentication error is reported <a href="http://www.openremote.org/display/forums/Modbus+TCP?focusedCommentId=23601430#comment-23601430">here in this thread</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Sep 19, 2015 08:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601546"></a>
+                                    <font class="smallfont"><p>I did some investigation and the situation is as follows:</p>
+
+<p>1) If the username is not given then no authentication will be performed at all (empty username is not supported)</p>
+
+<p>2) Our library first tries the connection without basic authentication. If that fails (HTTP 401 given by server) then the authentication header is added and the request is performed a second time. I confirmed this with tcpdump.</p>
+
+<p>It looks like razberry is not following the HTTP specs. They send a "403 forbidden" even if no authentication information is provided.<br/>
+They first need to send a "401 unauthorized" and only if the wrong user is given they are allowed to send "403 forbidden".</p>
+
+<p>Regards,<br/>
+-Marcus</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 04, 2015 23:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601549"></a>
+                                    <font class="smallfont"><p>@marcus,<br/>
+Thanks for taking the time. Did you see username/passw being sent in your TCPDUMP?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 05, 2015 10:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601550"></a>
+                                    <font class="smallfont"><p>Yes, it was sent correctly.<br/>
+But only the second time after the server returned the 401 error.<br/>
+The server has to return a 401 error if no authentication header is present but the resource is protected.<br/>
+It seems that in your case the server already returns a 403 error if not authentication header is present. That is not correct.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 05, 2015 10:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23601552"></a>
+                                    <font class="smallfont"><blockquote><p>server already returns a 403 error</p></blockquote>
+
+<p>I think they fixed that 403 error in the meantime. I will check it there</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Oct 05, 2015 11:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602372"></a>
+                                    <font class="smallfont"><p>Marcus and I have been working hard on this authentication problem in the past days.<br/>
+We came to the conclusion that <a href="https://github.com/Z-Wave-Me/home-automation/issues/299">Zway does not comply with the relevant IETF standard</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Nov 25, 2015 16:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

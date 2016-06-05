@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Connection Gateway Manager Implementation</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Connection Gateway Manager Implementation
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 19, 2011 by <font color="#0050B2">kurrazyman</font>.
+				    </div>
+
+				    <p>I would like to run some ideas past the OR community for development work I am currently doing, feel free to offer suggestions/ideas that you think might improve things.</p>
+
+<h1><a name="ConnectionGatewayManagerImplementation-CurrentSituation"></a>Current Situation</h1>
+<p>A separate connection for each sensor is made to the server referenced in the status command. If you have lots of sensors then very quickly you'll see problems with protocols like telnet where connections fail because lots of servers don't like lots of connections from the same client.</p>
+
+<h1><a name="ConnectionGatewayManagerImplementation-Proposal"></a>Proposal</h1>
+<p>The idea is simple; rather than have lots of separate connections being made to each server a connection gateway manager would be responsible for making a single connection to each server, all commands that are sent or read from this server then get routed through the appropriate connection gateway. Each connection gateway will have several parameters that can be tailored for your needs: -</p>
+
+<table class='confluenceTable'><tbody>
+<tr>
+<th class='confluenceTh'>Parameter</th>
+<th class='confluenceTh'>Optional</th>
+<th class='confluenceTh'>Description</th>
+<th class='confluenceTh'>Possible Values</th>
+</tr>
+<tr>
+<td class='confluenceTd'>Protocol</td>
+<td class='confluenceTd'>N</td>
+<td class='confluenceTd'>The protocol used to communicate with the server</td>
+<td class='confluenceTd'>telnet, HTTP, TCP, UDP Unicast, UDP Multicast, UDP Broadcast, HTTP, etc...New protocols can be developed the same way as they can at present but the structure will be different so they all work with a common gateway</td>
+</tr>
+<tr>
+<td class='confluenceTd'>Protocol Parameters</td>
+<td class='confluenceTd'>Y/N</td>
+<td class='confluenceTd'>Parameters that are specific to the protocol</td>
+<td class='confluenceTd'>This will vary depending on protocol type telnet requires IP, port, optional params would then include prompt string etc.</td>
+</tr>
+<tr>
+<td class='confluenceTd'>Connection Type</td>
+<td class='confluenceTd'>N</td>
+<td class='confluenceTd'>Connection policy for the gateway</td>
+<td class='confluenceTd'> Permanent=Always connected, Managed=Only connects when there's commands to be sent or sensors need updating, Connectionless=For servers that don't need to manage a connection i.e. HTTP)</td>
+</tr>
+<tr>
+<td class='confluenceTd'>Polling Method</td>
+<td class='confluenceTd'>N</td>
+<td class='confluenceTd'>How sensor data is received</td>
+<td class='confluenceTd'>Query=Have to ask the server for the status of the sensor, Broadcast=Server sends a message when status changes)</td>
+</tr>
+<tr>
+<td class='confluenceTd'>Polling Interval</td>
+<td class='confluenceTd'>Y</td>
+<td class='confluenceTd'>Time to wait between sensor updates</td>
+<td class='confluenceTd'>Milliseconds if not supplied a default will be used</td>
+</tr>
+<tr>
+<td class='confluenceTd'>Connect Timeout</td>
+<td class='confluenceTd'>Y</td>
+<td class='confluenceTd'>Time to wait for connection attempt</td>
+<td class='confluenceTd'>Milliseconds if not supplied a default will be used</td>
+</tr>
+<tr>
+<td class='confluenceTd'>Send Timeout</td>
+<td class='confluenceTd'>Y</td>
+<td class='confluenceTd'>Time to wait for send command to complete</td>
+<td class='confluenceTd'>Milliseconds if not supplied a default will be used</td>
+</tr>
+<tr>
+<td class='confluenceTd'>Read Timeout</td>
+<td class='confluenceTd'>Y</td>
+<td class='confluenceTd'>Time to wait for read command to complete</td>
+<td class='confluenceTd'>Milliseconds if not supplied a default will be used</td>
+</tr>
+</tbody></table>
+
+<h2><a name="ConnectionGatewayManagerImplementation-DevelopmentStatus"></a>Development Status</h2>
+<p>I have got a very early working example of this up and running but more work is needed. Anyone interested in testing the beta code just watch this thread and I'll make a post informing you it's ready for testing. At present I have got things working with the existing controller.xml structure so my Connection Manager looks through all the commands and builds up the unique gateways based on the command protocol and properties. I have only been working with Telnet so far but the idea is that all protocols will be encapsulated into the gateway model.</p>
+
+<h2><a name="ConnectionGatewayManagerImplementation-CommandDefinitions"></a>Command Definitions</h2>
+<p>By implementing the connection gateways you should see that the protocol is then specific to the gateway where at present the protocol is defined at the command level. This will then allow the command definitions to be simplified and in the composer you would simply attach each command to the corresponding gateway and it would then inherit the settings. Commands become a simple case of read or send.</p>
+
+<h2><a name="ConnectionGatewayManagerImplementation-CommandImprovements"></a>Command Improvements</h2>
+<p>Rather than commands be a rigid read or send I would like more flexibility and I'd be interested in knowing others opinions on this. My proposal is to make each command a sequence of pre-defined operations, for example if I want to get some information from a Music Player Daemon telnet server about the song that's currently playing but I want to display this information in a label component in my panel in a certain format (e.g. ARTIST NAME - TITLE), the telnet server doesn't provide a command to send this information as I want it but instead offers two seperate commands, current-artist and current-title (this isn't true in the case of MPD but is just for example purposes). Such functionality is very difficult in the current setup and you may need to write your own version of the telnet protocol to do the work for you. So instead imagine the command as a sequence of actions defined in XML something like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;command id=<span class="code-quote">"1"</span> gateway=<span class="code-quote">"1"</span>&gt;</span>
+<span class="code-tag">&lt;action seq=<span class="code-quote">"1"</span> type=<span class="code-quote">"read"</span> value=<span class="code-quote">"current-artist"</span> params=""/&gt;</span>
+<span class="code-tag">&lt;action seq=<span class="code-quote">"2"</span> type=<span class="code-quote">"filter"</span> value=<span class="code-quote">"^.*artist:(.*)$"</span> params=<span class="code-quote">"input=$s1"</span>/&gt;</span>
+<span class="code-tag">&lt;action seq=<span class="code-quote">"3"</span> type=<span class="code-quote">"read"</span> value=<span class="code-quote">"current-title"</span> params=""/&gt;</span>
+<span class="code-tag">&lt;action seq=<span class="code-quote">"4"</span> type=<span class="code-quote">"filter"</span> value=<span class="code-quote">"^.*title:(.*)$"</span> params=<span class="code-quote">"input=$s3"</span>/&gt;</span>
+<span class="code-tag">&lt;action seq=<span class="code-quote">"5"</span> type=<span class="code-quote">"combine"</span> value=<span class="code-quote">"$s2.match(1) - $s3.match(1)"</span>/&gt;</span>
+<span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+<p>To explain:</p>
+
+<p>action #1: Read data from server by sending the current-artist command<br/>
+action #2: Filter the response from action #1 using the regex ^.<b>artist<img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>.</b>)$<br/>
+action #3: Read data from server by sending the current-title command<br/>
+action #4: Filter the response from action #3 using the regex ^.<b>title<img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>.</b>)$<br/>
+action #5: Combine the values of multiple actions in this case the result from </p>
+
+<p>Using this approach very powerful functionality could be achieved using the standard telnet protocol which would avoid the need for writing custom implementations.</p>
+
+<p>Look forward to hearing everyone's thoughts on this.</p>
+
+<p>Rich</p>
+
+
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/15532639/15663132.png">Scripting_600x320.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-15532648"></a>
+                                    <font class="smallfont"><p>On Command improvements, this is a no-go on the current dev branch due to the XML schema changes it would require (and therefore tooling implementation changes).</p>
+
+<p>What you are essentially getting at is scripting of the protocol, which by and large is not best achieved with XML elements and regexp is not the most accessible method of going about it (although I would not exclude use of regexp per se).</p>
+
+<p>To expand the above somewhat, the XML tends to break down as soon as your message exchange on the protocol would include conditionals (if response - then action), or even repeats. The regexp is somewhat difficult for your average user still to grasp where as scripting gives us multiple levels of difficulty/functionality with various choices up to something very domain specific and potentially a lot simpler than regexp for an installer to deal with (who are likely going to need something simpler than regexp to be able to provide more integration templates by themselves).</p>
+
+<p>Your proposal on command improvement part reads to me as a intermediate step which would add flexibility but given the XML schema changes and the fact that we'd still need to go to full scripting later (given the reasoning above), I'd skip this step and move to full protocol scripting directly which already is an identified need.</p>
+
+<p>I was just looking into it today with a reimplementation of the HTTP protocol. To get this to work with the current Command &lt;property&gt; elements means either embedding a script as property value, or referencing to a script file from within the property value.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> <span class="code-tag">&lt;command...&gt;</span>
+   <span class="code-tag">&lt;property name = <span class="code-quote">"script"</span> value = <span class="code-quote">"myMsgExchange.script"</span>/&gt;</span>
+ <span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+
+<p>Script language itself could be something provided by the various Scripting SPIs that are available. The bindings to the script (equivalents of $s1, $s2, $s3 in your example) is something that would still need to be looked at.</p>
+
+<p>Anything that requires an XML schema change at this point would need to go to its own branch of "to be dealt with later" while the current iteration is being completed. Prototyping towards scripting on the generic IP protocols is something I'd see as a more interesting option at the moment.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 19, 2011 23:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532672"></a>
+                                    <font class="smallfont"><p>I agree an in-built scripting engine would be a much more flexible solution in the long run but as you've pointed out there are quite a few decisions to be made as to how this is implemented/managed.</p>
+
+<p>We have the standard data process of:</p>
+
+<p>SEND DATA -&gt; ACKNOWLEDGE SEND</p>
+
+<p>READ COMMAND (READ OFTEN REQUIRES A SEND COMMAND TO REQUEST DATA; UNLESS SERVER BROADCASTS) -&gt; PROCESS DATA -&gt; RETURN RESULT</p>
+
+<p>The scripting comes into play for 'PROCESS DATA' step as well as building dynamic SEND data packets. In my example earlier (and I have a need for doing lots of this) it is necessary to collate and format data from multiple read commands so it seems that there's a need for the scripting to sit outside the commands at a higher level. The panel components then bind to the scripting objects.</p>
+
+<p>This scripting disassociation makes sense to me as you could then have devices available in beehive that users just drag in and all the commands that each device supports will already then be defined. The scripting would then come into play for formatting and logic processing based on the particular application needs.</p>
+
+<p>Would Jython be a good way to go in your opinion.</p>
+
+<p>In theory if we're focussing on IP networks then the list of protocols should become pretty static depending on how advanced or specific the protocols become. One extreme is that we literally stop at the transport layer with TCP, UDP unicast, UDP multicast and UDP broadcast protocols. Or as we have at the moment we go to the application layer and let the application layer API deal with   confirming that the send or read command was successful. This very topic has posed challenges while I've been developing the gateway object model as I have tried to use a generic gateway with the protocol as a property of the gateway so the interface the protocol implements has to be pretty well defined but also work for all variations, obviously the more application specific the protocol becomes the more difficult this is to achieve.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 20, 2011 22:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532691"></a>
+                                    <font class="smallfont"><p>Hello Richard,</p>
+
+<p>Your observations are spot on.</p>
+
+<p>Here's how I'm currently structuring what you describe:</p>
+
+<p>I think it makes sense to separate scripting into two different areas (and distinct use cases). I call one of them <b>protocol scripting</b> which you describe as scripting for the DATA PROCESSING phase.</p>
+
+<p>The other case I call <b>integration scripting / rules</b> which you describe as creating dynamic SEND requests.</p>
+
+<p>These work at different levels in the system &#8211; integration rules outside the commands / protocol implementations and protocol scripting within protocol implementations.</p>
+
+<p><b>Integration rules / scripting</b> works based on events created by protocol implementations &#8211; it can be used to create responses to events and it can be used to integrate devices using different protocols into coordinated actions and commands. A typical use case could be a HTPC software starts playing a movie which generates a state update that we poll over HTTP protocol and that leads to a KNX command SEND action on KNX-wired lighting. Or 1-wire sensor status changes leads to commands sent over Telnet controller devices, and so on.</p>
+
+<p><b>Protocol scripting</b> works as part of a single protocol implementation, or across protocol implementations that use generic IP transports and lack dedicated application level automation protocol &#8211; and therefore need to be implemented per device model usually. You are right that this is a limited set of protocols, probably Telnet, TCP, UDP, HTTP for the time being. We can use the protocol scripting here for the data processing and (optionally) implementing message exchanges within a single protocol (the latter could also be delegated to the integration rules and scripting, and I don't currently have preference where this logic is executed other than if it complicates the implementation inside protocol implementation then best to leave it to layers outside of them).</p>
+
+<p>Dedicated automation protocol implementations (KNX, X10, etc) tend not to need the protocol level scripting since the necessary message exchanges and data formats are usually well defined with device profiles, etc.</p>
+
+<p>We are already working on the integration rules part of the system and this should show up in the coming weeks and months. This will work on the internal state cache level which will provide a mechanism for event consumers and producers to listen and create new events / commands (Event API not yet specified in anyway, as you've seen we return string representations of data only so far).</p>
+
+<p>What is not currently being worked on are the protocol scripting use cases. The work here could focus on a particular protocol first (such as Telnet) to scratch your immediate itch, or more generically the generic IP based protocols that lack application protocol level automation specifics. This would be <b>inside</b> the command definition, in a manner shown in the earlier posts and XML snippets.</p>
+
+<p><img src="attachments/15532639/15663132.png" align="absmiddle" border="0"/></p>
+
+<blockquote>
+<p>Would Jython be a good way to go in your opinion.</p></blockquote>
+
+<p>I'm ok with Jython on the first cut if that's your fancy. Ideally supporting JSR-223 (<a href="http://java.sun.com/developer/technicalArticles/J2SE/Desktop/scripting/">http://java.sun.com/developer/technicalArticles/J2SE/Desktop/scripting/</a>) or something similar would seem ideal so different scripting languages can be plugged in giving users/installers a choice to use languages they're most familiar with.</p>
+
+
+<blockquote>
+<p>One extreme is that we literally stop at the transport layer with TCP, UDP unicast, UDP multicast and UDP broadcast protocols.</p></blockquote>
+
+<p>This is also a possibility and we may end there long term &#8211; though reimplementing specific protocols like KNX on the scripting may not be top priority when we can pull protocol library implementations in directly with Java. But there's a use case here for full protocol scripting directly over IP transport, for example in some of the serverless panel scenarios.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 21, 2011 22:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

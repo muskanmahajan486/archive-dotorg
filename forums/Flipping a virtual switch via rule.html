@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Flipping a virtual switch via rule</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Flipping a virtual switch via rule
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 19, 2014 by <font color="#0050B2">skogen75</font>.
+				    </div>
+
+				    <p>Hi guys,</p>
+
+<p>Wondering if I could get some help in getting a virtual switch to 'switch' using a rule.  </p>
+
+<p>I have a Squeezebox music player that I turn on/off using a virtual switch that triggers a rule to send the actual powerOn and powerOff commands.  I also have a virtual switch that triggers a toggle between on/off states (play/pause, no mapping, I just use 'on' as play and 'off' as pause).  This also triggers a rule that either sends the actual play or pause commands.  </p>
+
+<p>Now, I need the rule that monitors the virtual power sensor for an 'off' state to trigger two things:</p>
+
+<p>1. Send the power off command <br/>
+2. Flip the state of the play/pause switch to 'off' </p>
+
+<p>otherwise my Squeezebox could be off but the play switch can indicate it is playing.</p>
+
+<p>Here is what I have:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Command name:  vcSqueezebox_PowerOn
+Protocol:  In-memory virtual command
+Command: on
+Address: vSqueezeboxPOWER
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Command name:  vcSqueezebox_PowerOff
+Protocol:  In-memory virtual command
+Command: off
+Address: vSqueezeboxPOWER
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Command name:  vcSqueezebox_PowerStatus
+Protocol:  In-memory virtual command
+Command: status
+Address: vSqueezeboxPOWER
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Command name:  vcSqueezebox_PlayOn
+Protocol:  In-memory virtual command
+Command: on
+Address: vSqueezeboxPLAY
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Command name:  vcSqueezebox_PlayOff
+Protocol:  In-memory virtual command
+Command: off
+Address: vSqueezeboxPLAY
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Command name:  vcSqueezebox_PlayStatus
+Protocol:  In-memory virtual command
+Command: status
+Address: vSqueezeboxPLAY
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Sensor name:  vsSqueezebox_PowerStatus
+Command: vcSqueezebox_PowerStatus
+Type: <span class="code-keyword">switch</span>
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Sensor name:  vsSqueezebox_PlayStatus
+Command: vcSqueezebox_PlayStatus
+Type: <span class="code-keyword">switch</span>
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Switch name:  vsSqueezebox_PowerStatus
+Sensor: vsSqueezebox_PowerStatus
+Command(on): vcSqueezebox_PowerOn
+Command(off): vcSqueezebox_PowerOff
+</pre>
+</div></div>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Switch name:  vSqueezebox_PlayStatus
+Sensor: vsSqueezebox_PlayStatus
+Command(on): vcSqueezebox_PlayOn
+Command(off): vcSqueezebox_PlayOff
+</pre>
+</div></div>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+
+rule <span class="code-quote">"Squeezebox ON"</span>
+when
+   Event(source==<span class="code-quote">"vsSqueezebox_PowerStatus"</span>, value==<span class="code-quote">"on"</span>)
+then
+   execute.command(<span class="code-quote">"cSqueezebox_power_on"</span>);  &lt;-- these are the actual power_on command and it works
+end
+
+rule <span class="code-quote">"Squeezebox OFF"</span>
+when
+   Event(source==<span class="code-quote">"vsSqueezebox_PowerStatus"</span>, value==<span class="code-quote">"off"</span>)
+then
+   execute.command(<span class="code-quote">"vSqueezebox_PlayStatus"</span>,<span class="code-quote">"off"</span>);  &lt;-- <span class="code-keyword">this</span> doesn't turn the vSqueezebox_PlayStatus <span class="code-keyword">switch</span> to off
+   execute.command(<span class="code-quote">"cSqueezebox_power_off"</span>);  &lt;-- <span class="code-keyword">this</span> is the actual power_off command and it works
+end
+</pre>
+</div></div>
+
+<p>The rules fire when they are supposed to, that is, I can turn the power on/off, but the vSqueezebox_PlayStatus switch does not change its state to 'off', as indicated by the image not changing in the UI nor a label that monitors vsSqueezebox_PlayStatus sensor.</p>
+
+<p>I have searched the forums and I think that my rules are correct, any idea on what to try to get this to work?  The boot log shows no errors, however the xml-parser log shows DEBUG statements for all the switch sensors...</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2014-01-19 10:53:27,790 (XML): A <span class="code-keyword">switch</span> sensor (Name = 'vsSqueezebox_PowerStatus', ID = 3696905) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = on/&gt;.
+DEBUG 2014-01-19 10:53:27,790 (XML): A <span class="code-keyword">switch</span> sensor (Name = 'vsSqueezebox_PowerStatus', ID = 3696905) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = off/&gt;.
+</pre>
+</div></div>
+
+<p>I am using the following:<br/>
+OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17<br/>
+Preview designer<br/>
+iOS</p>
+
+
+<p>Thanks much, </p>
+
+<p>Erik</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22883091"></a>
+                                    <font class="smallfont"><p>I just checked the WebConsole and that doesn't work either.</p>
+
+<p>Do I have the correct/needed packages/imports/global statements?  Does the execute.command need to be changed to something else?</p>
+
+<p>I have also tried to make two new sets of virtual switches with their associated sensors and commands and I can't get one switch to change the other via rules either.  Hmmm I feel like I am missing something simple.</p>
+
+<p>Thanks,<br/>
+Erik</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by skogen75 at Jan 19, 2014 18:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883093"></a>
+                                    <font class="smallfont"><p>Change</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+   execute.command(<span class="code-quote">"vSqueezebox_PlayStatus"</span>,<span class="code-quote">"off"</span>);  &lt;-- <span class="code-keyword">this</span> doesn't turn the vSqueezebox_PlayStatus <span class="code-keyword">switch</span> to off
+</pre>
+</div></div>
+<p>to</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+   execute.command(<span class="code-quote">"vcSqueezebox_PlayStatus"</span>,<span class="code-quote">"off"</span>); 
+</pre>
+</div></div>
+
+<blockquote>
+<p>Hmmm I feel like I am missing something simple.</p></blockquote>
+<p>Indeed, a letter 'c' <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Alternatively you can change it to:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  switches.name(<span class="code-quote">"vSqueezebox_PlayStatus"</span>).off();
+</pre>
+</div></div>
+<p>as you already added global switches.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 19, 2014 21:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883096"></a>
+                                    <font class="smallfont"><p>Awesome!!!</p>
+
+<p>It works!</p>
+
+<p>Thanks Michal, I have read many of your posts and you really know your stuff.  You made my day!</p>
+
+<p>Erik</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by skogen75 at Jan 19, 2014 21:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:36</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

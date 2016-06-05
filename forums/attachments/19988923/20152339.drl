@@ -1,0 +1,79 @@
+package org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+import java.util.*;
+import java.lang.Float;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+
+rule "Temp log"
+
+timer (cron: 0 0,30 * * * ?)
+
+when
+  
+  eval(true)
+  
+  $outdoortemp : CustomState (source == "Utetemperatur")
+  $templivingroom : CustomState (source == "Temp Vardagsrum")
+  $bedroom : CustomState (source == "Temp Sovrum")
+  $kidsroom1 : CustomState (source == "Temp Barnrum 1n")
+  $tempFTXin : CustomState (source == "Temp Tilluft")
+  $tempFTXout : CustomState (source == "Temp Frånluft")
+  
+
+then
+
+  FileInputStream fileInputStream = new FileInputStream("Temp_log.xls");
+  HSSFWorkbook workbook = new HSSFWorkbook(fileInputStream);
+  HSSFSheet worksheet = workbook.getSheet("Log Values");
+
+  HSSFRow row1 = worksheet.getRow(worksheet.getLastRowNum());
+  HSSFCell cellA1 = row1.getCell(0);
+  Date a1Val = cellA1.getDateCellValue();
+
+  Date date2 = new Date();
+  long diff = date2.getTime() - a1Val.getTime();
+ 
+  if(diff > 200000){
+  
+  HSSFRow Rowx = worksheet.createRow(worksheet.getLastRowNum()+1);
+
+  HSSFCell Cell1 = Rowx.createCell(0);
+  Cell1.setCellValue(new Date());
+  HSSFCell Cell2 = Rowx.createCell(1);  
+  Cell2.setCellValue(Double.valueOf($outdoortemp.getValue()));
+  HSSFCell Cell3 = Rowx.createCell(2);  
+  Cell3.setCellValue(Double.valueOf($templivingroom.getValue()));
+  HSSFCell Cell4 = Rowx.createCell(3);  
+  Cell4.setCellValue(Double.valueOf($bedroom.getValue()));
+  HSSFCell Cell5 = Rowx.createCell(4);  
+  Cell5.setCellValue(Double.valueOf($kidsroom1.getValue()));
+  HSSFCell Cell6 = Rowx.createCell(5);
+  Cell6.setCellValue(Double.valueOf($tempFTXin.getValue()));
+  HSSFCell Cell7 = Rowx.createCell(6);  
+  Cell7.setCellValue(Double.valueOf($tempFTXout.getValue()));
+ 		
+  FileOutputStream fileOut = new FileOutputStream("Temp_log.xls");
+  workbook.write(fileOut);
+  fileOut.close();
+  System.out.println("Your excel file has been generated from rule Temp_log");
+  System.out.println (new Date());
+
+  }
+  else
+  {
+       System.out.println("stopped attempt to double-write (from rule Temp_log)");
+       System.out.println(diff);
+  }
+
+end

@@ -1,0 +1,556 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Creating a Range sensor for FAN</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Creating a Range sensor for FAN
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 27, 2011 by <font color="#0050B2">yannph</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm using the Controller 2.0.0 Alpha KNXIP and the IPAD panel (thanks Eric) to control my KNX installation.</p>
+
+<p>A simple switch with sensor is working fine. Now I'd like to go one step further and create a 1Byte sensor to read a fan speed.</p>
+
+<p>The read command is working fine within ETS4 but not via the OpenRemote Controller.</p>
+
+<p>Implementation:&nbsp;</p>
+<ul>
+	<li>KNX command "STATUS" DPT:5.001</li>
+	<li>Sensor; Type "RANGE" with min value=0 and max=3</li>
+	<li>a simple Label to show the speed value</li>
+</ul>
+
+
+<p>At runtime, the controller gives the following error:</p>
+
+<p>"Exception in thread "Thread-11" java.lang.Error: Currently only Unsigned 8 bit datatype supported for RANGE sensor type.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at org.openremote.controller.protocol.knx.GroupValueRead.read(GroupValueRead.java:217)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at org.openremote.controller.component.Sensor.readStatus(Sensor.java:131)..."</p>
+
+<p>If you have any idea, they're welcome.</p>
+
+<p>Yann</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-16023591"></a>
+                                    <font class="smallfont"><p>You're likely hitting the same issue as reported here: <a href="KNX non-boolean status reads.html" title="KNX non-boolean status reads">KNX non&#45;boolean status reads</a></p>
+
+<p>Will see if we can come up with a patch with Josep.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 29, 2011 17:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023610"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>Thkx for this info. I'll have a close look at this issue.</p>
+
+<p>Yann</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Mar 30, 2011 07:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023615"></a>
+                                    <font class="smallfont"><p>Jose has provided a patch (ding, ding! added one new contributor!)</p>
+
+<p>I've reviewed and it looks good. Will apply and you'll be able to pull a new controller from Subversion after.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 30, 2011 16:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023618"></a>
+                                    <font class="smallfont"><p>Hi Juha, &amp; Jose,</p>
+
+<p>It's good news.</p>
+
+<p>If you can send me the patch, I'll integrated to my local copy of the branch controller KNXIP done by Olivier and test it still today if possible.</p>
+
+<p>Please let me know</p>
+
+<p>Yann</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Mar 30, 2011 19:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023619"></a>
+                                    <font class="smallfont"><p>Adding it here for anyone else who might be in a hurry to try it out <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Index: Controller/src/org/openremote/controller/protocol/knx/GroupValueRead.java
+===================================================================
+--- Controller/src/org/openremote/controller/protocol/knx/GroupValueRead.java	(revision 3814)
++++ Controller/src/org/openremote/controller/protocol/knx/GroupValueRead.java	(working copy)
+@@ -135,8 +135,11 @@
+     {
+         <span class="code-keyword">return</span> "";      <span class="code-comment">// TODO : check how caller handles invalid <span class="code-keyword">return</span> values
+</span>     }
+-
+-    DataPointType dpt = getAPDU().getDataPointType();
++	
++	<span class="code-comment">// Get the DataPointType from <span class="code-keyword">this</span> object instead of from the APDU associated with 
+</span>+	<span class="code-comment">// the KNX command name.This will be the right type (that entered by the user as dpt in
+</span>+	<span class="code-comment">// the GUI.
+</span>+    DataPointType dpt = getDataPointType();
+     DataType datatype = getAPDU().getDataType();
+ 
+     <span class="code-keyword">if</span> (sensorType == EnumSensorType.SWITCH)
+@@ -168,8 +171,8 @@
+       <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.SCALING)
+       {
+         Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+-
+-        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString(valueDPT.resolve());
++		<span class="code-object">int</span> resolution = valueDPT.resolve();
++        <span class="code-keyword">return</span> <span class="code-object">Integer</span>.toString(resolution);
+       }
+ 
+       <span class="code-keyword">else</span> <span class="code-keyword">if</span> (dpt == DataPointType.Unsigned8BitValue.ANGLE)
+Index: Controller/src/org/openremote/controller/protocol/knx/datatype/Unsigned8Bit.java
+===================================================================
+--- Controller/src/org/openremote/controller/protocol/knx/datatype/Unsigned8Bit.java	(revision 3814)
++++ Controller/src/org/openremote/controller/protocol/knx/datatype/Unsigned8Bit.java	(working copy)
+@@ -63,11 +63,21 @@
+ 
+   <span class="code-keyword">public</span> Unsigned8Bit(DataPointType.Unsigned8BitValue dpt, <span class="code-object">int</span> value)
+   {
+-    <span class="code-keyword">if</span> (value &lt; 0 || value &gt; 255)
+-      <span class="code-keyword">throw</span> <span class="code-keyword">new</span> Error(<span class="code-quote">"Unsigned 8-bit value range is [0-255], got "</span> + value);
+-
+-    <span class="code-keyword">this</span>.value = value;
+-    <span class="code-keyword">this</span>.dpt = dpt;
++	  <span class="code-comment">// We are getting the value as a signed integer... <span class="code-keyword">this</span> is java, after all.
+</span>+	  <span class="code-comment">// Thus, the range we are ready to accept as representable within a <span class="code-object">byte</span> is as follows.
+</span>+	  <span class="code-keyword">if</span> (value &lt; -128 || value &gt; 255) {
++		  <span class="code-keyword">throw</span> <span class="code-keyword">new</span> Error(<span class="code-quote">"Unsigned 8-bit value range is [0-255], got "</span> + value);
++	  }
++	  
++	  <span class="code-comment">// Given that we passed the above test, we undo the 2-s complement interpretation
+</span>+	  <span class="code-comment">// of the signed value.
+</span>+	  <span class="code-keyword">if</span> (value &lt; 0 ) {
++		  <span class="code-keyword">this</span>.value = value + 256;
++	  }
++	  <span class="code-keyword">else</span> {
++		  <span class="code-keyword">this</span>.value = value;
++	  }
++	  <span class="code-keyword">this</span>.dpt = dpt;
+   }
+ 
+ 
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Mar 30, 2011 19:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023622"></a>
+                                    <font class="smallfont"><p>OK, I've applied the patch and here are the results of my tests.</p>
+
+<p>Command STATUS for a DPT 5.010</p>
+
+<p>Sensor LEVEL : no error on the controller but the result in a label is 0 insted of 1 via ETS. If I increase the FAN speed to 3, the sensor level is changed to 1. So there is no error, but it's not the expect value.</p>
+
+<p>Sensor RANGE (my target): still the same error:</p>
+
+<p>Exception in thread "Thread-15" java.lang.Error: Currently only Unsigned 8 bit datatype supported for RANGE sensor type.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at org.openremote.controller.protocol.knx.GroupValueRead.read(GroupValueRead.java:220)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at org.openremote.controller.component.Sensor.readStatus(Sensor.java:131)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at&nbsp; org.openremote.controller.statuscache.PollingMachineThread.run(PollingMachineThread.java:65)</p>
+
+
+<p>Is there something I'm doing wrong?</p>
+
+<p>Don't we have to change the GroupValueRead.java the same as the scaling?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Mar 30, 2011 22:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023625"></a>
+                                    <font class="smallfont"><p>On a quick guess and looking at the code, you're getting the exception on RANGE because this the <b>datatype</b> is still coming from the response APDU:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
++    DataPointType dpt = getDataPointType();
+     DataType datatype = getAPDU().getDataType();
+ 
+</pre>
+</div></div>
+
+<p>(the second line didn't get updated)</p>
+
+<p>Would be convenient if the DPT would also be able to return its own datatype... but looks like that API call is missing?</p>
+
+<p>LEVEL will scale values to range [0-100] (think percentages) &#8211; since DPT 5.001 is 0-256 (8 bit) it's likely its showing you the percentage of 1-3 values of range 0-256 which probably comes down to zero and one :-P</p>
+
+<p>Gotta see what's the best way to fix to correct datatype as well as DPT. Let's see if other brave souls offer patches <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 30, 2011 22:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023640"></a>
+                                    <font class="smallfont"><p>Well,</p>
+
+<p>  looking at the RANGE case, it seems to need some serious work still.</p>
+
+<p>  The datatype can never be an 8bit value, as it is taken from the APDU created for the STATUS label. I will have a look, as I am interested in getting Ranges to work too.</p>
+
+<p>Jose</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 31, 2011 17:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023644"></a>
+                                    <font class="smallfont"><p>Yeah the fix here may be to add those extra commands with proper APDU settings (what we discussed initially).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 31, 2011 18:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023648"></a>
+                                    <font class="smallfont"><p>Josep, Juha, Thank you for your help with this RANGE case.</p>
+
+<p>I'm not a developper, and may be don't understand correctly what I'm doing, but my findings are:</p>
+
+<p>I've tried with the line</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">DataType datatype = responseAPDU.getDataType();
+</pre>
+</div></div>
+<p>and not the getAPDU()</p>
+
+<p>I don't know exactly what I'm doing, don't know much about the architecture of OpenRemote, and don't know the difference between the Object received from GetAPDU() and the REsponseAPDU object, but in the "Debug Watch" of Eclipse, I've seen that:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> responseAPDU	ApplicationProtocolDataUnit  (id=94)
+	applicationLayerService	ApplicationLayer$Service  (id=101)
+	datatype	Unsigned8Bit  (id=86)
+		dpt	DataPointType$Unsigned8BitValue  (id=82)
+		value	2
+</pre>
+</div></div>
+<p>So Instead of result of the GetAPDU.GetDataType() that returns a Boolean, I'm receiving the correct Object Type ... AND in the GUI the correct value of my FAN <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+<p>I don't know if that may help, and don't know the impact of that change, but it's the current limit of my understanding <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Mar 31, 2011 22:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023651"></a>
+                                    <font class="smallfont"><p>Juha, I sent you a new patch with what may be a solution for this (it also contains the previous patch). <br/>
+Just have a look and see if it applies.</p>
+
+<p>Regards,</p>
+
+<p>Josep</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 31, 2011 23:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023653"></a>
+                                    <font class="smallfont"><p>Yes that works also, although it does so by assuming that what it got from the wire is what was requested by the model in the first place. <br/>
+When there is a mismatch one may want to be able to detect it.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Mar 31, 2011 23:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023697"></a>
+                                    <font class="smallfont"><p>Josep,</p>
+
+<p>You're rigth, This solution is linked to the definition of the answer in your KNX group. Things have to be perfect without any error tolerance in KNX &amp; Openremote development.<br/>
+You're solution is certainly more flexible<br/>
+Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 01, 2011 19:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023698"></a>
+                                    <font class="smallfont"><p>Josep,<br/>
+In which branch / workspace did you put your code?<br/>
+Thanks</p>
+
+<p>Yann</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 01, 2011 19:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023701"></a>
+                                    <font class="smallfont"><p>Sent it to Juha.</p>
+
+<p>Took the patch from trunk, but I do not know where Juha is placing the changes.</p>
+
+<p>Josep</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Apr 01, 2011 23:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023707"></a>
+                                    <font class="smallfont"><p>Hi Josep,</p>
+
+<p>Sorry, can't find your code in sourceforge. <br/>
+Could you send me the URL or a "diff" file?<br/>
+Thank you<br/>
+Yann</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 02, 2011 12:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023754"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>Could you help on this?<br/>
+Could you help me to find the source code or send me a diff file?<br/>
+Regards<br/>
+yann</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 05, 2011 15:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023755"></a>
+                                    <font class="smallfont"><p>Here it is, courtesy of Jose (both patches are combined in this diff):</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>Index: Controller/src/org/openremote/controller/protocol/knx/GroupValueRead.java
+===================================================================
+--- Controller/src/org/openremote/controller/protocol/knx/GroupValueRead.java	(revision 3873)
++++ Controller/src/org/openremote/controller/protocol/knx/GroupValueRead.java	(working copy)
+@@ -135,8 +135,11 @@
+     {
+         return "";      // TODO : check how caller handles invalid return values
+     }
+-
+-    DataPointType dpt = getAPDU().getDataPointType();
++	
++	// Get the DataPointType from this object instead of from the APDU associated with 
++	// the KNX command name.This will be the right type (that entered by the user as dpt in
++	// the GUI.
++    DataPointType dpt = getDataPointType();
+     DataType datatype = getAPDU().getDataType();
+ 
+     if (sensorType == EnumSensorType.SWITCH)
+@@ -168,8 +171,8 @@
+       if (dpt == DataPointType.Unsigned8BitValue.SCALING)
+       {
+         Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+-
+-        return Integer.toString(valueDPT.resolve());
++		int resolution = valueDPT.resolve();
++        return Integer.toString(resolution);
+       }
+ 
+       else if (dpt == DataPointType.Unsigned8BitValue.ANGLE)
+@@ -205,7 +208,7 @@
+       //    need to merge the fixes that gives range min/max values so return values
+       //    can be scaled accordingly
+ 
+-      if (datatype instanceof Unsigned8Bit)
++      if (dpt instanceof DataPointType.Unsigned8BitValue)
+       {
+         Unsigned8Bit valueDPT = (Unsigned8Bit)responseAPDU.getDataType();
+ 
+Index: Controller/src/org/openremote/controller/protocol/knx/datatype/Unsigned8Bit.java
+===================================================================
+--- Controller/src/org/openremote/controller/protocol/knx/datatype/Unsigned8Bit.java	(revision 3873)
++++ Controller/src/org/openremote/controller/protocol/knx/datatype/Unsigned8Bit.java	(working copy)
+@@ -63,11 +63,21 @@
+ 
+   public Unsigned8Bit(DataPointType.Unsigned8BitValue dpt, int value)
+   {
+-    if (value &lt; 0 || value &gt; 255)
+-      throw new Error("Unsigned 8-bit value range is [0-255], got " + value);
+-
+-    this.value = value;
+-    this.dpt = dpt;
++	  // We are getting the value as a signed integer... this is java, after all.
++	  // Thus, the range we are ready to accept as representable within a byte is as follows.
++	  if (value &lt; -128 || value &gt; 255) {
++		  throw new Error("Unsigned 8-bit value range is [0-255], got " + value);
++	  }
++	  
++	  // Given that we passed the above test, we undo the 2-s complement interpretation
++	  // of the signed value.
++	  if (value &lt; 0 ) {
++		  this.value = value + 256;
++	  }
++	  else {
++		  this.value = value;
++	  }
++	  this.dpt = dpt;
+   }
+ 
+ 
+</pre>
+</div></div>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Apr 05, 2011 15:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023756"></a>
+                                    <font class="smallfont"><p>Thanks Juha,</p>
+
+<p>   sorry Yann, I have been off the net for a couple of days.</p>
+
+<p>   Regards,</p>
+
+<p>Jose</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by josep at Apr 05, 2011 16:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023761"></a>
+                                    <font class="smallfont"><p>No problem Josep, there is no obligation, only best effort.<br/>
+Thank you for your help and contribution.<br/>
+Juha, thanks for the code.<br/>
+I'll try it this evening and let you know about my results.</p>
+
+<p>Regards<br/>
+Yann</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 05, 2011 18:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16023762"></a>
+                                    <font class="smallfont"><p>This is working fine for me.<br/>
+the Sensor RANGE Command is associated to a slider on iPAD panel and it's working fine to reflect the read value from KNX.</p>
+
+<p>Thank you Josep.</p>
+
+<p>If this can help, I'll send to Juha a proposal to have a WRITE command for 5.010</p>
+
+<p>Regards</p>
+
+<p>Yann</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Apr 05, 2011 22:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:47</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

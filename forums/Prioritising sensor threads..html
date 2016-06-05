@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Prioritising sensor threads.</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Prioritising sensor threads.
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 25, 2015 by <font color="#0050B2">aktur</font>.
+				    </div>
+
+				    <p>My controller is running on the edge, which results that it needs sometimes a few seconds to propagate it through the event chain. I would like to be able to prioritise threads and give some sensors (like buttons for my AV from a handheld remote) more priority than for example temperature sensors. The idea is to get better response from interactive human controls as few seconds for execution is at least bit annoying.<br/>
+Is there any work done in this direction? If not, is this at all possible within the Openremote controller architecture? If yes, can somebody outline how it can be achieved?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23595875"></a>
+                                    <font class="smallfont"><p>I find that a first step would be to review protocol implementations and make sure that they behave nicely and to some common standards. One standard would be that a protocol should not start any thread, or create and connection or generally make no 'noise' unless it have been configured. Another once would be to try to reduce the use of polling techniques. If a temperature sensor make an update at an adequate frequency, anything more the than once a minute is probably already excessive, should not make a difference to system performance. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Jan 26, 2015 06:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595879"></a>
+                                    <font class="smallfont"><blockquote>
+<p>enerally make no 'noise' unless it have been configured.</p></blockquote>
+<p>I would go even further here and say that it should be invisible unless it is used in current configuration. I frequently get messages from protocols which I don't use and never will be used. Waste of resources if you ask me. The example is:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+2015-01-26 11:24:31,113 ERROR [pool-1-thread-1]: IOException <span class="code-keyword">while</span> reading data from ISY-99
+org.apache.http.conn.HttpHostConnectException: Connection to http:<span class="code-comment">//192.168.41.12 refused
+</span>        at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:127)
+</pre>
+</div></div>
+
+<p>I don't have ISY-99 device nor 192.168.41.12 is a valid address on my LAN.</p>
+
+<blockquote>
+<p> anything more the than once a minute is probably already excessive</p></blockquote>
+<p>But still it is cool, for example I have real time readings of power, voltage, current and cosfi from my Smappee device every second. It makes impression when you see it, it shows that energy consumption lives quite actively. So I would still like to pool it every second, however, when a UI request comes I would like it give a higher priority and don't mind to hick the pooling thread for few seconds.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 26, 2015 10:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595881"></a>
+                                    <font class="smallfont"><p>My OpenRemote&lt;&gt;RaZberry system performance has been drastically improved after I abandoned sensor polling by <a href="http://forum.z-wave.me/viewtopic.php?f=3424&amp;t=20849&amp;hilit=UDP">sending status changes with UDP</a> instead. Even while I have to do a system call to netcat at the RaZberry side JavaScript, and parse the UDPListener messages with a rule at the OpenRemote side. Those messages are only sent by RaZberry if the value has changed!</p>
+
+<p>If UDPListener had an option to directly deal with {sensorname,value} pairs, quite a bit could be gained I think.</p>
+
+<p>I am aware that I can craft my own messages at RaZberry, which won't be the case in most situations. Maybe $mappee developers can be lured into producing something similar </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 26, 2015 11:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

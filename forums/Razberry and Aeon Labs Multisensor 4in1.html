@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Razberry and Aeon Labs Multisensor 4in1</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Razberry and Aeon Labs Multisensor 4in1
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 06, 2013 by <font color="#0050B2">eivwer</font>.
+				    </div>
+
+				    <p>To make the Aeon Labs Multisensor 4in1 work I added the following functions to openremote.js:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+/*SensorStatus(N,I)
+OpenRemote usage: http:<span class="code-comment">//raspberry_IP:8083/JS/Run/SensorStatus(N,I)
+</span>*/
+SensorStatus = function(N,I) {
+  <span class="code-keyword">var</span> status = (zway.devices[N].instances[I].SensorBinary.data.level.value==<span class="code-keyword">true</span>) ? <span class="code-quote">"on"</span> : <span class="code-quote">"off"</span>;
+  <span class="code-keyword">return</span> status;
+}
+
+/*HumidityLevel(N)
+OpenRemote usage: http:<span class="code-comment">//raspberry_IP:8083/JS/Run/HumidityLevel(N)
+</span>*/
+HumidityLevel = function(N) {
+  zway.devices[N].instances[0].SensorMultilevel.Get();
+  <span class="code-keyword">return</span> zway.devices[N].instances[0].SensorMultilevel.data[5].val.value;
+}
+
+/*LuminescenceLevel(N)
+OpenRemote usage: http:<span class="code-comment">//raspberry_IP:8083/JS/Run/LuminescenceLevel(N)
+</span>*/
+LuminescenceLevel = function(N) {
+  zway.devices[N].instances[0].SensorMultilevel.Get();
+  <span class="code-keyword">return</span> zway.devices[N].instances[0].SensorMultilevel.data[3].val.value;
+}
+
+/*TemperatureLevel(N)
+OpenRemote usage: http:<span class="code-comment">//raspberry_IP:8083/JS/Run/TemperatureLevel(N)
+</span>*/
+TemperatureLevel = function(N) {
+  zway.devices[N].instances[0].SensorMultilevel.Get();
+
+  /* For celsius */
+  <span class="code-keyword">var</span> temperature = <span class="code-object">Math</span>.round(zway.devices[N].instances[0].SensorMultilevel.data[1].val.value);
+
+  /* For Faherheit */
+/*  <span class="code-keyword">var</span> temperature = <span class="code-object">Math</span>.round(zway.devices[N].instances[0].SensorMultilevel.data[1].val.value * 1.8 + 32);*/
+
+  <span class="code-keyword">return</span> temperature;
+}
+</pre>
+</div></div>
+
+<p>The Temperate is now rounded (somehow it would otherwise show up in a panel as N/A).</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22874331"></a>
+                                    <font class="smallfont"><p>Thank you for your feedback. <br/>
+Using a sensor of type:Custom will display the decimal value in a <em>Label</em> with the <b>TemperatureLevel</b> function of RaZ-OR. If you are using a <em>Slider</em> for display you have indeed to round the number as you did because sensors of type range and level iirc only accept integers.</p>
+
+<p>Hope other people are willing to test and give feedback on your functions, so we can include them in RaZ-OR.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Aug 03, 2013 08:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874352"></a>
+                                    <font class="smallfont"><p>Hi Pe,</p>
+
+<p>I noticed the temperature value to have 6 or 8 decimals (ridiculous, can't imagine the sensor to be that accurate <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>), would the Custom sensor be able to cope with that?<br/>
+Do you know how °C could be added to the label? The value is also used in a rule, could the label add the unit of measure? Or would two functions in openremote.js be required? One to provide the value and one to provide a label text.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by eivwer at Aug 03, 2013 21:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874365"></a>
+                                    <font class="smallfont"><ul class="alternate" type="square">
+	<li>What do you mean with "can Custom Sensor cope"? The custom sensor just passes the value on as a string if you do not add any parameters under Custom state items</li>
+	<li>I added °C in a separate label next to the value label. You can of course create two temperature read commands in your .js: one to create an integer value, and one string value with the units being concatenated. Note that in some Z-Wave devices you can read the units with a Z-Wave command.</li>
+	<li>If you use the temp value in a rule I would use the integer value.</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Aug 04, 2013 09:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874447"></a>
+                                    <font class="smallfont"><p>This is incredibly helpful.  My multisensor came in the mail today and I've been playing with it for a while trying to figure out why it would only show 'N/A', I didn't know if it was even pulling a value.  Tried a regex, but no luck.</p>
+
+<p>I live in the US and use Fahrenheit, so I just added a '* 1.8 + 32' inside the Math.Round function to return a Fahrenheit value instead of celsius.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gx1400 at Aug 06, 2013 02:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874452"></a>
+                                    <font class="smallfont"><p>Robert, the correct spelling is <em>Luminescence</em>. Makes it easier for people to Google your function <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Aug 06, 2013 08:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874473"></a>
+                                    <font class="smallfont"><p>Hi Pe, good point.</p>
+
+<p>I just copied over the name from the sensor via 'For experts --&gt; Expert commands --&gt; SensorMultiLevel'.<br/>
+Looks like the vendor uses a wrong sensorTypeString <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Thanks!<br/>
+Robert</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by eivwer at Aug 06, 2013 17:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874476"></a>
+                                    <font class="smallfont"><p>Great, added this as comment so people can choose their version.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by eivwer at Aug 06, 2013 17:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874511"></a>
+                                    <font class="smallfont"><p>Robert,<br/>
+ I have used your temperature example for an additional section "Modifying RaZ-OR functions" on the HowTo page for RaZberry. Thank you for sharing.<br/>
+I will also add today the Humidity, Luminescence sensors to the RaZ-OR module. I have choosen to leave the <b>Math</b> functions to the individual users. Hence the extension to the HowTo<br/>
+Pieter</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Aug 07, 2013 12:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874521"></a>
+                                    <font class="smallfont"><p>I love making contributions to the FOSS community, even if it's a Celsius-&gt;Fahrenheit conversion! Thanks for the update to the HowTo page.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gx1400 at Aug 07, 2013 16:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22874541"></a>
+                                    <font class="smallfont"><p>Instead of using fixed text unit labels in the screen editor, you can retreive the appropriate unit text also as a variable from the Z-Wave Device with:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">http:<span class="code-comment">//raspberry_IP:8083/JS/Run/zway.devices[N].instances[0].SensorMultilevel.data[X].scaleString.value</span></pre>
+</div></div>
+<p>Where N is the device number, and X is the identifier for the specific sensor.</p>
+
+<p>Conversion from Celsius to Fahrenheit does not seem necessary if you set the device scale to Fahrenheit. I have a <a href="http://en.z-wave.me/content/defaultsxml-interpretation">question pending</a> on the Z-wave.me forum if that can be globally set via the defaults.xml<br/>
+<b>Edit:</b> This global setting works indeed. See <a href="http://www.openremote.org/display/forums/Z-Wave+control+with+Razberry?focusedCommentId=22874569#comment-22874569">this post</a> in the main RaZ-OR discussion thread. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Aug 08, 2013 12:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

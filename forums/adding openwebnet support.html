@@ -1,0 +1,1011 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : adding openwebnet support</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : adding openwebnet support
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 07, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    
+<p>Hi!<br/>
+i'm new to OpenRemote. I'm trying to integrate OpenWebNet protocol (created by Legrand/BTicino Home Automation groups) into OpenRemote.<br/>
+Using the Designer i'm able to send command in the right way.</p>
+
+<p>For example to switch on a light, command: light on:<br/>
+protocol: socket<br/>
+gateway ip: 192.168.1.135<br/>
+port: 20000<br/>
+command: *1*1*11## (openwebnet command, light11 on)</p>
+
+<p>and it works, the light goes on!</p>
+
+<p>however, i have an image in the interface. <br/>
+This image is connected to a sensor, with 2 image for each state (on and off). So i have 2 images: one for the light on, one for the light off.<br/>
+The light sensor is connected to command: light status.<br/>
+protocol: socket<br/>
+gateway ip: 192.168.1.135<br/>
+port: 20000<br/>
+command: *#1*11## (openwebnet command, status of light11)</p>
+
+<p>however the answer is like that:<br/>
+case off: *#<b>1##*1*0*11##</b>#*1## (0 stands for off)<br/>
+case on:  *#<b>1##*1*1*11##</b>#*1## (1 stands for on)</p>
+
+<p>that is: ACK/STATE/ACK (where ACK=*#*1##)</p>
+
+<p>so the sensor is configured as custom type:<br/>
+name="off" value="*#<b>1##*1*0*11##</b>#*1##"<br/>
+name="on" value="*#<b>1##*1*1*11##</b>#*1##"</p>
+
+<p>it seems to me correct, but in the interface (i use the kitchen demo of android app) the image of the light doesn't change.<br/>
+from the log i see:</p>
+
+<div style="width:600px;"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>2012-11-09 02:47:48,999 INFO [Polling Sensor Thread ID = 107, Name ='Kitchen Light Sensor 2']: received message: *#*1##*1*0*11##*#*1##
+2012-11-09 02:47:49,043 TRACE [Polling Sensor Thread ID = 107, Name ='Kitchen Light Sensor 2']: Processed state-1, received state-1
+or:
+2012-11-09 01:02:55,909 INFO [Polling Sensor Thread ID = 107, Name ='Kitchen Light Sensor 2']: received message: *#*1##*1*1*11##*#*1##
+2012-11-09 01:02:55,969 TRACE [Polling Sensor Thread ID = 107, Name ='Kitchen Light Sensor 2']: Processed state-2, received state-2
+and hundreds of:
+2012-11-09 02:47:48,323 INFO [Polling Sensor Thread ID = 107, Name ='Kitchen Light Sensor 2']: received message: *#*1##
+2012-11-09 02:47:48,361 TRACE [Polling Sensor Thread ID = 107, Name ='Kitchen Light Sensor 2']: Processed *#*1##, received *#*1##
+</pre>
+</div></div></div>
+
+<p>from the log it seems to work.</p>
+
+<p>(somewhere else i also have a switch (over an image) which is bound to a SwitchCommand if i also want to control it clicking over it and doesn't work, but is the same problem is think)</p>
+
+<p>so, the interface doesn't update itself after a status change, but from the log seems right.</p>
+
+
+<p>can anyone help me to fix it, please?</p>
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21528676"></a>
+                                    <font class="smallfont"><p>Did you attach the sensor to your label or whatever is in the "kitchen demo" which I don't know.<br/>
+A switch need a On-Command, Off-Command and SwitchSensor.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 08, 2013 14:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528742"></a>
+                                    <font class="smallfont"><p>Hi Marcus, thanks for replying..</p>
+
+<p>I used, as graphical interface, 2 panel from Panel-&gt;New Screen From Template-&gt;Public Templates:</p>
+<ul class="alternate" type="square">
+	<li>Demo Living Room</li>
+	<li>Demo Kitchen</li>
+</ul>
+
+
+<p>IN the previous comment i described the Kitchen Panel.<br/>
+In the Living Room Panel there's a clickable Tv screen, that is a Switch.<br/>
+It has 2 images, on and off and a switch command (TV Switch).</p>
+
+<p>TV Switch has command On and Off<br/>
+on = TCP/IP, server,port, Command= *1*1*12##   (for testing i connect it to an openwebnet light actuator: *LightCommand*ON*LightPosition##)<br/>
+off =  TCP/IP, server,port, Command= *1*0*12##  (*LightCommand*OFF*LightPosition##))</p>
+
+<p>and a TV Sensor that has:<br/>
+TV State = command *#1*12## (*LightRequest*LightPosition##)<br/>
+type = custom. Custom State Item:<br/>
+name="off" value="<b>#1##*1*0*12###*1##" that is: ACK/STATEOFF/ACK (where ACK=</b>#*1##)<br/>
+name="on" value="<b>#1##*1*1*12###*1##"  that is: ACK/STATEON/ACK (where ACK=</b>#*1##)</p>
+
+
+<p>Is there any conceptual error in this solution?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bt_bo at Jan 09, 2013 07:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528744"></a>
+                                    <font class="smallfont"><p>Ok, I got confused when you said "kitchen demo of Android app".<br/>
+The configuration looks ok to me.<br/>
+Which version of the designer are you using? Could you try the 2.1-DeveloperSnapshot from sourceforge?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 09, 2013 08:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528745"></a>
+                                    <font class="smallfont">
+<p>&gt;  Could you try the 2.1-DeveloperSnapshot from sourceforge?<br/>
+do you mean that version of the controller?</p>
+
+<p>i think i used the version 2.0.1 of the controller and the designer version <a href="http://composer.openremote.org/demo/Modeler.jsp">http://composer.openremote.org/demo/Modeler.jsp</a> <br/>
+i can also try 2.1-dev..</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bt_bo at Jan 09, 2013 08:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528747"></a>
+                                    <font class="smallfont"><p>Yes, I ment the controller.<br/>
+When you download 2.1-DeveloperSnapshot don't bother that the unpacked folder is still called 2.0.1 <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 09, 2013 08:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528756"></a>
+                                    <font class="smallfont"><p>ok</p>
+
+<p>i tried with the 2.1-dev but nothing change.. <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>i created a simpler panel with 2 button on and off an a clickable switch for state.</p>
+
+
+<p>controller.xml:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;</span>
+&lt;openremote xmlns=<span class="code-quote">"http://www.openremote.org"</span> 
+  <span class="code-keyword">xmlns:xsi</span>=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span> 
+  xsi:schemaLocation="http://www.openremote.org 
+  http://www.openremote.org/schemas/controller.xsd"&gt;
+  <span class="code-tag">&lt;components&gt;</span>
+    <span class="code-tag">&lt;switch id=<span class="code-quote">"187"</span>&gt;</span>
+      <span class="code-tag">&lt;on&gt;</span>
+        <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"194"</span> /&gt;</span>
+      <span class="code-tag">&lt;/on&gt;</span>
+      <span class="code-tag">&lt;off&gt;</span>
+        <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"193"</span> /&gt;</span>
+      <span class="code-tag">&lt;/off&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"195"</span> /&gt;</span>
+    <span class="code-tag">&lt;/switch&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"191"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"194"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+    <span class="code-tag">&lt;button id=<span class="code-quote">"189"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"193"</span> /&gt;</span>
+    <span class="code-tag">&lt;/button&gt;</span>
+  <span class="code-tag">&lt;/components&gt;</span>
+  <span class="code-tag">&lt;sensors&gt;</span>
+    <span class="code-tag">&lt;sensor id=<span class="code-quote">"195"</span> name=<span class="code-quote">"light_sensor"</span> type=<span class="code-quote">"custom"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"192"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"off"</span> value=<span class="code-quote">"*#*1## *1*0*11## *#*1##"</span> /&gt;</span>
+      <span class="code-tag">&lt;state name=<span class="code-quote">"on"</span> value=<span class="code-quote">"*#*1## *1*1*11## *#*1##"</span> /&gt;</span>
+    <span class="code-tag">&lt;/sensor&gt;</span>
+  <span class="code-tag">&lt;/sensors&gt;</span>
+  <span class="code-tag">&lt;commands&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"192"</span> protocol=<span class="code-quote">"socket"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"20000"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"*#1*11##"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.135"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"light_status"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"193"</span> protocol=<span class="code-quote">"socket"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"20000"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"*1*0*11##"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.135"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"light_off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"194"</span> protocol=<span class="code-quote">"socket"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"20000"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"*1*1*11##"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.135"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"name"</span> value=<span class="code-quote">"light_on"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+  <span class="code-tag">&lt;/commands&gt;</span>
+  <span class="code-tag">&lt;config&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.roundrobin.multicast.port"</span> value=<span class="code-quote">"10000"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.roundrobin.tcpserver.port"</span> value=<span class="code-quote">"20000"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.groupname"</span> value=<span class="code-quote">"floor20"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"multicast.port"</span> value=<span class="code-quote">"3333"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.groupmember.autodetect.on"</span> value=<span class="code-quote">"true"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"amx_ni.port"</span> value=<span class="code-quote">"50000"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.commLayer"</span> value="" /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"copy.lircd.conf.on"</span> value=<span class="code-quote">"true"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"irsend.path"</span> value=<span class="code-quote">"/usr/local/bin/irsend"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.applicationname"</span> value=<span class="code-quote">"controller"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"multicast.address"</span> value=<span class="code-quote">"224.0.1.100"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"Macro.IR.Execution.Delay"</span> value=<span class="code-quote">"500"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"controller.roundrobin.multicast.address"</span> value=<span class="code-quote">"224.0.1.200"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.comPort"</span> value="" /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.pad.port"</span> value=<span class="code-quote">"7876"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.password"</span> value=<span class="code-quote">"openremote"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lircd.conf.path"</span> value=<span class="code-quote">"/etc/lircd.conf"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.port"</span> value=<span class="code-quote">"23"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.address"</span> value=<span class="code-quote">"192.168.1.1"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"zwave.pad.host"</span> value=<span class="code-quote">"localhost"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"lutron_homeworks.username"</span> value=<span class="code-quote">"openremote"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"webapp.port"</span> value=<span class="code-quote">"8080"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"protocol.zwave.classname"</span> value=<span class="code-quote">"org.openremote.controller.protocol.zwave.ZWaveCommandBuilder"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"resource.upload.enable"</span> value=<span class="code-quote">"true"</span> /&gt;</span>
+    <span class="code-tag">&lt;property name=<span class="code-quote">"amx_ni.address"</span> value=<span class="code-quote">"192.168.1.1"</span> /&gt;</span>
+  <span class="code-tag">&lt;/config&gt;</span>
+<span class="code-tag">&lt;/openremote&gt;</span>
+</pre>
+</div></div>
+
+<p>panel.xml:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;</span>
+&lt;openremote xmlns=<span class="code-quote">"http://www.openremote.org"</span> 
+  <span class="code-keyword">xmlns:xsi</span>=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span> 
+  xsi:schemaLocation="http://www.openremote.org   
+  http://www.openremote.org/schemas/panel.xsd"&gt;
+  <span class="code-tag">&lt;panels&gt;</span>
+    <span class="code-tag">&lt;panel id=<span class="code-quote">"182"</span> name=<span class="code-quote">"BTAndroid2"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"group"</span> ref=<span class="code-quote">"183"</span> /&gt;</span>
+    <span class="code-tag">&lt;/panel&gt;</span>
+  <span class="code-tag">&lt;/panels&gt;</span>
+  <span class="code-tag">&lt;screens&gt;</span>
+    <span class="code-tag">&lt;screen id=<span class="code-quote">"184"</span> name=<span class="code-quote">"Starting Screen"</span>&gt;</span>
+      <span class="code-tag">&lt;absolute left=<span class="code-quote">"77"</span> top=<span class="code-quote">"60"</span> width=<span class="code-quote">"153"</span> height=<span class="code-quote">"50"</span>&gt;</span>
+        <span class="code-tag">&lt;button id=<span class="code-quote">"189"</span> name=<span class="code-quote">"OFF"</span> hasControlCommand=<span class="code-quote">"true"</span> /&gt;</span>
+      <span class="code-tag">&lt;/absolute&gt;</span>
+      <span class="code-tag">&lt;absolute left=<span class="code-quote">"76"</span> top=<span class="code-quote">"115"</span> width=<span class="code-quote">"153"</span> height=<span class="code-quote">"42"</span>&gt;</span>
+        <span class="code-tag">&lt;button id=<span class="code-quote">"191"</span> name=<span class="code-quote">"ON"</span> hasControlCommand=<span class="code-quote">"true"</span> /&gt;</span>
+      <span class="code-tag">&lt;/absolute&gt;</span>
+      <span class="code-tag">&lt;absolute left=<span class="code-quote">"83"</span> top=<span class="code-quote">"163"</span> width=<span class="code-quote">"138"</span> height=<span class="code-quote">"50"</span>&gt;</span>
+        <span class="code-tag">&lt;switch id=<span class="code-quote">"187"</span>&gt;</span>
+          <span class="code-tag">&lt;link type=<span class="code-quote">"sensor"</span> ref=<span class="code-quote">"195"</span> /&gt;</span>
+        <span class="code-tag">&lt;/switch&gt;</span>
+      <span class="code-tag">&lt;/absolute&gt;</span>
+    <span class="code-tag">&lt;/screen&gt;</span>
+  <span class="code-tag">&lt;/screens&gt;</span>
+  <span class="code-tag">&lt;groups&gt;</span>
+    <span class="code-tag">&lt;group id=<span class="code-quote">"183"</span> name=<span class="code-quote">"Default Group"</span>&gt;</span>
+      <span class="code-tag">&lt;include type=<span class="code-quote">"screen"</span> ref=<span class="code-quote">"184"</span> /&gt;</span>
+    <span class="code-tag">&lt;/group&gt;</span>
+  <span class="code-tag">&lt;/groups&gt;</span>
+<span class="code-tag">&lt;/openremote&gt;</span>
+</pre>
+</div></div>
+
+
+<p>i use the android app from openremote download page.</p>
+
+
+<p>the two button works well.<br/>
+if i click on the switch, that has label off (so it reads the correct state) the light switch on, but the switch label is still off and if i click again nothing happens (it probably thinks to be still off, while the light is now on).</p>
+
+
+
+<p>now log/dev/sensor:<br/>
+INFO 2012-11-09 03:50:20,918 : Started polling thread for sensor (ID = 195, name = light_sensor).<br/>
+INFO 2012-11-09 03:50:24,815 : Started polling thread for sensor (ID = 195, name = light_sensor).</p>
+
+<p>and nothing more.. i don't remember if previously i enabled more loggin verbosity.. <br/>
+not it seems that doesn't receive anything!</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bt_bo at Jan 09, 2013 11:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528770"></a>
+                                    <font class="smallfont"><p>i also added a label connected to light_sensor.</p>
+
+<p>it has a Sensor State Form with on and off input box.<br/>
+i'm not sure on what they are. i think they're the labels associated to sensor. right?<br/>
+in off input i write off. in on input i write on.</p>
+
+<p>however the result is:
+<a href="http://ubuntuone.com/3TVJTGu0oeR3c49MXHhrUf">http://ubuntuone.com/3TVJTGu0oeR3c49MXHhrUf</a><br/>
+(*#*1## is an ACK)</p>
+
+<p>i don't understand.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bt_bo at Jan 09, 2013 13:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528775"></a>
+                                    <font class="smallfont"><p>Maybe you can use telnet protocol and see the result?<br/>
+With telnet you can use regex to extract the needed value.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 09, 2013 13:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528784"></a>
+                                    <font class="smallfont"><p>the controller runs on a gateway, which has ssh but not telnet!<br/>
+it would be nice to have a regex also in TCP/IP.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bt_bo at Jan 09, 2013 14:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528785"></a>
+                                    <font class="smallfont"><p>I mean OpenRemote telnet command instead of TCP.<br/>
+For my Pioneer receiver, both work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 09, 2013 15:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528786"></a>
+                                    <font class="smallfont"><p>i'm not sure to understand.<br/>
+i see the telnet command option, but how can it work if the device hasn't got a telnet daemon?</p>
+
+<p>i tried and got:<br/>
+for the status command:</p>
+
+<div style="width:600px;"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>ERROR [Polling thread for sensor: light_sensor]: could not perform telnetEvent
+java.lang.Exception: waitForString response timed-out waiting for "*#1*11##"
+	at org.openremote.controller.protocol.telnet.TelnetCommand.waitForString(TelnetCommand.java:176)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:135)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.run(TelnetCommand.java:244)
+	at java.lang.Thread.run(Thread.java:662)
+
+for the off command:
+ERROR [HTTP-Thread-105]: could not perform telnetEvent
+java.lang.Exception: waitForString response timed-out waiting for "*1*0*11##"
+	at org.openremote.controller.protocol.telnet.TelnetCommand.waitForString(TelnetCommand.java:176)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:135)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:113)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:95)
+	at org.openremote.controller.rest.ControlCommandRESTServlet.handleRequest(ControlCommandRESTServlet.java:77)
+	at org.openremote.controller.rest.RESTAPI.doPost(RESTAPI.java:125)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+</pre>
+</div></div></div>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bt_bo at Jan 09, 2013 15:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528788"></a>
+                                    <font class="smallfont"><p>It was worth a try. Some devices can be accessed on the same port with just tcp or telnet.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 09, 2013 16:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528815"></a>
+                                    <font class="smallfont"><p>is it easy to add regex support for tcp/ip (maybe reusing the code from telnet regex) ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bt_bo at Jan 10, 2013 07:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528819"></a>
+                                    <font class="smallfont"><p>TCP and UDP has to be reworked and will also get the regex stuff.<br/>
+Richard started to look at this but has other things todo at the moment.<br/>
+I can't say when this will be included in TCP.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 10, 2013 07:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21856277"></a>
+                                    <font class="smallfont"><p>Hi Bo, we are considering to add Regex support for TCP/IP to the code but need some active people testing this with Legrand / BTicino. Are you interested to test this out?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre kil at Jan 22, 2013 19:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21856861"></a>
+                                    <font class="smallfont"><p>Bo, we would really be interested in getting this a) working b) well supported in OpenRemote,</p>
+
+<p>Let us know if you could help us on this, ping here on forums or email me directly at juha@openremote.org</p>
+
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jan 31, 2013 08:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21856863"></a>
+                                    <font class="smallfont"><p>I created a new version of the TCP protocol which is a quick intermediate solution.<br/>
+It supports our EventListener interface where you can define a pollingInterval and als RegEx is supported.<br/>
+Let me know and I can provide you with a controller binary to test this.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 31, 2013 09:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21856976"></a>
+                                    <font class="smallfont"><p>Hi, thank you all for the interest..</p>
+
+<p>at the moment i don't have much time for working on it.. <br/>
+but in the future maybe i can find some time for doing few test. </p>
+
+<p>so, you can send me things to test, but i can't say when i will check them.</p>
+
+<p>Bo</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by bt_bo at Feb 01, 2013 12:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857013"></a>
+                                    <font class="smallfont"><p>Ok, understand the lack of time.</p>
+
+<p>If we get more commercial requests to integrate Legrand products, would you be available on contract to work on this?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 02, 2013 13:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857516"></a>
+                                    <font class="smallfont"><p>Hi I have just installed a Legrand myhome system in my house - I would be willing to help and test out an openweb interface, lighting only.  I am particularly keen on getting a tie in with a DSC alarm to automate lights on/off (I have the it-100 module).  I am pretty technical and have some time available.  I have both Android and IOS interfaces.<br/>
+Jules</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 13, 2013 20:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857539"></a>
+                                    <font class="smallfont"><p>Hi Jules, thanks for offering your help. What elements of the Legrand system do you have? Linking the DSC shouldn't be a problem: <a href="http://openremote.org/display/docs/OpenRemote+2.0+How+To+-+DSC+Alarm+Systems">http://openremote.org/display/docs/OpenRemote+2.0+How+To+-+DSC+Alarm+Systems</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre kil at Feb 14, 2013 09:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857557"></a>
+                                    <font class="smallfont"><p>Hi Pierre - I've got their webserver which works fine for lighting control.  I've also got their 16 scenario module.  I do not have their touchscreens or the advanced scenario module.</p>
+
+<p>I've tried a few tablet front ends which can display and control the lighting.  However for real automation based on a clock/or motion control I need a server solution which is always on.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 14, 2013 14:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857558"></a>
+                                    <font class="smallfont"><p>Hi Jules, so the webserver allows openwebnet protocol, I assume? This could be a good test case. You have any programming expertise, and might be interested to work on some integration of Openwebnet in OpenRemote?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pierre kil at Feb 14, 2013 15:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857561"></a>
+                                    <font class="smallfont"><p>Yes openwebnet is the protocol.  I have some programming skills although I am no expert so I might need some help/advice.  It would be useful to know what level of programming is needed first?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 14, 2013 15:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857699"></a>
+                                    <font class="smallfont"><p>Probably not much, if anything.</p>
+
+<p>We need to make the fix for TCP available to you and then you'd need to try to reproduce the steps Bo already documented in this thread to send commands (should already work judging by the previous messages) and reading of status values (requires a fixed TCP implementation). For the latter, will be preparing one for you as soon as I find time.</p>
+
+<p>In the meantime if you have questions, please don't hesitate to either ask here or send email privately to juha at openremote dot org (or if you have Skype id, send it and we can share details).</p>
+
+<p>Best regards,</p>
+
+<p>&#8211; Juha</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 17, 2013 18:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857776"></a>
+                                    <font class="smallfont"><p>So at the moment I've done what Bo did which is Label attached to a custom Sensor connected via TCP which should display the on or off depending on the return values.  The sensor is based on a TCP command <br/>
+*#1*32## which should return the value *1*1*32##  or *1*1*32## depending on whether the light is on or off.  It will then send a final ACK message which is *#*1##</p>
+
+<p>I've then gone into the controller xml and added a property regex but I am not clear what value needs to be against this?  I tried *#*1## to see if it stripped out this but it is still displaying *#*1## as the label</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 19, 2013 16:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857780"></a>
+                                    <font class="smallfont"><p>The binary to test with regex for TCP included is here: <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_ORCJAVA-298.zip/download">OpenRemote-Controller-2.1.0_ORCJAVA-298</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 19, 2013 17:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857781"></a>
+                                    <font class="smallfont"><p>Just tried again with the new binary - and I am getting a polling error against the sensor?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 19, 2013 18:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857782"></a>
+                                    <font class="smallfont"><p>What is the error? You need to specify and pollingInterval for the command which the current designer does not offer. You need to add that manually to the controller.xml file.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 19, 2013 19:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857783"></a>
+                                    <font class="smallfont"><p>Here is the error - what is the syntax for the pollinginterval command?</p>
+
+<p>INFO 2013-02-19 20:47:42,420 : Registered sensor : Sensor (Name = 'Office light'<br/>
+, ID = '68', State Mappings: {*1*1*32##=On, *1*0*32##=Off})<br/>
+ERROR main: There was an implementation error in the event listener associated<br/>
+ with  sensor 'Office light'. The listener implementation may not have started c<br/>
+orrectly : Could not set sensor because no polling interval was given<br/>
+java.lang.RuntimeException: Could not set sensor because no polling interval was<br/>
+ given</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 19, 2013 19:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857784"></a>
+                                    <font class="smallfont"><div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    &lt;command id=<span class="code-quote">"xx"</span> protocol=<span class="code-quote">"socket"</span>&gt;
+      &lt;property name=<span class="code-quote">"pollingInterval"</span> value=<span class="code-quote">"5s"</span> /&gt;
+      ....
+    &lt;/command&gt;
+</pre>
+</div></div>
+
+<p>"pollingInterval in form of (1s, 1m, 1h) or just milliseconds"</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 19, 2013 19:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857787"></a>
+                                    <font class="smallfont"><p>hi,</p>
+
+<p>that seems close to my problem that i have described in a separate thread. <br/>
+am a newbie to this - where is the controller.xml file located?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kbdeir at Feb 19, 2013 20:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857788"></a>
+                                    <font class="smallfont"><p>Which thread? File is located after a sync in webapps/controller/</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 19, 2013 20:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857789"></a>
+                                    <font class="smallfont"><p><a href="http://www.openremote.org/pages/viewpage.action?pageId=21857730&amp;focusedCommentId=21857774#comment-21857774">http://www.openremote.org/pages/viewpage.action?pageId=21857730&amp;focusedCommentId=21857774#comment-21857774</a></p>
+
+<p>thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kbdeir at Feb 19, 2013 20:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857797"></a>
+                                    <font class="smallfont"><p>ok I've setup the polling interval for 1s and I've setup a panel with an on and off buttons which work fine.  I've set up a sensor with a regex property but that is where I am stuck - I know that the server should be returning the values as in my last post but how I translate this into a label is beyond me!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 19, 2013 22:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857803"></a>
+                                    <font class="smallfont"><p>Is "*1*1*32##" exactly what is returned?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 19, 2013 23:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857805"></a>
+                                    <font class="smallfont"><p>According to the openweb documentation if I request the status of light 32 with the command:<br/>
+*#1*32##<br/>
+I should get the replies <br/>
+*1*1*32##  or<br/>
+*1*0*32##<br/>
+which are followed with the ACK open message (*#*1##) if the message is ok.</p>
+
+<p>Is there a tool to test what is coming back from the server so I can proove this?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 20, 2013 09:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857809"></a>
+                                    <font class="smallfont"><p>Add the following lines to webapps/controller/WEB-INF/classes/log4.properties:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+# Enable all of tcp logging -- file log appenders may threshold which records they
+log4j.logger.OpenRemote.Controller.protocol.tcp = ALL, tcp-file
+log4j.appender.tcp-file = org.apache.log4j.RollingFileAppender
+log4j.appender.tcp-file.File = ../logs/tcp.log
+log4j.appender.tcp-file.Threshold = DEBUG
+log4j.appender.tcp-file.MaxFileSize = 500KB
+log4j.appender.tcp-file.MaxBackupIndex = 1
+log4j.appender.tcp-file.layout = org.apache.log4j.PatternLayout
+log4j.appender.tcp-file.layout.ConversionPattern = %p %d (TCP): %m%n
+</pre>
+</div></div>
+
+<p>That should give you a tcp.log file within the logs folder where you can see what is received and also what the regex expression is making out of it when using regex.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 20, 2013 10:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857810"></a>
+                                    <font class="smallfont"><p>So I changed the on button just to request the status of a light and the log file is showing just an *#*1##<br/>
+which is ACK.  So it does not appear to be working.</p>
+
+<p>I looked again at the rather limited openwebnet documentation which explains there are two types of sessions - <br/>
+command and monitor.  With command you just get back the ACK.  So somehow we need to get into a monitor session for this to work.  This needs a prefix of *99*1## sent at the beginning of communication.  It looks like most people have two sessions running one to monitor and the other to control.  Is this possible??</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 20, 2013 10:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857812"></a>
+                                    <font class="smallfont"><p>Try and create a command which is to retrieve the status and put the "*99*1##" at the beginning. Maybe that helps.<br/>
+In general for a switch to work on openremote you need the following objects:</p>
+<ul class="alternate" type="square">
+	<li>command for "on"</li>
+	<li>command for "off"</li>
+	<li>command for "query status"</li>
+	<li>switch sensor which uses "status" command</li>
+	<li>switch object which uses "on" and "off" commands and switch sensor</li>
+</ul>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 20, 2013 12:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857813"></a>
+                                    <font class="smallfont"><p>how can I put two commands after each other - I tried  <b>99*1##¦</b>#1*32## but that does not seem to work?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 20, 2013 12:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857814"></a>
+                                    <font class="smallfont"><p>Can you just try a carriage return which is "\n"</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 20, 2013 12:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857817"></a>
+                                    <font class="smallfont"><p>That does not seem to work looking at the log file even if I put a command against the sensor it does not seem to do any requesting.  To test the syntax I tried adding the string in front of a light on button which was working and it stopped working.</p>
+
+<ul class="alternate" type="square">
+	<li>I've been looking on the forums at</li>
+</ul>
+
+
+<p><a href="http://www.myopen-legrandgroup.com/community/international_my_open/international_65536/f/92/p/144/399.aspx#399">http://www.myopen-legrandgroup.com/community/international_my_open/international_65536/f/92/p/144/399.aspx#399</a></p>
+
+<p>and it appears that we definitely need to setup a monitoring session which runs at the same time as the command session.  This would enable you to have a panel which is constantly up to date with what lights are on/off.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 20, 2013 13:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857818"></a>
+                                    <font class="smallfont"><p>I am afraid that would mean that we need a special protocol and we cannot use the generic TCP protocol we already have.<br/>
+On the other hand, Bo mentioned in the first post of this thread, that he has the status command working.<br/>
+It was just missing regex to extract the "1" or "0".</p>
+
+<p>@Bo: If you are still following this thread, can you give us a hint?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 20, 2013 13:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857830"></a>
+                                    <font class="smallfont"><p>All I can confirm is that I can get exactly the same results if I use the XML files that Bo has posted up above.  I have not managed to get a response back from the server though other that ACK.  So I can't replicate the first scenario that Bo produced.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 20, 2013 16:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857848"></a>
+                                    <font class="smallfont"><p>In the meantime I've loaded a Java client which runs commands on the server and monitors traffic.  I can get feedback no problem:</p>
+
+<p>20/02/2013  21:29:36:365    Tx: *#1*32##<br/>
+20/02/2013  21:29:36:485    Rx: *1*0*32##<br/>
+20/02/2013  21:29:36:695    Rx: *#*1##<br/>
+20/02/2013  21:29:36:695    Comando inviato correttamente</p>
+
+<p>But when I run openremote with the polling this seems to cause a problem.  I think that the protocol is at fault.  </p>
+
+<p>You can download the client from here which would presumably give some clue as how to connect to the server....unfortunately it is beyond my programming skills
+<a href="http://www.myopen-legrandgroup.com/resources/own_clients/m/mediagallery/54.aspx">http://www.myopen-legrandgroup.com/resources/own_clients/m/mediagallery/54.aspx</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 20, 2013 20:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857857"></a>
+                                    <font class="smallfont"><p>Bo said in the first post that he has a status command like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+protocol: socket
+gateway ip: 192.168.1.135
+port: 20000
+command: *#1*11## (openwebnet command, status of light11)
+</pre>
+</div></div>
+
+<p>Are you able to reproduce this and do you see in the log if the answer arrives in OpenRemote:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+however the answer is like that:
+<span class="code-keyword">case</span> off: *#1##*1*0*11###*1## (0 stands <span class="code-keyword">for</span> off)
+<span class="code-keyword">case</span> on: *#1##*1*1*11###*1## (1 stands <span class="code-keyword">for</span> on)
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 20, 2013 22:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857876"></a>
+                                    <font class="smallfont"><p>No I can not reproduce this - Juha uploaded a new version of the TCP protocol which now requires me to put a polling on a sensor which I think is causing problems.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 21, 2013 09:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857878"></a>
+                                    <font class="smallfont"><p>The polling has nothing todo with this. Before a status command was executed every 500ms which would probably cause more problems.<br/>
+Just put the polling to "5s" and you should see something like Bo every 5 seconds.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 21, 2013 09:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857884"></a>
+                                    <font class="smallfont"><p>Ok I set up a simple button attached to a command to request the status of the lights.  When I press it I can see in my JClient tool that the server is sending back lots of messages but none of these are finding their way back to openremote.  All it shows in the log is the ACK message?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 21, 2013 16:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857885"></a>
+                                    <font class="smallfont"><p>I just noticed in the controller xml that there is a port 20000 being used which is the same as the legrand - could this be a problem??</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 21, 2013 16:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857887"></a>
+                                    <font class="smallfont"><p>I can't say anything about port 20000. I don't know the product/protocol you use.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 21, 2013 17:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857888"></a>
+                                    <font class="smallfont"><p>it was assigned to <br/>
+controller.roundrobin.tcpserver.port<br/>
+which I guessed was an internal function?  <br/>
+I tried changing the xml to make this a different port and still no stream coming back.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Feb 21, 2013 19:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

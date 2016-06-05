@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : UDPListener Can not read UDP message from Node-RED</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : UDPListener Can not read UDP message from Node-RED
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 07, 2016 by <font color="#0050B2">pz1</font>.
+				    </div>
+
+				    <p><a class="confluence-thumbnail-link 389x259" href='http://www.openremote.org/download/attachments/23603044/Listener.PNG'><img src="attachments/thumbnails/23603044/23790022" align="left" border="0"/></a><br/>
+First of all apologies for this horrendous code box. I don't know how to limit that.</p>
+
+
+<p>I do have a problem to read messages sent from Node-RED. I have created a listener on port 9093 with RegEx &#40;.*&#41; The listener is connected with a sensor of type:custom. </p>
+
+<p>The Node-RED demo code below sends this string to the OR-controller: <br/>
+  {"node":02012902,"count":16562,"temp":"20.75"}</p>
+
+<p>Also the TCPDUMP output shows the string arrives at the OR-controller. Unfortunately if I place a label with the <br/>
+Node-RED sensor on my OR screen, it displays <b>N/A</b>.</p>
+
+<p>Any one around here who knows what can be wrong?</p>
+
+
+<p>-----------------------------<br/>
+<b>Background</b><br/>
+With <b>TCPDUMP</b> I see that the message has been send from port 9193 of a RaspberryPi to port 9093 on my DS212+ where the OR controller runs: <br/>
+19:20:32.663286 IP (tos 0x0, ttl 64, id 62631, offset 0, flags DF, proto UDP (17), length 74)<br/>
+    raspi2.fritz.box.9193 &gt; DS212.9093: UDP, length 46<br/>
+E..J..@.@..i... ...!#.#..6..{"node":02012902,"count":16563,"temp":"20.81"}</p>
+
+<p>At the same time I can send different UDP messages from an other RaspberryPi successfully to the OR-controller.</p>
+
+
+
+<p><b>Node-RED Demo Code</b> (If you have you can copy and paste this code to your Node-RED)</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">[{<span class="code-quote">"id"</span>:<span class="code-quote">"ad735c22.f400e"</span>,<span class="code-quote">"type"</span>:<span class="code-quote">"mqtt-broker"</span>,<span class="code-quote">"z"</span>:<span class="code-quote">"","</span>broker<span class="code-quote">":"</span>croft.thethings.girovito.nl<span class="code-quote">","</span>port<span class="code-quote">":"</span>1883<span class="code-quote">","</span>clientid<span class="code-quote">":"</span><span class="code-quote">","</span>usetls<span class="code-quote">":<span class="code-keyword">false</span>,"</span>verifyservercert<span class="code-quote">":<span class="code-keyword">true</span>,"</span>compatmode<span class="code-quote">":<span class="code-keyword">true</span>,"</span>keepalive<span class="code-quote">":"</span>15<span class="code-quote">","</span>cleansession<span class="code-quote">":<span class="code-keyword">true</span>,"</span>willTopic<span class="code-quote">":"</span><span class="code-quote">","</span>willQos<span class="code-quote">":"</span>0<span class="code-quote">","</span>willRetain<span class="code-quote">":<span class="code-keyword">null</span>,"</span>willPayload<span class="code-quote">":"</span><span class="code-quote">","</span>birthTopic<span class="code-quote">":"</span><span class="code-quote">","</span>birthQos<span class="code-quote">":"</span>0<span class="code-quote">","</span>birthRetain<span class="code-quote">":<span class="code-keyword">null</span>,"</span>birthPayload<span class="code-quote">":"</span><span class="code-quote">"},{"</span>id<span class="code-quote">":"</span>2ab9bc05.b7c3ec<span class="code-quote">","</span>type<span class="code-quote">":"</span>function<span class="code-quote">","</span>z<span class="code-quote">":"</span>5e73aa57.dd6be4<span class="code-quote">","</span>name<span class="code-quote">":"</span>Extract data<span class="code-quote">","</span>func<span class="code-quote">":"</span>msg2 = {};\nvar b = <span class="code-keyword">new</span> Buffer(msg.payload.data,'base64');\nvar c = <span class="code-keyword">new</span> Buffer(msg.payload.nodeEui,'utf8');\nb = b.slice(1);\nmsg2.payload = '{\<span class="code-quote">"node\"</span>:' + c + \<span class="code-quote">",\"</span> + b.toString();\nreturn msg2;<span class="code-quote">","</span>outputs<span class="code-quote">":"</span>1<span class="code-quote">","</span>noerr<span class="code-quote">":0,"</span>x<span class="code-quote">":413.36114501953125,"</span>y<span class="code-quote">":100.36111640930176,"</span>wires<span class="code-quote">":[["</span>55ae3863.33322<span class="code-quote">","</span>d5e9bf39.b1b2e8<span class="code-quote">"]]},{"</span>id<span class="code-quote">":"</span>7079d59d.e59cac<span class="code-quote">","</span>type<span class="code-quote">":"</span>json<span class="code-quote">","</span>z<span class="code-quote">":"</span>5e73aa57.dd6be4<span class="code-quote">","</span>name<span class="code-quote">":"</span><span class="code-quote">","</span>x<span class="code-quote">":280.77780532836914,"</span>y<span class="code-quote">":100.4444408416748,"</span>wires<span class="code-quote">":[["</span>2ab9bc05.b7c3ec<span class="code-quote">"]]},{"</span>id<span class="code-quote">":"</span>6a1d2873.df04e8<span class="code-quote">","</span>type<span class="code-quote">":"</span>mqtt in<span class="code-quote">","</span>z<span class="code-quote">":"</span>5e73aa57.dd6be4<span class="code-quote">","</span>name<span class="code-quote">":"</span>node 02012902 packets<span class="code-quote">","</span>topic<span class="code-quote">":"</span>nodes/02012902/packets<span class="code-quote">","</span>broker<span class="code-quote">":"</span>ad735c22.f400e<span class="code-quote">","</span>x<span class="code-quote">":112.22222900390625,"</span>y<span class="code-quote">":100.77777099609375,"</span>wires<span class="code-quote">":[["</span>7079d59d.e59cac<span class="code-quote">"]]},{"</span>id<span class="code-quote">":"</span>55ae3863.33322<span class="code-quote">","</span>type<span class="code-quote">":"</span>debug<span class="code-quote">","</span>z<span class="code-quote">":"</span>5e73aa57.dd6be4<span class="code-quote">","</span>name<span class="code-quote">":"</span><span class="code-quote">","</span>active<span class="code-quote">":<span class="code-keyword">true</span>,"</span>console<span class="code-quote">":"</span><span class="code-keyword">false</span><span class="code-quote">","</span>complete<span class="code-quote">":"</span><span class="code-keyword">false</span><span class="code-quote">","</span>x<span class="code-quote">":571.7777862548828,"</span>y<span class="code-quote">":77.88886642456055,"</span>wires<span class="code-quote">":[]},{"</span>id<span class="code-quote">":"</span>d5e9bf39.b1b2e8<span class="code-quote">","</span>type<span class="code-quote">":"</span>udp out<span class="code-quote">","</span>z<span class="code-quote">":"</span>5e73aa57.dd6be4<span class="code-quote">","</span>name<span class="code-quote">":"</span>UDP Send<span class="code-quote">","</span>addr<span class="code-quote">":"</span>IP_of_Your_OR_Controller<span class="code-quote">","</span>iface<span class="code-quote">":"</span><span class="code-quote">","</span>port<span class="code-quote">":"</span>9093<span class="code-quote">","</span>ipv<span class="code-quote">":"</span>udp4<span class="code-quote">","</span>outport<span class="code-quote">":"</span>9193<span class="code-quote">","</span>base64<span class="code-quote">":<span class="code-keyword">false</span>,"</span>multicast<span class="code-quote">":"</span><span class="code-keyword">false</span><span class="code-quote">","</span>x<span class="code-quote">":563.4443969726562,"</span>y<span class="code-quote">":117.5555419921875,"</span>wires":[]}]</pre>
+</div></div>
+<p>The Node-RED debug output tells me with <em>msg.payload</em> that the following is produced:<br/>
+{"node":02012902,"count":16562,"temp":"20.75"}<br/>
+<img src="attachments/23603044/23790021.png" align="left" border="0"/></p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23603044/23790021.png">UDPSendJSON.PNG</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/23603044/23790022.png">Listener.PNG</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23603078"></a>
+                                    <font class="smallfont"><p>On the same raspberryPi, I also tried with my old proven script status.sh:<br/>
+---------------------<br/>
+#!/bin/bash</p>
+
+<p>def_host=ds212<br/>
+def_port=9091</p>
+
+<p>HOST=${2:-$def_host}<br/>
+PORT=${3:-$def_port}</p>
+
+<p>echo -n "$1" | nc -4u -w 0 $HOST $PORT<br/>
+exit<br/>
+------------------</p>
+
+<p>to send<br/>
+sudo .status.sh test  (and also "test")<br/>
+which did show in TCPDUMP, but was not displayed on screen.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 08, 2016 10:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23603087"></a>
+                                    <font class="smallfont"><p>But your proven script sens to port 9091 and UDP listens on 9093.</p>
+
+<p>Please make sure that you don't have two or more UDP listeners fighting for the same port. In such case only one would work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 09, 2016 09:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23603093"></a>
+                                    <font class="smallfont"><p>Thanks Michal, <br/>
+I did check that. I do have three UDPListeners now on 9091, 9192, and 9093 for three raspberryPi devices. <br/>
+I'll try a higher number for this latest one.</p>
+
+<p><b>update: SOLVED</b> changing 9093 to 9293 did the trick indeed. I suddenly realised that I had noticed in the earlier examples <br/>
+that port numbers near the specified were dynamically being used.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 09, 2016 18:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 11:03</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

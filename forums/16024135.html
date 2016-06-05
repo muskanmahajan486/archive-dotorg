@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Button goes into loop (bug?)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Button goes into loop (bug?)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 26, 2011 by <font color="#0050B2">jbremote</font>.
+				    </div>
+
+				    <p>I've been using OpenRemote for a few weeks now. I have Volume UP and DOWN configured for my receiver and "Repeat" to be able to hold the button. It works most of the time but sometimes (10%?), even when releasing the button, it goes into LOOP and keeps holding the button which means it keeps increasing the volume infinitely. I know the problem is the actual Panel since if I quit the app it stops (tried two different iPhone 3GS and one Android - all with same problem).</p>
+
+<p>Anyone seen this?</p>
+
+<p>Details. The Panels communicate with a MacMini (LAN) running Controller 2.0.0 (dev release 11). It communicates with an iTach WF2IR (Firmware 710-1001-04) over WiFi and sends commands over IP (port 4998) and the commands below I saved manually using their iLearn.exe utility. Whenever it goes into loop I see the WF2IR keeps sending the commands out on the port to the receiver and I see the IR-blaster keeps sending commands. If I power restart the WF2IR, it takes ~20s to reboot, but it keeps sending commands. The ONLY way to stop it is to kill the app on the Panel - then the commands stop. So that's why I suspect the panel.</p>
+
+<p>VOLUME UP:<br/>
+sendir,1:1,1,38461,1,1,339,179,22,22,22,65,22,22,22,65,22,65,22,65,22,65,22,22,22,65,22,22,22,65,22,22,22,22,22,22,22,22,22,65,22,22,22,65,22,22,22,65,22,65,22,22,22,22,22,22,22,65,22,22,22,65,22,22,22,22,22,65,22,65,22,65,22,1534,339,85,22,4923</p>
+
+<p>VOLUME DOWN:<br/>
+sendir,1:1,1,38461,1,1,339,179,22,22,22,65,22,22,22,65,22,65,22,65,22,65,22,22,22,65,22,22,22,65,22,22,22,22,22,22,22,22,22,65,22,65,22,65,22,22,22,65,22,65,22,22,22,22,22,22,22,22,22,22,22,65,22,22,22,22,22,65,22,65,22,65,22,1534,339,85,22,4923</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-16024307"></a>
+                                    <font class="smallfont"><p>Thanks for the report (sorry for the late response). Haven't seen this happen or heard similar reports (yet). Interesting that both iOS and Android are showing the same issue. That it only occurs sometimes makes it a bit difficult to track down.</p>
+
+<p>I'll push the report around to see if anyone recognizes the issue. Will keep an eye out on the implementation if anything obvious pops out.</p>
+
+<p>If you manage to dig out further details, please do let us know.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 10, 2011 11:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432886"></a>
+                                    <font class="smallfont"><p>Some time since I first reported this but it still happens and I at last spent some time troubleshooting it. As I mentioned before this is definitely the actual iPhone app since I can see the iTach keep outputting the signal (LED on the iTach shows it) over and over again even after releasing the button on the iPhone and if I quite the iPhone app - it stops.</p>
+
+<p>The iPhone has been updated to 4.3.5 - still same problem.</p>
+
+<p>One reason I suspect is that I have "Repeat" on the Volume UP and DOWN, but I don't think it's because of "Repeat" but rather the output command because I have Repeat on other buttons (like UP and DOWN for the Apple Remote for the MAC Mini) but it has never happen on these - only on Volume UP and DOWN.</p>
+
+<p>So the difference might be in the actual SEND command which may cause the loop?</p>
+
+<p>VOLUME DOWN/UP for Yamaha which causes loop sometimes:<br/>
+sendir,1:1,1,38461,1,1,339,179,22,22,22,65,22,22,22,65,22,65,22,65,22,65,22,22,22,65,22,22,22,65,22,22,22,22,22,22,22,22,22,65,22,65,22,65,22,22,22,65,22,65,22,22,22,22,22,22,22,22,22,22,22,65,22,22,22,22,22,65,22,65,22,65,22,1534,339,85,22,4923<br/>
+sendir,1:1,1,38461,1,1,339,179,22,22,22,65,22,22,22,65,22,65,22,65,22,65,22,22,22,65,22,22,22,65,22,22,22,22,22,22,22,22,22,65,22,22,22,65,22,22,22,65,22,65,22,22,22,22,22,22,22,65,22,22,22,65,22,22,22,22,22,65,22,65,22,65,22,1534,339,85,22,4923</p>
+
+<p>DOWN/UP for Apple Remote which doesn't cause loop:<br/>
+sendir,1:3,1,37425,1,1,342,171,22,22,22,64,22,64,22,64,22,22,22,64,22,64,22,64,22,64,22,64,22,64,22,22,22,22,22,22,22,22,22,64,22,22,22,22,22,64,22,64,22,22,22,22,22,22,22,22,22,64,22,22,22,64,22,22,22,64,22,22,22,22,22,22,22,1498,342,85,22,3742<br/>
+sendir,1:3,1,37425,1,1,342,171,22,22,22,64,22,64,22,64,22,22,22,64,22,64,22,64,22,64,22,64,22,64,22,22,22,22,22,22,22,22,22,64,22,22,22,64,22,22,22,64,22,22,22,22,22,22,22,22,22,64,22,22,22,64,22,22,22,64,22,22,22,22,22,22,22,4790</p>
+
+<p>Is there any way I could shorten the send code?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jbremote at Oct 11, 2011 20:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:46</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

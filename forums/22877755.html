@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : RS232 Sending "null" to Denon</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : RS232 Sending "null" to Denon
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 08, 2013 by <font color="#0050B2">nbewhm4</font>.
+				    </div>
+
+				    <p>I followed the demos and built a remote with a volume slider. When I slide the volume to zero the following is observed:<br/>
+INFO 2013-10-07 09:52:24,973 : CommPortIdentifiers :gnu.io.CommPortEnumerator@11a5fd0<br/>
+INFO 2013-10-07 09:52:24,973 : CommPortIdentfier: gnu.io.CommPortIdentifier@e14d81<br/>
+INFO 2013-10-07 09:52:24,973 : CommPortIdentfier: gnu.io.CommPortIdentifier@1a7789c<br/>
+INFO 2013-10-07 09:52:24,973 : CommPortIdentfier: gnu.io.CommPortIdentifier@1df5f21<br/>
+INFO 2013-10-07 09:52:24,973 : Command: MV0 DataBytes: 110, 117, 108, 108, 13</p>
+
+<p>Why is "null" and "cr" sent to the Denon as opposed to the new desired volume (ASCII codes 110 = n, 117 = u, 108 = l, 13 = carriage return ?</p>
+
+<p>Anyone any ideas as to what I have missed, or is it looking like the Denon 2310CI is not compatible/responding ?</p>
+
+<p>FYI to debug further, I bought a new cable, this time USB to serial (in case the cable was faulty). Now the power on and standby work ok, but unfortunately, the volume slider is still sending null - any thoughts ?</p>
+
+<p>Appreciate the help, thanks.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22877758"></a>
+                                    <font class="smallfont"><p>Use mv.00 instead of MV0 - it's case-sensitive. For proper usage, take a look at denonAVRSerialCommands.properties.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 08, 2013 07:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877812"></a>
+                                    <font class="smallfont"><p>Thanks for the help, I have been able to get the 2310CI working, but changes to the denonAVRSerialCommands.properties were needed. </p>
+
+<p>For example, the volume commands are needed changing to:</p>
+<ol>
+	<li>MASTER VOLUME, DIRECT aw changed all these for AVR2310CI + need all 80 discrete values <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+mv.0=MV00<br/>
+mv.1=MV01<br/>
+mv.2=MV02<br/>
+.. .. all they way to 80<br/>
+I also needed to add 4 devices:<br/>
+si.dvr=SIDVR<br/>
+si.hdp=SIHDP<br/>
+si.vcr=SIVCR<br/>
+si.sat/cbl=SISAT/CBL</li>
+</ol>
+
+
+<p>But the main thing is the 2310CI now responds <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>The one piece I haven't got working is any of the ? commands, (si.?) - nothing seems to come back from the denon after the commands are sent. If anyone has any suggestions, I'll give them a try. If anyone needs my modifed file, let me know and I will send it over.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nbewhm4 at Oct 08, 2013 22:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22877823"></a>
+                                    <font class="smallfont"><p>In the current design, no response is registered for command invocation. Try creating a sensor with that command and see if it works for you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 09, 2013 06:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879983"></a>
+                                    <font class="smallfont"><p>Hi I've moved my OR implementation across from a PI to an XP EBOX 86 platform.   I am almost there with the Denon interface however my AMP is multichannel one so commands are not the same.  For example power on is PW00ON etc...<br/>
+Is there a way to change the commands that are in denonAVRSerialCommands.properties to reflect this?  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Nov 19, 2013 15:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880014"></a>
+                                    <font class="smallfont"><p>Ok just figured out I can pretty much put what I want in the properties file!  Seems to work fine although I've not tested the ? commands - Andrew did you get those working in the end?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Nov 19, 2013 22:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880656"></a>
+                                    <font class="smallfont"><p>I did, as far as the null, and I also changed the scale, i.e. 0 to 100 on the slider was way to quiet and way to loud, so in the slider 0 mapped to 30 and 100 mapped to 70 if I recall. If you need the Denon file Id be happy to supply.</p>
+
+<p>The one piece I haven't fixed is getting feedback from the "?" commands - still no luck on that.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nbewhm4 at Dec 04, 2013 04:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880675"></a>
+                                    <font class="smallfont"><p>Yes I was hoping you had figured out feedback as that would be really useful.  I am using Virtual commands at the moment, which are not ideal.  I would also like to be able to make a slider for volume which would need feedback to work properly.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Dec 04, 2013 20:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880798"></a>
+                                    <font class="smallfont"><p>The slider does work in as far as sending the volume change, and the Denon does change the volume, but the sensor that I added to the remote never seems to display a value, and the debugging info never shows Denon sending a response to any "?" commands.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nbewhm4 at Dec 06, 2013 16:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:42</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

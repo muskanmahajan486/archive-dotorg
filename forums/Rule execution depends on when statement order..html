@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Rule execution depends on when statement order.</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Rule execution depends on when statement order.
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 16, 2013 by <font color="#0050B2">aktur</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>recently one of my rules was not firing. It is quite simple and used to switch off Sat receiver when TV was off:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Power OFF SAT"</span>
+when
+  Event(source==<span class="code-quote">"VSATON"</span>,value==<span class="code-quote">"1"</span>)
+  Event(source==<span class="code-quote">"VTVON"</span>,value==<span class="code-quote">"0"</span>)
+then
+  execute.command(<span class="code-quote">"Vtmp"</span>, _TimeStamp());
+  execute.command(<span class="code-quote">"SAT.POWER.LAN"</span>);
+end
+</pre>
+</div></div>
+<p>Basically when Sat receiver is ON (stored in VSATON in memory) and TV is off (stored in VTVON in memory) then turn off the sat. For debug purpose I have Vtmp sensor to show when the rule was fired. This rule is not always fired! Starting case when sat is ON and TV is ON when I switch off the TV then the rule is not executed. Starting when TV is OFF and sat is OFF when I switch on the sat then the rule is executed. By exchanging statements in the when block to the following the rule is always executed.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Power OFF SAT1"</span>
+when
+  Event(source==<span class="code-quote">"VTVON"</span>, value==<span class="code-quote">"0"</span>)
+  Event(source==<span class="code-quote">"VSATON"</span>, value==<span class="code-quote">"1"</span>)
+then
+  execute.command(<span class="code-quote">"Vtmpa"</span>, _TimeStamp());
+  execute.command(<span class="code-quote">"SAT.POWER.LAN"</span>);
+end
+</pre>
+</div></div>
+<p>In my opinion both rules should be executed at the same times. This is not a case. Is this a bug or am I missing something?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22876453"></a>
+                                    <font class="smallfont"><p>Do you have both of these rules in your code at once? If so, only one will ever execute (assuming the SAT.POWER.LAN command does something which will change the value of VSATON to 0). Drools documentation sometimes suggests that "rules fire at the same time", but this is a little misleading. They don't actually fire in parallel. If the conditions are true for two rules simultaneously then drools uses an algorithm to decide which one it will fire first. If the first one it fires makes the second no longer "true", then the second will not be fired. </p>
+
+<p>You can test whether rule priority is the culprit here. Set the salience value of one rule to "1" and the other to "2". This will enforce rule order when both rules are eligible to fire. The higher salience value will fire first. For example:</p>
+
+
+<p>rule "Power OFF SAT"<br/>
+salience 2<br/>
+when<br/>
+  Event(source=="VSATON",value=="1")<br/>
+  Event(source=="VTVON",value=="0")<br/>
+then<br/>
+  execute.command("Vtmp", _TimeStamp());<br/>
+  execute.command("SAT.POWER.LAN");<br/>
+end</p>
+
+<p>rule "Power OFF SAT1"<br/>
+salience 1<br/>
+when<br/>
+  Event(source=="VTVON", value=="0")<br/>
+  Event(source=="VSATON", value=="1")<br/>
+then<br/>
+  execute.command("Vtmpa", _TimeStamp());<br/>
+  execute.command("SAT.POWER.LAN");<br/>
+end</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by melchoir55 at Sep 16, 2013 18:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876465"></a>
+                                    <font class="smallfont"><p>Yes, both rules are in the code at once so I can compare which one fires and which not. I've added the second rule because the first one was not always executed and wanted just to make simple test. To my surprise the second rule executes always so if I've written the original rule as the second one then I would never hit this bug.</p>
+
+<p>SAT.POWER.LAN command indeed turns VSATON sensor to 0 but it takes about 1-2s to propagate. Therefore in my opinion both rules should always execute at the same time.</p>
+
+<p>Adding salience as in your example haven't changed anything.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 16, 2013 21:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876475"></a>
+                                    <font class="smallfont"><p>It is true that the order of expressions in "when" has an effect. Drools doesn't evaluate conditions "underneath" conditions which have returned false. That shouldn't be an issue here.</p>
+
+<p>I suppose it is possible that there is something written into the methods returning "value" and "source" which changes the event in such a way that it no longer triggers the next rule, but this seems pretty unlikely to me.</p>
+
+<p>I am under the impression from your first post that if the rule "Power OFF SAT" is in your rulebase alone ("Power OFF SAT1" is removed) it does not fire in the circumstance you describe. I wouldn't count on the propagation time in a test situation like this. You want to set up a test scenario which limits the things which could be effecting behavior. I would use the drools you have created, and I would use them in isolation. Put the first one in alone, see if it works. Put the second one in alone, see if it works. Let us know what happens in that scenario.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by melchoir55 at Sep 17, 2013 01:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876484"></a>
+                                    <font class="smallfont"><p>I think that I'm hitting some kind of critical mass of the rules engine. On your remark that Drools uses logic short-circuit I've added explicit AND to my first condition making it:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Power OFF SAT"</span>
+when
+  Event(source==<span class="code-quote">"VSATON"</span>,value==<span class="code-quote">"1"</span>) AND
+  Event(source==<span class="code-quote">"VTVON"</span>,value==<span class="code-quote">"0"</span>)
+then
+  execute.command(<span class="code-quote">"Vtmp"</span>, _TimeStamp());
+  execute.command(<span class="code-quote">"SAT.POWER.LAN"</span>);
+end
+</pre>
+</div></div>
+<p>Now both rules execute at the same moment (the second rule without explicit AND), however, some other rule which was OK till now stopped working, the one for turning on the recover:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Power ON SAT"</span>
+when
+  Event(source==<span class="code-quote">"VSATON"</span>,value==<span class="code-quote">"0"</span>)
+  Event(source==<span class="code-quote">"VSOURCE"</span>,value==<span class="code-quote">"SAT"</span>)
+then
+  execute.command(<span class="code-quote">"SAT.POWER.KIRA"</span>);
+end
+</pre>
+</div></div>
+<p>So I needed to add explicit AND here too and now all rules (which I've tested) are working. This is a bit scary so I'll need to rewrite all when statements into the explicit format.</p>
+
+<p>I'm afraid that it would be very difficult to extract a small isolated and standalone test case. I've never seen this behavior before my rule file begins to become bigger. Nevertheless, it is quite obvious that the problem lies in the rule engine's logic shortcircuit code. In case the code is improved I can run my scenarios and see it it is improved. Till then I'll use the explicit format, which is not a bad idea after all.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 17, 2013 13:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876488"></a>
+                                    <font class="smallfont"><p>Adding explicit AND does not always help <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 17, 2013 16:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876531"></a>
+                                    <font class="smallfont"><p>I was sure that implicit and explicit "and" are equivalent in drools. I spoke with a drools dev and he assures me of the same. I think the "and" thing is a red herring. I also think the rule ordering is either a red herring, or you are zeroing in on a bug in drools. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by melchoir55 at Sep 18, 2013 18:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876534"></a>
+                                    <font class="smallfont"><p>Well, if you confirm that implicit and explicit AND are equivalent, and I confirm that adding/removing AND changes rule's sensitivity then this is an obvious bug.</p>
+
+<p>Till now I was just using $evt:Event(source=="xxx") then, and in the block I was fishing values using normal if() statement. However, I wanted to be more modern and started to use value=="xxx" inside the when block. Immediately found the bug so I'm falling back to my old fashioned approach.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Sep 18, 2013 18:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22876541"></a>
+                                    <font class="smallfont"><p>Isaac,</p>
+
+<p>This thread may be related although covering much older version of Drools (3.0):</p>
+
+<p><a href="http://drools.46999.n3.nabble.com/explicit-conditional-expressions-td48688.html">http://drools.46999.n3.nabble.com/explicit-conditional-expressions-td48688.html</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 18, 2013 23:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Custom Sensor ignores zeros?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Custom Sensor ignores zeros?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Nov 24, 2012 by <font color="#0050B2">frand</font>.
+				    </div>
+
+				    <p>Hi everyone,</p>
+
+<p>I have a Sanyo Z2000 projector controlled via TCP/IP commands. Direct separate commands for power on / power off / input selection etc. work fine, but when I try to implement a switch that depends on a sensor, things fall apart.</p>
+
+<p>The status query command for the projector is "CR0&lt;CR&gt;" (without the quotation marks).<br/>
+The valid responses are:<br/>
+00&lt;CR&gt; - Power on<br/>
+40&lt;CR&gt; - Warming up<br/>
+20&lt;CR&gt; - Cooling down<br/>
+80&lt;CR&gt; - Standby</p>
+
+<p>I verified that the command works and returns the above values using a direct telnet connection. &lt;CR&gt; to my best understanding simply means line change, as in pressing return in telnet. &lt;CR&gt; seems to be automatically sent by OpenRemote in commands. So on my part, Carriage Return has not been taken into account in command setups.</p>
+
+<p>Then I made a custom sensor which takes the names "00" and "40" as value "on", and "80" and "20" as value "off". This doesn't seem to work at all, the switch that it's linked to simply stays in its default state.</p>
+
+
+<p>To debug, I tried printing the received values into a label, and it seems zeros are randomly culled from the response.<br/>
+The label flickers between "8" and "Standby", when power is off.<br/>
+The label flickers between "4" and "Warming up", when power button has been pressed.<br/>
+The label flickers between "0" and "Power on", when the warm-up has finished.</p>
+
+<p>My custom label in the panel is expected to print the "Power on", "Warming up", "Cooling down" and "Standby" strings in case of 00, 20, 40 or 80 as received values.</p>
+
+<p>Is the Custom Sensor perhaps somehow misinterpreting the zeros in front of line change?</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/21037754/21135442.class">ReadCommand.class</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/21037754/21135448.pdf">Epson Serial_ESCVP21_e_P.pdf</a> (application/pdf)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/21037754/21135455.xlsx">epson375633eu.xlsx</a> (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21037784"></a>
+                                    <font class="smallfont"><p>If you create a custom sensor without the values and just link that to a label, what do you see?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 25, 2012 20:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037785"></a>
+                                    <font class="smallfont"><p>The label flickers between "0" and "00" (without quotation marks) when power is on.<br/>
+After a shutdown command to the projector, the sensor just showed "N/A" until the controller was restarted. (This erratic behavior was present already with the previous post, I failed to mention it.)</p>
+
+<p>After controller restart, "0" and "00" flickered during power-on, "2" and "20" flickered during cooldown, and "8" and "80" flicker during standby.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Nov 25, 2012 20:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037874"></a>
+                                    <font class="smallfont"><p>Do you see anything in the logfiles?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 27, 2012 22:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038322"></a>
+                                    <font class="smallfont"><p>Hi Marcus,</p>
+
+<p>The situation is still unchanged. I just updated to the 2.0.1 release, and the problem still persists.</p>
+
+<p>From dev.log on 2.0.1:</p>
+
+<p>2012-12-10 23:23:59,270 INFO Polling Sensor Thread ID = 365, Name ='Z2000\_Power\_Sensor': received message: 0<br/>
+2012-12-10 23:23:59,273 TRACE Polling Sensor Thread ID = 365, Name ='Z2000\_Power\_Sensor': Processed 0, received 0</p>
+
+<p>and later:</p>
+
+<p>2012-12-10 23:23:59,933 INFO Polling Sensor Thread ID = 365, Name ='Z2000\_Power\_Sensor': received message: 00<br/>
+2012-12-10 23:23:59,937 TRACE Polling Sensor Thread ID = 365, Name ='Z2000\_Power\_Sensor': Processed 00, received 00</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 10, 2012 21:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038339"></a>
+                                    <font class="smallfont"><p>Somehow the &lt;CR&gt; after the code must be messing up the receiving of the message.<br/>
+Are you using the telnet command or tcp command? Because you say using TCP/IP but later you say checking with Telnet.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 11, 2012 09:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038341"></a>
+                                    <font class="smallfont"><p>OpenRemote is configured to use a TCP/IP command. My manual checks to see the responses to commands are done with a telnet client.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 11, 2012 09:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038342"></a>
+                                    <font class="smallfont"><p>Well, what does your projector support, TCP or Telnet?<br/>
+Maybe the responce is different when using TCP, you could try and use wireshark if you see any differences between the both protocols.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 11, 2012 09:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038343"></a>
+                                    <font class="smallfont"><p>I'm using socat as instructed here:
+<a href="http://www.openremote.org/display/forums/DSCit100?focusedCommentId=19988753#comment-19988753">http://www.openremote.org/display/forums/DSCit100?focusedCommentId=19988753#comment-19988753</a></p>
+
+<p>OpenRemote is sending TCP/IP commands to 127.0.0.1</p>
+
+<p>The projector is a Sanyo Z2000 with an RS232 port.</p>
+
+<p>Pardon my confusion about telnet. I've spent the last couple of days wrestling telnet commands on the AV Pre-pro... obviously the manual communication tests to the serial port were done with a simple terminal application.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 11, 2012 09:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038346"></a>
+                                    <font class="smallfont"><p>Ok, so we only have to concentrate on TCP and don't worry about telnet <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+I myself will receive an Epson beamer soon which I will connect via serial but I will use a ethernet&lt;-&gt;serial converter.<br/>
+I will look at the TCP code if I can find something.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 11, 2012 09:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038850"></a>
+                                    <font class="smallfont"><p>The flicker is gone now, with 2.1.0, but the sensor is not refreshing its value. I do get a stable 00 or 80, but this seems to be read only once, depending on the projector's state when the panel is opened.</p>
+
+<p>How often are sensor values refreshed by default?</p>
+
+<p>Also, I'm still looking into this, but the reason for the zero flickering may also be due to misconfigured socat.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 19, 2012 20:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038851"></a>
+                                    <font class="smallfont"><p>The TCPSocketCommand in 2.1.0 is still using the old mechanism. <br/>
+This would mean that it's triggered every 500ms which might cause a problem <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 19, 2012 20:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038852"></a>
+                                    <font class="smallfont"><p>The manual for the Sanyo Z2000 serial commands does mention that status read commands does mention that there should be at least a 500ms delay between each. So it is possible that the status commands are too frequent for the projector.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 19, 2012 21:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21038854"></a>
+                                    <font class="smallfont"><p>I created a patch which uses 1000ms. Can you try on the 2.1 version and let me know.<br/>
+Please copy this file to "webapps/controller/WEB-INF/classes/org/openremote/controller/protocol".<br/>
+You need to restart the controller afterwards.</p>
+
+<p><a href="attachments/21037754/21135442.class">ReadCommand.class</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 19, 2012 22:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039065"></a>
+                                    <font class="smallfont"><p>Thank you for the patch, and for consistently helping with the matter!</p>
+
+<p>Good news: the status indication no longer flickers, I'm seeing consistent 00, 20, 40 or 80 in the iPhone panel<br/>
+Bad news: it seems the status of the sensor does not refresh without user input</p>
+
+<p>More specifically, the label which is printing the status of the power sensor only changes its value when I press another button on the panel. (The panel only has buttons that control the projector.) So for example, the projector sensor reads "20", the code for warming up, for as long as I press a button that changes the picture brightness. At that point the sensor changes to "00", meaning it's on, even if that status has been valid for a minute.</p>
+
+<p>My setup for the sensor is:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Command name: Z2000_power(status)
+Protocol: TCP/IP
+IP Address: 127.0.0.1
+Port: 24242
+Command: CR0
+</pre>
+</div></div>
+
+<p>This in turn is listened by socat, started automatically in rc.local</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+socat TCP-LISTEN:24242,reuseaddr,fork,crlf file:/dev/ttyUSB0,echo=0,b19200,raw,crnl,icanon=1 &amp;
+</pre>
+</div></div>
+
+<p>And the Z2000_power(status) command is simply selected as the command by a custom sensor with no name/value mappings.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 25, 2012 16:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039069"></a>
+                                    <font class="smallfont"><p>Which console are you using?<br/>
+Never mind, you said iPhone <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+It should ask the command now every 1000ms and if the command receives a new value update the sensor.<br/>
+That should cause the label in the panel to automatically update. I have no idea why that does not work.<br/>
+Do you see anything in log files?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 25, 2012 18:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039071"></a>
+                                    <font class="smallfont"><p>boot.log only has:<br/>
+INFO 2012-12-25 18:09:49,382 : Registered sensor : Sensor (Name = 'Z2000powersensor', ID = '431', State Mappings: {})</p>
+
+<p>nothing in catalina.2012-12-25.log, host-manager.2012-12-25.log, localhost.2012-12-25.log or dev.log</p>
+
+<p>sensor.log only mentions:<br/>
+INFO 2012-12-25 18:09:49,405 : Started polling thread for sensor (ID = 431, name = Z2000powersensor).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 25, 2012 19:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039074"></a>
+                                    <font class="smallfont"><p>I am running out of ideas.<br/>
+Maybe a carriage return or connection issue which causes the status command only being executed when the next "action" command is issued.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 25, 2012 19:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039080"></a>
+                                    <font class="smallfont"><p>Is there any time-out period in the sensor or the TCP/IP command? I can try playing around with socat parameters, but seems odd that if a valid response doesn't come in, say, 1 second, that OpenRemote would be stuck in waiting.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 26, 2012 09:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039086"></a>
+                                    <font class="smallfont"><p>I just looked at the code and this line</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+      <span class="code-object">int</span> readChars = bufferedReader.read(buffer, 0, 200); <span class="code-comment">// blocks until message received</span>
+</pre>
+</div></div>
+<p>would indicate that it is waiting for a reply <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>The TCP code is being reworked on (Richard already started something) but until then you will have to try to find some workaround. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 26, 2012 19:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039093"></a>
+                                    <font class="smallfont"><p>Thanks Marcus,</p>
+
+<p>It's good that I can control the projector with direct on and off buttons, so that having a switch is not a critical issue. Still, it would be nice solve this mystery and to manage to create a more elegant UI (with a switch and an indicator) in the long run.</p>
+
+<p>I'm still baffled why a manually sent TCP command is needed to unlock the pending status response, because by any logic a locked response buffer in socat, if there is such a thing, should be unlocked by the next status command (and OpenRemote should be sending those out once per second).</p>
+
+<p>Out of curiosity, you mentioned getting a new Epson projector... by any chance are you eyeing the TW8100? I've been tempted to upgrade to that model, but quick googling hasn't yet produced a serial command list for it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frand at Dec 26, 2012 20:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039094"></a>
+                                    <font class="smallfont"><p>It is the TW8100 <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+And I like it a lot <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+So far I found one file (see attachement) but I yet have to test it.<br/>
+<a href="attachments/21037754/21135448.pdf">Epson Serial_ESCVP21_e_P.pdf</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 26, 2012 20:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21039156"></a>
+                                    <font class="smallfont"><p>I just found another document wich seems to be the right one.<br/>
+<a href="attachments/21037754/21135455.xlsx">epson375633eu.xlsx</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 28, 2012 23:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

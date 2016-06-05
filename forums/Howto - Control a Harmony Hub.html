@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Howto - Control a Harmony Hub</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Howto - Control a Harmony Hub
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 22, 2015 by <font color="#0050B2">glennl</font>.
+				    </div>
+
+				    <p>I have only recently found out about OpenRemote but since I have found it found it, I have done some great things.</p>
+
+<p>Including compiling from source, controlling HAI Omnilink, Yamaha Amps, Sonos, WDTV's and now the Harmony Hub.</p>
+
+<p>I don't have a great knowledge of OpenRemote but hopefully people can expand on what I have written to add additional features like sensors<br/>
+as some of the responses are on, off. </p>
+
+<p>It is quite an easy thing to do once you figure it out how to do it.</p>
+
+<p>We start by downloading the <a href="http://sourceforge.net/projects/harmonyhubcontrol/files/">HarmonyHubControl project</a></p>
+
+<p>Put it in a folder such as /harmonyhub/</p>
+
+<p>Before you go into the designer test that the examples work from command line.</p>
+
+<p>We launch the designer and a "shell execution protocol".</p>
+
+<p>We fill path with "/harmonyhub/HarmonyHubControl".</p>
+
+<p>We have various options to fill command parameter with.</p>
+
+<p>It follow the following guide email password harmony\_ip command \(optional\) primary\_parameter \(optional\).</p>
+
+<p>== Examples from Project site ==<br/>
+Typical example usage would be as follows:</p>
+
+<p>1) Query the device for a list of activities:</p>
+
+<p>	HarmonyHubControl your_email@your_email_server.com your_password 192.168.0.XXX list_activities</p>
+
+<p>2) Start an activity based on the activity identifiers listed in step 1:</p>
+
+<p>	HarmonyHubControl your_email@your_email_server.com your_password 192.168.0.XXX start_activity activity id (eg -1 for power off)</p>
+
+<p>For full argument information simply run the executable with no parameters.</p>
+
+
+<p>== Additional Notes ===</p>
+
+<p>I highly suggest you add logging in the controller by adding the following to log4j.properties (edit per your circumstance)</p>
+
+<p>log4j.logger.OpenRemote.Controller.protocol.SHELLEXE = ALL, shell-file</p>
+
+<p>log4j.appender.shell-file = org.apache.log4j.RollingFileAppender<br/>
+log4j.appender.shell-file.File =  /var/log/openremote/controller/shell.log<br/>
+log4j.appender.shell-file.Threshold = DEBUG<br/>
+log4j.appender.shell-file.MaxFileSize = 500KB<br/>
+log4j.appender.shell-file.MaxBackupIndex = 1<br/>
+log4j.appender.shell-file.layout = org.apache.log4j.PatternLayout<br/>
+log4j.appender.shell-file.layout.ConversionPattern = %p %d (Shell): %m%n</p>
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23596747"></a>
+                                    <font class="smallfont"><p>I'm new to Open Remote and I've been digging into this yesterday. I'm running Open Remote on a Raspberry Pi.</p>
+
+<p>You should be able to send individual command but I haven't been able to do this from Open Remote.</p>
+
+<p>In this example using volume control of my Marantz receiver.</p>
+
+<p>When you have Harmonyhubcontrol running, issue the following command to list all the devices;</p>
+
+<p>./HarmonyHubControl email password hub ipaddress password list_devices</p>
+
+<p>You'll get the following information:</p>
+
+<p>LOGITECH WEB SERVICE LOGIN     : BYPASSED<br/>
+HARMONY COMMUNICATION LOGIN    : SUCCESS<br/>
+HARMONY COMMAND SUBMISSION     : SUCCESS<br/>
+PARSE ACTIVITIES AND DEVICES   : SUCCESS<br/>
+Devices Controllable via Harmony :</p>
+
+<p>20686775 - Device 1<br/>
+20779809 - Device 2<br/>
+20686760 - Device 3<br/>
+20671327 - Device 4<br/>
+21160666 - Device 5<br/>
+20674970 - Device 6<br/>
+20671404 - Device 7<br/>
+20672634 - Marantz AV Receiver</p>
+
+<p>Write down the device Id of the receiver: 20672634</p>
+
+<p>Next issue the command to list the Harmony hub configuration:</p>
+
+<p>./HarmonyHubControl email password hub ipaddress password get_config</p>
+
+<p>You'll get a complete listing of the configuration.<br/>
+Now look for the device ID in combination with the word "command". In this example "VolumeUp"</p>
+
+
+<p>./HarmonyHubControl email password hub ipaddress password issue_device_command 20672634 "Mute"<br/>
+./HarmonyHubControl email password hub ipaddress password issue_device_command 20672634 "VolumeDown"<br/>
+./HarmonyHubControl email password hub ipaddress password issue_device_command 20672634 "VolumeUp"</p>
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by boefje at Feb 24, 2015 09:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596782"></a>
+                                    <font class="smallfont"><p>You know you can control Marantz devices that support IP directly, its built into openremote just use the Denon telnet commands they are the same for Marantz </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glennl at Feb 26, 2015 05:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596783"></a>
+                                    <font class="smallfont"><p>Yes, I got that working Glenn but I used the Marantz as an example.</p>
+
+<p>I'm struggling now however to call the HarmonyHubControl. I get the following error:</p>
+
+<p>2015-02-25 22:38:23,673 INFO HTTP-Thread-3: Querying changed state from ChangedStatus table...<br/>
+2015-02-25 22:38:23,674 INFO HTTP-Thread-3: Found: <span class="error">&#91;device =&gt; null, sensorIDs =&gt; 106903182&#93;</span> in ChangedStatus table.<br/>
+2015-02-25 22:38:23,675 INFO HTTP-Thread-3: ChangedStatusRecord:null-106903182 sensorID:106903182 statusChangedSensorID:[]Waiting...<br/>
+2015-02-25 22:39:03,231 ERROR HTTP-Thread-4: Could not execute shell command: /home/pi/HarmonyHubcontrol/HarmonyHubControl<br/>
+java.io.IOException: Cannot run program "/home/pi/HarmonyHubcontrol/HarmonyHubControl ": error=2, No such file or directory</p>
+
+<p>I know it can't find the command but my Linux knowledge is next to nothing so I'm hoping someone could help me here.</p>
+
+<p>I installed the HarmonyHubControl under /home/pi/HarmonyHubControl and the command to activate is called HarmonyHubControl.</p>
+
+<p>pi@raspberrypi ~/HarmonyHubControl $ ls -d -1 $PWD/*<br/>
+/home/pi/HarmonyHubControl/csocket.cpp<br/>
+/home/pi/HarmonyHubControl/csocket.h<br/>
+/home/pi/HarmonyHubControl/csocket.o<br/>
+/home/pi/HarmonyHubControl/HarmonyHub.AuthorizationToken<br/>
+/home/pi/HarmonyHubControl/HarmonyHubControl<br/>
+/home/pi/HarmonyHubControl/HarmonyHubControl.cpp<br/>
+/home/pi/HarmonyHubControl/HarmonyHubControl.o<br/>
+/home/pi/HarmonyHubControl/HarmonyHubControl.vcxproj<br/>
+/home/pi/HarmonyHubControl/Makefile<br/>
+/home/pi/HarmonyHubControl/PROTOCOL.md<br/>
+/home/pi/HarmonyHubControl/README.txt</p>
+
+<p>When I run it from the Pi command line, it works perfectly.</p>
+
+<p>These are the settings I've used in Open Remote</p>
+
+<p>Name: Volume Down Harmony<br/>
+Protocal: Shell execution protocol<br/>
+Path:/home/pi/HarmonyHubControl/HarmonyHubControl<br/>
+Command parameter: userid password logitech_hub_ip_address issue_device_command 20672634 "VolumeDown"<br/>
+Polling interval: empty<br/>
+Regular Expression : empty<br/>
+Sensor Names: empty</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by boefje at Feb 26, 2015 06:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596849"></a>
+                                    <font class="smallfont"><p>Sorry for the late reply I have now had a chance to test this out myself on a Pi.</p>
+
+<p>I recompiled mine for ARM as the version on that site was x86. - Here is the ARM version, but if you got it to open already you don't need this file <a href="http://wikisend.com/download/426710/HarmonyHubControl">http://wikisend.com/download/426710/HarmonyHubControl</a></p>
+
+<p>Maybe the file isn't executable.</p>
+
+<p>Have you tried doing cd /home/pi/HarmonyHubControl </p>
+
+<p>chmod a+x HarmonyHubControl</p>
+
+<p>Also I have tried running multiple commands via macros.</p>
+
+<p>Having a 50ms delay enables me to change the cable channel to 111</p>
+
+<p>Do you need "VolumeDown" in quotes i think it should work without quotes</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glennl at Mar 01, 2015 09:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

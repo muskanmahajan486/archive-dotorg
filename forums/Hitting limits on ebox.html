@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Hitting limits on ebox</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Hitting limits on ebox
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 19, 2015 by <font color="#0050B2">aktur</font>.
+				    </div>
+
+				    <p>As my design on ebox starts to become too big I'm hitting limits after a while. First symptoms are falling shell commands:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2015-01-19 20:51:51,545 (ShellEXE): Could not execute shell command: /bin/ping
+java.io.IOException: Cannot run program <span class="code-quote">"/bin/ping"</span>: java.io.IOException: error=12, Cannot allocate memory
+
+</pre>
+</div></div>
+
+<p>What will be the best strategy to recover from this situation? Top shows that my controller java process is using 50-60% of the memory. I'm doing a brutal reboot now, but perhaps there is a more clever way?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23595824"></a>
+                                    <font class="smallfont"><p>You can try and increase the heap space of the Java VM.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 24, 2015 16:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597685"></a>
+                                    <font class="smallfont"><p>Increasing heap size did not help. What did help was:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+echo 1 &gt; /proc/sys/vm/overcommit_memory
+</pre>
+</div></div>
+<p>but I'm not sure if this wont have some negative side effects. So far so good. What I read about overcommit_memory is:</p>
+
+<p>overcommit_memory</p>
+
+<p>Controls overcommit of system memory, possibly allowing processes to allocate (but not use) more memory than is actually available.</p>
+
+<p>0 - Heuristic overcommit handling. Obvious overcommits of address space are refused. Used for a typical system. It ensures a seriously wild allocation fails while allowing overcommit to reduce swap usage. root is allowed to allocate slighly more memory in this mode. This is the default.</p>
+
+<p>1 - Always overcommit. Appropriate for some scientific applications.</p>
+
+<p>2 - Don't overcommit. The total address space commit for the system is not permitted to exceed swap plus a configurable percentage (default is 50) of physical RAM. Depending on the percentage you use, in most situations this means a process will not be killed while attempting to use already-allocated memory but will receive errors on memory allocation as appropriate.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Apr 18, 2015 09:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597698"></a>
+                                    <font class="smallfont"><p>Never heard of it. A JVM is only using what the heap size has configured. <br/>
+I don't see why that should bring anything even since it says "but not use".<br/>
+If you think it does help even better <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 18, 2015 21:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598539"></a>
+                                    <font class="smallfont"><p>Well, it helps but to the point of 'some scientific applications'... <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> It is possible to brick an eBox to the point that only a clod boot can help. So obviously, this is not a solution for regular people.</p>
+
+<p>I've dig the issue a bit more. The root of the problem lies in the implementation of Runtime.getRuntime().exec() method. It uses fork, and fork first allocates the amount of memory of original process (thus openremote including tomcat) and fails if it does not find it free in the physical memory. Therefore, DECREASING instead of INCREASING of the heap space actually helps a bit. However, the side effect is that the heap space is much lower now and yajsw needs to reboot the controller even more frequently. Therefore this solution is a pity of memory resources. At this point I see 2 options for better solving this issue:</p>
+
+<p>1) As I've noticed, on the root cause is lies a fact that my shell command exec sensors are called few at the time, each one within its own thread, correct? Therefore serializing threads with semaphore should help. Limiting that only one thread can call Runtime.getRuntime().exec() at the time and hold other calls till this one frees the memory will obviously help.</p>
+
+<p>2) Use a different method of calling shell commands, without the fork(). One such possibility is to use ssh to localhost and with RSA keys preallocation this method would be quite transparant in usage. Thre are some native ssh libraries available for Java.</p>
+
+<p>Now my question would be, which solution would be preferable? In my opinion adding ssh protocol would be a better solution. It would not only help to solve the shell execution protocol memory problems, but add a new way of executing commands on remote hosts. Quite a nice feature, think off:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ssh root@somehost reboot
+ssh someuser@somehost ls -lt rss/
+etc.
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 07, 2015 14:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

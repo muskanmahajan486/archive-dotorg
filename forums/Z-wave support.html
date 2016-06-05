@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Z-wave support</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Z-wave support
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 02, 2009 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>The following is an E-mail with Juha. I repost here so that others can join the discussion of the Z-wave support in the openremote. In short, we(HomeScenario Inc) will release a platform for home automation with Z-wave, IR, DI/DO and other components for automation application. Due to the NDA issue, we will implement a TCP daemon which wrap the Z-wave API inside it and provide a documented socket interface to talk to the Z-wave network. If we can solve the NDA issue, we will release the source code of this daemon. Otherwise, we will release the binary.</p>
+
+<p>&#45;---------------------------------------------------------------------------------------------------------&#45;</p>
+
+
+<p>I may check with zensys to see the possibility of releasing the code directly. However, I have no idea if it can go through or not. In the mean time, we can write a TCP daemon which take command from the socket and send them to the Z-wave stack. Although our system is based on python, we have a C-based unit test program which can be used as the basis of this daemon. I will find some non-NDA Z-wave document for you to understand the Z-wave protocol so that it will be easier for you to understand our TCP daemon in the future. Here is a shpot brief of what we can do now.</p>
+
+<p>Our box is a Z-wave primary controller which can send commands to other passive Z-wave devices and receive the response from the Z-wave sensors. Before the device can be used, we must "INCLUDE" the Z-wave devcies into the Z-wave controller. In the process of inclusion, the Z-wave controller will set its unique HomeID into the Z-wave devices. In this way, multiple Z-wave network can work together.</p>
+
+<p>The learning procedure is more complex and it's not in your UI now. We can leave it to be the second stage. Currently, users need to use our HSK-50 to include devices into the network. The TCP daemon only send on/off commands to the devices and receive one/off commands from the devcies in this stage like other protocols.</p>
+
+<p>However, there is one issue. In the learning procedure, the HSK-50 will assign an ID to the new device. We need to know the ID so that we can use it to send/receive commands in the future.</p>
+
+<p>In order to know the ID, we will implement our TCP daemon as the Z-wave SIS server. When we add a new device, our TCP daemon will send a notification message out to all clients so that you can show it in the UI. In addition, it will send message when users click the program button on the device as well. It means that users can open an UI page, click the program button on the device and then the Z-wave ID will display on the UI.</p>
+
+<p>In addition of the learning procedure, we will implement the BASIC class initially. All Z-wave devices will support multiple command classes for different information and operation. However, all of them support BASIC command class. We can use to control the light on/off and receive sensor status. This should be good enough initially.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-4948075"></a>
+                                    <font class="smallfont"><p>Thanks for posting YC.</p>
+
+<p>I do like the idea of a TCP daemon, it is a simple but effective integration point directly into the software stack that you have.</p>
+
+<p>I am fine with starting very simple. That gets the integration going and once we have the simple one-way thing in place it will be easier on our side (the not-yet z-wave experts) evaluate further development and integration, and really to learn to understand all the issues involved.</p>
+
+<p>The learning and discovery integration into building modeler is a trickier issue with online tools, something we need to face and have initially discussed with UPnP as well. It comes down to connecting to a local controller in the local network which translates to a requirement of some kind of browser plugin. The obvious cross-browser options are Java plugin and Flash plugin. My preference comes down to Java plugin for any <b>new</b> development due to a more stable runtime and development environment and minimizing all the different runtimes we already need to deal with on this project as a whole (Obj-C, JavaScript, Java, C, and on and on) but will leverage existing Flash work where available of course.</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 02, 2009 12:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948077"></a>
+                                    <font class="smallfont"><p>Actually, you can use the current AJAX framework as well. The tomcat connect to the TCP daemon to maintain the session and then AJAX talk to the tomcat to update the UI. In this way, we can implement everything in the same framework.</p>
+
+<p>For example, when we want to learn or discovery a new device, user click a learn button in the AJAX UI.</p>
+
+<p>1. A HTTP request is sent to the tomcat to start the learning procedure.</p>
+
+<p>2.The tomcat send a "start learning" message to the TCP daemon and then return the status code of the TCP daemon to the AJAX.</p>
+
+<p>3. The UI receive the status code and tell users to press the program button on the device.</p>
+
+<p>4. User click the program button and the TCP daemon get the new device and then notify the tomcat a new device is learned.</p>
+
+<p>5. The tocam send the new node ID to the UI.</p>
+
+<p>6. UI show the ID to the users and tell them a new device is learned. In addition, the information of the device can be sent as long as the ID so that we can display more ifnormation in the UI.</p>
+
+<p>The delete(or exclusion in Z_wave jargon) can be implemented in the similiar way.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by wycc at Oct 02, 2009 16:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948082"></a>
+                                    <font class="smallfont"><p>Yes quite correct, and a very good point. Same approach could work for Mathieu's UPnP, GC and KNX gateway discoveries as well. This way we keep all the discovery related code in the controller, and delegate to local controller instance.</p>
+
+<p>Very, very interesting. We could test this already with GC or KNX I think.</p>
+
+
+<p>&#8211; Juha</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 04, 2009 03:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

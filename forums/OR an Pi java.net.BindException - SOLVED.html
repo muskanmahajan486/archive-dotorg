@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : OR an Pi java.net.BindException - SOLVED</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : OR an Pi java.net.BindException - SOLVED
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 28, 2014 by <font color="#0050B2">gianluca</font>.
+				    </div>
+
+				    <p>Hi, i'd like to edit this post and close the topic as i found out where was the problem.<br/>
+It was a misconfiguration of IP route table.<br/>
+I just added <br/>
+ifconfig lo0 127.0.0.1<br/>
+route add -net 127.0.0.0 127.0.0.1 255.0.0.0<br/>
+and tomcat started without problems.<br/>
+Now i can begin to play..i think i'll be back soon for questions.</p>
+
+<p>ORIGINAL POST:</p>
+
+<p>Hi everyone,<br/>
+first of all, sorry for my English..<br/>
+I'm new to OR and i've some troubles in starting it.<br/>
+i always get this error  (below the stack):SEVERE: StandardServer.await: create8805: <br/>
+java.net.BindException: Cannot assign requested address</p>
+
+<p>The Pi is configured with a fresh install of the last debian (2014-01-07-wheezy-raspbian.zip) and icedtea-6-jre-cacao.<br/>
+I googled around e and tried to change Catalina's port..http to 9090 and showdown port to 8805 (as u can see from the log)<br/>
+I also verified there's no other process using the ports..<br/>
+I really don't know what's going on.. can someone help me?</p>
+
+<p>Tanks for help.</p>
+
+<p>Here's the stack:<br/>
+pi@raspberrypi ~/openremote/bin $ sudo ./openremote.sh run<br/>
+Using CATALINA_BASE:   /home/pi/openremote<br/>
+Using CATALINA_HOME:   /home/pi/openremote<br/>
+Using CATALINA_TMPDIR: /home/pi/openremote/temp<br/>
+Using JRE_HOME:       /usr</p>
+
+<p>---- Logging ----------------------------------------------------------</p>
+
+<p> Console (stdout) threshold CONTROLLER\_CONSOLE\_THRESHOLD: INFO</p>
+
+<p> System logs:</p>
+
+<ul class="alternate" type="square">
+	<li>Controller startup log CONTROLLER\_STARTUP\_LOG\_LEVEL: DEBUG</li>
+</ul>
+
+
+
+<p>-----------------------------------------------------------------------<br/>
+25-Jan-2014 15:35:06 org.apache.catalina.core.AprLifecycleListener init<br/>
+INFO: The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /home/pi/openremote/webapps/controller/WEB-INF/lib/native<br/>
+25-Jan-2014 15:37:15 org.apache.coyote.http11.Http11Protocol init<br/>
+INFO: Initializing Coyote HTTP/1.1 on http-9090<br/>
+25-Jan-2014 15:37:15 org.apache.catalina.startup.Catalina load<br/>
+INFO: Initialization processed in 136127 ms<br/>
+25-Jan-2014 15:37:15 org.apache.catalina.core.StandardService start<br/>
+INFO: Starting service Catalina<br/>
+25-Jan-2014 15:37:15 org.apache.catalina.core.StandardEngine start<br/>
+INFO: Starting Servlet Engine: Apache Tomcat/6.0.18<br/>
+25-Jan-2014 15:37:15 org.apache.catalina.startup.HostConfig deployWAR<br/>
+INFO: Deploying web application archive webconsole.war<br/>
+25-Jan-2014 15:37:35 org.openremote.controller.bootstrap.Startup redirectJULtoLog4j<br/>
+INFO: Initialized JUL to LOG4J Redirector.<br/>
+INFO 2014-01-25 15:37:54,718 : </p>
+
+<p>********************************************************************************</p>
+
+<p> Controller definition was not found in this OpenRemote Controller instance.      </p>
+
+<p> If you are starting the controller for the first time, please use your web     <br/>
+ browser to connect to the controller home page and synchronize it with your    <br/>
+ online account. </p>
+
+<p>********************************************************************************</p>
+
+
+<p>Could not find a controller definition to load at path '../webapps/controller/controller.xml' (for version 2.0)<br/>
+INFO 2014-01-25 15:37:54,732 : Controller Definition File Watcher for Default Deployer started.<br/>
+25-Jan-2014 15:38:00 org.apache.coyote.http11.Http11Protocol start<br/>
+INFO: Starting Coyote HTTP/1.1 on http-9090<br/>
+25-Jan-2014 15:38:01 org.apache.catalina.startup.Catalina start<br/>
+INFO: Server startup in 45938 ms<br/>
+25-Jan-2014 15:38:01 org.apache.catalina.core.StandardServer await<br/>
+SEVERE: StandardServer.await: create8805: <br/>
+java.net.BindException: Cannot assign requested address<br/>
+	at java.net.PlainSocketImpl.socketBind(Native Method)	<br/>
+	at java.net.AbstractPlainSocketImpl.bind(AbstractPlainSocketImpl.java:353)<br/>
+	at java.net.ServerSocket.bind(ServerSocket.java:336)<br/>
+	at java.net.ServerSocket.&lt;init&gt;(ServerSocket.java:202)<br/>
+	at org.apache.catalina.core.StandardServer.await(StandardServer.java:373)<br/>
+	at org.apache.catalina.startup.Catalina.await(Catalina.java:642)<br/>
+	at org.apache.catalina.startup.Catalina.start(Catalina.java:602)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)<br/>
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)<br/>
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)<br/>
+	at java.lang.reflect.Method.invoke(Method.java:616)<br/>
+	at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:288)<br/>
+	at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:413)<br/>
+25-Jan-2014 15:40:08 org.apache.coyote.http11.Http11Protocol pause<br/>
+INFO: Pausing Coyote HTTP/1.1 on http-9090<br/>
+25-Jan-2014 15:40:09 org.apache.catalina.core.StandardService stop<br/>
+INFO: Stopping service Catalina<br/>
+Unhandled Log Messages (may occur due to undefined or incorrect shutdown order):<br/>
+--------------------------------------------------------------------------------<br/>
+FINER OpenRemote.Controller.startup.deployer: Converted controller definition file location from URI '../webapps/controller.xml'<br/>
+Unhandled Log Messages (may occur due to undefined or incorrect shutdown order):<br/>
+--------------------------------------------------------------------------------<br/>
+FINER .....</p>
+
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

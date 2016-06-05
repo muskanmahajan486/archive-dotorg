@@ -1,0 +1,435 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Emails and texts from rules</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Emails and texts from rules
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 24, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    
+<p><em>Lawrie writes:</em></p>
+
+<blockquote>
+<p>For example, if I want to send an email or text from a rule, can I do that in OpenRemote?</p></blockquote>
+
+<p>Sending emails (and texts, or posting tweets, or facebook updates, etc. etc.) is a fairly common functionality request. At this point, the rules engine allows a <a href="http://docs.jboss.org/drools/release/5.2.0.Final/drools-expert-docs/html/ch05.html#d0e3356">function definition</a> (corresponding roughly to Java's static method) and pretty much an arbitrary implementation there. From Drools documentation:</p>
+
+<blockquote>
+<p>Functions are a way to put semantic code in your rule source file, as opposed to in normal Java classes. They can't do anything more than what you can do with helper classes. (In fact, the compiler generates the helper class for you behind the scenes.) The main advantage of using functions in a rule is that you can keep the logic all in one place, and you can change the functions as needed (which can be a good or a bad thing). Functions are most useful for invoking actions on the consequence (then) part of a rule, especially if that particular action is used over and over again, perhaps with only differing parameters for each rule.</p>
+
+<p>A typical function declaration looks like:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+function <span class="code-object">String</span> hello(<span class="code-object">String</span> name) {
+    <span class="code-keyword">return</span> <span class="code-quote">"Hello "</span>+name+<span class="code-quote">"!"</span>;
+}
+</pre>
+</div></div>
+
+<p>Note that the function keyword is used, even though its not really part of Java. Parameters to the function are defined as for a method, and you don't have to have parameters if they are not needed. The return type is defined just like in a regular method.</p>
+
+<p>Alternatively, you could use a static method in a helper class, e.g., Foo.hello(). Drools supports the use of function imports, so all you would need to do is:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">import</span> function my.<span class="code-keyword">package</span>.Foo.hello
+</pre>
+</div></div>
+
+<p>Irrespective of the way the function is defined or imported, you use a function by calling it by its name, in the consequence or inside a semantic code block. Example:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"using a <span class="code-keyword">static</span> function"</span>
+when 
+    eval( <span class="code-keyword">true</span> )
+then
+    <span class="code-object">System</span>.out.println( hello( <span class="code-quote">"Bob"</span> ) );
+end
+</pre>
+</div></div></blockquote>
+
+
+<hr />
+
+<p>An idea I've been thinking about around this is to provide users generic code templates they can use from within the rules that hides some of the lower level details such as Java Mail API that is required to send emails. Reason being that for many users programming tasks are outside their comfort zone and error-prone.</p>
+
+<p>This idea follows the current implementation with regards to how the commands are executed: we create a Java template class (a facade in other terms) that manages the details of command execution. This is handled in the rule by importing a 'global' variable which you can find in all our rule examples:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+</pre>
+</div></div>
+
+<p>(See <a href="http://www.openremote.org/display/docs/Designer+2.0+-+Controller+Rules" title="Designer 2.0 - Controller Rules">Designer 2.0 &#45; Controller Rules</a>)</p>
+
+<p>Now if you look at the actual implementation of the Command facade, it creates an API. A side note, not necessary to follow standard Java naming conventions in these facades since standard naming conventions may be obscure to users and lead to errors in rule definitions: <a href="http://svn.code.sf.net/p/openremote/code/tags/project/Controller/Controller_2_0_2/src/org/openremote/controller/statuscache/CommandFacade.java">CommandFacade.java</a></p>
+
+<p>So therefore, the statement in rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+global org.openremote.controller.statuscache.CommandFacade execute;
+</pre>
+</div></div>
+
+<p>And a rule action definition:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+then
+
+  execute.command( <span class="code-quote">"Music_On"</span> );
+
+end
+</pre>
+</div></div>
+
+<p>is roughly equivalent to Java code:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">new</span> CommandFacade(namedCommands).command( <span class="code-quote">"Music_On"</span> );
+</pre>
+</div></div>
+
+<p>It comes down to mapping magic and how we expose internals to the user in the most attractive way.</p>
+
+
+<hr />
+
+<p>Now, for your specific question such as sending an email or text, I could foresee a definition of:</p>
+
+<ul class="alternate" type="square">
+	<li>EmailFacade</li>
+	<li>SMSFacade</li>
+</ul>
+
+
+<p>Where for example emails from rules are sent using a global variable 'email':</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+global org.openremote.controller.rules.EmailFacade email;
+</pre>
+</div></div>
+
+<p>Where the EmailFacade.java defines a method send(String sender, String recipient, String topic, String content, ...)</p>
+
+<p>Which then translates to a rule action such as:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+then
+
+  email.send( mailto:bob@house.com, mailto:bob@work.com, <span class="code-quote">"Hello"</span>, <span class="code-quote">"Your house is on fire!"</span> );
+
+end
+</pre>
+</div></div>
+
+<p>Adopt to SMS accordingly:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+global org.openremote.controller.rules.SMSFacade sms;
+
+...
+
+then
+
+  sms.send( <span class="code-quote">"Hello"</span>, <span class="code-quote">"Your house is on fire!"</span> );
+
+end
+</pre>
+</div></div>
+
+<p>If you get the gist of the idea above, I'd like to start fleshing it out further in terms of defining the API, documenting for users, etc.</p>
+
+<p>There's an additional consideration of SMS or email as a protocol (where it can be triggered directly from the UI) vs the implementation facade for rules. If both the protocol and the rule facade is created, the implementation between the two should naturally be shared.</p>
+
+<p>On configuration side the difference becomes in parameterizing the use of the method call. In case of commands, the user will need to create a command in the GUI where he fills in the parameters (sender, recipient, title, content, etc.) and the rule action becomes simply:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+...
+
+then
+
+  execute.command( <span class="code-quote">"Send My Email"</span> );
+
+end
+</pre>
+</div></div>
+
+<p>vs. the parameterized facade API that was shown above. The command seems preferred when both user triggered and device event triggered emails are used in the same configuration since it will then share the single location for the configuration in a 'command'.</p>
+
+<p>The facade helps in convenience for those users who are comfortable writing their own rules and if the same sending functionality is not needed elsewhere in the design &#8211; it is quick to write in the rule definition (using a facade) without requiring any command configurations or GUI interaction.</p>
+
+<p>Thoughts?</p>
+
+
+
+
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22414887"></a>
+                                    <font class="smallfont"><p><em>Lawrie writes:</em></p>
+
+<blockquote>
+<p>I like the facades idea. Should we do FreeTTS like this, at least as an option, as the main use of text to speech is likely to be in rules.</p>
+
+<p>We could have something like:</p>
+
+<p>freetts.say("The house is on fire");</p>
+
+<p>and also maybe:</p>
+
+<p>freetts.say("musicserver",50000,"The house is on fire");</p>
+
+<p>to use a remote TCP/IP server.</p>
+
+<p>Lawrie</p></blockquote>
+
+<p>Think that would work. Although I probably wouldn't use freetts as the variable name (again just from the perspective of trying to sound least obscure as possible), instead using something like text-to-speech.say() if dashes are allowed (no clue), text2speech.say() or similar.</p>
+
+<p>Makes it a little more readable in my eyes (but in the end the global variable name can be decided by the user writing the rule anyway, so this would be mainly just for documentation and example code purposes &#8211; people tend to adopt whatever conventions you show them in documentation).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 24, 2013 19:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414952"></a>
+                                    <font class="smallfont"><p>I have code in my HouseControl project that sends email using javax.mail and Google mail. Would you like me to contribute an Email protocol as a start towards the email case?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by lawrie at May 25, 2013 15:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22414959"></a>
+                                    <font class="smallfont"><p>Sounds good!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 25, 2013 16:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415023"></a>
+                                    <font class="smallfont"><p>Hi lawrie, </p>
+
+<p>I'm looking for a way to send an email notification to a specified address. It would be really great if you can share the code/ how to with us. </p>
+
+<p>Thanks in advance,</p>
+
+<p>D1. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by d1_sen at May 26, 2013 14:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415025"></a>
+                                    <font class="smallfont"><p>How do you want to send the notification. Is it from a rule?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by lawrie at May 26, 2013 14:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415027"></a>
+                                    <font class="smallfont"><p>Yes Lawrie, I want to send a notification from a rule. For example if a presence detector is triggered I want it to send me an alert.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by d1_sen at May 26, 2013 15:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415030"></a>
+                                    <font class="smallfont"><p>A quick and dirty method would be to define a Shell protocol command sending an e-mail and call it from the rule.</p>
+
+<p>Of course method proposed by Juha would me much prettier but you would need to wait for a new code release.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at May 26, 2013 15:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415042"></a>
+                                    <font class="smallfont"><p>Hi Michal, </p>
+
+<p>My java knowledge is almost zero, I've been able to do what I have done so far using examples from here and there. If you can provide me with a simple example on how to go about it, it would be a great help <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by d1_sen at May 26, 2013 16:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415049"></a>
+                                    <font class="smallfont"><p>Hi Juha, Could you add this XML for the email protocol to the staging server if it looks OK. I probably need to add a regex for email validation. I have the email protocol working but not checked in yet, as I need to add a properties file to make it configurable.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"UTF-8"</span>?&gt;</span>
+
+&lt;!--
+
+ OpenRemote, the Home of the Digital Home.
+ Copyright 2008-2013, OpenRemote Inc.
+
+ See the contributors.txt file in the distribution for a
+ full listing of individual contributors.
+
+ This is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as
+ published by the Free Software Foundation; either version 3.0 of
+ the License, or (at your option) any later version.
+
+ This software is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+ You should have received a copy of the GNU General Public
+ License along with this software; if not, write to the Free
+ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+--&gt;
+
+&lt;!--
+ |  Email protocol configuration for OpenRemote Designer.
+ |
+ |  Author: Lawrie Griffiths
+ +--&gt;
+&lt;openremote xmlns=<span class="code-quote">"http://www.openremote.org"</span> <span class="code-keyword">xmlns:xsi</span>=<span class="code-quote">"http://www.w3.org/2001/XMLSchema-instance"</span>
+	xsi:schemaLocation=<span class="code-quote">"http://www.openremote.org protocol.xsd"</span>&gt;
+	<span class="code-tag">&lt;protocol displayName=<span class="code-quote">"Email"</span> tagName=<span class="code-quote">"email"</span>&gt;</span>
+		<span class="code-tag">&lt;attr name=<span class="code-quote">"recipient"</span> label=<span class="code-quote">"Recipient"</span>&gt;</span>
+			<span class="code-tag">&lt;validations&gt;</span>
+				<span class="code-tag">&lt;allowBlank&gt;</span>false<span class="code-tag">&lt;/allowBlank&gt;</span>
+			<span class="code-tag">&lt;/validations&gt;</span>
+		<span class="code-tag">&lt;/attr&gt;</span>
+		<span class="code-tag">&lt;attr name=<span class="code-quote">"subject"</span> label=<span class="code-quote">"Subject"</span>&gt;</span>
+			<span class="code-tag">&lt;validations&gt;</span>
+				<span class="code-tag">&lt;allowBlank&gt;</span>false<span class="code-tag">&lt;/allowBlank&gt;</span>
+			<span class="code-tag">&lt;/validations&gt;</span>
+		<span class="code-tag">&lt;/attr&gt;</span>
+		<span class="code-tag">&lt;attr name=<span class="code-quote">"message"</span> label=<span class="code-quote">"Message"</span>&gt;</span>
+			<span class="code-tag">&lt;validations&gt;</span>
+				<span class="code-tag">&lt;allowBlank&gt;</span>false<span class="code-tag">&lt;/allowBlank&gt;</span>
+			<span class="code-tag">&lt;/validations&gt;</span>
+		<span class="code-tag">&lt;/attr&gt;</span>
+	<span class="code-tag">&lt;/protocol&gt;</span>
+<span class="code-tag">&lt;/openremote&gt;</span>
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by lawrie at May 26, 2013 16:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415055"></a>
+                                    <font class="smallfont"><p>Done.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 26, 2013 17:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415056"></a>
+                                    <font class="smallfont"><p>No Java needed, he means using this: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Execute+Shell+commands" title="OpenRemote 2.0 How To - Execute Shell commands">OpenRemote 2.0 How To &#45; Execute Shell commands</a></p>
+
+<p>If you have an external command or script that can send email then you can create a rule like this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+rule <span class="code-quote">"Send My Email"</span> when
+
+  Event( source == <span class="code-quote">"My Sensor"</span>, value == <span class="code-quote">"on"</span> )
+
+then
+
+  execute.command( <span class="code-quote">"The name of the shell execution command I created in Designer"</span> );
+
+end
+</pre>
+</div></div>
+
+<p>HTH</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 26, 2013 17:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : coutdown timer</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : coutdown timer
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 22, 2013 by <font color="#0050B2">delvedi</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>When an event is triggered(door sensor) I would like to start a countdown timer and at the end check the status of the sensor again.  Only when the status hasn't changed in between a command should be executed.  How can I integrate a countdown timer in the rules engine?</p>
+
+<p>Thanks for your help</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22878631"></a>
+                                    <font class="smallfont"><p>This can be done by the timer command:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"door countdown 30s"</span>
+  timer(<span class="code-object">int</span>: 30s)
+when
+  Event(source==<span class="code-quote">"door sensor"</span>,value==<span class="code-quote">"on"</span>)
+then
+  <span class="code-comment">// door sensor was triggered 30s ago and is still <span class="code-quote">"on"</span>
+</span>end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 22, 2013 12:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878632"></a>
+                                    <font class="smallfont"><p>Thanks Michal,</p>
+
+<p>Didn't know the interval could be used for this.  The drools documentation talks about an "initial delay" so I'am a bit confused.  What happens if the status of the sensor changes within the interval period(eg:on off on) Will it reset the timer with the last status change?</p>
+
+<p>I appreciate your help,</p>
+
+<p>Dirk</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by delvedi at Oct 22, 2013 13:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878636"></a>
+                                    <font class="smallfont"><p>I think that on-off-on would fire after the last on. At least this is what is happening when I use @expires() metadata tag and trigger a rule on the fact expiration (this is what I use but I have a custom drools binary, in standard distribution @expires() does not work). So maybe you can test if the timer() has the same effect?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 22, 2013 14:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878671"></a>
+                                    <font class="smallfont"><p>IIRC, the condition is evaluated again when the initial delay completes &#8211; so the initial delay begins when the condition is true and the consequence is executed after the initial delay is complete <b>if</b> the condition is still true.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 22, 2013 20:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878719"></a>
+                                    <font class="smallfont"><p>The problem with drools is that the docs are not the best. According to it it is true what you write, but it does not make much sense. Therefore, I've modified slightly the hello world example and run the test:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> com.sample
+ 
+<span class="code-keyword">import</span> com.sample.DroolsTest.Message;
+<span class="code-keyword">import</span> java.util.Date
+<span class="code-keyword">import</span> java.text.SimpleDateFormat;
+ 
+function <span class="code-object">String</span> _TimeStamp(){
+  Date now;
+  now = <span class="code-keyword">new</span> Date();
+  SimpleDateFormat dateFormatter = <span class="code-keyword">new</span> SimpleDateFormat(<span class="code-quote">"H:mm:ss"</span>);
+  <span class="code-keyword">return</span>(dateFormatter.format(now));
+}
+ 
+rule <span class="code-quote">"Hello World"</span>
+dialect <span class="code-quote">"mvel"</span> 
+    when
+        m : Message( status == Message.HELLO, myMessage : message )
+    then
+        <span class="code-object">System</span>.out.println(_TimeStamp()+ <span class="code-quote">": "</span>+myMessage );
+        m.setMessage( <span class="code-quote">"Goodbye cruel world"</span> );
+        m.setStatus( Message.GOODBYE );
+        update( m );
+end
+
+declare Delay
+  on: <span class="code-object">boolean</span>
+end
+
+rule <span class="code-quote">"delay1"</span>
+timer(<span class="code-object">int</span>: 3s)
+when
+  m: Message(status==Message.GOODBYE)
+  not Delay()
+then
+  m.setStatus(Message.HELLO);
+  m.setMessage(<span class="code-quote">"delay1"</span>);
+  update(m);
+  <span class="code-object">System</span>.out.println(_TimeStamp()+<span class="code-quote">": in delay1"</span>);
+  insert(<span class="code-keyword">new</span> Delay());
+end
+  
+
+rule <span class="code-quote">"GoodBye"</span>
+timer(<span class="code-object">int</span>: 5s)
+    when
+        Message( status == Message.GOODBYE, myMessage : message )
+    then
+        <span class="code-object">System</span>.out.println(_TimeStamp()+<span class="code-quote">": "</span>+myMessage);
+end
+</pre>
+</div></div>
+<p>The results are:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+14:24:19: Hello World
+14:24:22: in delay1
+14:24:22: delay1
+14:24:27: Goodbye cruel world
+</pre>
+</div></div>
+<p>You can see that the GoodBye rule was delayed 8 seconds instead of 5.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 23, 2013 13:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878721"></a>
+                                    <font class="smallfont"><p>Thank you for your help Michal, I'll give it a try during the weekend</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by delvedi at Oct 23, 2013 15:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878722"></a>
+                                    <font class="smallfont"><p>It would make sense if you recall that update is equivalent to retract + insert. This would then lead your goodbye cruel world to execute 5 seconds after the update. Which it does at 3+5 seconds.</p>
+
+<blockquote>
+<p>3.3.3.1.3. Update</p>
+
+<p>The Rule Engine must be notified of modified facts, so that they can be reprocessed. Internally, modification is actually a retract followed by an insert; the Rule Engine removes the fact from the WorkingMemory and inserts it again.</p></blockquote>
+
+<p>So from that point of view, you could assume that the initial delay and timer are re-scheduled and re-started due to your modify of the message in rule 'delay1'.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 23, 2013 15:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878723"></a>
+                                    <font class="smallfont"><p>And the same happens in RuleEngine.push() so it will work for the original request (door sensor update) too.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 23, 2013 16:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878726"></a>
+                                    <font class="smallfont"><p>Your first example rule would get executed in 30s if the door sensor is in on status irrespective of which sensor updated it's state - if there are multiple sensors in the system.</p>
+
+<p>The concept of using a status monitor (like the Delay in your second example) should work well though.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by atamariya at Oct 23, 2013 16:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878728"></a>
+                                    <font class="smallfont"><p>Have you tested your first statement? Because I think that it is not true.</p>
+
+<p>I don't use a status monitor in my second example. The delay1 rule is just a proxy of changing the sensor value, and Delay is to do it only once, otherwise I would have an infinitive loop.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 23, 2013 16:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878732"></a>
+                                    <font class="smallfont"><p>Juha,</p>
+
+<p>when I'm thinking about my test bench and recall other info you've told me I'm freaking out a bit <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>. In the Hello World example there is only one call to ks.fireAllRules() and the program is stopped for 8s! This means that if timer() is used in the controller it would stop the execution of the event processing thread for a time that all timers are done. This can be quite dangerous, or am I wrong? Do you know what it would happen if one sets timer to few hours or days?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 23, 2013 17:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878737"></a>
+                                    <font class="smallfont"><p>You're asking if an initial delay is handled synchronously by rules timer. I'd be surprised if that's the case. I've never tested it.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 23, 2013 18:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878887"></a>
+                                    <font class="smallfont"><p>I've tested it, program does not stop, it exits fireAllRules and handles facts timing internally by the rule engine.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 26, 2013 11:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22878990"></a>
+                                    <font class="smallfont"><p>Thanks for doing the test.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 29, 2013 00:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22879808"></a>
+                                    <font class="smallfont"><p>I apologise but I don't succeed to make a decent test.  The problem is a lack on documentation on the rules.  I'm still waiting someone would point me to some documentation on the possibilities in the when and then clause.<br/>
+I cannot find any information on commands like "customstate" for example. To me it seems drools and openremote rules engine are 2 different things with their own commands. Will any tutorial become avaialble in future?</p>
+
+<p>Thx</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by delvedi at Nov 13, 2013 21:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:40</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

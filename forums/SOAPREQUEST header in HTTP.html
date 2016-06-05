@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : SOAPREQUEST header in HTTP</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : SOAPREQUEST header in HTTP
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 07, 2013 by <font color="#0050B2">philetaylor</font>.
+				    </div>
+
+				    <p>Hi.</p>
+
+<p>As I now have my DSC alarm, Denon receiver, Samsung TV and z-wave controlled lights ALL working with OR, I thought I would try to attack my SkyHD box as controlling that would be pretty cool and the last link in the chain for me...</p>
+
+<p>Unfortunately, it doesn't look like the current http protocol implementation supports adding a SOAPREQUEST header and that looks to be required for controlling my Sky box.</p>
+
+<p>The protocol isn't publicly available but has been reverse-engineered here: <a href="https://github.com/mwrf/skyplus.js">https://github.com/mwrf/skyplus.js</a></p>
+
+<p>The basic request needs to look something like this: </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+POST /SkyPlay2 HTTP/1.1 
+SOAPACTION: <span class="code-quote">"urn:schemas-nds-com:service:SkyPlay:2#Pause"</span> 
+Content-Type: text/xml; charset=utf-8 
+Content-Length: 299 
+
+&lt;?xml version=<span class="code-quote">"1.0"</span> encoding=<span class="code-quote">"utf-8"</span>?&gt;
+&lt;s:Envelope s:encodingStyle=<span class="code-quote">"http:<span class="code-comment">//schemas.xmlsoap.org/soap/encoding/"</span> xmlns:s=<span class="code-quote">"http://schemas.xmlsoap.org/soap/envelope/"</span>&gt;
+</span>&lt;s:Body&gt;
+&lt;u:Pause xmlns:u=<span class="code-quote">"urn:schemas-nds-com:service:SkyPlay:2"</span>&gt;
+&lt;InstanceID&gt;0&lt;/InstanceID&gt;
+&lt;/u:Pause&gt;
+&lt;/s:Body&gt;
+&lt;/s:Envelope&gt;'
+</pre>
+</div></div>
+
+<p>Thoughts?</p>
+
+<p>Phil</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21528674"></a>
+                                    <font class="smallfont"><p>We don't support the "SOAPACTION" header.<br/>
+Would probably make sense to add some kind of general possibility to add different header to our HTTP call.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 08, 2013 14:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883366"></a>
+                                    <font class="smallfont"><p>Support for SOAPACTION would be nice. It will allow integration of Belkin's WeMo switches within OpenRemote.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 24, 2014 23:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883397"></a>
+                                    <font class="smallfont"><p>As a workaround you can use TCP and put the complete request in it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 25, 2014 19:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883432"></a>
+                                    <font class="smallfont"><p>This would also allow control of sony TVs and players.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nokk3r1 at Jan 26, 2014 16:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883560"></a>
+                                    <font class="smallfont"><p>This workaround almost worked. The problem is that HTTP protocol needs \n (0x0A) character between lines and not \r (0x0D) which TCP protocol inserts. Without them I've got "Bad request" response from the WeMo switch. First I've converted the whole request to the hex string with \n as line endings and it worked, but this is very ugly solution as the receiver IP must be embedded in request which makes editing command very hard. Next I've tried to add |0x0a| between lines but the protocol implementation allowed only for single hex insertion in the whole line. Therefore I've patched the code:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+--- Controller_2_1_0_FM_2013-06-17_RuleLogging/src/org/openremote/controller/protocol/socket/TCPSocketCommand.java	(revision 9370)
++++ Controller_2_1_0_FM_2013-06-17_RuleLogging/src/org/openremote/controller/protocol/socket/TCPSocketCommand.java	(working copy)
+@@ -167,7 +167,7 @@
+             <span class="code-object">String</span> cmd = (<span class="code-object">String</span>) st.nextElement();
+             <span class="code-object">byte</span>[] bytes;
+             <span class="code-keyword">if</span> (cmd.startsWith(<span class="code-quote">"0x"</span>)) {
+-               <span class="code-object">String</span> tmp = getCommand().substring(2);
++               <span class="code-object">String</span> tmp = cmd.substring(2);
+                bytes = hexStringToByteArray(tmp.replaceAll(<span class="code-quote">" "</span>, "").toLowerCase());
+             } <span class="code-keyword">else</span> {
+                bytes = (cmd + <span class="code-quote">"\r"</span>).getBytes();
+</pre>
+</div></div>
+<p>and now it works. I am able to insert multiline request with |0x0A| between lines. The patch is submitted as revision 9588. Would be nice if you can add it to the official release, as at this moment WeMo switch integration is available only to experienced ones.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 28, 2014 14:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22889257"></a>
+                                    <font class="smallfont"><p>Hi guys,</p>
+
+<p>I am new to OpenRemote. I started building my own system and then discovered this already exists. I have been playing around with WEMO stuff for a while and had a switch controlled by calling SOAP services a while ago. I noticed this as I wanted to see if there was an easier way to control WEMO stuff through OpenRemote. I have a suggestion of how to get round this. I work with some Data Integration/ESB software called Talend. You can relatively easily wrap a SOAP service with a REST service. This enables you to call it using an HTTP call. I had this working in about 30 mins from first figuring out how to use OpenRemote. To do this you will need to add some extra software to your boxes, but it is pretty straight forward compared to come of the bash script solutions I have seen. Basically you will need Apache Karaf installed on your eBox (or whatever you are using) and you will need to wrap your SOAP services with REST services (only took me 5 mins, but it is what I do <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> ). Let me know if you want any help with this. I have my company website here (www.rilhia.com) but that focuses on boring business problems....in the majority of cases. I am very tempted to add an OpenRemote section though. This software is pretty cool <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by richardwhall at Oct 09, 2014 22:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22889269"></a>
+                                    <font class="smallfont"><p>For WeMo the best approach is to use Ouimeaux: open source wemo control <a href="http://ouimeaux.readthedocs.org/en/latest/">http://ouimeaux.readthedocs.org/en/latest/</a> and call it's API though HTTP requests. I did it for myself and the solution is even more stable than own Belkin's apps <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> I.e. sometimes my WeMo smartphone app don't detect devices while openremote sees them via ouimeaux just fine. Seems like WeMo hardware is not so bad after all, only Belkin's software sucks. I've asked them once for documentation of the protocol, but they ignored me, I guess they should pick some open source from internet and improve their app. As for me the original smathphone wemo apps are useless and their rules too basic. Also, IFTTT is better than their app, device not detected but IFTTT triggers <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 10, 2014 12:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23595354"></a>
+                                    <font class="smallfont"><p>Can you tell me if the patch in question was added to the official release?  I really want to control my Sony Blu Ray via IP.  Or any blu ray for that matter.  Thank you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by sose at Jan 12, 2015 18:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

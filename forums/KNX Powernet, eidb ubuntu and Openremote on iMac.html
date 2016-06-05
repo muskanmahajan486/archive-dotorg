@@ -1,0 +1,324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : KNX Powernet, eidb ubuntu and Openremote on iMac</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : KNX Powernet, eidb ubuntu and Openremote on iMac
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 03, 2010 by <font color="#0050B2">rickcn</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>Last year we installed a complete new Busch-Jaeger KNX-Powernet system to control our lights, heating, and shutters in our home. The dsystem works like a charm, even more so as the central color panel in the living room is providing a good overview of what is going on in the house.</p>
+
+<p>I have ETS3 which I use to change some of the configurations, and I upload the modules using the Busch-Jaeger 6123-USB-500 interface to the powernet. I run eibd on my Ubuntu PC and can follow the nettrafic nicely.</p>
+
+<p>However, I often want to control the lights, heating etc also from my mobile device. So I downloaded OR KNX which works as a charm&#33; Great work this llittle app&#33; Specially I like the autodiscover function. It runs on all my iphones as well as my iPad.</p>
+
+<p>Now I learned about the new OpenRemote BOSS and Controller and wanted to design my own interface for my house. So far so good. I can design the interface and even see it when I run OR Controller on my iMac&nbsp; (plan is to move that to the same Ubuntu PC as the ip/knx gateway , in due time as this will then become my ORB). However, the iMac with ip 192.168.1.119 is not able to find the IP/KNX gateway on the Ubuntu machine ip-192.168.1.102. The log file controller.log find apparently several gateways but outside my private network (???) but not the eibd server running on my Ubuntu machine.</p>
+
+<p>When I run the OpenRemote app on the iphone connecting to the iMac it tells me "Polling failed: Controller did not recognise the sent command id". Guess this has to do with the KNX commands i took from the getting started videos, but it might be connected to the inability to find the&nbsp; IP/KNX GW?</p>
+
+<p>Any help appreciated.</p>
+
+<p>Kind regards,</p>
+
+<p>Rick</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-13697240"></a>
+                                    <font class="smallfont"><p>Guys,</p>
+
+<p>Have been diggin a bit deeper and got now also some traffic going in the right direction. I am running eibd on a Suse Linux server 11.2. All seems to work fine, I can see traffic there, I can groupswrite values from any pc on the network to the server to change lights, shutters, etc. and I can run OR KNX on my iPhone without problems. It find the KNX/IP router (Busch-Jaeger USB connected to my Suse linux bos 192.168.1.45) and read the status of the configured lights.</p>
+
+<p>I use the following EIBD command to start-up the server</p>
+
+<p>eibd --Server --Discovery --listen-tcp=3671 --Tunneling --Routing -c usb:2:2:1:0</p>
+
+<p>So I try to override the InetSocket which is standard set to 6720 and put it to 3671 as this is often used by other programs (ETS3) as well.</p>
+
+<p>Then I also added the following route to my Suse routing table to ensure that discovery was functioning correctly on the box as well and tying it to the eth0 port:</p>
+
+<p>route add 224.0.23.12 dev eth0</p>
+
+<p>Then I ran my openremote controller on my mac, loaded the small test form the designer, but.... alas... it cannot make a connection between this machine and the port on the suse server. Here is a snippet from the logfile:</p>
+
+<p>Controller2010-12-04 17:34:12,149 INFO HTTP\-Thread\-4 org.openremote.controller.rest.RoundRobinRESTServlet.doPost(61) | Start RoundRobin group member REST service. at 2010-12-04 17:34:12<br/>
+Controller2010-12-04 17:34:12,162 INFO Thread\-11 org.openremote.controller.net.RoundRobinUDPServer$UDPServerDealThread.run(132) | UDP Server : Received the controller multicast request from the same group floor20<br/>
+Controller2010-12-04 17:34:12,661 INFO HTTP\-Thread\-4 org.openremote.controller.rest.RoundRobinRESTServlet.doPost(73) | Finished RoundRobin group member REST service.  at 2010-12-04 17:34:12</p>
+
+<p>Controller2010-12-04 17:34:21,534 INFO HTTP\-Thread\-2 org.openremote.controller.protocol.knx.KNXCommandBuilder.build(349) | Created KNX Command FRAME L_Data.req 0.0.0 -&gt; 1/1/0 Data: 0x01 for group address '1/1/0'<br/>
+Controller2010-12-04 17:34:21,535 INFO HTTP\-Thread\-2 org.openremote.controller.protocol.knx.KNXConnectionManager.buildConnection(709) | Creating connection from /192.168.1.119 to /192.168.1.45:3671<br/>
+Controller2010-12-04 17:34:31,590 ERROR HTTP\-Thread\-2 org.openremote.controller.protocol.knx.KNXCommand.write(313) | Unable to send FRAME L_Data.req 0.0.0 -&gt; 1/1/0 Data: 0x01 : Unable to connect to KNX IP gateway: timeout connecting to control endpoint /192.168.1.45:3671<br/>
+org.openremote.controller.protocol.knx.ConnectionException: Unable to connect to KNX IP gateway: timeout connecting to control endpoint /192.168.1.45:3671<br/>
+	at tuwien.auto.calimero.knxnetip.ConnectionImpl.connect(ConnectionImpl.java:384)<br/>
+	at tuwien.auto.calimero.knxnetip.KNXnetIPTunnel.&lt;init&gt;(KNXnetIPTunnel.java:117)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.buildConnection(KNXConnectionManager.java:711)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.getConnection(KNXConnectionManager.java:464)<br/>
+	at org.openremote.controller.protocol.knx.KNXCommand.write(KNXCommand.java:308)<br/>
+	at org.openremote.controller.protocol.knx.GroupValueWrite.send(GroupValueWrite.java:106)<br/>
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:56)<br/>
+	at org.openremote.controller.rest.ControlCommandRESTServlet.doPost(ControlCommandRESTServlet.java:76)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)<br/>
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)<br/>
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)<br/>
+	at java.lang.Thread.run(Thread.java:680)</p>
+
+<p>I feel that I am getting closer, but not sure what I am missing here. There must be something different in the way that OR KNX for iPhone is doing the detection and the controller application on the iMac. But what...</p>
+
+<p>Any ideas are welcome.</p>
+
+<p>Rick</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rickcn at Dec 04, 2010 16:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697242"></a>
+                                    <font class="smallfont"><p>Well.. connection is timing out, as it says.... but as to why, is a bit unclear. It finds and attempts to connect to this IP address: /192.168.1.45:3671 which doesnt seem like where you aimed &#8211; is this the IP for your KNX gateway, maybe?</p>
+
+<p>If it is, and the eibd is already connected, then the timeout would make sense.</p>
+
+<p>You could try stopping the eibd and see if it still auto-discovers 192.168.1.45 &#8211; which should work as long as the gateway is able to give up its free connection.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 04, 2010 17:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697243"></a>
+                                    <font class="smallfont"><p>Ok, sorry, I jumped straight to the log, read your post more carefully, you already said this is the KNX gateway IP.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 04, 2010 17:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697258"></a>
+                                    <font class="smallfont"><p>Yes, it is the KNX GW which is running eibd. Just to avoid further confusion, I move the Controller to the gateway, so the gateway and controller now reside on the same SuseLinux box with ip 192.168.1.45. Again the OR KNX program discovers the GW fine and makes all the right connections. However, the controller fails to connect to the GW.</p>
+
+<p>Some additional interesting info which might point in the direction of solving the mystery with eibd:</p>
+
+<p>The controller now discovers the GW on the right ip. Jippie! </p>
+
+<p>Controller2010-12-05 16:40:05,415 INFO Thread\-5 org.openremote.controller.net.IPAutoDiscoveryServer.run(60) | Created IP discover multicast server !<br/>
+Controller2010-12-05 16:40:05,415 INFO Thread\-5 org.openremote.controller.net.IPAutoDiscoveryServer.run(66) | Joined a group : 224.0.1.100:3333<br/>
+Controller2010-12-05 16:40:05,415 INFO Thread\-5 org.openremote.controller.net.IPAutoDiscoveryServer.run(74) | Listening on  224.0.1.100:3333<br/>
+Controller2010-12-05 16:40:05,475 INFO Thread\-6 org.openremote.controller.net.RoundRobinUDPServer.run(84) | UDP Server : Starting UDP server...<br/>
+Controller2010-12-05 16:40:05,475 INFO Thread\-6 org.openremote.controller.net.RoundRobinUDPServer.run(88) | UDP Server : Started UDP server successfully.<br/>
+Controller2010-12-05 16:40:05,501 INFO Thread\-7 org.openremote.controller.net.RoundRobinTCPServer.run(35) | TCP Server : starting for receiving groupmember urls...<br/>
+Controller2010-12-05 16:40:05,502 INFO Thread\-7 org.openremote.controller.net.RoundRobinTCPServer.run(48) | TCP Server : started successfully for receiving groupmember urls...<br/>
+Controller2010-12-05 16:40:05,502 INFO Thread\-7 org.openremote.controller.net.RoundRobinTCPServer.run(49) | TCP Server : Waiting for groupmember response...<br/>
+Controller2010-12-05 16:40:05,567 INFO main org.openremote.controller.protocol.knx.KNXCommandBuilder.build(349) | Created KNX Command FRAME L_Data.req 0.0.0 -&gt; 1/1/0 Data: 0x00 for group address '1/1/0'<br/>
+Controller2010-12-05 16:40:05,571 INFO Thread\-8 org.openremote.controller.protocol.knx.KNXConnectionManager.waitForDiscovery(785) | Discovered gateway: IPv4 UDP host 192.168.1.45 port 3671 through client IP /192.<br/>
+168.1.45<br/>
+Controller2010-12-05 16:40:05,571 INFO Thread\-8 org.openremote.controller.protocol.knx.KNXConnectionManager.buildConnection(709) | Creating connection from /192.168.1.45 to /192.168.1.45:3671<br/>
+Controller2010-12-05 16:40:07,762 INFO Timer\-0 org.quartz.utils.UpdateChecker.doCheck(86) | New update(s) found: 1.8.4 <a href="http://www.terracotta.org/kit/reflector?kitID=default&amp;pageID=QuartzChangeLog">http://www.terracotta.org/kit/reflector?kitID=default&amp;pageID=QuartzChangeLog</a></p>
+
+<p>but the fails to make the connection work:</p>
+
+<p>Controller2010-12-05 16:40:15,724 ERROR Thread\-8 org.openremote.controller.protocol.knx.KNXCommand.read(340) | Unable to send FRAME L_Data.req 0.0.0 -&gt; 1/1/0 Data: 0x00 : Unable to connect to KNX IP gateway: ti<br/>
+meout connecting to control endpoint /192.168.1.45:3671<br/>
+org.openremote.controller.protocol.knx.ConnectionException: Unable to connect to KNX IP gateway: timeout connecting to control endpoint /192.168.1.45:3671<br/>
+	at tuwien.auto.calimero.knxnetip.ConnectionImpl.connect(ConnectionImpl.java:384)<br/>
+	at tuwien.auto.calimero.knxnetip.KNXnetIPTunnel.&lt;init&gt;(KNXnetIPTunnel.java:117)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.buildConnection(KNXConnectionManager.java:711)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.getConnection(KNXConnectionManager.java:473)<br/>
+	at org.openremote.controller.protocol.knx.KNXCommand.read(KNXCommand.java:335)<br/>
+	at org.openremote.controller.protocol.knx.GroupValueRead.read(GroupValueRead.java:132)<br/>
+	at org.openremote.controller.component.Sensor.readStatus(Sensor.java:124)<br/>
+	at org.openremote.controller.statuscache.PollingMachineThread.run(PollingMachineThread.java:61)<br/>
+Controller2010-12-05 16:40:15,725 INFO Thread\-8 org.openremote.controller.statuscache.StatusCache.saveOrUpdateStatus(68) | Status is null or "" while calling saveOrUpdateStatus in statusCache.</p>
+
+<p>Once the Controller cannot connect to the KNX-GW and gives time outs with :</p>
+
+<p>Controller2010-12-05 16:40:15,724 ERROR Thread\-8 org.openremote.controller.protocol.knx.KNXCommand.read(340) | Unable to send FRAME L_Data.req 0.0.0 -&gt; 1/1/0 Data: 0x00 : Unable to connect to KNX IP gateway: timeout connecting to control endpoint /192.168.1.45:3671<br/>
+org.openremote.controller.protocol.knx.ConnectionException: Unable to connect to KNX IP gateway: timeout connecting to control endpoint /192.168.1.45:3671<br/>
+	at tuwien.auto.calimero.knxnetip.ConnectionImpl.connect(ConnectionImpl.java:384)<br/>
+	at tuwien.auto.calimero.knxnetip.KNXnetIPTunnel.&lt;init&gt;(KNXnetIPTunnel.java:117)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.buildConnection(KNXConnectionManager.java:711)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.getConnection(KNXConnectionManager.java:473)<br/>
+	at org.openremote.controller.protocol.knx.KNXCommand.read(KNXCommand.java:335)<br/>
+	at org.openremote.controller.protocol.knx.GroupValueRead.read(GroupValueRead.java:132)<br/>
+	at org.openremote.controller.component.Sensor.readStatus(Sensor.java:124)<br/>
+	at org.openremote.controller.statuscache.PollingMachineThread.run(PollingMachineThread.java:61)</p>
+
+
+<p>the results is that this drives the eibd program into an infinite loop and makes it afterwards unresponsive to OR KNX as well. Restarting the eibd program brings back the normal response to OR KNX.</p>
+
+<p>Also I discovered that when I startup eibd without the --Tunneling parameter, the OR KNX app auto-discovered the KNX-GW alright, but then cannot connect to the server. Routing is apparently not sufficient for the OR KNX app to function correctly.</p>
+
+<p>I tried to use the controller with no parameters other than Discovery and Server either the -Tunneling or the --Routing parameter and also both; it did not make a different. It sees the IP-GW, discovers it but for some readon cannot connect to the 3671 port for some weird reason.... the other programs do! Hmmm... mystery.</p>
+
+<p>Anyway, here is the complete log for both the "openremote.sh run" and the controller.log till i killed it with ^C. Any help is appreciated!</p>
+
+<p>rick@nlcs001# ./openremote.sh run</p>
+
+<p>Using CATALINA_BASE:   /home/rick/OpenRemote-2.0.0_DeveloperRelease11/OpenRemote-2.0.0_DeveloperRelease11<br/>
+Using CATALINA_HOME:   /home/rick/OpenRemote-2.0.0_DeveloperRelease11/OpenRemote-2.0.0_DeveloperRelease11<br/>
+Using CATALINA_TMPDIR: /home/rick/OpenRemote-2.0.0_DeveloperRelease11/OpenRemote-2.0.0_DeveloperRelease11/temp<br/>
+Using JRE_HOME:       /usr/lib/jvm/jre<br/>
+Dec 5, 2010 4:40:03 PM org.apache.catalina.core.AprLifecycleListener init<br/>
+INFO: The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /home/rick/OpenRemote-2.0.0_DeveloperRelease11/OpenRemote-2.0.0_DeveloperRelease11/webapps/controller/WEB-INF/lib/native<br/>
+Dec 5, 2010 4:40:04 PM org.apache.coyote.http11.Http11Protocol init<br/>
+INFO: Initializing Coyote HTTP/1.1 on http-8080<br/>
+Dec 5, 2010 4:40:04 PM org.apache.catalina.startup.Catalina load<br/>
+INFO: Initialization processed in 342 ms<br/>
+Dec 5, 2010 4:40:04 PM org.apache.catalina.core.StandardService start<br/>
+INFO: Starting service Catalina<br/>
+Dec 5, 2010 4:40:04 PM org.apache.catalina.core.StandardEngine start<br/>
+INFO: Starting Servlet Engine: Apache Tomcat/6.0.18<br/>
+------------- CALIMERO PATCH A -------------------------<br/>
+------------- CALIMERO PATCH A -------------------------<br/>
+============ ADDING SENSOR ID 52<br/>
+ -------- Started thread for sensor 52 switch FRAME L_Data.req 0.0.0 -&gt; 1/1/0 Data: 0x00<br/>
+Dec 5, 2010 4:40:05 PM org.apache.coyote.http11.Http11Protocol start<br/>
+INFO: Starting Coyote HTTP/1.1 on http-8080<br/>
+Dec 5, 2010 4:40:05 PM org.apache.catalina.startup.Catalina start<br/>
+INFO: Server startup in 1859 ms<br/>
+Controller2010-12-05 16:40:15,724 ERROR Thread\-8 org.openremote.controller.protocol.knx.KNXCommand.read(340) | Unable to send FRAME L_Data.req 0.0.0 -&gt; 1/1/0 Data: 0x00 : Unable to connect to KNX IP gateway: timeout connecting to control endpoint /192.168.1.45:3671<br/>
+org.openremote.controller.protocol.knx.ConnectionException: Unable to connect to KNX IP gateway: timeout connecting to control endpoint /192.168.1.45:3671<br/>
+	at tuwien.auto.calimero.knxnetip.ConnectionImpl.connect(ConnectionImpl.java:384)<br/>
+	at tuwien.auto.calimero.knxnetip.KNXnetIPTunnel.&lt;init&gt;(KNXnetIPTunnel.java:117)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.buildConnection(KNXConnectionManager.java:711)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.getConnection(KNXConnectionManager.java:473)<br/>
+	at org.openremote.controller.protocol.knx.KNXCommand.read(KNXCommand.java:335)<br/>
+	at org.openremote.controller.protocol.knx.GroupValueRead.read(GroupValueRead.java:132)<br/>
+	at org.openremote.controller.component.Sensor.readStatus(Sensor.java:124)<br/>
+	at org.openremote.controller.statuscache.PollingMachineThread.run(PollingMachineThread.java:61)<br/>
+^CDec 5, 2010 4:40:20 PM org.apache.coyote.http11.Http11Protocol pause<br/>
+INFO: Pausing Coyote HTTP/1.1 on http-8080<br/>
+Dec 5, 2010 4:40:21 PM org.apache.catalina.core.StandardService stop<br/>
+INFO: Stopping service Catalina<br/>
+log4j:WARN No appenders could be found for logger (org.quartz.core.QuartzScheduler).<br/>
+log4j:WARN Please initialize the log4j system properly.<br/>
+Dec 5, 2010 4:40:21 PM org.apache.coyote.http11.Http11Protocol destroy<br/>
+INFO: Stopping Coyote HTTP/1.1 on http-8080</p>
+
+<p>rick@nlcs001# more controller.log <br/>
+Controller2010-12-05 16:40:04,892 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.resolveLocalAddresses(353) | KNX Connection manager resolving local host IP addresses...<br/>
+Controller2010-12-05 16:40:04,897 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.resolveLocalAddresses(388) | Found candidate NIC: name:eth0 (eth0) index: 2 addresses:<br/>
+/fe80:0:0:0:21b:fcff:fed0:7341%2;<br/>
+/192.168.1.45;</p>
+
+<p>Controller2010-12-05 16:40:04,898 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.resolveLocalAddresses(404) | Skipped IPv6 address (not supported by KNX) /fe80:0:0:0:21b:fcff:fed0:7341%2<br/>
+Controller2010-12-05 16:40:04,898 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.resolveLocalAddresses(412) | Added candidate IP address to set - /192.168.1.45<br/>
+Controller2010-12-05 16:40:04,899 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.isCandidate(612) | Skipping loopback interface: name:lo (lo) index: 1 addresses:<br/>
+/0:0:0:0:0:0:0:1%1;<br/>
+/127.0.0.2;<br/>
+/127.0.0.1;</p>
+
+<p>Controller2010-12-05 16:40:05,128 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.resolveLocalAddresses(353) | KNX Connection manager resolving local host IP addresses...<br/>
+Controller2010-12-05 16:40:05,130 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.resolveLocalAddresses(388) | Found candidate NIC: name:eth0 (eth0) index: 2 addresses:<br/>
+/fe80:0:0:0:21b:fcff:fed0:7341%2;<br/>
+/192.168.1.45;</p>
+
+<p>Controller2010-12-05 16:40:05,130 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.resolveLocalAddresses(404) | Skipped IPv6 address (not supported by KNX) /fe80:0:0:0:21b:fcff:fed0:7341%2<br/>
+Controller2010-12-05 16:40:05,131 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.resolveLocalAddresses(412) | Added candidate IP address to set - /192.168.1.45<br/>
+Controller2010-12-05 16:40:05,131 INFO main org.openremote.controller.protocol.knx.KNXConnectionManager.isCandidate(612) | Skipping loopback interface: name:lo (lo) index: 1 addresses:<br/>
+/0:0:0:0:0:0:0:1%1;<br/>
+/127.0.0.2;<br/>
+/127.0.0.1;</p>
+
+<p>Controller2010-12-05 16:40:05,227 INFO main org.quartz.simpl.SimpleThreadPool.initialize(267) | Job execution threads will use class loader of thread: main<br/>
+Controller2010-12-05 16:40:05,248 INFO main org.quartz.core.SchedulerSignalerImpl.&lt;init&gt;(60) | Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl<br/>
+Controller2010-12-05 16:40:05,250 INFO main org.quartz.core.QuartzScheduler.&lt;init&gt;(220) | Quartz Scheduler v.1.7.3 created.<br/>
+Controller2010-12-05 16:40:05,253 INFO main org.quartz.simpl.RAMJobStore.initialize(139) | RAMJobStore initialized.<br/>
+Controller2010-12-05 16:40:05,254 INFO main org.quartz.impl.StdSchedulerFactory.instantiate(1240) | Quartz scheduler 'DefaultQuartzScheduler' initialized from default resource file in Quartz package: 'quartz.prop<br/>
+erties'<br/>
+Controller2010-12-05 16:40:05,254 INFO main org.quartz.impl.StdSchedulerFactory.instantiate(1244) | Quartz scheduler version: 1.7.3<br/>
+Controller2010-12-05 16:40:05,255 INFO main org.quartz.core.QuartzScheduler.setJobFactory(2075) | JobFactory set to: org.springframework.scheduling.quartz.AdaptableJobFactory@31688f<br/>
+Controller2010-12-05 16:40:05,260 INFO main org.quartz.core.QuartzScheduler.start(472) | Scheduler DefaultQuartzScheduler_$_NON_CLUSTERED started.<br/>
+Controller2010-12-05 16:40:05,415 INFO Thread\-5 org.openremote.controller.net.IPAutoDiscoveryServer.run(60) | Created IP discover multicast server !<br/>
+Controller2010-12-05 16:40:05,415 INFO Thread\-5 org.openremote.controller.net.IPAutoDiscoveryServer.run(66) | Joined a group : 224.0.1.100:3333<br/>
+Controller2010-12-05 16:40:05,415 INFO Thread\-5 org.openremote.controller.net.IPAutoDiscoveryServer.run(74) | Listening on  224.0.1.100:3333<br/>
+Controller2010-12-05 16:40:05,475 INFO Thread\-6 org.openremote.controller.net.RoundRobinUDPServer.run(84) | UDP Server : Starting UDP server...<br/>
+Controller2010-12-05 16:40:05,475 INFO Thread\-6 org.openremote.controller.net.RoundRobinUDPServer.run(88) | UDP Server : Started UDP server successfully.<br/>
+Controller2010-12-05 16:40:05,501 INFO Thread\-7 org.openremote.controller.net.RoundRobinTCPServer.run(35) | TCP Server : starting for receiving groupmember urls...<br/>
+Controller2010-12-05 16:40:05,502 INFO Thread\-7 org.openremote.controller.net.RoundRobinTCPServer.run(48) | TCP Server : started successfully for receiving groupmember urls...<br/>
+Controller2010-12-05 16:40:05,502 INFO Thread\-7 org.openremote.controller.net.RoundRobinTCPServer.run(49) | TCP Server : Waiting for groupmember response...<br/>
+Controller2010-12-05 16:40:05,567 INFO main org.openremote.controller.protocol.knx.KNXCommandBuilder.build(349) | Created KNX Command FRAME L_Data.req 0.0.0 -&gt; 1/1/0 Data: 0x00 for group address '1/1/0'<br/>
+Controller2010-12-05 16:40:05,571 INFO Thread\-8 org.openremote.controller.protocol.knx.KNXConnectionManager.waitForDiscovery(785) | Discovered gateway: IPv4 UDP host 192.168.1.45 port 3671 through client IP /192.<br/>
+168.1.45<br/>
+Controller2010-12-05 16:40:05,571 INFO Thread\-8 org.openremote.controller.protocol.knx.KNXConnectionManager.buildConnection(709) | Creating connection from /192.168.1.45 to /192.168.1.45:3671<br/>
+Controller2010-12-05 16:40:07,762 INFO Timer\-0 org.quartz.utils.UpdateChecker.doCheck(86) | New update(s) found: 1.8.4 <a href="http://www.terracotta.org/kit/reflector?kitID=default&amp;pageID=QuartzChangeLog">http://www.terracotta.org/kit/reflector?kitID=default&amp;pageID=QuartzChangeLog</a><br/>
+Controller2010-12-05 16:40:15,724 ERROR Thread\-8 org.openremote.controller.protocol.knx.KNXCommand.read(340) | Unable to send FRAME L_Data.req 0.0.0 -&gt; 1/1/0 Data: 0x00 : Unable to connect to KNX IP gateway: ti<br/>
+meout connecting to control endpoint /192.168.1.45:3671<br/>
+org.openremote.controller.protocol.knx.ConnectionException: Unable to connect to KNX IP gateway: timeout connecting to control endpoint /192.168.1.45:3671<br/>
+	at tuwien.auto.calimero.knxnetip.ConnectionImpl.connect(ConnectionImpl.java:384)<br/>
+	at tuwien.auto.calimero.knxnetip.KNXnetIPTunnel.&lt;init&gt;(KNXnetIPTunnel.java:117)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.buildConnection(KNXConnectionManager.java:711)<br/>
+	at org.openremote.controller.protocol.knx.KNXConnectionManager.getConnection(KNXConnectionManager.java:473)<br/>
+	at org.openremote.controller.protocol.knx.KNXCommand.read(KNXCommand.java:335)<br/>
+	at org.openremote.controller.protocol.knx.GroupValueRead.read(GroupValueRead.java:132)<br/>
+	at org.openremote.controller.component.Sensor.readStatus(Sensor.java:124)<br/>
+	at org.openremote.controller.statuscache.PollingMachineThread.run(PollingMachineThread.java:61)<br/>
+Controller2010-12-05 16:40:15,725 INFO Thread\-8 org.openremote.controller.statuscache.StatusCache.saveOrUpdateStatus(68) | Status is null or "" while calling saveOrUpdateStatus in statusCache.<br/>
+Controller2010-12-05 16:40:16,225 INFO Thread\-8 org.openremote.controller.protocol.knx.KNXConnectionManager.buildConnection(709) | Creating connection from /192.168.1.45 to /192.168.1.45:3671<br/>
+.......</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rickcn at Dec 05, 2010 16:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:48</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

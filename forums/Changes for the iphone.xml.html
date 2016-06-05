@@ -1,0 +1,788 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Changes for the iphone.xml</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Changes for the iphone.xml
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Aug 27, 2009 by <font color="#0050B2">mredeker</font>.
+				    </div>
+
+				    <p>All,</p>
+
+<p>I am currently looking into the iPhone console and add some more features for KNX. To be able to have different kind of controls rendered on the iPhone screen, depending on the device which is controlled with it, we need a way to tell the iPhone what the control represents. This could be just an image for layout purposes, a button for a remote, a UISwitch for KNX or X10 light switch, a UISlider for a dimmer, ...</p>
+
+<p>In the moment the schema supports the following xml:
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">&lt;screen id=<span class="code-quote">"1"</span> name=<span class="code-quote">"<span class="code-object">Number</span> Pad"</span> row=<span class="code-quote">"4"</span> col=<span class="code-quote">"3"</span> &gt;
+  &lt;buttons&gt;
+    &lt;button id=<span class="code-quote">"1"</span> label=<span class="code-quote">"1"</span> x=<span class="code-quote">"0"</span> y=<span class="code-quote">"0"</span> width=<span class="code-quote">"1"</span> height=<span class="code-quote">"1"</span> icon=<span class="code-quote">"1.png"</span>/&gt;
+    &lt;button id=<span class="code-quote">"2"</span> label=<span class="code-quote">"2"</span> x=<span class="code-quote">"1"</span> y=<span class="code-quote">"0"</span> width=<span class="code-quote">"1"</span> height=<span class="code-quote">"1"</span> icon=<span class="code-quote">"2.png"</span>/&gt;
+  &lt;/buttons&gt;
+&lt;/screen&gt;
+</pre>
+</div></div>I would propose to rename &lt;buttons&gt; into &lt;controls&gt; and &lt;button&gt; into &lt;control&gt;. The iPhone source already calls it a control anyway <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+This way the name is more general a can represent different UI elements and not just buttons.</p>
+
+<p>To distinguish between the different type of controls we could add an attribute "type" which can be e.g. "button", "image", "knxSwitch", "knxDimmer", ...</p>
+
+<p>The iphone.xml could look like this:
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">&lt;screen id=<span class="code-quote">"5"</span> name=<span class="code-quote">"Lights"</span> row=<span class="code-quote">"5"</span> col=<span class="code-quote">"4"</span>&gt;
+  &lt;controls&gt;
+    &lt;control id=<span class="code-quote">"40"</span> type=<span class="code-quote">"button"</span> label=<span class="code-quote">"Up"</span> x=<span class="code-quote">"3"</span> y=<span class="code-quote">"1"</span> width=<span class="code-quote">"1"</span> height=<span class="code-quote">"1"</span> /&gt;
+    &lt;control id=<span class="code-quote">"41"</span> type=<span class="code-quote">"image"</span> label=<span class="code-quote">"" x="</span>3<span class="code-quote">" y="</span>2<span class="code-quote">" width="</span>1<span class="code-quote">" height="</span>1<span class="code-quote">" icon="</span>Lightbulb.png"/&gt;
+    &lt;control id=<span class="code-quote">"42"</span> type=<span class="code-quote">"button"</span> label=<span class="code-quote">"Down"</span> x=<span class="code-quote">"3"</span> y=<span class="code-quote">"3"</span> width=<span class="code-quote">"1"</span> height=<span class="code-quote">"1"</span> /&gt;
+    &lt;control id=<span class="code-quote">"43"</span> type=<span class="code-quote">"knxSwitch"</span> label=<span class="code-quote">"Dining table"</span> x=<span class="code-quote">"0"</span> y=<span class="code-quote">"4"</span> width=<span class="code-quote">"1"</span> height=<span class="code-quote">"1"</span> /&gt;
+  &lt;/controls&gt;
+&lt;/screen&gt;
+</pre>
+</div></div>Also, for defining a background image on an activity, we need an "image" attribute for the activity.</p>
+
+<p>Right now I have implemented the "image" object and the "knxSwitch" object. The "knxSwitch" is rendered as a UISwitch which is the On/Off control which you know from the preferences, for example. My "knxSwitch" is calling the REST servlet when it is created to retrieve the current state of the light. For this to work I created a new CommandType "STATUS" on the server side which queries the state of the configured switch from KNX.</p>
+
+<p>We will also need a way to inform the iPhone console if a satus is changed from a switch in the wall so the UI can update it's state.</p>
+
+<p>Any ideas?</p>
+
+<p>&#45;-Marcus</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-4587645"></a>
+                                    <font class="smallfont"><p>Thanks Marcus,</p>
+
+<p>I've got some feedback to this, I'm writing it down to a more formal document right now. I'm thinking of a bit more extensive overhaul of the XML schema, to set the roadmap even if its not all implemented in one stage. I'll post initial draft here and then move it to a separate wiki page after feedback and eventually to implementation milestones.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 02, 2009 10:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4587647"></a>
+                                    <font class="smallfont"><p>Sounds great. Let me know if you need any more input.</p>
+
+<p>&#45;-Marcus</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 02, 2009 20:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4587697"></a>
+                                    <font class="smallfont"><p>Below is a proposal for a new XML schema for panel UIs. It is posted here first to collect feedback and manage discussion. The goal is to turn it into a full wiki page with the spec and create a proper XML schema to back it up. Then proceed to defining implementation milestones. </p>
+
+<p>The document attempts to collect a number of requests and recent discussions. It is important to note that this document is intended as a longer term roadmap for the panel UI definition. <b>It is expected to be implemented over several milestones and versions</b>, not all at once. While the XML schema definition may be fairly complete at this time, the actual panel implementations may implement it partially. It is intended as a guideline to features to come. </p>
+
+<p>There are several areas in this schema proposal that are still incomplete. <b>Welcoming proposals (as complete as possible) to fill those gaps.</b> The highest priority items are more precisely defined at the moment. If you want to bump up your favorite UI feature closer to implementation and inclusion in the trunk, start first by defining the feature here in the XML schema. </p>
+
+<p>Feature implementation priorities have been marked where possible. There are several to-do tasks for lower priority items. If any of them is of interest to you, you can bump the feature closer to trunk by providing an implementation. However, make sure your feature first has an accepted definition in the XML schema as pointed above. </p>
+
+<p>Thanks to Marcus Redeker and Andy Oliver for already providing initial feedback. </p>
+
+
+
+<h4><a name="Changesfortheiphone.xml-SchemaElementsforConsideration"></a>Schema Elements for Consideration </h4>
+
+<p>Considering the following UI elements in this version of UI XML schema: </p>
+
+<ul class="alternate" type="square">
+	<li>&lt;button&gt; - a "passive" click- or press-button, as already exists in 1.0, supporting both image and default button face, also adding an implementation of press/release for repeat commands</li>
+	<li>&lt;navigate&gt; - an UI element that switches to another view in the UI</li>
+	<li>&lt;image&gt; - for non-interactive image elements in the UI</li>
+	<li>&lt;monitor&gt; - status update and monitoring components which poll the controller for updates</li>
+	<li>&lt;label&gt; - variation of image where a label is drawn with given font, style, color settings</li>
+	<li>&lt;toggle&gt; - stateful button with multiple faces that sends a value to controller (state) and ability to update from controller</li>
+	<li>&lt;slider&gt; - variation of toggle that sends a slider value and can be updated from controller</li>
+</ul>
+
+
+<p>On the layout side, absolute positioning of components vs. grid should be separated as their own layout components: </p>
+
+<ul class="alternate" type="square">
+	<li>&lt;grid&gt; - similar to the grid implementation that existstoday, where a components' xy-coordinates are interpreted as position in the grid rather than as absolute coordinates</li>
+</ul>
+
+
+<p>Layout element(s) nest the visual UI elements. The visual UI control implementation for the proposed XML tags is basically the one and the same UI control if implemented from scratch. However, a platforms native components may be used instead if they fit into the spec: </p>
+
+<ol>
+	<li>an &lt;image&gt; is a non-interactive drawing in the UI</li>
+	<li>a &lt;button&gt; is an &lt;image&gt; (either user defined or default image with label) that maps to an ID and HTTP/REST command request against the controller API</li>
+	<li>a &lt;monitor&gt; is an image that can be updated per response from a controller</li>
+	<li>a &lt;navigate&gt; is similar to &lt;button&gt; element where user interaction creates an updated UI view</li>
+	<li>a &lt;label&gt; is an automatically rendered image based on the UI component attributes ("label", "font", "style", "color", etc.)</li>
+	<li>a &lt;toggle&gt; is a stateful &lt;button&gt; that changes its icon image or button face and label either based on user interaction or per response from a controller</li>
+	<li>a &lt;slider&gt; is a stateful component similar to &lt;toggle&gt; where state is a value within a specified range and which can be updated by user or per response from a controller</li>
+</ol>
+
+
+<p>In terms of priority, changes to &lt;screen&gt; and implementations of &lt;navigate&gt;, &lt;monitor&gt;, &lt;grid&gt; and &lt;image&gt; are higher, then follow with additional features to &lt;button&gt; and finally &lt;toggle&gt; and &lt;slider&gt; implementations. </p>
+
+
+<h4><a name="Changesfortheiphone.xml-OutsideofConsideration"></a>Outside of Consideration </h4>
+
+<p>A couple of items this document does not yet address: </p>
+
+<ul class="alternate" type="square">
+	<li><b>Aggregate UI components</b> where multiple UI components are composed to establish state or value which is then sent to controller or updated by controller through an additional UI element. As an example, configuration often falls into this category (think of a form with multiple fields that is submitted via a separate UI button).</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li><b>Higher level monitoring components.</b> Knowing the type of monitoring component displayed on the UI would help in creating more efficient implementations. The proposed updateable UI components are still quite generic and somewhat low-level. The &lt;monitor&gt; component can be used for simple image update for arbitrary content &#8211; this is ok for infrequent updates but lacks efficiency in more frequent updates. Both &lt;toggle&gt; and &lt;slider&gt; can be frequently updated via a simple integer value change but are constrained by a predetermined state set. Monitoring components that don't fit into these generic components are left to later iterations.</li>
+</ul>
+
+
+<ul class="alternate" type="square">
+	<li><b>Layouts:</b> limited to simple &lt;grid&gt; and absolute positioning in this phase.</li>
+</ul>
+
+
+<p>[Edit: add link to gesture proposal]</p>
+
+<ul class="alternate" type="square">
+	<li><b>Gestures:</b> <a href="http://openremote.org/display/forums/Proposal+for+Gestures+in+new+Panel+UI+XML">See the separate forum thread for gesture support proposal</a></li>
+</ul>
+
+
+<p>[Edit: add animation to the list of out-of-scope features]</p>
+
+<ul class="alternate" type="square">
+	<li><b>Animation:</b> For highest-quality user interfaces, animation effects add that last distinctive touch and can be both immensely helpful in increasing the usability of an interface as well as pleasing to the eye. This version of the UI XML schema proposal does not address animation elements.</li>
+</ul>
+
+
+<h4><a name="Changesfortheiphone.xml-MonitorPolling"></a>Monitor Polling </h4>
+
+<p>The "active" (stateful) UI components &lt;monitor&gt;, &lt;toggle&gt;, and &lt;slider&gt; can be updated by the controller (via events triggered by devices or the controller itself). While pushing of state changes would be most efficient, we are opting for a HTTP based request-response protocol and not assuming the client applications are capable of serving incoming connections. Therefore a HTTP polling should always be available for console applications. Alternative protocol implementations can be addressed at later stage. </p>
+
+<p>Given the inefficiency of polling in general, individual components should not generate HTTP requests to the controller but an aggregate HTTP request should be sent from the panel on a given interval to retrieve updates for all relevant UI components. In order for the controller to track which events are relevant to any given panel UI, it must have a list of relevant UI component IDs. This could be implemented in two different ways: registering relevant UI IDs with the controller creating a stateful session between the panel client and controller, or passing the relevant UI IDs per HTTP request in a stateless protocol implementation. At this stage of development neither implementation strategy has obvious implications as high availability of the controller has not been addressed yet. Both implementations are feasible although a stateless protocol would seem to have a slighly smaller implementation cost, albeit at a cost of higher bandwidth use. </p>
+
+
+<h4><a name="Changesfortheiphone.xml-ControllerAPIChanges"></a>Controller API Changes </h4>
+
+<p>Controller REST API must be updated in sync with the panel software changes where necessary. For active component implementations an additional API must be developed for HTTP polling. The details of that are left for another thread/document. </p>
+
+
+<h4><a name="Changesfortheiphone.xml-DesignerToolChanges"></a>Designer Tool Changes </h4>
+
+<p>UI Composer can be developed independently and after the new panel UI components are completed. New panel UI's can be tested and deployed by technical users by modifying the relevant configuration files prior to UI composer changes. </p>
+
+
+<h4><a name="Changesfortheiphone.xml-Changesto%3Cscreen%3EElement"></a>Changes to &lt;screen&gt; Element </h4>
+
+<p>Screen is currently implemented as defined below: </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> 
+40 <span class="code-tag">&lt;xsd:element name=<span class="code-quote">"screen"</span>&gt;</span> 
+41 <span class="code-tag">&lt;xsd:annotation&gt;</span> 
+42 <span class="code-tag">&lt;xsd:documentation&gt;</span>&lt;![CDATA[ 
+43 The screen is a page when you slide the iPhone. 
+44 ]]&gt;<span class="code-tag">&lt;/xsd:documentation&gt;</span> 
+45 <span class="code-tag">&lt;/xsd:annotation&gt;</span> 
+46 <span class="code-tag">&lt;xsd:complexType&gt;</span> 
+47 <span class="code-tag">&lt;xsd:sequence&gt;</span> 
+48 <span class="code-tag">&lt;xsd:element ref=<span class="code-quote">"buttons"</span>/&gt;</span> 
+49 <span class="code-tag">&lt;/xsd:sequence&gt;</span> 
+50 <span class="code-tag">&lt;xsd:attributeGroup ref=<span class="code-quote">"idAttr"</span>/&gt;</span> 
+51 <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"name"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+52 <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"row"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+53 <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"col"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+54 <span class="code-tag">&lt;/xsd:complexType&gt;</span> 
+55 <span class="code-tag">&lt;/xsd:element&gt;</span> 
+</pre>
+</div></div> 
+
+<p>A new attribute "background" should be added to define a background image for a screen. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"background"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+</pre>
+</div></div> 
+
+<p>When nothing else is specified (see "Other Attributges"), the background image should be drawn from the top-left corner in its original size. The z-order for a screen background image should always be lower than any other UI component on the screen. </p>
+
+<h5><a name="Changesfortheiphone.xml-ReplacingRowandColAttributeswith%3Cgrid%3E"></a>Replacing Row and Col Attributes with &lt;grid&gt; </h5>
+
+<p>The existing "row" and "col" attributes in &lt;screen&gt; definition should be replaced by a nested &lt;grid&gt; element. </p>
+
+
+<h5><a name="Changesfortheiphone.xml-OtherAttributes"></a>Other Attributes </h5>
+
+<p>Additional optional attributes for screen background are "bgcolor" for setting a screen background color separately from the default black, "background-repeat" and "background-position" (cf. CSS spec) for additional control of how background images can be placed. These attributes are not high priority items at the moment but would accept contributions if there's more interest in getting these features into a release. </p>
+
+
+
+<h5><a name="Changesfortheiphone.xml-ScreenGrouping"></a>Screen Grouping </h5>
+
+<p>Screens should be enabled for arbitrary grouping which can be used in navigating the UI. A group has a name and screens can be ordered within a group. One screen can belong to multiple groups &#8211; e.g. a screen for controlling lights in the kitchen could be grouped as "Lights", "Kitchen", "First Floor", "Building 13". The &lt;group&gt; elements essentially replaces the existing &lt;activities&gt; element with a more generic grouping for screens. Group names can also be used in navigation UI elements within &lt;navigate&gt; element. </p>
+
+
+
+<h4><a name="Changesfortheiphone.xml-Changesto%3Cbutton%3EElement"></a>Changes to &lt;button&gt; Element </h4>
+
+<p>This is the only UI component currently implemented. It should remain as-is with some additional new features. </p>
+
+<p>The current definition is below: </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> 
+72 <span class="code-tag">&lt;xsd:element name=<span class="code-quote">"button"</span>&gt;</span> 
+73 <span class="code-tag">&lt;xsd:annotation&gt;</span> 
+74 <span class="code-tag">&lt;xsd:documentation&gt;</span>&lt;![CDATA[ 
+75 The button on iPhone panel.Its label is the name shown on the button. 
+76 Its position is defined by coordinates (x, y). 
+77 Its size is defined by width and height.The meature is one cell on the iPhone panel. 
+78 ]]&gt;<span class="code-tag">&lt;/xsd:documentation&gt;</span> 
+79 <span class="code-tag">&lt;/xsd:annotation&gt;</span> 
+80 <span class="code-tag">&lt;xsd:complexType&gt;</span> 
+81 <span class="code-tag">&lt;xsd:attributeGroup ref=<span class="code-quote">"idAttr"</span>/&gt;</span> 
+82 <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"label"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+83 <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"x"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+84 <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"y"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+85 <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"width"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+86 <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"height"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+87 <span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"icon"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+88 <span class="code-tag">&lt;/xsd:complexType&gt;</span> 
+89 <span class="code-tag">&lt;/xsd:element&gt;</span> 
+</pre>
+</div></div> 
+
+<p>The "label" attribute can stay as it is. It is used if no icon image is defined. </p>
+
+<p>Coordinate attributes "x", "y", "width", "height" should be regarded as grid positions if the &lt;button&gt; element is nested within a &lt;grid&gt; tag. Otherwise they should be considered as absolute screen positions. Attributes "width" and "height" should be optional. If they're not defined then within a &lt;grid&gt; one cell size is assumed. When absolute positioning is used the width and height is whatever the implementation considers as "appropriate". If "icon" images are used and either "width" of "height" is omitted then the actual image width and height should be used. If "width" and/or "height" is specified, only then should the image be scaled to that size. </p>
+
+<p>UI elements specified with &lt;button&gt; should not visually overlap when used within a &lt;grid&gt; element and do not specify a z-order. The only exception is when an icon image is used and no "width" or "height" attribute is specified (as original image sizes should be preserved), or when absolute screen position is used. In such case visual overlapping may occur but the z-order and overlapping behavior should be unspecified. </p>
+
+<p>The bounding-box (area which is active to user interaction) of a button is rectangle-shaped. A button's bounding box should be active and react to user interaction regardless whether there's a visual presentation drawn or if image opacity is used. Other pre-defined bounding-box shapes could be added with relatively low effort, if necessary. Free-form bounding area is left for later iterations. </p>
+
+
+<h5><a name="Changesfortheiphone.xml-NewAttributesfor%3Cbutton%3E"></a>New Attributes for &lt;button&gt; </h5>
+
+<p><b>Attribute "repeat"</b> specifies if the button implementation should repeat the command while the button is pressed or measure the length of time a button is pressed instead of reacting only to the button "release" event. Use of HTTP request-response protocol makes the implementation here a bit challenging. An initial implementation already exists in the <a href="http://www.openremote.org/display/orb/Controller+API+Documentation" title="Controller API Documentation">controller API</a> to support this operation. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"repeat"</span> type=<span class="code-quote">"xsd:boolean"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+</pre>
+</div></div> 
+
+
+<p><b>Attribute "onPressIcon"</b> allows a secondary icon image to be specified that should be drawn when the button is pressed. This gives a visual feedback when UI event is received. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"onPressIcon"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+</pre>
+</div></div> 
+
+<p>Actual panel implementation is not a high priority but should be relatively easy to add as a contribution if there's more interest in this feature. </p>
+
+
+<h5><a name="Changesfortheiphone.xml-OtherFeatures"></a>Other Features </h5>
+
+<p>Other currently low priority but would consider as contributions items: </p>
+
+<p>Allow &lt;label&gt; element to be nested within a button. This replaces the "label" and "icon" attributes in &lt;button&gt; with a label that can be stylized with regards to font, line-, fill- and background colors. </p>
+
+<p>Similarly, would consider elements to stylize the default button face (when images are not used) with fore- and background color and border-style. </p>
+
+
+<h4><a name="Changesfortheiphone.xml-New%3Cimage%3EElement"></a>New &lt;image&gt; Element </h4>
+
+<p>Allows an image to be placed on the screen layout. Either in an absolute position on screen or within a &lt;grid&gt; element. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> 
+<span class="code-tag">&lt;xsd:element name=<span class="code-quote">"image"</span>&gt;</span> 
+<span class="code-tag">&lt;xsd:complexType&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"source"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"x"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"y"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"width"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"height"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+<span class="code-tag">&lt;/xsd:complexType&gt;</span> 
+<span class="code-tag">&lt;/xsd:element&gt;</span> 
+</pre>
+</div></div> 
+
+<p>The "x" and "y" attributes should be interpreted either as absolute screen position or a grid cell position if &lt;image&gt; appears nested within a &lt;grid&gt; element. If "width" or "height" is omitted, source image original dimensions should be used. In case the original image size leads to overlapping of elements, the behavior is unspecified. The &lt;image&gt; element z-order is higher than the image specified as &lt;screen&gt; background image and lower than UI elements such as &lt;button&gt;. </p>
+
+<p>The &lt;image&gt; element does not map to any events and does not react to user interaction. </p>
+
+
+<h4><a name="Changesfortheiphone.xml-New%3Cnavigate%3EElement"></a>New &lt;navigate&gt; Element </h4>
+
+<p>The &lt;navigate&gt; element behaves similarly to &lt;button&gt; except it doesn't generate a HTTP request to the controller but instead updates the UI to a new view. Proposed definition below: </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> 
+<span class="code-tag">&lt;xsd:element name=<span class="code-quote">"navigate"</span>&gt;</span> 
+<span class="code-tag">&lt;xsd:complexType&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"label"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"x"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"y"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"required"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"width"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"height"</span> type=<span class="code-quote">"xsd:int"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"icon"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"toGroup"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"inGroup"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+<span class="code-tag">&lt;xsd:attribute name=<span class="code-quote">"hint"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"optional"</span>/&gt;</span> 
+<span class="code-tag">&lt;/xsd:complexType&gt;</span> 
+<span class="code-tag">&lt;/xsd:element&gt;</span> 
+</pre>
+</div></div> 
+
+<p>Coordinate attributes x,y, width, height and attribute "icon" behave same as with &lt;button&gt; element. Attribute "toGroup" allows specifying a screen group name the UI view should update to. Attribute "inGroup" allows a logical name for the screen (set of "next", "previous", "first", "last"), screen name or index number to be specified within a group. If no "toGroup" has been specified, the same group where the &lt;navigate&gt; element exists in is assumed. </p>
+
+<p>The "hint" attribute allows a system-specific string to give a hint to the panel platform if the navigation element should integrate with the platforms native UI navigation elements (menu, toolbar, etc.) </p>
+
+
+
+<h4><a name="Changesfortheiphone.xml-New%3Cgrid%3EElement"></a>New &lt;grid&gt; Element </h4>
+
+<p>The layout element &lt;grid&gt; is used to specify a table-style layout where each UI component is constrained to a cell in a grid. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> 
+... 
+<span class="code-tag">&lt;grid x=<span class="code-quote">"" y="</span><span class="code-quote">" width="</span><span class="code-quote">" height="</span><span class="code-quote">" rows="</span><span class="code-quote">" cols="</span>"&gt;</span> 
+<span class="code-tag">&lt;cell x=<span class="code-quote">"" y="</span><span class="code-quote">" width="</span><span class="code-quote">" height"</span>"&gt;</span> 
+<span class="code-tag">&lt;button ... /&gt;</span> 
+<span class="code-tag">&lt;/cell&gt;</span> 
+<span class="code-tag">&lt;/grid&gt;</span> 
+... 
+</pre>
+</div></div> 
+
+
+<p>The &lt;grid&gt; element coordinate attributes "x" and "y" are the top left corner position of the grid on the screen. The values may be absolute locations on the screen or relative location expressed as a percentage value from the top-left corner of the screen. Attributes "width" and "height" define the size of the grid also either as absolute size on screen or relative percentage values. Attributes "rows" and "cols" define the number of cells in the grid. Each cell is equally sized. </p>
+
+<p>The attributes for the nested &lt;cell&gt; element are x and y cell positions within the grid. A cell may span multiple units of the grid horizontally or vertically by defining a width or height above value 1. If nothing is defined, a single cell unit size is assumed. </p>
+
+
+<h4><a name="Changesfortheiphone.xml-New%3Cmonitor%3EElement"></a>New &lt;monitor&gt; Element</h4>
+
+<p><b>This is a to-do item.</b></p>
+
+<h4><a name="Changesfortheiphone.xml-New%3Clabel%3EElement"></a>New &lt;label&gt; Element</h4>
+
+<p><b>This is a to-do item.</b></p>
+
+<h4><a name="Changesfortheiphone.xml-New%3Ctoggle%3EElement"></a>New &lt;toggle&gt; Element</h4>
+
+<p><b>This is a to-do item.</b></p>
+
+<h4><a name="Changesfortheiphone.xml-New%3Cslider%3EElement"></a>New &lt;slider&gt; Element</h4>
+
+<p><b>This is a to-do item.</b></p>
+
+
+<h4><a name="Changesfortheiphone.xml-ImplementationPriorities"></a>Implementation Priorities </h4>
+
+<ol>
+	<li>Creating a concrete XML schema definition to include the discussed features.</li>
+	<li>Adding background image support to &lt;screen&gt; element, absolute positioning for buttons. Implementing &lt;navigate&gt;, &lt;image&gt; and &lt;grid&gt; elements.</li>
+	<li>Implementing screen grouping with a &lt;group&gt; element to replace &lt;activities&gt;, implement &lt;button&gt; "repeat" and "onPressIcon" attributes</li>
+</ol>
+
+
+
+<h4><a name="Changesfortheiphone.xml-OtherConsiderations"></a>Other Considerations </h4>
+
+<p>Would welcome feedback on if and how well the proposed XML schema maps to native Android XML UI bindings and to <a href="http://code.google.com/p/google-web-toolkit-incubator/wiki/UiBinder">GWT UIBinder</a> bindings.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 07, 2009 19:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4587707"></a>
+                                    <font class="smallfont"><p>So if someone doesn't define a grid the positions for buttons are absolute. It confused me for a while that the same x,y could represent 2 different things depending on whether we had defined a grid or not. &nbsp; Line 77 in the xsd ("The meature is one cell on the iPhone panel") was not clear.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marcf at Sep 08, 2009 11:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4587709"></a>
+                                    <font class="smallfont"><p>Yes, that is correct. We could have explicit tags for all layouts including &lt;absolute&gt;, if that makes it clearer. It does bring more consistency to the schema.</p>
+
+<p>Yes the XSD is not sufficiently documented in the 1.0 version. This thread and document should make the 2.0 version of the schema better in that regards.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 08, 2009 12:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4587713"></a>
+                                    <font class="smallfont"><p>Sure thing, this is a big step forward, I particularly like how you have handle the navigation. Basically any application on a device is a tree of navigation with leaves that are devices.&nbsp; This way we can handle things such as your ideas about room-&gt;remote-&gt;device (a la bobby) or some of the navigation that Marcus is talking about.&nbsp; Of course a clean XML is the central part, a rich UI to assemble them is the other.&nbsp; I was thinking that the current navigation does in fact get you to the goodies, including future demos, in few clicks which is good.</p>
+
+<p>When you talk about Layouts, saying we won't do anything but &lt;grid&gt; and &lt;absolute&gt;, I assume you refer to things such as the java gridback layout? fancy layouts like that are overkill for HA application IMHO. I would be curious to see needs for layouts beyond the 2 we would offer. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by marcf at Sep 08, 2009 13:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4587720"></a>
+                                    <font class="smallfont"><blockquote>
+<p>When you talk about Layouts, saying we won't do anything but &lt;grid&gt; and &lt;absolute&gt;, I assume you refer to things such as the java gridback layout? fancy layouts like that are overkill for HA application IMHO. I would be curious to see needs for layouts beyond the 2 we would offer.</p></blockquote>
+
+<p>Yes, correct again. Android currently defines some others (<a href="http://developer.android.com/guide/topics/ui/layout-objects.html">Common Layout Objects</a>) but I am waiting on a clear use case that shows how these others are needed before spending the effort in defining or implementing them. So beyond &lt;grid&gt; and &lt;absolute&gt; has no priority right now but would consider quality contributions, of course.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 08, 2009 13:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4587735"></a>
+                                    <font class="smallfont">
+<p>In regards to the GWT UiBinder service, a widget defined via the UiBinder consists of 2 artifacts.  A UI xml file that defines the widgets structure and a Java class that binds the data to the widget.  So, a simple tranformation of the iphone.xml to a GWT UI xml is not sufficient.  The process will have to generate some Java code as well.  </p>
+
+<p>Another thing to keep in mind, is that the UI xml files are interpreted at compile time, not at runtime.  So, if we do decide to use the UiBinder service, then a process will have to invoke the GWT compiler to generate the JavaScript defined via the UI composer.  Then, at runtime, the web console app would utilize the user's profile information to serve-up the appropriate JavaScript.  On the positive side, since there's no downloading and parsing of the iphone.xml, this solution provides a much snappier initial load of the console app.  Which is a really nice benefit.</p>
+
+<p>Given the performance upside of this solution, I'm going to spend some more time looking into the UiBinder service.  I'm planning on building a more sophisticated proof-of-concept utilizing UiBinder.  Hopefully, I can find a way to simplify the requirements of the generation process.  For example, maybe there's a way to generate a single widget that simply assembles a set of re-usable widgets.</p>
+
+<p>Any thoughts or feedback would be appreciated.  It's always great to get others perspectives on a problem.</p>
+
+<p>-Dave</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dhreines at Sep 11, 2009 04:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4587751"></a>
+                                    <font class="smallfont"><p>Thanks David,</p>
+
+<p>Interesting findings. Thanks for looking into this. Let us know if you make further progress on this.</p>
+
+<p>&#8211; Juha</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 14, 2009 22:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4947991"></a>
+                                    <font class="smallfont"><p>An issue with this proposal is that it still does not properly separate user interface elements from actions (or view from control in MVC parlance).</p>
+
+<p>It should be modified to allow UI views to be constructed as aggregate controls, for example:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;button&gt;</span>
+  <span class="code-tag">&lt;command id = <span class="code-quote">"1"</span>/&gt;</span>
+  <span class="code-tag">&lt;navigate toScreen = <span class="code-quote">"next"</span>/&gt;</span>
+<span class="code-tag">&lt;button&gt;</span>
+</pre>
+</div></div>
+
+<p>In the above example, roles are clearly separate where &lt;button&gt; is purely an UI view element and &lt;command&gt; and &lt;navigate&gt; are control elements (note that command id may map to a macro sequence on the controller). In case of an user interaction through a button, a command may be executed and the view updated to a different screen.</p>
+
+<p>&#8211; Juha </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 20, 2009 22:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948020"></a>
+                                    <font class="smallfont"><p>Below is a sample XML instance based on the schema proposal (with some feedback and changes baked in). This sample doesn't contain all the new features discussed but demonstrates the basic elements, replicating the current button-based UI model.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;openremote&gt;</span>
+    <span class="code-tag">&lt;groups&gt;</span>
+        <span class="code-tag">&lt;group id=<span class="code-quote">"100"</span>  name=<span class="code-quote">"work"</span>&gt;</span>
+            <span class="code-tag">&lt;screen&gt;</span>1<span class="code-tag">&lt;/screen&gt;</span>
+            <span class="code-tag">&lt;screen&gt;</span>2<span class="code-tag">&lt;/screen&gt;</span>
+        <span class="code-tag">&lt;/group&gt;</span>
+        <span class="code-tag">&lt;group id=<span class="code-quote">"101"</span>  name=<span class="code-quote">"at home"</span>&gt;</span>
+            <span class="code-tag">&lt;screen&gt;</span>2<span class="code-tag">&lt;/screen&gt;</span>
+            <span class="code-tag">&lt;screen&gt;</span>3<span class="code-tag">&lt;/screen&gt;</span>
+        <span class="code-tag">&lt;/group&gt;</span>
+        <span class="code-tag">&lt;group id=<span class="code-quote">"102"</span>  name=<span class="code-quote">"living room"</span>&gt;</span>
+            <span class="code-tag">&lt;screen&gt;</span>3<span class="code-tag">&lt;/screen&gt;</span>
+            <span class="code-tag">&lt;screen&gt;</span>4<span class="code-tag">&lt;/screen&gt;</span>
+        <span class="code-tag">&lt;/group&gt;</span>
+    <span class="code-tag">&lt;/groups&gt;</span>
+    <span class="code-tag">&lt;screens&gt;</span>
+        <span class="code-tag">&lt;screen id=<span class="code-quote">"1"</span> name=<span class="code-quote">"NEC projector"</span> bgImage=<span class="code-quote">"projector.png"</span> &gt;</span>       
+            <span class="code-tag">&lt;grid top=<span class="code-quote">"30"</span> left=<span class="code-quote">"30"</span> width=<span class="code-quote">"600"</span> height=<span class="code-quote">"400"</span> row=<span class="code-quote">"6"</span> col=<span class="code-quote">"4"</span> &gt;</span>
+                <span class="code-tag">&lt;cell x=<span class="code-quote">"0"</span> y=<span class="code-quote">"0"</span> rowspan=<span class="code-quote">"2"</span> colspan=<span class="code-quote">"2"</span>&gt;</span>
+                    <span class="code-tag">&lt;button label=<span class="code-quote">"on"</span> icon=<span class="code-quote">"power.png"</span> &gt;</span>
+                        <span class="code-tag">&lt;command&gt;</span>17<span class="code-tag">&lt;/command&gt;</span>
+                        <span class="code-tag">&lt;navigate toGroup=<span class="code-quote">"100"</span>/&gt;</span>
+                    <span class="code-tag">&lt;/button&gt;</span>
+                <span class="code-tag">&lt;/cell&gt;</span>
+                <span class="code-tag">&lt;cell x=<span class="code-quote">"1"</span> y=<span class="code-quote">"1"</span> rowspan=<span class="code-quote">"1"</span> colspan=<span class="code-quote">"1"</span>&gt;</span>
+                    <span class="code-tag">&lt;button label=<span class="code-quote">"Volume_UP"</span> icon=<span class="code-quote">"up.png"</span> onPressIcon=<span class="code-quote">"up_press.png"</span> repeat=<span class="code-quote">"true"</span>&gt;</span>
+                        <span class="code-tag">&lt;navigate toGroup=<span class="code-quote">"102"</span>&gt;</span>
+                        <span class="code-tag">&lt;command&gt;</span>18<span class="code-tag">&lt;/command&gt;</span>
+                    <span class="code-tag">&lt;/button&gt;</span>
+                <span class="code-tag">&lt;/cell&gt;</span>
+                <span class="code-tag">&lt;cell x=<span class="code-quote">"2"</span> y=<span class="code-quote">"2"</span>&gt;</span>
+                    <span class="code-tag">&lt;button label=<span class="code-quote">"Cursor_DOWN"</span> icon=<span class="code-quote">"down.png"</span>  &gt;</span>
+                        <span class="code-tag">&lt;command&gt;</span>19<span class="code-tag">&lt;/command&gt;</span>
+                        <span class="code-tag">&lt;navigate toScreen = <span class="code-quote">"next"</span>/&gt;</span>                       
+                    <span class="code-tag">&lt;/button&gt;</span>
+                <span class="code-tag">&lt;/cell&gt;</span>
+                <span class="code-tag">&lt;cell x=<span class="code-quote">"0"</span> y=<span class="code-quote">"3"</span> rowspan=<span class="code-quote">"2"</span> &gt;</span>
+                    <span class="code-tag">&lt;button label=<span class="code-quote">"return_home"</span> icon=<span class="code-quote">"home.png"</span>  &gt;</span>
+                        <span class="code-tag">&lt;navigate toGroup=<span class="code-quote">"101"</span>&gt;</span>
+                    <span class="code-tag">&lt;/button&gt;</span>
+                <span class="code-tag">&lt;/cell&gt;</span>       
+            <span class="code-tag">&lt;/grid&gt;</span>
+        <span class="code-tag">&lt;/screen&gt;</span>
+        <span class="code-tag">&lt;screen id=<span class="code-quote">"2"</span> name=<span class="code-quote">"Macbook"</span> bgImage=<span class="code-quote">"macbook.png"</span> &gt;</span>
+            <span class="code-tag">&lt;absolute top=<span class="code-quote">"30"</span> left=<span class="code-quote">"30"</span> width=<span class="code-quote">"100"</span> height=<span class="code-quote">"100"</span> zIndex=<span class="code-quote">"1"</span>&gt;</span>
+                <span class="code-tag">&lt;button label=<span class="code-quote">"on"</span> icon=<span class="code-quote">"power.png"</span> &gt;</span>
+                    <span class="code-tag">&lt;command&gt;</span>20<span class="code-tag">&lt;/command&gt;</span>
+                <span class="code-tag">&lt;/button&gt;</span>
+            <span class="code-tag">&lt;/absolute&gt;</span>
+            <span class="code-tag">&lt;absolute top=<span class="code-quote">"130"</span> left=<span class="code-quote">"30"</span> width=<span class="code-quote">"100"</span> height=<span class="code-quote">"100"</span> zIndex=<span class="code-quote">"2"</span>&gt;</span>
+                <span class="code-tag">&lt;button label=<span class="code-quote">"Cursor_UP"</span> icon=<span class="code-quote">"up.png"</span> &gt;</span>
+                    <span class="code-tag">&lt;command&gt;</span>21<span class="code-tag">&lt;/command&gt;</span>
+                <span class="code-tag">&lt;/button&gt;</span>
+            <span class="code-tag">&lt;/absolute&gt;</span>
+        <span class="code-tag">&lt;/screen&gt;</span>
+        <span class="code-tag">&lt;screen id=<span class="code-quote">"3"</span> name=<span class="code-quote">"sonyTV"</span> bgImage=<span class="code-quote">"sonyTV.png"</span> &gt;</span>
+            <span class="code-tag">&lt;absolute top=<span class="code-quote">"30"</span> left=<span class="code-quote">"30"</span> width=<span class="code-quote">"100"</span> height=<span class="code-quote">"100"</span> zIndex=<span class="code-quote">"1"</span>&gt;</span>
+                <span class="code-tag">&lt;button label=<span class="code-quote">"on"</span> icon=<span class="code-quote">"power.png"</span> &gt;</span>
+                    <span class="code-tag">&lt;command&gt;</span>22<span class="code-tag">&lt;/command&gt;</span>
+                <span class="code-tag">&lt;/button&gt;</span>
+            <span class="code-tag">&lt;/absolute&gt;</span>
+            <span class="code-tag">&lt;absolute top=<span class="code-quote">"130"</span> left=<span class="code-quote">"30"</span> width=<span class="code-quote">"100"</span> height=<span class="code-quote">"100"</span> zIndex=<span class="code-quote">"2"</span>&gt;</span>
+                <span class="code-tag">&lt;button label=<span class="code-quote">"menu"</span> icon=<span class="code-quote">"menu.png"</span> &gt;</span>
+                    <span class="code-tag">&lt;command&gt;</span>23<span class="code-tag">&lt;/command&gt;</span>
+                <span class="code-tag">&lt;/button&gt;</span>
+            <span class="code-tag">&lt;/absolute&gt;</span>
+        <span class="code-tag">&lt;/screen&gt;</span>
+        <span class="code-tag">&lt;screen id=<span class="code-quote">"4"</span> name=<span class="code-quote">"coffee maker"</span> bgImage=<span class="code-quote">"coffee.png"</span> &gt;</span>
+            <span class="code-tag">&lt;absolute top=<span class="code-quote">"30"</span> left=<span class="code-quote">"30"</span> width=<span class="code-quote">"100"</span> height=<span class="code-quote">"100"</span> zIndex=<span class="code-quote">"1"</span>&gt;</span>
+                <span class="code-tag">&lt;button label=<span class="code-quote">"on"</span> icon=<span class="code-quote">"power.png"</span> &gt;</span>
+                    <span class="code-tag">&lt;command&gt;</span>24<span class="code-tag">&lt;/command&gt;</span>
+                <span class="code-tag">&lt;/button&gt;</span>
+            <span class="code-tag">&lt;/absolute&gt;</span>
+            <span class="code-tag">&lt;absolute top=<span class="code-quote">"130"</span> left=<span class="code-quote">"30"</span> width=<span class="code-quote">"100"</span> height=<span class="code-quote">"100"</span> zIndex=<span class="code-quote">"2"</span>&gt;</span>
+                <span class="code-tag">&lt;button label=<span class="code-quote">"off"</span> icon=<span class="code-quote">"off.png"</span> &gt;</span>
+                    <span class="code-tag">&lt;command&gt;</span>25<span class="code-tag">&lt;/command&gt;</span>
+                <span class="code-tag">&lt;/button&gt;</span>
+            <span class="code-tag">&lt;/absolute&gt;</span>
+        <span class="code-tag">&lt;/screen&gt;</span>
+    <span class="code-tag">&lt;/screens&gt;</span>
+<span class="code-tag">&lt;/openremote&gt;</span>
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 24, 2009 14:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948021"></a>
+                                    <font class="smallfont"><p>How will this be rendered? Do we have three "old activities" which are represented by the groups?<br/>
+Which is the "start screen" in this example?<br/>
+If we would not have the screens inside a group would each not grouped screen represent an "old activity"?<br/>
+Where would the navigation elements be placed if we want the three groups to be shown inside a TabBar?<br/>
+Is the zIndex used in case buttons are overlapping?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 24, 2009 14:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948022"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Do we have three "old activities" which are represented by the groups?</p></blockquote>
+
+<p>No. If you want to have an activities screen then its something that should be explicitly defined in the UI definition as navigation elements. I'm trying to move away from hard-coded UI assumptions (initial activities screen being one of them). </p>
+
+<p>If you're keen on building automated activities-like screens then that should be implemented as a functionality in the UI designer which generates the appropriate XML definition for "activities" based on group definitions and is then rendered by the panels. This is more of a templating functionality in the designer then.</p>
+
+<p>This is following the same principle as with moving gestures as explicit declarations in the UI definition.</p>
+
+<blockquote>
+<p>Which is the "start screen" in this example?</p></blockquote>
+
+<p>First screen of the first group as an implicit order. We could add an attribute for explicit start screen although I'm not sure it is necessary. Will consider adding it to the schema anyway.</p>
+
+<blockquote>
+<p>If we would not have the screens inside a group would each not grouped screen represent an "old activity"?</p></blockquote>
+
+<p>No. We should mandate a minimum of one group definition.</p>
+
+<blockquote>
+<p>Where would the navigation elements be placed if we want the three groups to be shown inside a TabBar?</p></blockquote>
+
+<p>Still working on that. Will update later. Within the &lt;groups&gt; section looks like a good probability.</p>
+
+<blockquote>
+<p>Is the zIndex used in case buttons are overlapping?</p></blockquote>
+
+<p>Yes, although having buttons overlapping themselves (rather than overlapping images) is a bit questionable use case. It can be a bit of a challenge for UI rendering frameworks as well. Still thinking whether an explicit z-index is even necessary.</p>
+
+<p>Thinking about moving the image attributes from button as standalone &lt;image&gt; elements inside &lt;button&gt; though.</p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 24, 2009 15:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948023"></a>
+                                    <font class="smallfont"><p>I think navigate should have the option to go to a screen as well. Across a group.</p>
+
+<p>And an extra aggregate level is needed </p>
+
+<p>&lt;Group&gt; (Room)<br/>
+ &lt;Device&gt; (Or call that 'Activity"?)<br/>
+   &lt;Screen&gt;<br/>
+     Many devices will have more than screen (like a TV) and they must be grouped </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jlvh at Sep 24, 2009 22:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948024"></a>
+                                    <font class="smallfont"><blockquote>
+<p>I think navigate should have the option to go to a screen as well. Across a group.</p></blockquote>
+
+<p>It does. It accepts both toGroup and toScreen attributes.</p>
+
+<blockquote>
+<p>And an extra aggregate level is needed </p>
+
+<p>&lt;Group&gt; (Room)<br/>
+&lt;Device&gt; (Or call that 'Activity"?)<br/>
+&lt;Screen&gt;<br/>
+Many devices will have more than screen (like a TV) and they must be grouped</p></blockquote>
+
+<p>Screens can belong to multiple groups (building, floor, room, device, all my tvs, all my A/V, etc.)</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 24, 2009 23:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948025"></a>
+                                    <font class="smallfont"><p>Okay, I'm thinking about (eventually) saving and restoring 'pre made' device (like the Bobby / cremote). </p>
+
+<p>If I create a nice device with a few screens I think it makes sense to have them as a 'group', but it's actually a 'device'.<br/>
+For example a decently designed complete TV remote will be 2 or 3 screens. They belong together.</p>
+
+<p>And that device with 3 screens is part of a few devices in my Group "Living room".</p>
+
+<p>I can see some use for a screen across groups but in general it wouldn't work like that because I have a TIVO in my bedroom and in my living room I will need different commands attached to each button, UNLESS we create exactly the DEVICE concept where the screens belong to this thing called TIVO that comes with commands and is physically connected to a device. </p>
+
+<p>There's a long discussion somewhere else on that.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jlvh at Sep 24, 2009 23:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948027"></a>
+                                    <font class="smallfont"><p>Do we want to add an extra title for each elements? In this way, we don't need to design a lot of icons with text. Icons is good. However, it is not intuitive someytimes for users to know its meaning. In addition, too many icons will slow down the loading process as well if the number of icons in all screens goes high.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by wycc at Sep 25, 2009 01:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948028"></a>
+                                    <font class="smallfont"><p>What do you mean with extra title? Icon is optional, without that "Label" is used as display name? So use "Button" without an image and fill in "Label" </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jlvh at Sep 25, 2009 06:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-4948029"></a>
+                                    <font class="smallfont"><p>Sorry. I don't notice the label field before. It is exactly what I need.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by wycc at Sep 25, 2009 07:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

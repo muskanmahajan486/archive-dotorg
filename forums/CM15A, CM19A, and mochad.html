@@ -1,0 +1,354 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : CM15A, CM19A, and mochad</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : CM15A, CM19A, and mochad
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 24, 2011 by <font color="#0050B2">mmauka</font>.
+				    </div>
+
+				    <p>mochad is a Linux TCP gateway for the X10 CM15A and CM19A controllers. The Marmitek CM15Pro reportedly works with mochad as well. See <a href="http://sf.net/projects/mochad">http://sf.net/projects/mochad</a> for details.</p>
+
+<p>The controller with one change is able to send commands via a TCP socket to control an X10 lamp module. mochad wants '\n' at the end of the commands, not '\r'. Controller_2_0_0_Alpha11_telnet/src/org/openremote/controller/protocol/socket/TCPSocketCommand.java line 149. I can send a diff if someone tells me how to prevent this wiki from mangling pre-formatted text. It would be nice if the end-of-line character could be made a configuration option.</p>
+
+<p>mochad commands are defined in Designer like this:<br/>
+Name: b3on Protocol: TCP/IP IP Address: 192.168.1.254 (mochad host) Port: 1099 Command: pl b3 on<br/>
+Name: b3off ... Command: pl b3 off<br/>
+Name: b3dim ... Command: pl b3 dim<br/>
+Name: b3bright ... Command: pl b3 bright</p>
+
+<p>If you are using a CM19A instead of a CM15A change "pl" to "rf" in every command box.</p>
+
+<p>Next create four buttons on a panel, one for each of the above commands. This has been tested on the Android SDK emulator. I currently do not own an iPhone or Android device so am interested in hearing if this works on a real device. It appears the command box can hold more than one mochad command. For example: Command: "pl b3|pl b4|pl b on". This should turn b3 and b4 on at the same time with a single button press.</p>
+
+<p>It is not clear how to make the controller trigger a macro from a mochad event. The controller would have to open a TCP socket and read lines from mochad. For example, mochad reports events from DS10A door/window sensors so turning lights on (or turning a powerhorn on) based on DS10A events would be very useful. Or would some helper/bridge program have to listen for events from mochad then inform the controller via http/xml?</p>
+
+<p>Thanks,<br/>
+mmauka</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-16024069"></a>
+                                    <font class="smallfont"><p>I was able to create a slider to control lamp brightness but it requires a dummy sensor. The X10 lamp module is a receive-only device so there is no way to get its currently brightness level. Therefore, a polling sensor serves no purpose. However, the slider min/max values are bound to a sensor. Is there a way to eliminate the polling sensor but keep the min/max range for the slider?</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>New command: Name: b3slidercmd Protocol: TCP/IP IP Address: 192.168.1.254 (mochad) Port: 1099 Command: pl b3 xdim ${param}
+New command: Name: b3intensitycmd ... Command: pl
+New sensor : Name: b3intensity Command: b3intensitycmd Type: range Min: 0 Max 63
+New slider : Name: b3slider Sensor: b3intensity setValue: b3slidercmd
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mmauka at Apr 24, 2011 23:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024094"></a>
+                                    <font class="smallfont"><p>May not be possible at the moment.</p>
+
+<p>Is there an issue with using a dummy, no-op sensor or are you looking to get rid of it purely for aesthetic reasons / simplify configuration ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Apr 25, 2011 08:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024099"></a>
+                                    <font class="smallfont"><p>Nothing urgent about these issues. I will probably change mochad so it accepts lines terminated with '\r' as well as '\n'. I should have thought of this before changing the controller source code. </p>
+
+<p>A dummy no-op sensor is a good solution. It was confusing at first but a howto did indicate a slider requires a sensor.</p>
+
+<p>Perhaps a similar dummy no-op sensor should be available when creating a switch widget. X10 appliance modules do not report on/off status.</p>
+
+<p>Thanks,<br/>
+mmauka</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mmauka at Apr 25, 2011 10:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024311"></a>
+                                    <font class="smallfont"><p>Hey,</p>
+
+<p>mochad does look like an interesting project &#8211; please do keep us up-to-date what happens there. Would be interesting to see if there are more areas where we can inter-operate.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 10, 2011 12:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024333"></a>
+                                    <font class="smallfont"><p>I am working on a Chumby widget at the moment but will be back to make mochad work better with OR. A few more changes to mochad are needed to report RF sensor data, on/off status, etc. X10 devices cannot be polled but mochad could track device state and report whatever it knows.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mmauka at May 11, 2011 00:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482392"></a>
+                                    <font class="smallfont"><p>Using the X10 CM15A controller with OpenRemote 2.0</p>
+
+<p>mochad, a Linux USB device driver for the CM15A (and the CM15Pro but not tested), has been updated to work with OpenRemote 2.0. See the following for details including screen shots of creating a brightness slider, an on/off<br/>
+switch, and an RF window/door contact sensor.</p>
+
+<p><a href="http://sourceforge.net/apps/mediawiki/mochad/index.php?title=OpenRemote">http://sourceforge.net/apps/mediawiki/mochad/index.php?title=OpenRemote</a></p>
+
+<p>To get mochad source code see the following.</p>
+
+<p><a href="http://sourceforge.net/projects/mochad/">http://sourceforge.net/projects/mochad/</a></p>
+
+<p>Moving the brightness slider on OR panel updates the position of the slider with the same X10 house/unit code on all other OR panels. </p>
+
+<p>Turning a lamp on using an X10 RF remote control updates the on/off status on all OR panels.</p>
+
+<p>Turning a lamp off using a Chumby updates the on/off status on all OR panels and vice versa.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mmauka at May 22, 2011 07:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482403"></a>
+                                    <font class="smallfont"><p>Please be sure to use mochad 0.1.11. Using the XDIM (extended dim) command for the brightness slider uncovered a number of problems in this command that have been fixed in 0.1.11.</p>
+
+<p><a href="http://mochad.sf.net">http://mochad.sf.net</a></p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mmauka at May 23, 2011 09:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482460"></a>
+                                    <font class="smallfont"><p>Thank you for these updates!</p>
+
+<p>If you prefer, you can add a CM15A section with mochad in the <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+X10+Devices" title="OpenRemote 2.0 How To - X10 Devices">X10 How-to</a> &#8211; this way the information can be a little easier to find than from forum comments.</p>
+
+<p>If you do and have issues with access rights, just let me know.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 28, 2011 10:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482465"></a>
+                                    <font class="smallfont"><p>Ok, Pierce pointed me to the wiki documentation you already created here: <a href="http://sourceforge.net/apps/mediawiki/mochad/index.php?title=OpenRemote">http://sourceforge.net/apps/mediawiki/mochad/index.php?title=OpenRemote</a></p>
+
+<p>Let me know if you'd be interested in maintaining one for the OR wiki in the How-to link I posted <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 29, 2011 07:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482485"></a>
+                                    <font class="smallfont"><p>I updated the X10 How-to as suggested. Let me know if this is OK or not.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mmauka at May 31, 2011 06:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482492"></a>
+                                    <font class="smallfont"><p>Yes, it's fine.</p>
+
+<p>If you want to bring the full how-to with screenshots and all to this site, just let me know. Can make a space for it.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 01, 2011 00:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039562"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>Just wanted to pop in and confirm that CM15Pro does work quite good with mochad and OpenRemote. Currently I have very basic setup, only two lamp modules.</p>
+
+<p>Thanks to both OpenRemote and Mochad team for such a great work. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glen at Jun 18, 2011 08:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039679"></a>
+                                    <font class="smallfont"><p>Thanks for confirming CM15Pro is working.</p>
+
+<p>Any additional material on how to set things up, what hardware to buy, blog your experiences, or even a video that just shows how stuff is working are welcome. We can find space on the website for all of that.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 28, 2011 08:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956915"></a>
+                                    <font class="smallfont"><p>Within a month I'll be moving to a new apartment which has about 20 X10 modules. I'll try to gather some details and write them down as soon as I get things working there. Those modules are mainly dimmer modules but there are some switches too.  </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glen at Jun 30, 2011 21:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17956931"></a>
+                                    <font class="smallfont"><p>Hello,</p>
+
+<p>I have installed the mochad in Ubuntu an it works very good with CM15 Pro! But using netcat... I can not install the controller in Ubuntu because a problem with the port 8080. Anybody could help me how to install the controller?? The only information that I could find is here at the botton of the page: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Controller+Installation">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Controller+Installation</a>.</p>
+
+<p>Thanks a lot in advance.</p>
+
+<p>Juan</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by suanso at Jul 01, 2011 17:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432698"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>Not sure where I should ask this, so I'm asking here.</p>
+
+<p>Some background first. I've moved in to my new (old) house couple of months ago and been using X10 since. Few weeks ago I managed to get some time to setup Openremote for iPhone. Now my setup runs quite smoothly. Setup consists of some 15 modules currently, dimmers (LD11), appliance modules (AD10) and one motion sensor (MS13).</p>
+
+<p>Now I'm starting to experiment with scenes. If I have figured it out correctly I can create scenes with macros in Openremote. So here's the question. And I know it's partly mochad oriented. Is there a way for me to listen and interrupt the motion sensor signals based on the scene? </p>
+
+<p>Example: MS is located in my dressing room. Normally it switches dressing room lamp on and off based on... well motion. Works good. But I wan't to have a scene. Let's call it Sauna. In this scene I don't want the MS to act on motion. No control over light. When I switch Sauna scene off, everything returns to normal.</p>
+
+<p>I can configure the MS to send the commands to "empty" device eg. C1 (housecode A is for light, B is for wall sockets in my setup). I'm not sure if or how OR/mochad work together in such scenes. Does OR listen anything? Can it respond or act based on external command from mochad? Can mochad command OR? Is this kind of scene setup best done in OR? What kind of logic can mochad handle? </p>
+
+<p>Lot's of questions. Hopefully at least some of these can be answered.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glen at Oct 03, 2011 08:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432725"></a>
+                                    <font class="smallfont"><p>Hi again</p>
+
+<p>Did some digging around and found out that there's no available code for this. So I'm trying to build something up. If there's need for this kind of stuff I'll share it. If I ever get it working.</p>
+
+<p>The way my OR is set up now gets the state of lamp, if motion sensor triggers it. I think slider info gets transmitted too but now I don't have any other slider values than on and off.</p>
+
+<p>As for the scene implementation, I'm thinking of creating a script that listens to mochad. Scenes will be triggered through OR and target device will be a dummy device (house code + unit code). The script listens to a predefined scene group (house code) and triggers devices based on scene (unit code). Motion sensor will be handled so that it also triggers dummy device defined on the script and script triggers the real device based on the wanted result. </p>
+
+<p>If you have any comments about this please let me know. I've never done anything like this before. I'm a frontend web developer, not a programmer. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glen at Oct 05, 2011 13:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432734"></a>
+                                    <font class="smallfont"><p>Coming version of OpenRemote will include a rule engine (Drools) which allows what you are looking for.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 06, 2011 09:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432737"></a>
+                                    <font class="smallfont"><p>Is there an ETA on release? This kind of thing sounds awesome. </p>
+
+<p>Will Drools be able to act on motion sensor triggers? I know X10 as a protocol is a bit limited and CM15Pro as an interface doesn't really help. Perhaps the question is can I trigger rules from TCP protocol?</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by glen at Oct 06, 2011 10:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432738"></a>
+                                    <font class="smallfont"><p>The plan is that every console command will go through the rules engine and also each sensor update.<br/>
+This way you can have virtual buttons which only trigger rules (eg. activate "sauna-mode" or "night-mode").<br/>
+It would be possible to create a UDP/TCP listener protocol which takes TCP packets and triggers rules.<br/>
+No ETA yet.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Oct 06, 2011 10:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:46</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

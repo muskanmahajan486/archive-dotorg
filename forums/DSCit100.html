@@ -1,0 +1,433 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : DSCit100</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : DSCit100
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 19, 2012 by <font color="#0050B2">qpaulson</font>.
+				    </div>
+
+				    <p>Does anyone have a DSC alarm working with OpenRemote?</p>
+
+<p>I installed openremote, created a simple custom sensor and panel.. but when OpenRemote tries to load the controlled it blows up. <br/>
+The reason appears to be that id doesn't actually have a dscit100 module loaded or available to be loaded.. </p>
+
+<p>Is there a dscit100 module that has to be loaded manually?.. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2012-05-19 22:43:09,763 : Creating sensor failed. Error : No device protocol builders registered with protocol type 'dscit100'. 
+ XML Element : &lt;sensor xmlns=<span class="code-quote">"http:<span class="code-comment">//www.openremote.org"</span> id=<span class="code-quote">"8"</span> name=<span class="code-quote">"zone_status"</span> type=<span class="code-quote">"custom"</span>&gt;
+</span>      &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"7"</span> /&gt;
+      &lt;state name=<span class="code-quote">"open"</span> value="" /&gt;
+      &lt;state name=<span class="code-quote">"restored"</span> value="" /&gt;
+      &lt;state name=<span class="code-quote">"fault"</span> value="" /&gt;
+    &lt;/sensor&gt;
+
+</pre>
+</div></div>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19988752"></a>
+                                    <font class="smallfont"><p>Well, there is little to no documentation on this.. but I have been making some headway.. Thought I'd better post it so that others can figure this out as well.. </p>
+
+<p>I managed to download the dscit100 protocol plugin from here:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+svn checkout <span class="code-quote">"https:<span class="code-comment">//openremote.svn.sourceforge.net/svnroot/openremote/workspace/gdrapp/Controller_2_0_0_Alphas_DSCIT100/"</span></span>
+</pre>
+</div></div>
+
+<p>Once I had src, I found a number of interesting things, one important tidbit is the default port its trying to connect on is port 5000.. <br/>
+Ideally, it seems its best to get your serial-&gt;IP bridge listening on that port. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>You can build the jar files with:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ant compile
+</pre>
+</div></div>
+
+<p>Once you have the jars you can copy them into your openremote 2.0 install</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+from: dscit100/Controller_2_0_0_Alphas_DSCIT100/src/org/openremote/controller/protocol/dscit100
+to: OpenRemote-Controller-2.0.0/webapps/controller/WEB-INF/classes/org/openremote/controller/protocol/
+</pre>
+</div></div>
+
+<p>You then have to update the OpenRemote-Controller-2.0.0/webapps/controller/WEB-INF/classes/applicationContext.xml<br/>
+and in the section where you see <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">&lt;bean id = <span class="code-quote">"commandFactory"</span> class = <span class="code-quote">"org.openremote.controller.command.CommandFactory"</span>&gt;</pre>
+</div></div><br/>
+add the following:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+        &lt;entry key = <span class="code-quote">"dscit100"</span>         value-ref = <span class="code-quote">"dscit100CommandBuilder"</span>/&gt;
+</pre>
+</div></div>
+
+<p>and then in the "COMMAND BUILDERS" section further down, add:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+        &lt;!-- DSC IT-100 Command Builder --&gt;
+        &lt;bean id = <span class="code-quote">"dscit100CommandBuilder"</span> class = <span class="code-quote">"org.openremote.controller.protocol.dscit100.DSCIT100CommandBuilder"</span> /&gt;
+</pre>
+</div></div>
+
+<p>This will allow you to initialize the module.. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> </p>
+
+
+<p>Once I have completed all this, I was able to load the controller.xml and follow the info here:
+<a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+DSC+Alarm+Systems">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+DSC+Alarm+Systems</a></p>
+
+
+<p>Hope this helps others. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by qpaulson at May 20, 2012 05:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988753"></a>
+                                    <font class="smallfont"><p>FYI also, if you have your serial device plugged into the same box running openremote, like i do.. <br/>
+you can run socat to allow openremote to connect to the serialdevice over TCP/IP. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+socat tcp-l:5000,reuseaddr,fork,crlf file:/dev/ttyUSB0,echo=0,b9600,raw,crnl,icanon=1
+</pre>
+</div></div>
+
+<p>You can test the serial connection by sending commands directly to it with </p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+socat READLINE /dev/ttyUSB0,raw,echo=0,crnl,b9600
+</pre>
+</div></div> 
+<p>type in "00191" and hit enter.. You should get back a dump of information..</p>
+
+
+<p>Happy hacking. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by qpaulson at May 20, 2012 05:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988756"></a>
+                                    <font class="smallfont"><p>its all loading successful.. No errors anywhere, but when i try to get the ZONE_STATUS i keep getting back either a "FAULT" or the app crashes on my phone ( android ).. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by qpaulson at May 20, 2012 05:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988760"></a>
+                                    <font class="smallfont"><p>Has anyone managed to get this working??  I am quite sure its connecting to the device and communicating correctly.. Its still not working though.. I can see traffic on the serial device, the Alarm is pushing date/time probes every minute, but openremote is still reporting error/faults.. </p>
+
+<p>There are no exceptions or errors in the logs at all..   Anyone have any ideas.. ?</p>
+
+<p>Thank you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by qpaulson at May 20, 2012 22:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988763"></a>
+                                    <font class="smallfont"><p>Updated the socat command below.. Its able to arm/disarm now.. but the STATE commands are still not working.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by qpaulson at May 21, 2012 01:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988766"></a>
+                                    <font class="smallfont"><p>Its getting data from the socket.. Just seems like its not what its expecting as it kees saying its getting an invalid checksum...</p>
+
+<p>Here are the logs, just encase someone has any ideas.. </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG [<span class="code-object">Thread</span>-3]: New packet created [command=002, data=,checksum=92]
+DEBUG [<span class="code-object">Thread</span>-3]: Sending data to address 192.168.1.110 : 00292
+
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : �����������������������������������������50196
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=96,calculated=1B]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 0000227
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=27,calculated=F2]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : ����Zone    01                      6A
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=6A,calculated=44]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570002Zone    02                      6C
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=2,label=Zone    02]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570003Zone    03                      6E
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=3,label=Zone    03]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570004Zone    04                      70
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=4,label=Zone    04]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570005Zone    05                      72
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=5,label=Zone    05]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Sensor read request [type=custom, stateMap={state-1=}]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570006Zone    06                      74
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=Arming, state-3=<span class="code-object">System</span> Busy, state-2=Armed, state-9=Alarming, state-8=Ready, state-5=Disarmed, state-4=Pending Action, state-7=Not Ready, state-6=Failed}]
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=6,label=Zone    06]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=, state-2=<span class="code-keyword">null</span>}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Sensor read request [type=custom, stateMap={state-1=}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=2, address=192.168.1.110]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=PARTITION, target=1]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570007Zone    07                      76
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=PARTITION, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: [state=NULL]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: [state=NULL]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=1, address=192.168.1.110]
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=7,label=Zone    07]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=ZONE, target=2]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=ZONE, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: [state=NULL]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : M���Zone    08                      78
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: [state=NULL]
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=78,calculated=9B]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570009Zone    09                      7A
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=9,label=Zone    09]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570010Zone    10                      6A
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=10,label=Zone    10]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570011Zone    11                      6C
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=11,label=Zone    11]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 5���Zone    12                      6E
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=6E,calculated=7E]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : M���Zone    13                      70
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=70,calculated=97]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570014Zone    14                      72
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=14,label=Zone    14]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570015Zone    15                      74
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=15,label=Zone    15]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=, state-2=<span class="code-keyword">null</span>}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=Arming, state-3=<span class="code-object">System</span> Busy, state-2=Armed, state-9=Alarming, state-8=Ready, state-5=Disarmed, state-4=Pending Action, state-7=Not Ready, state-6=Failed}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Sensor read request [type=custom, stateMap={state-1=}]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 5���Zone    16                      76
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=PARTITION, target=1]
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=76,calculated=82]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Sensor read request [type=custom, stateMap={state-1=}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=1, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=2, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 5���Zone    17                      78
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=ZONE, target=1]
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=78,calculated=83]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: [state=NULL]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: [state=NULL]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=ZONE, target=2]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=PARTITION, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: [state=NULL]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 5���Zone    18                      7A
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: [state=NULL]
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=7A,calculated=84]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570019Zone    19                      7C
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=19,label=Zone    19]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570020Zone    20                      6C
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=20,label=Zone    20]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570021Zone    21                      6E
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=21,label=Zone    21]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570022Zone    22                      70
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=22,label=Zone    22]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570023Zone    23                      72
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=23,label=Zone    23]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570024Zone    24                      74
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=24,label=Zone    24]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=, state-2=<span class="code-keyword">null</span>}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Sensor read request [type=custom, stateMap={state-1=}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570025Zone    25                      76
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=PARTITION, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=1, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: [state=NULL]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=ZONE, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=Arming, state-3=<span class="code-object">System</span> Busy, state-2=Armed, state-9=Alarming, state-8=Ready, state-5=Disarmed, state-4=Pending Action, state-7=Not Ready, state-6=Failed}]
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=25,label=Zone    25]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Sensor read request [type=custom, stateMap={state-1=}]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : ����Zone    26                      78
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=78,calculated=4B]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: [state=NULL]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=PARTITION, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=2, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: [state=NULL]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=ZONE, target=2]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : M���Zone    27                      7A
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: [state=NULL]
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=7A,calculated=9C]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570028Zone    28                      7C
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=28,label=Zone    28]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570029Zone    29                      7E
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=29,label=Zone    29]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570030Zone    30                      6E
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=30,label=Zone    30]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570031Zone    31                      70
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=31,label=Zone    31]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570032Zone    32                      72
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=32,label=Zone    32]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570033Zone    33                      74
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=, state-2=<span class="code-keyword">null</span>}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=33,label=Zone    33]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=PARTITION, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: [state=NULL]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 5���Zone    34                      76
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=76,calculated=82]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Sensor read request [type=custom, stateMap={state-1=}]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570035Zone    35                      78
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=35,label=Zone    35]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=1, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=Arming, state-3=<span class="code-object">System</span> Busy, state-2=Armed, state-9=Alarming, state-8=Ready, state-5=Disarmed, state-4=Pending Action, state-7=Not Ready, state-6=Failed}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Sensor read request [type=custom, stateMap={state-1=}]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=ZONE, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: [state=NULL]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570036Zone    36                      7A
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=2, address=192.168.1.110]
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=36,label=Zone    36]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=ZONE, target=2]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: [state=NULL]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570037Zone    37                      7C
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=PARTITION, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: [state=NULL]
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=37,label=Zone    37]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570038Zone    38                      7E
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=38,label=Zone    38]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 5���Zone    39                      80
+ERROR [<span class="code-object">Thread</span>-3]: Received packet with invalid checksum [packet=80,calculated=87]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570040Zone    40                      70
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=40,label=Zone    40]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570041Zone    41                      72
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=41,label=Zone    41]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=, state-2=<span class="code-keyword">null</span>}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=PARTITION, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 60, Name ='partition_status']: [state=NULL]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570042Zone    42                      74
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=42,label=Zone    42]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570043Zone    43                      76
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=43,label=Zone    43]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 90100032  Date     Time MAY 20/12  9:50p1F
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Sensor read request [type=custom, stateMap={state-1=}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=1, address=192.168.1.110]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570044Zone    44                      78
+DEBUG [<span class="code-object">Thread</span>-3]: Broadcast label [number=44,label=Zone    44]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Sensor read request [type=custom, stateMap={state-1=}]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 61, Name ='zone_status_2']: Reading state <span class="code-keyword">for</span> - [STATE:type=ZONE, target=2, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Sensor read request [type=custom, stateMap={state-1=Arming, state-3=<span class="code-object">System</span> Busy, state-2=Armed, state-9=Alarming, state-8=Ready, state-5=Disarmed, state-4=Pending Action, state-7=Not Ready, state-6=Failed}]
+DEBUG [<span class="code-object">Thread</span>-3]: Received data from 192.168.1.110 : 570045Zone    45                      7A
+WARN [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: Cannot find state type information <span class="code-keyword">for</span> [StateDefinition: type=ZONE, target=1]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 59, Name ='partition_status']: Reading state <span class="code-keyword">for</span> - [STATE:type=PARTITION, target=1, address=192.168.1.110]
+DEBUG [Polling Sensor <span class="code-object">Thread</span> ID = 62, Name ='zone_status_1']: [state=NULL]
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by qpaulson at May 21, 2012 07:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988768"></a>
+                                    <font class="smallfont"><p>I am not familiar with this protocol but you can find the code where the checksum is checked here: <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/gdrapp/Controller_2_0_0_Alphas_DSCIT100/src/org/openremote/controller/protocol/dscit100/Packet.java?revision=6230&amp;view=markup">http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/gdrapp/Controller_2_0_0_Alphas_DSCIT100/src/org/openremote/controller/protocol/dscit100/Packet.java?revision=6230&amp;view=markup</a><br/>
+Could it be a serial baud rate problem?<br/>
+This document: <a href="http://www.google.com/url?sa=t&amp;rct=j&amp;q=dscit100%20baud%20rate&amp;source=web&amp;cd=1&amp;ved=0CFEQFjAA&amp;url=http%3A%2F%2Fcms.dsc.com%2Fdownload.php%3Ft%3D1%26id%3D11225&amp;ei=R_K5T4TSMpHJswar-53vBw&amp;usg=AFQjCNH75XhIfrN3SetOGXGTrXHPTU6yDA&amp;cad=rja">http://www.google.com/url?sa=t&amp;rct=j&amp;q=dscit100%20baud%20rate&amp;source=web&amp;cd=1&amp;ved=0CFEQFjAA&amp;url=http%3A%2F%2Fcms.dsc.com%2Fdownload.php%3Ft%3D1%26id%3D11225&amp;ei=R_K5T4TSMpHJswar-53vBw&amp;usg=AFQjCNH75XhIfrN3SetOGXGTrXHPTU6yDA&amp;cad=rja</a><br/>
+suggests different baud rates for different cable.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 21, 2012 08:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988778"></a>
+                                    <font class="smallfont"><p>Thanks for the info Marcus.. I looked at the src already.. I expect that its correct.. <br/>
+I will play now with the different baud rates, though its supposed to be 9600 by default and I have been setting it to 9600, which should be the most stable.. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by qpaulson at May 21, 2012 17:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037285"></a>
+                                    <font class="smallfont"><p>Hey Quintin, I have a raspberry pi and have my dsc-it100 connected to it via a USB to serial interface cable. I'm able to communicate with the it-100 over that. Will the socat commands above allow me to still use OpenRemote with my current configuration?<br/>
+I've tried the commands above, but I get an E unknown device/address "READLINE". I was able to replace READLINE with STDIO and was able to input from the command line to test the dsc-it100 interface.</p>
+
+
+<p>Any tips?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ericnhitterdal at Nov 07, 2012 18:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037367"></a>
+                                    <font class="smallfont"><p>Actually, in the steps above, you need to copy the folder and .class files from</p>
+
+<p>/Controller_2_0_0_Alphas_DSCIT100/build/classes/org/openremote/controller/protocol/dscit100 </p>
+
+<p>into</p>
+
+<p>OpenRemote-Controller-2.0.0/webapps/controller/WEB-INF/classes/org/openremote/controller/protocol/</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ericnhitterdal at Nov 11, 2012 17:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

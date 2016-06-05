@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Alternating IR code</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Alternating IR code
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 08, 2011 by <font color="#0050B2">fuijtdewilligen</font>.
+				    </div>
+
+				    <p>I've run into a problem with one of my remotes. Apparently, it sends our alternating IR-codes for each button to differentiate between multiple presses and a long press. For example (I'm using the iTach IP2IR), if I press the 'right'-button 4 times:</p>
+
+<p>sendir,1:1,1,36337,1,1,15,10,6,10,6,22,6,10,6,10,6,28,6,10,6,10,6,10,6,<b>10</b>,6,22,6,16,6,22,6,16,6,16,6,22,6,28,6,3633</p>
+
+<p>sendir,1:1,1,36337,1,1,15,10,6,10,6,22,6,10,6,10,6,28,6,10,6,10,6,10,6,<b>22</b>,6,22,6,16,6,22,6,16,6,16,6,22,6,28,6,3633</p>
+
+<p>sendir,1:1,1,36337,1,1,15,10,6,10,6,22,6,10,6,10,6,28,6,10,6,10,6,10,6,<b>10</b>,6,22,6,16,6,22,6,16,6,16,6,22,6,28,6,3633</p>
+
+<p>sendir,1:1,1,36337,1,1,15,10,6,10,6,22,6,10,6,10,6,28,6,10,6,10,6,10,6,<b>22</b>,6,22,6,16,6,22,6,16,6,16,6,22,6,28,6,3633</p>
+
+<p>I haven't found a solution for it within the OR Designer, so I'd be happy to hear from someone who has a clue on how to handle this <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19434205"></a>
+                                    <font class="smallfont"><p>For all who's interested, I've managed to get it working by changing some code of the Controller. In short, I created a TCP/IP command in the Designer and added both alternatives of the IR-commands behind each other, separated by "##". The entire command thus looks as follows:</p>
+
+<p><em>sendir,1:1,1,36337,1,1,15,10,6,10,6,22,6,10,6,10,6,28,6,10,6,10,6,10,6,<b>10</b>,6,22,6,16,6,22,6,16,6,16,6,22,6,28,6,3633##sendir,1:1,1,36337,1,1,15,10,6,10,6,22,6,</em><br/>
+<em>10,6,10,6,28,6,10,6,10,6,10,6,<b>22</b>,6,22,6,16,6,22,6,16,6,16,6,22,6,28,6,3633</em></p>
+
+<p>I've adapted the Controller to check whether the separator (##) exists. If so, it checks which command was sent the last time and sends the other.</p>
+
+
+<p>For those with more knowledge of the Controller code: I've adjusted the <tt>TCPSocketCommandBuilder</tt> to check for the separator. If it finds the separator, it creates a <tt>TCPSocketAlternatingCommand</tt>, which extends the <tt>TCPSocketCommand</tt>. That class overrides the <tt>getCommand()</tt> and <tt>setCommand()</tt> to enable the alternating of the IR commands.</p>
+
+<p>Because the command objects are created with each button press, and thus not keep any state, I've also created a <tt>AlternatingCommandStates</tt> with a single static method, <tt>getState()</tt> which takes the name of the command as a parameter and returns a boolean, alternating with each call.</p>
+
+<p>As I found out, the commands do not have a name in the xml, and thus, the name field of the object remains empty. Therefore, I've added another small modification to the <tt>TCPSocketCommandBuilder</tt> that puts the ID of the command in the name field if the name was null or empty.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fuijtdewilligen at Dec 10, 2011 16:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

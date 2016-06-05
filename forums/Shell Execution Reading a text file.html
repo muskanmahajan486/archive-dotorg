@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Shell Execution Reading a text file</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Shell Execution Reading a text file
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 15, 2014 by <font color="#0050B2">pjmm</font>.
+				    </div>
+
+				    <p>I have a text file which has one line with either "On" or "Off" I want to write a batch file which will<br/>
+read this text file and update a sensor </p>
+
+<p>I need help in writing this batch file</p>
+
+<p>can some one give me an example</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22884387"></a>
+                                    <font class="smallfont"><p>I had a look at my last post and I need to explain it better.</p>
+
+<p>I know how to create a batch file to open a text file and read from it</p>
+
+<p>This is my batch file</p>
+
+<p>set /p "var="&lt;"data.txt"<br/>
+echo %var%</p>
+
+<p>for /f "delims=" %%a in (data.txt) do set "var=%%a"&amp;goto :stop<br/>
+:stop<br/>
+echo %var%</p>
+
+<p>If you are running this from the command line it reads "On" from Data.txt and echos on to the display.</p>
+
+<p>I propose to run this batch file using Shell Execution which I have tested and it starts the batch file OK</p>
+
+<p>My question "is echo the correct command to use in order for Openremote to read in the status or should I be using <br/>
+some other command"</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 16, 2014 15:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884484"></a>
+                                    <font class="smallfont"><p>I am still working on reading a value from a text file and updating a sensor</p>
+
+<p>I can start the batch file which should read on from the text file and it should updates the sensor</p>
+
+<p>If I look in the device log I can see that it starts the script but I cannot see it receiving the data</p>
+
+<p>2014-02-18 18:51:27,897 INFO main: Registered sensor : Sensor (Name = 'sensor1', ID = '232505', State Mappings: {})<br/>
+2014-02-18 18:51:27,899 INFO main: Startup complete.<br/>
+2014-02-18 18:51:27,900 INFO main: Controller Definition File Watcher for Default Deployer started.<br/>
+2014-02-18 18:51:27,912 TRACE <span class="error">&#91;Polling thread for sensor: sensor1 232505&#93;</span>: Processed '', received ''<br/>
+2014-02-18 18:51:28,922 TRACE <span class="error">&#91;Polling thread for sensor: sensor1 232505&#93;</span>: Processed '', received ''</p>
+
+<p>It is poling every second as set up </p>
+
+<p>I am not sure what string I should send with the On </p>
+
+<p>any pointers would help</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 18, 2014 19:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884495"></a>
+                                    <font class="smallfont"><p>Hi Pierce - I don't actually have a Windows machine to experiment with, but I would try a couple of things here...</p>
+
+<p>First, Try to re write your batch file to only need one 'echo' command. OR is probably going to read only one of them - either first or last (unsure of behavior on windows). </p>
+
+<p>Second, make sure your OR Shell Execution command has a regex entered to read back the echoed response. The following should pull back everything <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">^(.*).*</pre>
+</div></div> and you can tweak from here to refine this if needed</p>
+
+<p>Third, and I got caught on this myself <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>, double check you are using a 2.1 version of controller that actually supports regexing feedback from shell commands. Some of the earlier version will execute the commands, but cant perform the regexing.. OpenRemote-Controller-2.1.0_FM_SNAPSHOT-2013-07-18 works for me..</p>
+
+<p>Hope some of this helps a bit, let me know..</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by holeymoley at Feb 18, 2014 23:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884546"></a>
+                                    <font class="smallfont"><p>Hi Paddy</p>
+
+<p>many thanks for the reply I have tested a simple batch file</p>
+
+<p>echo No<br/>
+:end<br/>
+:exit</p>
+
+<p>I can see this read in by Openremote</p>
+
+<p>If I set the  variable var to No and try this batch file it dosen't work </p>
+
+<p>echo %var%<br/>
+:end<br/>
+:exit</p>
+
+<p>If I run it at the command prompt it returns No which is correct</p>
+
+<p>Have you any ideas</p>
+
+<p>Pierce</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 19, 2014 23:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884565"></a>
+                                    <font class="smallfont"><p>i'm trying exactly the same thing and having problems.  I'm using the file to store the state of x10 switches.  I can write out the file via a shell execution script, and have written the shell script which should read back in the contents of the text file.  I can't get this value to update a sensor state or be used in a rule.</p>
+
+<p>I've just read something that said regex looks for a crlf at the end of the line, so am trying \n in the shell script - will let you know if this works.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nickbrookes76 at Feb 20, 2014 21:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884605"></a>
+                                    <font class="smallfont"><p>Problem Solved</p>
+
+<p>In order for my batch file to work the Data file and Batch file must be in <br/>
+the C:\OpenRemote-Controller\bin directory</p>
+
+<p>The following .bat file reads in the data from data.txt</p>
+
+<p>@echo Off<br/>
+set /p "var="&lt;"data.txt"<br/>
+@echo On<br/>
+%var%<br/>
+:end<br/>
+:exit</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 21, 2014 20:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884683"></a>
+                                    <font class="smallfont"><p>Can any one confirm that the Regex under </p>
+
+<p>Shell Execution works correctly.</p>
+
+<p>My program reads in a from a text file into openremote</p>
+
+<p>C:\OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17\bin&gt;echo Off</p>
+
+<p>I use the Regex   ^.*(On|Off) to extract Off</p>
+
+<p>I have tested this using the online Regex tester and it returns Off</p>
+
+<p>in Openremote I get  </p>
+
+<p>2014-02-23 20:16:58,609 INFO [Polling thread for sensor: sensor1 232564]: regex evaluation did not find a match<br/>
+2014-02-23 20:16:58,610 TRACE [Polling thread for sensor: sensor1 232564]: Processed 'N/A', received 'N/A'</p>
+
+<p>I have looked at Max's post saying that the Regex he used unde  Shell Executionwas was <br/>
+(on|off)\s(on|off)\s(on|off)\s(on|off)\s(on|off)\s(on|off)\s(on|off)\s(on|off)\s<br/>
+to extract On Or Off from <br/>
+off off off off off off off off</p>
+
+<p>I have tested this using the online Regex tester and cannot get it to work</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 23, 2014 20:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22885032"></a>
+                                    <font class="smallfont"><p>The regex implementation is provided by the Java class libraries, so it would either fail on all regular expressions or should work on all of them.</p>
+
+<p>Note that Java regex may slightly differ from other language runtimes. Also the ending line feed characters seem to often cause issues with matches.</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 05, 2014 16:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602774"></a>
+                                    <font class="smallfont"><p>Hi Pierce, I realise it's a while ago but I have been trying to use the same system you have outlined here.<br/>
+My problem is that I get a java IO exception saying cannot run program.<br/>
+I have virtually copied your batch file and placed both files in the controller.bin directory.<br/>
+If you have any other suggestions I would appreciate them.<br/>
+If UDPlistener would work on the free version of OR that would even be better.<br/>
+Thanks, and have merry christmas.<br/>
+Fraser</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by freddyc at Dec 23, 2015 05:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

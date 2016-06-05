@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Starting with UDP</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Starting with UDP
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 09, 2013 by <font color="#0050B2">devesh24</font>.
+				    </div>
+
+				    <p>HI all,<br/>
+        I am new to this IoT and the OpenRemote. I am about to start a communication between OR and an UDP client which is running on my Linux machine, and my goal is to whatever is been send by client, received by  OR and either save or display at OR.<br/>
+How to i get started.<br/>
+                      Thank you ...</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22880984"></a>
+                                    <font class="smallfont"><p>You need a build with patched UDP listener. The best if you start with reading this thread <a href="http://www.openremote.org/display/forums/UDP+Listener+Questions">http://www.openremote.org/display/forums/UDP+Listener+Questions</a><br/>
+The binary which you need is here <a href="https://dl.dropboxusercontent.com/u/2892838/OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17.zip">https://dl.dropboxusercontent.com/u/2892838/OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17.zip</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 09, 2013 13:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881019"></a>
+                                    <font class="smallfont"><p>Hello Michal<br/>
+              Thanks for the help, but unfortunately i am not getting it. i am showing a complete procedure how i am trying to do this<br/>
+1-I have created a device called UDPLISTNER, with some random vendor name and model name.<br/>
+2-Then i created command called Status_UDP, with UDPListener protocol, on the port 47839 and regular expression Hallo.<br/>
+3-Since i am not using any sensor right now thats why i didn't created it,<br/>
+4-Rules look like</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+<span class="code-keyword">import</span> org.openremote.controller.utils.Logger;
+<span class="code-keyword">import</span> org.openremote.controller.Constants;
+
+function void log(<span class="code-object">String</span> msg)
+{
+  Logger.getLogger(Constants.CONTROLLER_ROOT_LOG_CATEGORY + <span class="code-quote">".RuleLog"</span>).info(msg);
+}
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+rule <span class="code-quote">"UDPListener"</span>
+when
+  $evt : Event(source==<span class="code-quote">"Statussensor"</span>, $v:value)
+then
+   <span class="code-object">System</span>.out.println(<span class="code-quote">"UDP"</span>);
+   log(<span class="code-quote">"rule: UDPListener - Aktion: Nichts unternehmen"</span>+$v.toString());
+end
+</pre>
+</div></div>
+
+
+<p>5- Starting OR snapshot wht u suggested , and run a udp client on linux , sending message Hallo.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by devesh24 at Dec 10, 2013 05:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881024"></a>
+                                    <font class="smallfont"><p>You need a custom sensor linked to your command "Status_UDP". Also the regex needs to look for a group.<br/>
+Check the threads Michal mentioned above.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 10, 2013 08:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881029"></a>
+                                    <font class="smallfont"><p>You need to have a sensor called "Statussensor" of type custom because you are using it in the when statement.<br/>
+Your regular expression to catch everything should be (.*) </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Dec 10, 2013 09:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881032"></a>
+                                    <font class="smallfont"><p>@Devesh<br/>
+For better readability you could enclose your code within {code}..{code} tags <a href="http://www.openremote.org/display/website/Wiki+Markup+Quick+Start">(see markup instructions)</a>. Do not place a / inside the end tag.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 10, 2013 09:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881034"></a>
+                                    <font class="smallfont"><p>@Pieter <br/>
+        Thanks for tips, surely i'll do <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by devesh24 at Dec 10, 2013 10:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881035"></a>
+                                    <font class="smallfont"><p>Hi all.<br/>
+        I followed every step which is been mentioned in the thread you people suggested but still not get anything.<br/>
+        I am not getting anything in drools.log file, and i am not getting the any .drl file in my controller.<br/>
+        Where i can get the complete source code of controller.</p>
+
+<p>Thanks to all for the great help <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by devesh24 at Dec 10, 2013 10:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881069"></a>
+                                    <font class="smallfont"><p>Hallo Guys.<br/>
+            I am not able to locate any modeler_rules.drl in my controller , is there anything else i need to install.<br/>
+Thank You <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by devesh24 at Dec 11, 2013 05:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881072"></a>
+                                    <font class="smallfont"><p>Hello Devesh,</p>
+
+<p>The modeler_rules.drl will appear under OR/webapps/controller/rules directory after you've synced the controller with your designer account from <a href="http://localhost:8080/controller">http://localhost:8080/controller</a> &#8211; assuming of course that you've correctly saved the rule first in the designer.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 11, 2013 07:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881075"></a>
+                                    <font class="smallfont"><p>Hello Juha Lindfors,<br/>
+                     Thanks for the help, now i am getting this file but its found empty after i sync the controller with online designer .I think something is seriously wrong..<br/>
+Thank You.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by devesh24 at Dec 11, 2013 07:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

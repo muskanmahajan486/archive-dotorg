@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Android openremote DirecTV IPcontrol ?</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Android openremote DirecTV IPcontrol ?
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 14, 2010 by <font color="#0050B2">opie168</font>.
+				    </div>
+
+				    <p>Currently I have the following issue:</p>
+
+<p>&gt; DirecTV has a new IPcontrol function being implemented into there box's the past few months and I am trying to configure openremote on my HTCEvo to use those functions.<br/>
+&gt; Currently I am just trying to set up 1 button to test out to ensure I'm doing it right but I can't get it to work. When pressed I get a "Send Request Error: The command was sent to an invalid URL"<br/>
+&gt; I am connected to my home network via wifi on my phone and have tested the button's command in my browser to ensure it works and it does. The following is the command I type into my browser address bar to double check its function (<a href="http://192.168.1.7:8080/remote/processKey?key=power&amp;hold=keyPress">http://192.168.1.7:8080/remote/processKey?key=power&amp;hold=keyPress</a>). Now when I make a command for openremote to use the previously mentioned function, I create one with HTTP protocol, and simply put the line just mentioned into the URL box. Doing this and pairing it with a button yields me the error message mentioned earlier. I have not changed any other settings and do not know what I should change if needed.<br/>
+&gt; I also tried doing it via TCP/IP protocol and putting the ip and port form the mentioned function and command too, but it also yielded the same error message. </p>
+
+<p>RESPONSE:<br/>
+Can you check in your controller.xml file that the URL is getting encoded correctly.</p>
+
+<p>While in HTTP URL '&amp;' is a valid character, in XML it needs to be escaped as '&amp;' so it is possible that this gets lost somewhere between the conversions of when you enter the URL in the designer, when we store it into an XML file and when we re-create it again as final HTTP URL being used.</p>
+
+<p>Also, it would be preferrable to post follow-ups on <a href="http://forums.openremote.org">http://forums.openremote.org</a> to record issues/solutions to get them fixed and let others know about them or help resolve them.</p>
+
+<p>--------------</p>
+
+
+<p>Now I checked the xml file and didn't see anything out of the ordinary at first glance. Here is what it looks like in notepad btw:</p>
+
+<p>&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br/>
+&lt;openremote xmlns="http://www.openremote.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openremote.org <a href="http://www.openremote.org/schemas/controller.xsd">http://www.openremote.org/schemas/controller.xsd</a>"&gt;<br/>
+  &lt;components&gt;<br/>
+    &lt;button id="6"&gt;<br/>
+      &lt;include type="command" ref="9" /&gt;<br/>
+    &lt;/button&gt;<br/>
+    &lt;button id="8"&gt;<br/>
+      &lt;include type="command" ref="10" /&gt;<br/>
+    &lt;/button&gt;<br/>
+  &lt;/components&gt;<br/>
+  &lt;sensors /&gt;<br/>
+  &lt;commands&gt;<br/>
+    &lt;command id="9" protocol="http"&gt;<br/>
+      &lt;property name="url" value="http://192.168.1.7:8080/remote/processKey?key=power&amp;hold=keyPress" /&gt;<br/>
+    &lt;/command&gt;<br/>
+    &lt;command id="10" protocol="socket"&gt;<br/>
+      &lt;property name="port" value="8080" /&gt;<br/>
+      &lt;property name="command" value="/remote/processKey?key=power&amp;hold=keyPress" /&gt;<br/>
+      &lt;property name="ipAddress" value="192.168.1.7" /&gt;<br/>
+    &lt;/command&gt;<br/>
+  &lt;/commands&gt;<br/>
+  &lt;config&gt;<br/>
+    &lt;property name="controller.roundrobin.tcpserver.port" value="20000" /&gt;<br/>
+    &lt;property name="multicast.address" value="224.0.1.100" /&gt;<br/>
+    &lt;property name="controller.roundrobin.multicast.port" value="10000" /&gt;<br/>
+    &lt;property name="multicast.port" value="3333" /&gt;<br/>
+    &lt;property name="controller.groupname" value="floor20" /&gt;<br/>
+    &lt;property name="Macro.IR.Execution.Delay" value="500" /&gt;<br/>
+    &lt;property name="controller.roundrobin.multicast.address" value="224.0.1.200" /&gt;<br/>
+    &lt;property name="lircd.conf.path" value="/etc/lircd.conf" /&gt;<br/>
+    &lt;property name="controller.groupmember.autodetect.on" value="true" /&gt;<br/>
+    &lt;property name="webapp.port" value="8080" /&gt;<br/>
+    &lt;property name="copy.lircd.conf.on" value="true" /&gt;<br/>
+    &lt;property name="irsend.path" value="/usr/local/bin/irsend" /&gt;<br/>
+    &lt;property name="resource.upload.enable" value="true" /&gt;<br/>
+    &lt;property name="controller.applicationname" value="controller" /&gt;<br/>
+  &lt;/config&gt;<br/>
+&lt;/openremote&gt;</p>
+
+
+
+<p>Now I haven't tried saving the actual zip to my phone as all the testing was done using the test UI online option and having it load that way.</p>
+
+<p>Any suggestions?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-13697393"></a>
+                                    <font class="smallfont"><p>Hi Jase,</p>
+
+<p>The online UI test mode only serves as a quick check for the UI design on the device, and you can't (yet) directly invoke the commands from the phone. You will need to install the controller to handle commands between phone and devices, see <a href="http://download.openremote.org">http://download.openremote.org</a></p>
+
+<p>If after installing the controller, you are still having issues, try escaping the '&amp;' characters in your URLs with '%26' to avoid issues with the XML parser tripping up on the special characters (XML treats '&amp;' differently compared to URLs).</p>
+
+<p>So in the designer enter this instead:</p>
+
+<p><a href="http://192.168.1.7:8080/remote/processKey?key=power%26hold=keyPress">http://192.168.1.7:8080/remote/processKey?key=power%26hold=keyPress</a></p>
+
+
+<p>HTH,</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 14, 2010 12:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697395"></a>
+                                    <font class="smallfont"><p>I have the openremote apk installed on the phone already from the market. What I did in testing the stuff was save it in developer page and then pointed the app to pick the controller from <a href="http://beehive.openremote.org/3.0/alpha5/rest/user/opie168">http://beehive.openremote.org/3.0/alpha5/rest/user/opie168</a> and then went about testing that way. You somewhat lost me when you said I needed to installer the controller.</p>
+
+<p>I will when I get off work go back and change the url's like you mentioned however and see if that fixes the issue.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 14, 2010 13:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697396"></a>
+                                    <font class="smallfont">
+<p>The controller is at the moment a separate application you need to install on a PC, the market version of the android application does not include it, and it's not downloadable from the beehive URL you used &#8211; this will only give you an user interface.</p>
+
+<p>Marc's working on a serverless version that can be used the way you are expecting, though am not sure if HTTP config has been tested yet. Let us know if you want that APK instead (it is currently alpha).</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 14, 2010 13:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697397"></a>
+                                    <font class="smallfont"><p>I mean I'll test whatever needed if you guys want. Can't commit to giving it a considerable amount of use to begin with though till I get the original one set up the way I want though, but still open to testing whatever.</p>
+
+<p>I'll install that application on my pc at home after work and report back.</p>
+
+<p>thanks for the replies.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 14, 2010 13:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697400"></a>
+                                    <font class="smallfont"><p>From what i gather the controller needs to be installed on a linux OS right? well all I have is Win7 here unless you count the Android HTC Evo I'm trying to run the remote app on. I tried changing the &amp;'s to %26 but still got the same message, which I assume would be because I dont have the controler installed on a pc in the house? </p>
+
+<p>sorry for the silly ?'s here, long day at work and very likely im just not thinking straight here.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 14, 2010 21:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697401"></a>
+                                    <font class="smallfont"><p>Win7 is fine. Unzip, and run.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 14, 2010 22:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697402"></a>
+                                    <font class="smallfont"><p>Now I'm lost. lol<br/>
+I unzip and have 2 folders inside when done but neither of the subfolders have an exe file or anything that is recognized by anything except the few notepad files.</p>
+
+<p>Actually might of stumbled across it. Run the index file inside the controller folder, and log in there. and sync with modeler? So steps are to create the stuff in composer, save it, then pull up controller page and put in info and click sync with modeler? when I do this the syncing icon just continues to spin forever.</p>
+
+<p>once again, bear with me its been a long long day.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 14, 2010 23:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697404"></a>
+                                    <font class="smallfont"><p>No problem,</p>
+
+<p>See if this page helps you <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+Controller+Installation" title="OpenRemote 2.0 How To - Controller Installation">OpenRemote 2.0 How To &#45; Controller Installation</a>.</p>
+
+<p>The installation is for WinXP but maybe you're able to modify to Win7, should be fairly similar.</p>
+
+<p>You do need to enter 'openremote run' to start the controller first (as per the instruction on the above page). It's a small web server that will run on your PC and once ready you can open your browser and go to <a href="http://localhost:8080/controller">http://localhost:8080/controller</a> to find the page with 'sync with modeler' (instead of trying the index file directly, which will not work). Once done this way it won't keep spinning forever.</p>
+
+<p>You may need to install Java software first (as explained on the page above), and configure a JAVA_HOME environment variable (also explained) &#8211; there's no one-click installer for Windows yet.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 15, 2010 04:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697409"></a>
+                                    <font class="smallfont"><p>ahh yeah no environment variable would be my big issue. When setting it up I set the value to "C:\Program Files\Java\jdk1.6.0_21\bin" but that seemed to not work so I tried "C:\Program Files\Java\jdk1.6.0_21\" too but that failed as well as "C:\Program Files\Java\"</p>
+
+<p>what last silly little detail am i messing up here?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 15, 2010 11:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697410"></a>
+                                    <font class="smallfont"><p>"C:\Program Files\Java\jdk1.6.0_21" should be right I think,</p>
+
+<p>what's the error (output) you see on the command window after you typed 'openremote run' ?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 15, 2010 11:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697412"></a>
+                                    <font class="smallfont"><p>The JAVA_HOME environment variable is not defined correctly<br/>
+This environment variable is needed to run this program<br/>
+NB: JAVA_HOME should point to a JDK not a JRE</p>
+
+<p>Error shown in the cmd window when typing in command "openremote run" while in directory "C:\Users\Jase\Desktop\OpenRemote-2.0.0_DeveloperRelease11\OpenRemote-2.0.0_DeveloperRelease11\bin" </p>
+
+<p>*openremote extracted zip is located on my desktop currently"<br/>
+*I tried different directories in java and all resulted in same error message for most part too.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 15, 2010 11:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697413"></a>
+                                    <font class="smallfont"><p>Ok, before typing 'openremote run', try 'echo %JAVA_HOME%' and make sure it prints the correct path, and not empty for example.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 15, 2010 11:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697414"></a>
+                                    <font class="smallfont"><p>returned %Program Files%Java\jdk1.6.0_21\</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 15, 2010 12:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697423"></a>
+                                    <font class="smallfont"><p>Hmm.. I don't know enough about Windows to say if that %Program Files% will get properly expanded.</p>
+
+<p>Maybe somebody using Win7 who has controller running can help? I don't have Win7 nearby.</p>
+
+<p>in the meanwhile, you could try setting the variable right before executing the 'openremote run'</p>
+
+<p>&gt; set JAVA_HOME="C:\Program Files\Java\jdk1.6.0_21"<br/>
+&gt; openremote run</p>
+
+
+<p>Can't think of anything else right now and don't have a Windows machine to test with.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 15, 2010 16:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697424"></a>
+                                    <font class="smallfont"><p>I'll try a few things when I get home form work to see if I can get it to work.</p>
+
+<p>What about that alpha apk you were talking about before. If I were using that would I not need the controller correct? If so I wouldn't mind testing that out also in the mean time and work on both here.</p>
+
+<p>just let me know.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 15, 2010 17:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697430"></a>
+                                    <font class="smallfont"><p>setting the variable in the cmd right before running the openremote run command seemed to do the trick. </p>
+
+<p>Last line in my cmd window is "INFO: Server startup in 5831 ms"</p>
+
+<p>That mean it is complete I assume, since when I went to <a href="http://localhost:8080/controller/">http://localhost:8080/controller/</a> and synced it said complete.</p>
+
+<p>Seems to be working. One thing though I had to replace the %26 with &amp; in the addresses for the key press to work. <br/>
+And using the commands via HTTP is only way to work evidently. I tried TCP/IP and that evidently isn't a way to set the commands for the IP control or something isn't working right there. <br/>
+HTTP=&gt; 
+<a href="http://192.168.1.7:8080/remote/processKey?key=power&amp;hold=keyPress">http://192.168.1.7:8080/remote/processKey?key=power&amp;hold=keyPress</a></p>
+
+<p>TCP/IP=&gt; <br/>
+IP Address:192.168.1.7<br/>
+Port:8080<br/>
+Command:/remote/processKey?key=power&amp;hold=keyPress</p>
+
+
+<p>*Lastly-&gt; must I do the "openremote run every time I want to go to <a href="http://localhost:8080/controller">http://localhost:8080/controller</a> and upload everything correctly? right now it seems so b/c as soon as I closed the cmd window I couldn't sync anymore.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 15, 2010 22:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697434"></a>
+                                    <font class="smallfont"><p>Glad to hear you got it working.</p>
+
+<p>You need to keep the server running, yes &#8211; and on Windows closing the cmd window also means closing the server. There are ways to make the server process run in the background on Windows but I haven't looked at those for some time. Maybe at some point will make it a stand-alone service.</p>
+
+<p>The TCP/IP will not work with the HTTP commands &#8211; HTTP is a protocol on top of TCP/IP but this does not mean the TCP/IP knows how to parse HTTP protocol. TCP/IP is intended for raw, unspecified protocols over IP network... HTTP connector means we know how to parse th syntax of the protocol (URL).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 16, 2010 07:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-14254093"></a>
+                                    <font class="smallfont"><p>Got back to this some this week. realized that i not only have to have the server up for syncing but also if I just want to use the openremote app on my phone. It seems when the server is not running and the app loads the cached version non of the buttons work. Even disconnecting the server after a sync and the app still up the buttons become non-functional.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by opie168 at Dec 30, 2010 12:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:29</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

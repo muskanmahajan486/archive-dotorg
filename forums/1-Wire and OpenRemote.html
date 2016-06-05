@@ -1,0 +1,641 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : 1-Wire and OpenRemote</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : 1-Wire and OpenRemote
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 15, 2012 by <font color="#0050B2">domiam</font>.
+				    </div>
+
+				    <p>In continuation of the discussion opened beneath the article <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+1-Wire+Sensors" title="How To - 1-Wire sensors">How To - 1-Wire sensors</a> about 1-Wire and OWFS:</p>
+
+
+<p>I have my sensors(DS18B20) visible within the OWFS, but the temperatures appear as N/A in iPhone or Web-panel after I read from them the way described in <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+1-Wire+Sensors" title="How To - 1-Wire sensors">How To - 1-Wire sensors</a>.<br/>
+The only difference is I don't assign the aliases to my sensors the way it described here above. So my device address looks the way like: "\28.25E9E3010000". I don't think it could occur any issues.</p>
+
+<p>The only thing I'm still hesitating is: "Hostname - ip address or hostname of owserver". Is this address complies to the IP of my server(mainly Synology DS). Is this local address or 127.0.0.1?</p>
+
+<p>__________________________________________________________________________</p>
+
+
+<p>Onward implementation(taht I was explained in the article <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+1-Wire+Sensors" title="How To - 1-Wire sensors">How To - 1-Wire sensors</a>) is to discontinue the OWFS. </p>
+
+<p>But how is that suppose to interact with OpenRemote? </p>
+
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19988635/20152324.png">CustomSensor.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19988650"></a>
+                                    <font class="smallfont"><p>Dear Marcus Redeker, </p>
+
+<p>You said beneath this article: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+1-Wire+Sensors" title="How To - 1-Wire sensors">How To - 1-Wire sensors</a>, that:</p>
+
+<p>"..By the way, the current implementation supports a toggle for 1-wire switches. If you create a command with "sensor attribute = PIO.A" you should be able to assign this command to a button and use that to toggle the switch.."</p>
+
+<p>But you see.. I'm the one who is called "newbie". I have DS2413 dual-chanel switch. But I don't know how to deal with it being connected to my Synology DS(NAS) thru DS9490R-master. Would you describe this mechanism in details in here?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 15, 2012 08:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988664"></a>
+                                    <font class="smallfont">
+<p>I use the command to start owfs: "/opt/bin/owfs -s 3000 /mnt/1-wire &amp;" to start owfs without direct access to 1-wire devices.</p>
+
+<p>It is quite different, but still the same. And fuse driver(mainly owfs) doesn't run if I start owfs the way I described above. And I still got N/A, when read from my sensors on the the same host, where owserver runs.</p>
+
+<p>What could be the problem? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 15, 2012 17:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988666"></a>
+                                    <font class="smallfont"><p>owfs is not owserver. OpenRemote needs owserver. The program is also called owserver. <br/>
+If you have the USB device you start owserver like this: /usr/bin/owserver -u -p 4304<br/>
+Do you already know 1-Wire and have a complete 1-Wire bus setup and running? Or do you only have one DS18B20 attached to your DS9490R?</p>
+
+<p>Once you have owserver running you can use owhttpd to verify that all devices are found.<br/>
+Start owhttpd like this: /usr/bin/owhttpd -s localhost:4304 -p 8888<br/>
+Now you can access 1-Wire through a web page: http://&lt;ip-where-owhttpd-is-running&gt;:8888/</p>
+
+<p>Once you have that running, you can setup OpenRemote. If it runs on the same machine as owserver the settings for the command are:<br/>
+host: localhost<br/>
+port: 4304<br/>
+device address:/28.25E9E3010000<br/>
+sensor attribute: temperature<br/>
+polling interval: 1m</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 15, 2012 21:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988668"></a>
+                                    <font class="smallfont"><p>Ok, fair enough. </p>
+
+<p>As long as I understand, OpenRemote and owfs(file system itself, the part of OWFS package) can't run on the same time? But what if I'd like to get access to my 1-Wire devices through the file system (owfs)? You said here: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+1-Wire+Sensors" title="How To - 1-Wire sensors">How To - 1-Wire sensors</a>, that is possible to run owfs and OpenRemote on the same time when owfs reads the data from owserver(the part of OWFS).</p>
+
+<p>And of course I have my DS18B20 sensors attached to the "master" - DS9490R(which is attached to my Synology DS209 NAS) using SFTP bus. After starting OWFS services with the sequence of the commands below I see my sensors in the system thru the web-page http://&lt;ip-where-owhttpd-is-running&gt;:8890/ and directly trough the file system of my NAS. </p>
+
+<p>1) /usr/bin/owserver -uall -p 4304</p>
+
+<p>2) /usr/bin/owfs -s 4304 /var/1-Wire/ </p>
+
+<p>(owfs read data from owserver port 4304, and shouldn't interfere with OpenRemote)</p>
+
+<p>3) /usr/bin/owhttpd -s 4304 -p 8888</p>
+
+<p>Please tell me, how do they differ from what you've said to make some obstacle for proper work of OpenRemote.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 16, 2012 04:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988679"></a>
+                                    <font class="smallfont"><p>With the commands in your last post everything is fine. If you use these commands owfs and owhttp are also using owersever just like OpenRemote does. Do you also have OpenRemote installed on the Synology DS209 NAS or on another machine?<br/>
+If openremote is running on the same machine (the DS209 NAS) then the settings I showed above are fine. If OpenRemote is not running on the NAS you have to use the NAS's IP for the "host" attribute when defining the 1-Wire command in OpenRemote designer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 16, 2012 08:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988681"></a>
+                                    <font class="smallfont"><p>OpenRemote is run on the same host with OWFS package installed on. On my Synology NAS as I described above.  </p>
+
+<p>I've also tried to start OWFS using your commands and the problem is still the same.<br/>
+And if you say the commands I use to start &lt;owserver&gt;, &lt;owhttpd&gt;, &lt;owfs&gt; are fine, so what could be the problem of I can't get the values of my temperature from DS18B20 sensors?</p>
+
+<p>I could provide you with my OpenRemote account details. Would you be able to look on my OpenRemote Designer settings? I can also give you the temporary web-adress to access the owhttpd to look on the 1-wire system state.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 16, 2012 08:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988684"></a>
+                                    <font class="smallfont"><p>You can email me (marcus (at) openremote (dot) org) the openremote.zip which you can download from the designer.<br/>
+Also, can you look at the log files, if you see any error or exception?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 16, 2012 09:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988685"></a>
+                                    <font class="smallfont"><p>I sent the log files and OpenRemote Designer settings file to you over email </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 16, 2012 10:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988686"></a>
+                                    <font class="smallfont"><p>In the 1-Wire command you use port 3000. This means owserver also has to be started with "-p 3000". <br/>
+If you use "-p 4304" as in my example you also have to change the openremote 1-wire command to port 4304.</p>
+
+<p>There could also be an issue with the RangeSensor on our side. Please try and use CustomSensor without any state items.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 16, 2012 11:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988687"></a>
+                                    <font class="smallfont"><p>Actually, you are right - I use port 3000. And in command in OR Designer I use 3000 too.</p>
+
+<p>So.. What is the issue about the RangeSensor. And what does it mean like to use CuastomSensor without any state item?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 16, 2012 11:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988688"></a>
+                                    <font class="smallfont"><p>The 1-Wire protocol was changed after the How-to was written. I think it works with custom sensor now because it returns a string which includes a decimal point and does not convert to integer anymore which is used by the RangeSensor.<br/>
+Just create the CustomSensor like this:<br/>
+<a class="confluence-thumbnail-link 372x441" href='http://www.openremote.org/download/attachments/19988635/CustomSensor.png'><img src="attachments/thumbnails/19988635/20152324" align="absmiddle" border="0"/></a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 16, 2012 11:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988689"></a>
+                                    <font class="smallfont"><p>So what should be in the "Name" and in the "Value" fields?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 16, 2012 11:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988690"></a>
+                                    <font class="smallfont"><p>Nothing, that's why I said earlier "without any state items".<br/>
+Just hit "Submit" after defining the name, the type and choose a command.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 16, 2012 11:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988693"></a>
+                                    <font class="smallfont"><p><br/>
+And how at this point I should send the commands to the switches based on DS2408 or DS2413?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 16, 2012 11:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988694"></a>
+                                    <font class="smallfont"><p>Once you have this working we know the communication is established.</p>
+
+<p>To send commands to switches you don't need a sensor.<br/>
+Just create a command with "attribute = PIO.A", host, port, address and assign this to a button.<br/>
+The current implementation should read "PIO.A" and if it is "0" it will write "1" or vice versa.<br/>
+This should toggle the switch. </p>
+
+<p>Sending dedicated "on" or "off" which you need to create a openremote switch object is not supported.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 16, 2012 12:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988695"></a>
+                                    <font class="smallfont"><p>It still doesn't go through.. I'll try it later on again with other options of Commands fields. But now as it is - it doesn't work. </p>
+
+<p>Thanks! </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 16, 2012 12:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988696"></a>
+                                    <font class="smallfont"><p>The only solution would be Teamviewer and I look myself.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 16, 2012 12:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988704"></a>
+                                    <font class="smallfont"><p>That would be nice<img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>. When you'll have a suitable and convenient time for you?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 17, 2012 04:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988706"></a>
+                                    <font class="smallfont"><p>Sometime tomorrow afternoon should be doable.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 17, 2012 11:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988707"></a>
+                                    <font class="smallfont"><p>Thanks Marcus! It's working now! I finally get it work<img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>. <br/>
+I don't know how and why, but it suddenly started working. I deleted all the stuff in Designer. Then recreated it from the scratch. I assigned 'custom sensor' type. Now it's fine. </p>
+
+<p>Tomorrow I will try it on my humidity and pressure sensors. But I'm not sure how to deal with the pressure magnitude dimension output for now. </p>
+
+<p>Soon-after I'll try to work on sending the commands to my switch. But the question is are there any way to follow with the switch state? And how to manage with 1-wire switches?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 17, 2012 12:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988727"></a>
+                                    <font class="smallfont"><p>Great to hear that it is working.<br/>
+Do you have to perform some kind of calculation for humidity and pressure? My humidity sensors needs a calculation. This should be doable with the rules engine.</p>
+
+<p>Regarding the switch: As I said only a toggle with no status is supported. We can take a look at supporting more stuff.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 18, 2012 13:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988733"></a>
+                                    <font class="smallfont"><p>That would be nice, to obtain the status after sending a command. What type of humidity sensor do you have? 1-wire? And what type of calculation it needs in? Cause I have no glue how it works on humidity and pressure<img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> I just wanted to add humidity and pressure sensor into my 1-wire network. I haven't tried that before. I 'll let you know soon I have any results..</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 18, 2012 15:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988743"></a>
+                                    <font class="smallfont"><p>I just created a fix and uploaded the controller here: <a href="http://www.redeker-consulting.de/openremote/OpenRemote-Controller-2.0.0.zip">http://www.redeker-consulting.de/openremote/OpenRemote-Controller-2.0.0.zip</a><br/>
+I don't have switch devices but maybe you can try <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+There is a new attribute "data" available now which you have to add to the command to send data to the device. For switches you have to send "0" for off and "1" for on. Since the online designer does not support this attribute yet, you have to edit the controller.xml and add the line there.<br/>
+You can also query the status just like querying a temperture, just use the appropriate sensor attribute.</p>
+
+<p>When you have all your devices attached to the 1-Wire bus, we could probably do a teamviewer session and I show you what todo.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 18, 2012 23:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988744"></a>
+                                    <font class="smallfont"><p>Ok. I got it<img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> I'll finish soldering the switch device these days. Then I'll get contact with you. Thank you!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 19, 2012 09:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988915"></a>
+                                    <font class="smallfont"><p>Dear Markus. I've tested the verity of devised on OpenRemote during last two weeks. All works fine. But. I have a question. Are there any possybility to make decimal part of digits shorter. Forexample, if humidity shows as 78.3456,  to make it 78.3 or 78?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by domiam at May 31, 2012 08:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19988924"></a>
+                                    <font class="smallfont"><p>Hi Alex,<br/>
+the rule engine is supposed to be used for number formatting. We will create UI for this in the future, where you can tell the sensor how it's value is supposed to be formatted.<br/>
+For now, try this rule:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+<span class="code-keyword">import</span> org.openremote.controller.protocol.Event;
+<span class="code-keyword">import</span> java.text.DecimalFormat;
+
+rule <span class="code-quote">"format temperature"</span>
+when
+  $tempSensor:CustomState( source == <span class="code-quote">"OfficeTemperatureSensor"</span> )
+then
+  $tempSensor.setValue(""+formatDouble(<span class="code-object">Double</span>.valueOf($tempSensor.getValue())));
+end
+
+function <span class="code-object">String</span> formatDouble(<span class="code-object">double</span> d) {
+  <span class="code-keyword">return</span> (<span class="code-keyword">new</span> DecimalFormat(<span class="code-quote">"#,###.00"</span>)).format(d);
+}
+
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at May 31, 2012 11:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19989280"></a>
+                                    <font class="smallfont"><p>Marcus,</p>
+
+<p>I'm very interested in learning more about the rules engine and applying formatting to a variety of inputs if possible.  </p>
+
+<p>I'm not sure if i follow the above correctly, or if it can be applied to any sensor (or just 1-wire).  </p>
+
+<p>I already have custom state defined for most of my sensors, i'm just not clear how to invoke this formatting rule for them.</p>
+
+<p>Thanks!</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by salesguy at Jun 19, 2012 12:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19989281"></a>
+                                    <font class="smallfont"><p>The rule can work for any custom sensor. A custom sensor always returns a string for it's value. </p>
+
+<p>If the string can be converted into a number, it is always possible to create a DecimalFormatter (special Java class which is used in my example above) to format the string representation of  that number.</p>
+
+<p>The rule engine is always invoked when a sensor value changes and which rule is triggered depends on the "when" clause. In my example above the rules is triggered when the sensor name is "OfficeTemperatureSensor". </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jun 19, 2012 13:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448507"></a>
+                                    <font class="smallfont"><p>Hi Marcus</p>
+
+<p>Thanks for your fix version of the controller. I tried it and it works fine. But I have one problem.<br/>
+I created three commands: relay ON, relay OFF and relay STATUS (ON and OFF with "data" attribute). Then I created relay sensor as custom type (with relay STATUS command). I got 1 or 0. If I created two buttons, one with relay ON command and second with relay OFF command all work fine. But when I created switch with relay sensor and relay ON/OFF command and then tested it, switch didn't work as I expected. When I pressed switch, relay turned on, but when I pressed again relay didn't turned off. Switch status also didn't change. <br/>
+Could be problem in sensor type (1/0 instead of on/off)? Any suggestion?</p>
+
+<p>Thanks for your help.</p>
+
+<p>Regards,<br/>
+Nejc</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Jul 08, 2012 17:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448513"></a>
+                                    <font class="smallfont"><p>Yes, a switch sensor has to return "on" and "off". <br/>
+You can try the custom sensor and map "0" to "off" and "1" to "on"</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jul 08, 2012 21:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20448526"></a>
+                                    <font class="smallfont"><p>It works.<br/>
+Thanks Marcus.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nejc at Jul 09, 2012 08:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21037994"></a>
+                                    <font class="smallfont"><p>This probably isn't the most appropriate forum for this question (though the thread has several people who appear to know what I'm trying to figure out) </p>
+
+<p>I am trying to use a 1-wire network to switch on/off a thermostat control and a light, but I'm in way over my head.  </p>
+
+<p>Can anyone give any advice on how to create a "switch" or "relay" controlled by a 1-wire network? </p>
+
+<p>Alex Dom mentioned using a DS2413 and it sounds like others are using 1-wire to switch/control other things. </p>
+
+<p>Can anyone here give me a pointer to how you create the switch circuit?<br/>
+Thanks, <br/>
+Steve</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by wooo at Dec 02, 2012 08:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528803"></a>
+                                    <font class="smallfont"><p>You can find some information in this thread <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+But I also updated the "1-Wire How to" which explains the new version of the protocol and has some more information.<br/>
+You can find it here: <a href="http://www.openremote.org/display/docs/OpenRemote+2.1+How+To+-+1-Wire+Sensors">http://www.openremote.org/display/docs/OpenRemote+2.1+How+To+-+1-Wire+Sensors</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 09, 2013 22:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528852"></a>
+                                    <font class="smallfont"><p>Thank you for the link Marcus, unfortunately I wasn't very clear about what I am asking.  I am looking for information for how to physically create the switch where I can control a higher voltage circuit (ie, my thermostat) using the DS2413 chip.  I feel like there is something missing between the actual DS2413 chip and the switch/circuit I want to toggle on/off.  Does that make sense?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by wooo at Jan 11, 2013 03:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528871"></a>
+                                    <font class="smallfont"><p>Yes, it makes sense <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+And yes you need to add something to the DS2413 to switch higher voltage.<br/>
+There exist a couple of shops which sell ready made solution.<br/>
+A quick google revealed this eg. for germany: <a href="http://www.eservice-online.de/1-Wire-Bus/1-Wire-Fertigmodule/Digital-Ein-und-Ausgang-Analog-Eingang-Zaehler/">http://www.eservice-online.de/1-Wire-Bus/1-Wire-Fertigmodule/Digital-Ein-und-Ausgang-Analog-Eingang-Zaehler/</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 11, 2013 10:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858302"></a>
+                                    <font class="smallfont"><p>Hi guys, I am working on a project with 1-wire.<br/>
+I am using ubuntu 12.04 .I installed OWFS like here :<a href="http://owfs.org/index.php?page=quickstart-guide">http://owfs.org/index.php?page=quickstart-guide</a><br/>
+and now I'm very confused because I saw how alex dom starts his owfs/server/httpd and in this version there is an owfs.conf containing all the attributes like ports and device source.The test with the fake devices works but when I am trying to test my hardware (which I really belive is good) using serial,server starts OK and owhttpd starts OK but after 2-3 seconds the process owhttpd dies.. the way I start them is : service owserver/owhttpd start. Do I still need to start owfs? I'm so confused of what to config in owfs.conf also(I did exact steps as in the link and still failed)...I need some help please. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joorj at Mar 07, 2013 16:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858304"></a>
+                                    <font class="smallfont"><p>I don't know what your start script in /etc/init.d/ does but everything is explained here:
+<a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+1-Wire+Sensors">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+1-Wire+Sensors</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Mar 07, 2013 19:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21858305"></a>
+                                    <font class="smallfont"><p>I will install again owfs and try that...because with this installation it's simply not working either ways..thanks for the fast replay I will let you know when I will succeed <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joorj at Mar 07, 2013 19:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859005"></a>
+                                    <font class="smallfont"><p>I finally did it!<br/>
+Now I'm wondering..I didn't search a lot but is it true that you can use the apps(Ios/android) only in your LAN?<br/>
+what if I'm not in my LAN and I want to see my panels <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> ? I tried to make a port forwarding from my lan but that it's impossible i think because it's " :8080/controller" and i can't forward "/controller" too, right?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joorj at Mar 20, 2013 18:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859008"></a>
+                                    <font class="smallfont"><p>Port forwarding should work, but you should enable controller security <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+We are working on a secure remote proxy service for the Pro version.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Mar 20, 2013 21:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859064"></a>
+                                    <font class="smallfont"><p>can u give me a hint or a link on how to enable controller security?( Just to be clear I'm not intrested of connection to be secure I just want to access the controller from a device from the app when I'm not in my LAN) </p>
+
+<p>""edit-- I succeded in that too <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> ""<br/>
+Thanks.</p>
+
+<p>I really want to learn a lot about this program and protocols and hardware that goes with them and after that I'll be looking forward to pro version <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by joorj at Mar 21, 2013 12:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21859070"></a>
+                                    <font class="smallfont"><p>Try the search. There are quite some forum entries regarding authentication.<br/>
+eg.: <a href="http://www.openremote.org/display/forums/USER+AUTHENTICATION">http://www.openremote.org/display/forums/USER+AUTHENTICATION</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Mar 21, 2013 13:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

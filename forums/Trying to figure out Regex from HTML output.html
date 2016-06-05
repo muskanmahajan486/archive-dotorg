@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Trying to figure out Regex from HTML output</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Trying to figure out Regex from HTML output
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 08, 2013 by <font color="#0050B2">iloveautomation</font>.
+				    </div>
+
+				    <p>I recently started trying different things using Regex to extract from a html file that is on my network webserver. The output is as below and I am trying to extract the program name which is the information after MediaName "Fareed Zakaria GPS"</p>
+
+<p>HTML FILE</p>
+
+<p>204 Connected (Build: 1.0.0 Clients: 1) Volume=50 Mute=False FS_Unknown=True TVTuner=True Play=True MediaName=Fareed Zakaria GPS MediaTime=323 TrackNumber=817 TrackTime=320</p>
+
+<p>REGEX CODE</p>
+
+<p>(?&lt;=MediaName=)(.*?)(?=MediaTime)</p>
+
+<p>For some reason I am not getting the information when I tie the command to a sensor. I am using VMC Controller for Windows Media Player to the information from WMCIP:40400</p>
+
+<p>I was wondering if somebody could provide some help.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22880966"></a>
+                                    <font class="smallfont"><p>This regular expression should work <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">(.*MediaName=)(.*)(MediaTime.*)</pre>
+</div></div></p>
+
+<p>And you'll have the desired string in matched group 2</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Dec 09, 2013 08:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22880998"></a>
+                                    <font class="smallfont"><p>Thanks Eric but unfortunately it did not work. I am getting N/A on the UI where I have a label linked to a sensor. I tried it on both iOS and Webconsole.</p>
+
+<p>Secondly I tried this on an online regex builder (<a href="http://gskinner.com/RegExr/">http://gskinner.com/RegExr/</a>) and interestingly it was picking up all the text from the HTML file and not just the MediaName.</p>
+
+<p>Not sure what is going on.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by iloveautomation at Dec 09, 2013 17:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881007"></a>
+                                    <font class="smallfont"><p>Try this...more or less the same, but with slightly more location qualifiers... </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+^(?s)(.*MediaName=)(.*)(MediaTime).*$
+</pre>
+</div></div>
+
+<p>It works on the simulator at the link you provided. Just make sure you set the "Read Regex Group" in the configuration of your open-remote command to "2"</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by holeymoley at Dec 09, 2013 21:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881008"></a>
+                                    <font class="smallfont"><p>Thanks Paddy. I updated the regex but I am not sure where to set the "Read Regex Group" to "2".<br/>
+My command is a HTTP GET command and scans through a WMCStatus.html file which is sitting on my webserver.<br/>
+I see the options when using a Telnet command.</p>
+
+<p>Sorry for the ignorance.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by iloveautomation at Dec 09, 2013 21:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881010"></a>
+                                    <font class="smallfont"><p>Sorry - you are correct, using a HTTP command does not give you the option of specifying the matched group! Apologies.... I automatically think in terms of TCP/IP and Telnet when regex is mentioned...<br/>
+Maybe one of the Open Remote Devs could help to clarify if this is possible?</p>
+
+<p>The only other way I can think of is on the web-server end, have some kind of script that can parse the html into a simple XML file and then you could easily use an XPATH expression to look it up. I have never used WMC controller, but if you can have a snoop around on there, it may even be the case that an XML file already exists with your required information in there... a lot of webpages I glean info from are scraped from XML in the first place by the server...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by holeymoley at Dec 09, 2013 21:42
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881012"></a>
+                                    <font class="smallfont"><p>Just had a thought, It might be because your expression works as a 'Find' but not as a 'Match'...</p>
+
+<p>Might be worth trying </p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+^.*(?&lt;=MediaName=)(.*)(?=MediaTime).*$
+</pre>
+</div></div>
+
+<p>It will form a match as it includes wildcards to match the start and end of your file. It should also return only one match group, which hopefully the OR Http will pick up on...</p>
+
+<p>My first regex in the post above returns multiple match groups, which probably is too much for the HTTP command to work with...</p>
+
+<p>Hope you get it sorted anyways.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by holeymoley at Dec 09, 2013 23:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881014"></a>
+                                    <font class="smallfont"><p>Hi Paddy...Tried it but no luck.<br/>
+What surprises me is that for the code (?&lt;=TrackNumber=)(\w*) I am correctly getting the TrackNumber (817 is the above example).<br/>
+Unfortunately no luck with MediaName since it is a string and not one word.</p>
+
+<p>Not being a programmer and limited knowledge on Java I am just trying different things. Thanks for your help so far.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by iloveautomation at Dec 09, 2013 23:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881015"></a>
+                                    <font class="smallfont"><p>Weird... <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">\w</pre>
+</div></div> is going to match a word (but only one as far as I know), and as there is a space after the 817 that probably explains that... If you put in <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">.*</pre>
+</div></div> instead I wonder will it pull back everything to the end of the string..track-time etc..If it does, I really cant see why the full matching command I gave you wont work...</p>
+
+<p>Can you post the actual html file you are trying to parse? The line in your first post appears to be from the controller debug log... The actual HTML might have formatting or unusual characters that's not being matched somehow..</p>
+
+<p>Regex is not normally used to parse HTML as by its nature, HTML is not very structured. Don't let that deter you though, if its a simple/trivial file it should be possible..</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by holeymoley at Dec 10, 2013 00:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881041"></a>
+                                    <font class="smallfont"><p>Hi Paddy... What I have posted above is the html file. I have a batch script that telnets into the WMC system and spits out the output as a html file on to my xampp webserver.<br/>
+So for example when I type in <a href="http://192.168.24.161/WMC_NowPlaying.html">http://192.168.24.161/WMC_NowPlaying.html</a> in my network I get the webpage with the following output.</p>
+
+<p>204 Connected (Build: 1.0.0 Clients: 1) Volume=50 Mute=False FS_Unknown=True TVTuner=True Play=True MediaName=Fareed Zakaria GPS MediaTime=323 TrackNumber=817 TrackTime=320</p>
+
+<p>Now I could have used Telnet command directly from Openremote but the problem is that it is a live stream of output and so never closes the telnet connection. Using a batch script I run the telnet connection and then kill the telnet connection after 1 second. I agree it is a roundabout way but not having any software background I am trying different things with my limited background.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by iloveautomation at Dec 10, 2013 12:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881045"></a>
+                                    <font class="smallfont"><blockquote><p>So for example when I type in <a href="http://192.168.24.161/WMC_NowPlaying.html">http://192.168.24.161/WMC_NowPlaying.html</a> in my network I get the webpage with the following output.</p></blockquote>
+<p>I guess what Paddy means is that he wants to see the source of that page. So once it is displayed in your browser, press &lt;CTRL&gt;+U to get the source. Copy that in your response and enclose that pasted text in between {code}...{code} tags</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Dec 10, 2013 15:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881049"></a>
+                                    <font class="smallfont"><p>Thanks for clarification Pieter, but that is what I get from the html source. There are no html tags</p>
+
+<p>As mentioned earlier, I am using a batch script to write the telnet output to an html file and then kill the telnet window since it is a streaming output that does not stop hence does not exit the telnet connection.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by iloveautomation at Dec 10, 2013 16:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881052"></a>
+                                    <font class="smallfont"><p>I think this will work for you: <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">(?&lt;=MediaName=)(.*)(?=MediaTime)</pre>
+</div></div></p>
+
+<p>We were close yesterday...seems like in the HTTP regex function, you can only have one return group and it is not necessary to match the entire string. My previous use of regex in OR was with telnet commands, which stumped me for a few days until I figured out (in my use case at least) that OR seemed to need to match the entire string and extract content from selectable groups..  </p>
+
+<p>I realise its incredibly close to what you had originally, but I have tested on a test webserver with a html file exactly like yours, with no html tags... I have in working on my Android touch interface (Galaxy S4)  </p>
+
+<p>Please let me know if this works for you?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by holeymoley at Dec 10, 2013 21:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881742"></a>
+                                    <font class="smallfont"><p>Hi Paddy, I was finally able to getting it working with the code <br/>
+(?&lt;=MediaName=)<span class="error">&#91;\s\S&#93;</span>*(?=MediaTime).<br/>
+Seems to be a little crude but works for me and now I am able to get all the text following MediaName until MediaTime.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by iloveautomation at Dec 27, 2013 01:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

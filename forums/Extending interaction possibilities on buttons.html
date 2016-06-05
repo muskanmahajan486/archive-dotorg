@@ -1,0 +1,499 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Extending interaction possibilities on buttons</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Extending interaction possibilities on buttons
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 05, 2011 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>In the current implementation of a button, only one action can be associated with it. It is executed immediately when the user presses the button.<br/>
+Optionally, it can be marked as repeat, so that the action is executed every x ms (300 currently for iOS) as long as the user keeps pressing the button.</p>
+
+<p>We would need to extend that to support additional forms of interaction with the button:</p>
+<ul class="alternate" type="square">
+	<li>release : it should be possible to trigger a specific action when the user releases the button. Potentially, if no action is defined on press, this means the action is only triggered when the user releases the button. Defining both can be used for instance to dim a light for system supporting a start dim and stop dim command.</li>
+	<li>long press : if the user keeps pressing the button for some time, another different action is executed (and the short press action is not). Defining a long press action would prevent use of the repeat option.</li>
+	<li>long release : same as short release</li>
+	<li>double tap : some systems support that, not sure we need it as in general defining too many control options on one button is not user friendly.</li>
+</ul>
+
+
+<p>To sum it up, it will be possible to define 4 actions on a button:</p>
+<ul class="alternate" type="square">
+	<li>on short press, with option to repeat if no long press/release action defined and configurable delay for repeat</li>
+	<li>on short release</li>
+	<li>on long press, with configurable delay for what "long" means</li>
+	<li>on long release</li>
+</ul>
+
+
+<p>In this approach, the logic to map between a specific interaction and a command to send is implemented in the console. Nothing needs to be changed as far as communication protocol (REST command) with the controller.</p>
+
+<p>Another approach could be to send button events to the controller (button pushed, button release) and let the controller decide on how this maps to a command. This mandates usage of some form of scripting on the controller side which 1. is not fully implemented yet and 2. would make configuration more difficult (though it is always possible to have the modeler generate the script from a more user friendly configuration UI). Anyway, I don't believe this second option is practical at this stage.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-16024274"></a>
+                                    <font class="smallfont"><blockquote>
+<p>In this approach, the logic to map between a specific interaction and a command to send is implemented in the console. Nothing needs to be changed as far as communication protocol (REST command) with the controller.</p></blockquote>
+<p>This might not be that easy, the mechanism is as follows:<br/>
+If a command is defined on a button, the &lt;button&gt; tag in panel.xml has the hasControlCommand attribute set to true.<br/>
+When the button is pressed, the console calls rest/control/&lt;button id&gt;/click to the controller.<br/>
+The controller will look up the received id (id of the button) and create a list of commands to execute.</p>
+
+<p>So the protocol might stay the same, replacing the last part (click) with specific commands (press, release, long_press, long_release, repeat) but both the panel and controller XML need to be updated and the way the controller processes this needs to be reviewed.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 05, 2011 16:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024286"></a>
+                                    <font class="smallfont"><p>Let's tackle first the panel.xml changes.<br/>
+Current schema for button is</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+	&lt;xsd:element name=<span class="code-quote">"button"</span>&gt;
+		&lt;xsd:annotation&gt;
+			&lt;xsd:documentation&gt;&lt;![CDATA[
+				The button on panel.Its label is the name shown on the button.
+				Its position is defined by coordinates (x, y).
+				Its size is defined by width and height.The meature is one cell on the panel.
+				attribute repeat: whether the button send command on and on when it is pressed down. 	
+				attribute hasControlCommand: whether the button has bound a command. 			
+			]]&gt;&lt;/xsd:documentation&gt;
+		&lt;/xsd:annotation&gt;
+		&lt;xsd:complexType&gt;
+			&lt;xsd:sequence&gt;
+				&lt;xsd:group ref=<span class="code-quote">"buttonGroup"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"unbounded"</span>&gt;&lt;/xsd:group&gt;
+			&lt;/xsd:sequence&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"id"</span> type=<span class="code-quote">"idType"</span> use=<span class="code-quote">"required"</span> /&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"name"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"required"</span> /&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"repeat"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"hasControlCommand"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+		&lt;/xsd:complexType&gt;
+	&lt;/xsd:element&gt;
+</pre>
+</div></div>
+
+<p>This can be enhanced to</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+	&lt;xsd:element name=<span class="code-quote">"button"</span>&gt;
+		&lt;xsd:annotation&gt;
+			&lt;xsd:documentation&gt;&lt;![CDATA[
+				The button on panel.Its label is the name shown on the button.
+				Its position is defined by coordinates (x, y).
+				Its size is defined by width and height.The meature is one cell on the panel.
+				attribute repeat: whether the button send command on and on when it is pressed down. 	
+				attribute hasControlCommand: whether the button has bound a command. 			
+			]]&gt;&lt;/xsd:documentation&gt;
+		&lt;/xsd:annotation&gt;
+		&lt;xsd:complexType&gt;
+			&lt;xsd:sequence&gt;
+				&lt;xsd:group ref=<span class="code-quote">"buttonGroup"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"unbounded"</span>&gt;&lt;/xsd:group&gt;
+			&lt;/xsd:sequence&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"id"</span> type=<span class="code-quote">"idType"</span> use=<span class="code-quote">"required"</span> /&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"name"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"required"</span> /&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"repeat"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"repeatDelay"</span> type=<span class="code-quote">"xsd:integer"</span> minInclusive=<span class="code-quote">"100"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"hasShortPressCommand"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"hasShortReleaseCommand"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"hasLongPressCommand"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"hasLongReleaseCommand"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"longPressDelay"</span> type=<span class="code-quote">"xsd:integer"</span> minInclusive=<span class="code-quote">"250"</span> use=<span class="code-quote">"optional"</span>/&gt;
+		&lt;/xsd:complexType&gt;
+	&lt;/xsd:element&gt;
+</pre>
+</div></div>
+
+<p>The <tt>repeat</tt> stays as is but is considered false whatever the provided value if either <tt>hasLongPressCommand</tt> or <tt>hasLongReleaseCommand</tt> is true.<br/>
+The <tt>repeatDelay</tt> attribute is added, indicating the delay in milliseconds between successive send of commands. It is ignored if <tt>repeat</tt> is false.<br/>
+The <tt>hasControlCommand</tt> has been replaced with <tt>hasShortPressCommand</tt>, <tt>hasShortReleaseCommand</tt>, <tt>hasLongPressCommand</tt> and <tt>hasLongReleaseCommand</tt>. Each indicates the presence of a command for the specified event type. See below for impact on REST API.<br/>
+The <tt>longPressDelay</tt> is added, indicating the delay in milliseconds before a press is considered long.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 06, 2011 11:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024288"></a>
+                                    <font class="smallfont"><p>Next, impact on the REST API:</p>
+
+<p>In the current implementation, when the button is pressed, the console calls the following URL: <tt>&lt;server&gt;rest/control/&lt;button id&gt;/click</tt> on the controller.<br/>
+If it is a repeat button, it does so every x ms.</p>
+
+<p>Given the proposed changes in panel.xml above, it the API can easily be changed so that the last part of the URL <tt>click</tt> is replaced with <tt>shortPress</tt>, <tt>shortRelease</tt>, <tt>longPress</tt> and <tt>longRelease</tt>.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 06, 2011 11:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024289"></a>
+                                    <font class="smallfont"><p>Controller implementation and controller.xml:</p>
+
+<p>When the controller receives a <tt>rest/control</tt> URL, it parses the component id and the command (the <tt>click</tt> part).<br/>
+Based on those, it then looks up a <tt>Control</tt> instance and ask it its list of <tt>executableCommands</tt>.<br/>
+The <tt>Control</tt> instance will also validate the command that it understand.<br/>
+In this case, the <tt>Control</tt> is a <tt>Button</tt> and the only allowed command is <tt>click</tt>.</p>
+
+<p>In the controller.xml, this translates into something like</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    &lt;button id=<span class="code-quote">"245"</span>&gt;
+      &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"290"</span> /&gt;
+      &lt;delay&gt;250&lt;/delay&gt;
+      &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"289"</span> /&gt;
+    &lt;/button&gt;
+</pre>
+</div></div>
+
+<p>In the current code, the list of <tt>executableCommands</tt> returned by a control is not dependent on the command.<br/>
+I would propose to enhance this to add this possibility.</p>
+
+<p>So at the code level, instead of using <tt>control.getExecutableCommands()</tt> the code would be <tt>control.getExecutableCommands(command)</tt>.<br/>
+In the XML, the definition could be something like</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    &lt;button id=<span class="code-quote">"245"</span>&gt;
+      &lt;commands command=<span class="code-quote">"shortPress"</span>&gt;
+        &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"290"</span> /&gt;
+        &lt;delay&gt;250&lt;/delay&gt;
+        &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"289"</span> /&gt;
+      &lt;/commands&gt;
+      &lt;commands command=<span class="code-quote">"longPress"</span>&gt;
+        &lt;include type=<span class="code-quote">"command"</span> ref=<span class="code-quote">"291"</span> /&gt;
+      &lt;/commands&gt;
+    &lt;/button&gt;
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 06, 2011 11:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024313"></a>
+                                    <font class="smallfont"><blockquote>
+<p>release : it should be possible to trigger a specific action when the user releases the button. Potentially, if no action is defined on press, this means the action is only triggered when the user releases the button. Defining both can be used for instance to dim a light for system supporting a start dim and stop dim command.</p></blockquote>
+
+<p>Agreed.</p>
+
+<blockquote>
+<p>long press : if the user keeps pressing the button for some time, another different action is executed (and the short press action is not). Defining a long press action would prevent use of the repeat option.</p></blockquote>
+
+<p>Agreed.</p>
+
+<blockquote>
+<p>long release : same as short release</p></blockquote>
+
+<p>Agreed.</p>
+
+<blockquote>
+<p>double tap : some systems support that, not sure we need it as in general defining too many control options on one button is not user friendly.</p></blockquote>
+
+<p>I'm split on this &#8211; you're right that too many control options is confusing, and double-tap isn't necessarily needed on touch-panel paradigm. But my initial reaction was to include double-tap too.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 10, 2011 13:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024322"></a>
+                                    <font class="smallfont"><blockquote>
+<p>So the protocol might stay the same, replacing the last part (click) with specific commands (press, release, long_press, long_release, repeat)</p></blockquote>
+
+<p>Agree.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 10, 2011 14:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024323"></a>
+                                    <font class="smallfont"><p>Re-reading that, there is an issue in what I wrote. If you define a long press action, there is an issue with the way the short press works.<br/>
+The only way for the system to be sure the press is short is to detect that the release has happened before the long press delay. In that case, the short press event and the short release event will in effect happen at the same time.<br/>
+If no long press is defined on the button, then the short press event can happen immediately when the user taps on the button.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 10, 2011 15:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024324"></a>
+                                    <font class="smallfont"><p>Yeah I was stuck with the same thing, which is why I kept editing and re-editing my response.</p>
+
+<p>That is, if you want the same button to react differently to two user inputs, you need to define short-release in combination with long-press (or even long-release).</p>
+
+<p>But I think short-press in combination with long-press (with no releases) will yield a confusing behavior.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 10, 2011 16:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024325"></a>
+                                    <font class="smallfont"><blockquote>
+<p>But I think short-press in combination with long-press (with no releases) will yield a confusing behavior.</p></blockquote>
+
+<p>Although maybe there's a use case for this too : accelerating press</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 10, 2011 16:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024326"></a>
+                                    <font class="smallfont"><p>Agreed on the schema proposal.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 10, 2011 16:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024328"></a>
+                                    <font class="smallfont"><p>Yes.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 10, 2011 16:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024329"></a>
+                                    <font class="smallfont"><p>Makes sense. The control structure in the controller itself may still need to go through refactoring but the proposal makes sense in terms of how things are currently implemented.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 10, 2011 16:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024513"></a>
+                                    <font class="smallfont"><p>My current conclusion is that as soon as the user touches the button, a press action is executed (so the name is press, not shortPress because we cannot know if it will be short or long).<br/>
+This press action is executed irrelevant of the fact that the press will be short or long.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 19, 2011 09:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024517"></a>
+                                    <font class="smallfont"><p>How does it handle the typical long press that exists on Android in this case (or would it not) ?</p>
+
+<p>That is, I press down, and after holding down for x seconds, an action is triggered (i.e before there's release).</p>
+
+<p>Something still nags me about using press and release as the only primitives, rather than something that encompasses both (like 'tap' or 'long press')</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 19, 2011 10:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16024519"></a>
+                                    <font class="smallfont"><blockquote>
+<p>Something still nags me about using press and release as the only primitives, rather than something that encompasses both (like 'tap' or 'long press')</p></blockquote>
+
+<p>Or maybe they work as primitives, but at tooling level I think we may need to expose them as something like 'tap' or 'long press' &#8211; but we may not need to know what those are yet, and simply name them as we use them and find the combinations that make sense.</p>
+
+<p>Is the delay a property of release since press is immediate?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 19, 2011 10:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482344"></a>
+                                    <font class="smallfont"><p>There is still a long press action. Looking at the attributes defined on the button (adapted from above)</p>
+<blockquote>
+<p>&lt;xsd:attribute name="repeat" type="xsd:boolean" use="optional"/&gt;<br/>
+			&lt;xsd:attribute name="repeatDelay" type="xsd:integer" minInclusive="100" use="optional"/&gt;<br/>
+			&lt;xsd:attribute name="hasPressCommand" type="xsd:boolean" use="optional"/&gt;<br/>
+			&lt;xsd:attribute name="hasShortReleaseCommand" type="xsd:boolean" use="optional"/&gt;<br/>
+			&lt;xsd:attribute name="hasLongPressCommand" type="xsd:boolean" use="optional"/&gt;<br/>
+			&lt;xsd:attribute name="hasLongReleaseCommand" type="xsd:boolean" use="optional"/&gt;<br/>
+			&lt;xsd:attribute name="longPressDelay" type="xsd:integer" minInclusive="250" use="optional"/&gt;</p></blockquote>
+<p>we can have the following use cases:<br/>
+1. Have a button with <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">hasPressCommand=<span class="code-quote">"<span class="code-keyword">true</span>"</span> repeat=<span class="code-quote">"<span class="code-keyword">true</span>"</span> repeatDelay=<span class="code-quote">"200"</span> hasShortReleaseCommand=<span class="code-quote">"<span class="code-keyword">true</span>"</span></pre>
+</div></div>. The user touches the button, press command is send immediately, then repeatedly every 200ms. Short release command is send when user stops touching button.<br/>
+2. Have a button with <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">hasPressCommand=<span class="code-quote">"<span class="code-keyword">true</span>"</span> hasShortReleaseCommand=<span class="code-quote">"<span class="code-keyword">true</span>"</span> hasLongPressCommand=<span class="code-quote">"<span class="code-keyword">true</span>"</span> hasLongReleaseCommand=<span class="code-quote">"<span class="code-keyword">true</span>"</span> longPressDelay=<span class="code-quote">"500"</span></pre>
+</div></div>. The following 2 scenarios are possible.<br/>
+a. User touches button, press command is send. User stops touching button after 400ms, short release command is sent.<br/>
+b. User touches button, press command is send. After 500ms, user is still touching button, longPressCommand is sent. After more than 500ms, user stops touching button, long release command is sent.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 19, 2011 19:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482347"></a>
+                                    <font class="smallfont"><p>Let's go with that.</p>
+
+<p>In terms of tooling, I would still think about presenting it as a configuration of 'tap + long press' which would translate to:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+hasShortReleaseCommand=<span class="code-quote">"true"</span> hasLongPressCommand=<span class="code-quote">"true"</span> longPressDelay=<span class="code-quote">"500"</span>
+</pre>
+</div></div>
+
+<p>if I understood correctly.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 19, 2011 20:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482417"></a>
+                                    <font class="smallfont"><p>To sum it up, what is implemented is:</p>
+<h6><a name="Extendinginteractionpossibilitiesonbuttons-Changestothepanelschema"></a>Changes to the panel schema</h6>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+	&lt;xsd:element name=<span class="code-quote">"button"</span>&gt;
+		&lt;xsd:annotation&gt;
+			&lt;xsd:documentation&gt;&lt;![CDATA[
+				The button on panel.Its label is the name shown on the button.
+				Its position is defined by coordinates (x, y).
+				Its size is defined by width and height.The meature is one cell on the panel.
+				attribute repeat: whether the button send command on and on when it is pressed down. 	
+				attribute hasControlCommand: whether the button has bound a command. 			
+			]]&gt;&lt;/xsd:documentation&gt;
+		&lt;/xsd:annotation&gt;
+		&lt;xsd:complexType&gt;
+			&lt;xsd:sequence&gt;
+				&lt;xsd:group ref=<span class="code-quote">"buttonGroup"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"unbounded"</span>&gt;&lt;/xsd:group&gt;
+			&lt;/xsd:sequence&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"id"</span> type=<span class="code-quote">"idType"</span> use=<span class="code-quote">"required"</span> /&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"name"</span> type=<span class="code-quote">"xsd:string"</span> use=<span class="code-quote">"required"</span> /&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"repeat"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"repeatDelay"</span> type=<span class="code-quote">"xsd:integer"</span> minInclusive=<span class="code-quote">"100"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"hasShortPressCommand"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"hasShortReleaseCommand"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"hasLongPressCommand"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"hasLongReleaseCommand"</span> type=<span class="code-quote">"xsd:<span class="code-object">boolean</span>"</span> use=<span class="code-quote">"optional"</span>/&gt;
+			&lt;xsd:attribute name=<span class="code-quote">"longPressDelay"</span> type=<span class="code-quote">"xsd:integer"</span> minInclusive=<span class="code-quote">"250"</span> use=<span class="code-quote">"optional"</span>/&gt;
+		&lt;/xsd:complexType&gt;
+	&lt;/xsd:element&gt;
+</pre>
+</div></div>
+
+<h6><a name="Extendinginteractionpossibilitiesonbuttons-Changestothecontrollerschema"></a>Changes to the controller schema</h6>
+<p>The button now embeds 1 to 4 macros (instead of directly embedding commands), each one qualified with the appropriate commandParam
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  &lt;xsd:element name = <span class="code-quote">"button"</span>&gt;
+    &lt;xsd:complexType&gt;
+      &lt;xsd:sequence&gt;
+        &lt;xsd:element ref = <span class="code-quote">"macro"</span> minOccurs = <span class="code-quote">"0"</span> maxOccurs = <span class="code-quote">"4"</span>/&gt;
+      &lt;/xsd:sequence&gt;
+      &lt;xsd:attribute name = <span class="code-quote">"id"</span> type = <span class="code-quote">"idType"</span> use = <span class="code-quote">"required"</span> /&gt;
+    &lt;/xsd:complexType&gt;
+  &lt;/xsd:element&gt;
+</pre>
+</div></div> and <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+  &lt;xsd:element name = <span class="code-quote">"macro"</span>&gt;
+    &lt;xsd:complexType&gt;
+      &lt;xsd:sequence&gt;
+        &lt;xsd:group ref = <span class="code-quote">"macroElement"</span> minOccurs=<span class="code-quote">"0"</span> maxOccurs=<span class="code-quote">"unbounded"</span>/&gt;
+      &lt;/xsd:sequence&gt;
+      &lt;xsd:attribute name = <span class="code-quote">"commandParam"</span> type = <span class="code-quote">"xsd:string"</span> use = <span class="code-quote">"required"</span> /&gt;
+    &lt;/xsd:complexType&gt;
+  &lt;/xsd:element&gt;
+</pre>
+</div></div></p>
+
+<h6><a name="Extendinginteractionpossibilitiesonbuttons-ChangestotheRESTAPI"></a>Changes to the REST API</h6>
+<p>The last part of the call is now either <tt>press</tt>, <tt>shortRelease</tt>, <tt>longPress</tt> or <tt>longRelease</tt>.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at May 24, 2011 12:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593835"></a>
+                                    <font class="smallfont"><p>Hi.</p>
+
+<p>Has any of this been implemented. It is very old and I have not seen anything (like a short/long press) in any example.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niraviry at Nov 18, 2014 17:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

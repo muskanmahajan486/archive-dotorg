@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Parsing response in JSON format</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Parsing response in JSON format
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 01, 2012 by <font color="#0050B2">mstsai</font>.
+				    </div>
+
+				    <p>Dear All:</p>
+
+<p>I am working on a project that needs to design an UI.  I chose OpenRemote as it is simple to design.<br/>
+However, I have run into a problem that needs some help from the forum.<br/>
+I need to display the information that is retrieved by using a URL:</p>
+
+<p><a href="http://192.168.0.197:8080/EZRPAccess?port=/dev/ttyUSB0&amp;id=1&amp;cmd=info">http://192.168.0.197:8080/EZRPAccess?port=/dev/ttyUSB0&amp;id=1&amp;cmd=info</a></p>
+
+<p>The response of the URL is in JSON format as:</p>
+
+<p> "response":"ok","id":1,"voltage":114.25,"current":0.32,"frequency":59.98,"power_factor":1,"active_power":36.56,"apparent_power":36.56,"main_energy":0.249,"retry":18,"status":1,"time":"2012-09-01 13:22:27" </p>
+
+<p>So, I created a command. In the Edit Command dialog box, <br/>
+    Name: VOLTAGE<br/>
+    Protocol: HTTP<br/>
+    URL: <a href="http://192.168.0.197:8080/EZRPAccess?port=/dev/ttyUSB0&amp;id=1&amp;cmd=info">http://192.168.0.197:8080/EZRPAccess?port=/dev/ttyUSB0&amp;id=1&amp;cmd=info</a><br/>
+    HTTP Method: GET<br/>
+    Polling interval:  30s<br/>
+    JSONPath Expression: $.voltage</p>
+
+<p>The VOLTAGE command is assigned to a voltage_sensor with type of 'range'. The min and max values are set to 0 and 250.<br/>
+In UI, I created a label and specified the sensor as voltage_sensor.</p>
+
+<p>However, the label is always display N/A. <br/>
+I have also other commands, SWON and SWOFF.  The two commands run without any problem.</p>
+
+<p>Any suggestion??</p>
+
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20450263"></a>
+                                    <font class="smallfont">
+<blockquote>
+<p>"voltage":114.25</p></blockquote>
+
+<p>Do you have control over the return JSON values?</p>
+
+<p>If yes, can you try 114 instead of 114.25 to see if that's throwing it off (it's expecting an integer, not a decimal value).</p>
+
+<p>If not, you'll probably need to format the value in a rule &#8211; there were couple of such examples posted on the forums earlier.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 01, 2012 19:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450268"></a>
+                                    <font class="smallfont"><p>Alternatively, use 'custom' type sensor and bind that to label which will display the returned JSON string as-is.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 01, 2012 19:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450284"></a>
+                                    <font class="smallfont"><p>Thanks for the quick response.  </p>
+
+<p>I do have the control over the JSON values.  But some values need the fractional part, for example, the frequency. <br/>
+I read some posts and found out that the value needs to be an integer. So, I changed the value from 114.25 to 11425 and changed the range to 0~65535.  But the UI still shows N/A. <br/>
+As for the second suggestion, I create another sensor with custom type using the same VOLTAGE command and bind it to a label.<br/>
+Now, I get the whole JSON string displayed rather than the voltage value.<br/>
+BTW, for the custom type sensor, what information do I need to put into the 'custom state items'?</p>
+
+<p>Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mstsai at Sep 02, 2012 02:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450292"></a>
+                                    <font class="smallfont"><p>If you get the full JSON string then it means your JSON path expression is not working correctly. And neither the integer or string value contains what you want.</p>
+
+<p>The custom state items can be left empty in your case.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Sep 02, 2012 09:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450313"></a>
+                                    <font class="smallfont"><p>Thanks.  I will try different approaches.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mstsai at Sep 03, 2012 02:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:44</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

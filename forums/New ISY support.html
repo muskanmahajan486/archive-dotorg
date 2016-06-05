@@ -1,0 +1,730 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : New ISY support</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : New ISY support
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 27, 2014 by <font color="#0050B2">craigham</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I've just checked in some controller code which uses the Soap interface to the ISY to watch for real-time status changes.  This was based on how the Lutron work, I actually use Telnet for the connection as I couldn't get the Soap stuff working using httpclient libs.</p>
+
+<p>You can find the work here:
+<a href="https://sourceforge.net/p/openremote/code/HEAD/tree/workspace/craigham/Controller_2_1_0_ISY/">https://sourceforge.net/p/openremote/code/HEAD/tree/workspace/craigham/Controller_2_1_0_ISY/</a></p>
+
+<p>Now if the isy command builder is asked to build a 'status' command, it builds one which ties into the soap subscription.  I have also added a second type of listening command for the get power....it should be 'get-power' for the command.  This is very similar to how Dan did the omnilink commands for the HAI lights.  </p>
+
+<p>I have also checked in some code for the designer which will interrogate your ISY and create the various devices.  It works for lights with and without dimmers, motion sensors, relays, water leak detectors.  I don't have a thermostat so I wasn't able to add that code.</p>
+
+<p>Here is the designer work:
+<a href="https://sourceforge.net/p/openremote/code/HEAD/tree/workspace/craigham/Designer_2_14_0_SNAPSHOT-2013-05-11-ISY/">https://sourceforge.net/p/openremote/code/HEAD/tree/workspace/craigham/Designer_2_14_0_SNAPSHOT-2013-05-11-ISY/</a></p>
+
+<p>Just click on the New button within the Devices section and select Import ISY devices.  You'll have to refresh the dialog after you have imported the devices as I copied how Dan did it with Omnilink, and inherited that behaviour.  </p>
+
+<p>These are still pretty alpha, have to add error handling, and bunch of other stuff, but if anyone can try it out and give me ideas that would be great.</p>
+
+<p>regards,<br/>
+craig</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23594256"></a>
+                                    <font class="smallfont"><p>Craig, I am just now checking out your code. I am a former full time developer (long time ago, but I wrote code professionally for 10+ years) and have been a technology lawyer for the last 16 years. I have 70 or so Insteon devices in my house, and am communicating with them via an ISY-99. Is there any way to read the status of the Insteon switch with the current released code, or do we need your additional features to do that? If the latter, how do I deploy your additional features? Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Nov 29, 2014 07:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594265"></a>
+                                    <font class="smallfont"><p>Hi David,</p>
+
+<p>I found the existing insteon code problematic in that it would set up a polling thread which made an http call to check status for each insteon device.  My isy controller would start blocking.  I may have 50-70 devices.</p>
+
+<p>The code I contributed instead sets up 1 connection to the isy controller, and simply subscribes for status updates, and then invokes the necessary commands within Open Remote.</p>
+
+<p>Patching in development code isn't the easiest thing in the world to do, especially if you are not familiar with java, ant, and subversion.  Thus, I would recommend you get a copy of the released code and see if you can get it working for what you are trying to accomplish.  If you run into the same behaviour I did, then I would suggest you checkout my code, and learn how to build it.  It's not that difficult, but you will need java and I believe ant. </p>
+
+<p>The other challenge is that modelling something seemingly as simple as a light switch actually requires quite a few commands.  So the manual work in setting up your system for your 70 insteon would be onerous.  This leads you to really wanting the designer code changes I made as well.  This allows you to just point open remote to the ISY controller, and it will then create all the commands, sensors, switches, etc.  Your 70 devices could easily end up requiring 500 or more commands.</p>
+
+<p>This may sound discouraging, and I guess it really should be.  I previously had worked for over 10 years doing enterprise java, which included all the technologies used within open remote.  It was/is challenging to set up a complete developer environment.</p>
+
+<p>I have found the code I contributed does work really well for keeping track of status of the insteon devices.  If you are really motivated to take this on as a hobby, I'd say go for it.  However, if you're thinking you may spend a few hours on it and have some substantial home automation set up, this won't be for you.</p>
+
+<p>The fact is that you are the first person who has even asked me about this code.  Take that as indicative of the activity around insteon and open remote.  I have noticed some activity around insteon using the released code, but from my perspective it is all rather usless as it is, I don't see how you could do meaningful automation.</p>
+
+<p>If you are interested in taking this on, I'd be happy to provide assistance.  </p>
+
+<p>Also, I haven't checked the released code in close to a year, they may have put out new releases which make some of my previous findings obsolete.  However, I haven't found there is much velocity with Open Remote in terms of new features, etc.  </p>
+
+<p>cheers,<br/>
+craig</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Nov 29, 2014 17:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594266"></a>
+                                    <font class="smallfont"><p>Craig, thanks very much for the thoughtful response. I've been working with OpenRemote released code for a few years, and I'm fairly confident that what I want to do can't easily be done. I have therefore downloaded VisualSVN, ANT, and Java, and, after a couple of hours, I have actually gotten your code to compile for the controller. <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> I'm trying to compile the designer, however, and it looks like there is a dependency on a file that is not downloaded or a directory that does not exist - there error that I'm getting is "I:\users\Daniel\workspace\openremote\gwt-2.4.0 does not exist". Is this something I should be able to find in someone else's workspace, or is this something that you have? Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Nov 29, 2014 20:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594267"></a>
+                                    <font class="smallfont"><p>Wait a minute - sorry for the stupid question. I think I found it (always helps to read the readme...)...</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Nov 29, 2014 20:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594268"></a>
+                                    <font class="smallfont"><p>David,</p>
+
+<p>Nice progress.</p>
+
+<p>This next part getting designer up was really challenging for me.</p>
+
+<p>I would make sure you get gwt 2.4...I was getting runtime issues when I tried to compile the composer using 2.5.x gwt.</p>
+
+<p>Also, I'm not sure about this, but I believe you will have to download your own beehive web app to run designer.  You will also want to make sure you have mysql installed, if i remember correctly there are some sql scripts in either the composer source tree, or beehive.  Run those....mysql -u root -p &lt;password&gt; &lt; sql_script.sql (Could be greater than sign, rusty on linux command line).  (that assumes linux/mac too)</p>
+
+<p>You also probably want to install tomcat on your computer and then deploy composer, and beehive there (using server.xml file - see app deployment to point to .war files created by ant builds.  For controller, i think i just put a symbolic link within webapps directory of your tomcat to point back to controller directory which is producted from the controller ant build.  Lots of steps, read carefully and good luck.</p>
+
+<p>craig</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Nov 29, 2014 21:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594730"></a>
+                                    <font class="smallfont"><p>Hey, Craig. I hope that all is well with you. Significant progress since my last note. I have done all of the following:<br/>
+1.) I have built and deployed an Ubuntu server<br/>
+2.) I downloaded the codebase from the branch referenced above and have gotten it to compile<br/>
+3.) I deployed the code and created a test slider for one of the Insteon lights. And, it works, sort of.</p>
+
+<p>But, there is a fair amount of latency and there are copious errors in the log files. There appear to be connection errors as described at <a href="http://openremote.org/pages/viewpage.action?pageId=20450712">http://openremote.org/pages/viewpage.action?pageId=20450712</a>. I tried adding "close" commands as documented at the above webpage, but then I started getting other errors regarding sockets being closed. Any suggestions? As noted above, I have quite a few Insteon devices, and it sounds like maybe I'm hitting the ISY too hard or too frequently. Something like the code at R8128? Thanks! BTW, I'm copying some of the error text below from the dev log:</p>
+
+
+<p>2014-12-20 05:37:41,023 ERROR Polling Sensor Thread ID = 100089, Name ='Kitchen Table Light level sensor': IOException while reading data from ISY-99<br/>
+java.net.SocketException: Socket closed<br/>
+	at java.net.SocketInputStream.socketRead0(Native Method)<br/>
+	at java.net.SocketInputStream.read(SocketInputStream.java:152)<br/>
+	at java.net.SocketInputStream.read(SocketInputStream.java:122)<br/>
+	at org.apache.http.impl.io.AbstractSessionInputBuffer.fillBuffer(AbstractSessionInputBuffer.java:130)<br/>
+	at org.apache.http.impl.io.SocketInputBuffer.fillBuffer(SocketInputBuffer.java:127)<br/>
+	at org.apache.http.impl.io.AbstractSessionInputBuffer.read(AbstractSessionInputBuffer.java:147)<br/>
+	at org.apache.http.impl.io.ContentLengthInputStream.read(ContentLengthInputStream.java:132)<br/>
+	at org.apache.http.conn.EofSensorInputStream.read(EofSensorInputStream.java:121)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLEntityManager$RewindableInputStream.read(XMLEntityManager.java:2889)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLEntityManager.setupCurrentEntity(XMLEntityManager.java:670)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLVersionDetector.determineDocVersion(XMLVersionDetector.java:189)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:812)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:777)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:141)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1213)<br/>
+	at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:648)<br/>
+	at org.jdom.input.SAXBuilder.build(SAXBuilder.java:453)<br/>
+	at org.jdom.input.SAXBuilder.build(SAXBuilder.java:770)<br/>
+	at org.openremote.controller.protocol.isy99.Isy99Command.read(Isy99Command.java:241)<br/>
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.read(Sensor.java:682)<br/>
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Sensor.java:608)<br/>
+	at java.lang.Thread.run(Thread.java:745)<br/>
+2014-12-20 05:37:41,024 WARN Polling Sensor Thread ID = 100089, Name ='Kitchen Table Light level sensor': Sensor 'Kitchen Table Light level sensor' (ID = 100,089) is RANGE type but produced a value that is not  an integer : ''<br/>
+2014-12-20 05:37:41,024 TRACE Polling Sensor Thread ID = 100089, Name ='Kitchen Table Light level sensor': Processed '', received 'N/A'<br/>
+2014-12-20 05:37:41,053 DEBUG Polling Sensor Thread ID = 100081, Name ='Mud Room Light level sensor': read(): URL is <a href="http://192.168.0.157/rest/nodes/2A%202C%20E0%201">http://192.168.0.157/rest/nodes/2A%202C%20E0%201</a><br/>
+2014-12-20 05:37:41,057 ERROR Polling Sensor Thread ID = 100008, Name ='Basement Outside By Egress level sensor': IOException while reading data from ISY-99<br/>
+java.net.SocketException: Socket closed<br/>
+	at java.net.SocketInputStream.socketRead0(Native Method)<br/>
+	at java.net.SocketInputStream.read(SocketInputStream.java:152)<br/>
+	at java.net.SocketInputStream.read(SocketInputStream.java:122)<br/>
+	at org.apache.http.impl.io.AbstractSessionInputBuffer.fillBuffer(AbstractSessionInputBuffer.java:130)<br/>
+	at org.apache.http.impl.io.SocketInputBuffer.fillBuffer(SocketInputBuffer.java:127)<br/>
+	at org.apache.http.impl.io.AbstractSessionInputBuffer.read(AbstractSessionInputBuffer.java:147)<br/>
+	at org.apache.http.impl.io.ContentLengthInputStream.read(ContentLengthInputStream.java:132)<br/>
+	at org.apache.http.conn.EofSensorInputStream.read(EofSensorInputStream.java:121)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLEntityManager$RewindableInputStream.read(XMLEntityManager.java:2889)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLEntityManager.setupCurrentEntity(XMLEntityManager.java:670)<br/>
+	at com.sun.org.apache.xerces.internal.impl.XMLVersionDetector.determineDocVersion(XMLVersionDetector.java:189)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:812)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:777)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:141)<br/>
+	at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1213)<br/>
+	at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:648)<br/>
+	at org.jdom.input.SAXBuilder.build(SAXBuilder.java:453)<br/>
+	at org.jdom.input.SAXBuilder.build(SAXBuilder.java:770)<br/>
+	at org.openremote.controller.protocol.isy99.Isy99Command.read(Isy99Command.java:241)<br/>
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.read(Sensor.java:682)<br/>
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Sensor.java:608)<br/>
+	at java.lang.Thread.run(Thread.java:745)</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 20, 2014 13:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594746"></a>
+                                    <font class="smallfont"><p>David,</p>
+
+<p>Did you get the designer working as well?  Or just the controller so far?</p>
+
+<p>Looking at the stack trace you are still using the 'stock' polling code for the insteon stuff.</p>
+
+<p>Can you confirm that you have the following source file in your project?</p>
+
+<p> InsteonDeviceAddress.java</p>
+
+
+<p>Then, I would go into the controller folder within the webapps folder and check to make sure there is also a .class file with that same class name, just to make sure you are running the code you expect.</p>
+
+<p>Do you have the ability to run the controller in debug mode?  That is very handy to solve issues as well.</p>
+
+<p>craig</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 20, 2014 18:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594749"></a>
+                                    <font class="smallfont"><p>Thanks, Craig! I'll review this afternoon and see what is there. I used SVN to pull the code, but I may have done something incorrectly. Also, I was able to compile designer and run it. When I went to import my Insteon devices, it appeared to hang (and the dialog box never closed). But, when I restarted designer, it had imported all of my Insteon devices. I'll keep playing with it. A few quick questions:</p>
+
+<p>1.) Do you know of any way to export my config from the online designer so that I can play import it into the local copy of designer, with your adds?</p>
+
+<p>2.) I'm not sure that I mentioned it, but I'm an attorney. In fact, I'm the type of attorney that does (almost exclusively) software licensing, and I have done so for the last 16 years. If you would like to get your code into the codebase, I can at least try to figure out the GPL licensing issue that Juha mentioned. I can't guarantee that there's a solution, but there might be, and I would do that for free, in consideration of your helping me with my stupid problems <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>3.) Also, do you like coffee? If so, I would like to send you a Starbucks card or something - REALLY appreciate the help. It's been (much) more than a decade since I was a full-time developer. It's fun, though, and some concepts are coming back relatively quickly.</p>
+
+<p>4.) Re running the controller in Debug mode, I'll see if I can figure that one out next! Thanks!</p>
+
+<p>Thanks again!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 20, 2014 20:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594750"></a>
+                                    <font class="smallfont"><p>David,</p>
+
+<p>I'll respond to each question below</p>
+
+<p>1) I don't.  I'd be surprised if there was a tool out there.  What I have found is that my adds have been so crucial for my particular setup, that I can't see myself using the online designer again unless my code migrates into the main codebase.  I'd suggest getting this insteon stuff working locally, and when you are happy with that, manually bring your other devices/setup over.  Otherwise you could probably write a script which could go through the controller.xml file which is downloaded from the online designer and create sql for it...that would be a significant undertaking.</p>
+
+<p>2)  In the year or so since I announced this code, I have had very little interest by others.  I really can't see anyone using the existing insteon code in their setup, the http polling method was basically useless for me.  I haven't looked into the legal reasons my code hasn't been migrated in.  I've just assumed it was more due to lack of interest combined with the limited resources of the maintainers of the main code base to test and apply patches to add it.  You could maybe follow up with Juha if you spending time on the licensing stuff would provide meaningful value to the project.</p>
+
+<p>3) Yes, coffee is good, but no need for anything like that.  I have been helped many times in the past by people myself.  For me having my contributions used by others is reward enough, and I have no doubt your interest will in turn improve the contribution itself, which helps me out.  Thanks for the offer though.</p>
+
+<p>4) Debug mode is really helpful.  You'll want to look at the catalina.sh file which is the start script for the tomcat instance.</p>
+
+<p>I've added a line like this:</p>
+
+<p>CATALINA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</p>
+
+<p>And then within Eclipse I just start a remote debugging session pointing to address 8000</p>
+
+<p>Keep firing me questions, glad to help.</p>
+
+<p>craig</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 20, 2014 20:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594777"></a>
+                                    <font class="smallfont"><p>Thanks, Craig! OK - I verified that I have InsteonDeviceAddress.java. I also tried to rename the file just to see if the code still compiled, and when I renamed it, and the compile failed on the references in that file. I also verified that there is a class file named InsteonDeviceAddress.class in the isy99 folder (in the folder \\ubuntu-dkd\tomcat\controller\WEB-INF\classes\org\openremote\controller\protocol\isy99 to be precise).<br/>
+So, I'm stumped a bit as to why the old version of the code is running. A few questions:</p>
+
+<p>1.) There are six source java files in the protocol\isy99 directory, but they compiled into eight class files - there is one class file for each of the java files but there are also two extra files - one named Isy99Command$1.class and one named IsyStatusListenCommand$StatusType.class. Is that meaningful?</p>
+
+<p>2.) With regard to running in debug mode, I'm working on that, but I think my configuration may make it difficult or marginally different. My Ubuntu server is running the server code only. Will the Eclipse code run on Ubuntu server or do I need to do something different (e.g., load Ubuntu desktop on top of my server code). Alternatively, I tried loading Eclipse IDE on my Windows machine (which is on the same network and which I'm using to access the Ubuntu server via Putty and OpenSSH). I was able to load Eclipse on the Windows box, but I'm not (yet) able to debug the session running on the Ubuntu server. Any suggestion re what is the best way to access and debug? I can't easily work directly on the Ubuntu box, as it is located remotely (in another room, which is fairly small). I'm not opposed to loading Ubuntu desktop on top of the server code if (a) that would help, and (b) that would allow me to run Eclipse on the Ubuntu box directly, but if I'm doing that, is there a good protocol by which I can still access the Ubuntu desktop instance remotely (e.g., something analogous to OpenSSH, which I'm assuming (possibly incorrectly) will not allow me to access the GUI remotely.</p>
+
+<p>3.) Please let me know if you would like me to email any of the error logs and, if so, to where.</p>
+
+<p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 21, 2014 20:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594778"></a>
+                                    <font class="smallfont"><p>1)  That is expected with those extra class files.  Those are inner classes which are defined in the .java file.  The compiler creates those files.</p>
+
+<p>2)  You would want to run eclipse on your desktop, this does not have to be the same machine as what is running the open remote controller/designer.  Within run remote debug session in eclipse, you can enter the ip address of the machine you want to debug.  For local tomcat instances you would go with 127.0.0.1, with remote specify the ip of the machine running tomcat in debug mode.  I think once you get going you really will want to be able to run open remote on the machine you would be doing your developing.  This makes for quicker build/test cycles as you don't have to be worrying about moving new code over to the server each time.  It would also let you have a place where you can continue running 'production' openremote for your house, and then test new things on your dev box.  No need to worry about this until you get it all going though.</p>
+
+<p>3) Could you look at the /webapps/controller/controller.xml file which is used by the controller code, and let me know if you see a command similar to this:  ignore name of course</p>
+
+<p>&lt;code&gt;<br/>
+&lt;command id="120" protocol="isy99"&gt;<br/>
+      &lt;property name="address" value="20 92 3D 1" /&gt;<br/>
+      &lt;property name="command" value="status" /&gt;<br/>
+      &lt;property name="name" value="great.room.stairs.down cmd level" /&gt;<br/>
+    &lt;/command<br/>
+&lt;/code&gt;</p>
+
+<p>I'm curious if you controller.xml file is matching up with my contribution code.</p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 21, 2014 22:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594780"></a>
+                                    <font class="smallfont"><p>Thanks again - I really am going to need to do something for you at some point (if you ever need any software licensing advice, please let me know <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>). In any case:</p>
+
+<p>1.) My controller.xml file does include the following command (among many others):</p>
+
+<p>    &lt;command id="120" protocol="isy99"&gt;<br/>
+      &lt;property name="address" value="2A 24 7B 1" /&gt;<br/>
+      &lt;property name="command" value="DFOF" /&gt;<br/>
+      &lt;property name="name" value="Outside Front Entry cmd-off" /&gt;<br/>
+    &lt;/command&gt;</p>
+
+<p>2.) I've made some progress on the remote debugging, but not there yet. On my Windows box, I load Eclipse, go to "run", "debug configuration" and select Remote Java Application. On the connection properties, I have included 192.168.0.172, port 8000. The response that I get is the following: Failed to connect to remove VM. Connection refused. I think this means that I've got the Catalina config messed up somehow. I've included all of the following in /etc/environment on the Ubuntu server:</p>
+
+<p>PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" <br/>
+export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64<br/>
+export CATALINA_HOME=/usr/share/tomcat7<br/>
+export CATALINA_BASE=/var/lib/tomcat7<br/>
+export CATALINA_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y"<br/>
+export JDPA_ADDRESS=8000<br/>
+export JDPA_TRANSPORT=dt_socket</p>
+
+<p>BTW, I'm not sure that it matters, but I'm running two openremote controllers on the home network. One (with the old code) for live instance, changing TV channels, etc. One with the new code for testing. FWIW, I tried unloading the live controller but it didn't seem to make a difference.</p>
+
+<p>Thanks!</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 22, 2014 01:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594781"></a>
+                                    <font class="smallfont"><p>Update - debugging appears to be working now. I moved the environment variables to setenv.sh within /var/lib/tomcat7/bin. Will keep you posted.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 22, 2014 02:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594782"></a>
+                                    <font class="smallfont"><p>Nice work.</p>
+
+<p>Could you check your controller.xml again for an example of a status command...</p>
+
+<p>eg. &lt;property name="command" value="status" /&gt;</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 22, 2014 02:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594783"></a>
+                                    <font class="smallfont"><p>Thanks, Craig. I ran a search on controller.xml, and there are no commands where value="status". ??? Problem?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 22, 2014 02:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594784"></a>
+                                    <font class="smallfont"><p>David,</p>
+
+<p>Let's focus on one device, a light dimmer, say Kitchen Table Light (based on looking at your logs)</p>
+
+<p>When you look at that device within designer, do you see something like (where x will denote name of device):</p>
+
+<p>x cmd-on<br/>
+x cmd-off<br/>
+x cmd-fast on<br/>
+x cmd-off (this is a bug in naming, should be x cmd-fast off)<br/>
+x get power<br/>
+x cmd level<br/>
+x set level<br/>
+x power sensor<br/>
+x level sensor<br/>
+x Slider<br/>
+x Switch</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 22, 2014 03:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594785"></a>
+                                    <font class="smallfont"><p>Yes. On the local designer I compiled, if I open Kitchen Table Light, I have the above structure, exactly as you noted. BTW, to create controller.xml, I am logging into the controller via browser and then doing "synch with online designer." Problem?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 22, 2014 04:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594786"></a>
+                                    <font class="smallfont"><p>That's probably the problem.  You are still downloading from the open remote designer, not you own version.</p>
+
+<p>What you need to do is look for a file called controller.xml which is created whenever you hit save while in designer.  I think it shows up in my bin folder of tomcat, under a directory called null.  I never bothered fixing this to something more logical.</p>
+
+<p>Do a file search for controller.xml, or openremote.zip which is another file which is created by designer when you hit save.</p>
+
+<p>Then go to the controller web page, and select work offline, and point to the controller.xml file which you are creating.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 22, 2014 04:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594787"></a>
+                                    <font class="smallfont"><p>OK - the good news is that I was able to do the above. The bad news is that it didn't fix anything. I went to the copy of controller.xml that was in the ../webapps/designer/modeler_tmp/1 directory, and it had a brand new file date/time from just hitting save in Designer but it still didn't have the "status" commands. I'm going to go back and try to recompile designer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 22, 2014 04:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594788"></a>
+                                    <font class="smallfont"><p>I have found this quite finicky in the past.  When you hit save from designer, do you get a message box at the bottom right saying save successful? </p>
+
+<p>You may also experiment with files under the work directory in tomcat.  I have found some caching issues I never really understood and this sometime helped out.</p>
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 22, 2014 04:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594789"></a>
+                                    <font class="smallfont"><p>Thanks, Craig. Really appreciate your diligence. I do get the "save successful" message box, and the time stamp on the controller.xml in the designer modeler_tmp directory updates. But, the file is still the same, with no "status" entries. There are "cmd-off", "cmd-on", "cmd-fast on", "cmd-off", "get power", "get level", and "set level", but no "status". Can you email me a copy of a controller.xml file that is "good" so that I know what I'm looking for? BTW, I'm not seeing any controller.xml files under the tomcat7\work directory. If you are comfortable doing so, my email is ddaggett1@ptera.net. Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 22, 2014 04:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594790"></a>
+                                    <font class="smallfont"><p>Also, maybe try expanding one of the devices in designer, and look for the 'cmd level' suffix.  Double click that.  Should have 'status' for the command. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 22, 2014 05:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594791"></a>
+                                    <font class="smallfont"><p>Craig, thanks for the file. Some interesting developments:</p>
+
+<p>1.) None of the "cmd level" suffix devices had "status" for the command. All were "get-level". <br/>
+2.) I reset the database and recompiled designer and reimported the devices, and they were still all set to "get-level" and not "status". Thus, I'm wondering if there is an issue with either designer or the import command.<br/>
+3.) I went into Beehive using MySQL and changed all of the "get level" commands to status and resaved and manually loaded the controller.xml file.<br/>
+4.) At that point, I think it started calling your new code. But, now the commands are not working at all on the slider that I had created. That said, the error logging was completely different. I'm sending you the log by email. I'm wondering if it is a Java version error? I'm using java-6-openjdk-amd64.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 22, 2014 07:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594802"></a>
+                                    <font class="smallfont"><p>David,</p>
+
+<p>I will take a look and make sure I have synced up the designer and controller checkins.  I possibly did some refactoring and one of the projects is out of sync.</p>
+
+<p>In the meantime, you could manually set up a device within controller by double clicking the commands and making sure they match what you see within my controller.xml example.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 22, 2014 17:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594813"></a>
+                                    <font class="smallfont"><p>Thanks, Craig. I made some progress. Because I was manually editing the "status" command into Beehive, I apparently screwed up the SQL statement and put "status" into too many places. I re-did this, and it generally worked for the slider I had created. Still some quirkiness. In any case, the designer code is still generating "get-level" command as opposed to "status," so I should probably sit tight until you upload the newer designer code. THANKS SO MUCH!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 23, 2014 07:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594862"></a>
+                                    <font class="smallfont"><p>David,</p>
+
+<p>Try updating your Designer project, it should grab the updated code to set up the get level command.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 23, 2014 20:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594865"></a>
+                                    <font class="smallfont"><p>Thanks, Craig! It is definitely now controlling the light, and it is responsive. There is some weirdness with the slider bouncing around, but I'll take a look at that before wasting your time. One question - in designer, when I import Insteon devices, should it add all of the resources (commands, sensors, slider, and switch) for each Insteon device, or only for dimmers. I just noticed that it appears to be doing so only for dimmers. Not a huge issue, but is that intended behavior? Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 23, 2014 21:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594866"></a>
+                                    <font class="smallfont"><p>Slider bouncing around could be a checkin i need to do with the controller.  I will take a look.  Insteon levels are from 0 to 255, but I think default for slider in open remote is 0- 100.</p>
+
+<p>For something like a simple relay a slider would not be added.  If there is a type of device that you think is missing something when modelled in designer let me know.</p>
+
+<p>The modelling of insteon devices to open remote is done in the class CreateISYDevicesActionHandler in designer.  Feel free to check what is happening there and make any changes/suggestions.  I only have a subset of the different insteon devices so there will surely be some improvements needed.</p>
+
+<p>cheers.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 23, 2014 21:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594869"></a>
+                                    <font class="smallfont"><p>I couldn't find any uncommitted changes.  Let me know how you make out with the slider bouncing.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at Dec 23, 2014 22:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594870"></a>
+                                    <font class="smallfont"><p>Thanks, Craig! Have a very happy holiday, and I'll be back in touch shortly. HUGELY appreciate the assistance!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ddaggett2 at Dec 23, 2014 23:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597409"></a>
+                                    <font class="smallfont"><p>This seems like exactly what OR would / could / should have with ISY. </p>
+
+<p>Any chance it might become usable for a non-coding person? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gregoryx at Apr 05, 2015 21:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597894"></a>
+                                    <font class="smallfont"><p>Wow!  Like David, I have about 30-40 Insteon devices and an ISY-994i controller.  I also bought Razberry Z-Wave and an Aeon Labs switch, since a lot of new devices seem to be ZWave.  I have OpenRemote controlling both through HTML REST interface, and I had hoped that OR would be the master controller, but your discussion indicates to me that this is going to be way more complicated than I had anticipated. I will just reach out like Gregory to the powers that be to write something into OR to make it easier.  I code, but not hard-core like you guys!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cwoodhouse at Apr 23, 2015 02:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598129"></a>
+                                    <font class="smallfont"><p>Craig, any chance you're monitoring this thread? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gregoryx at May 06, 2015 19:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598132"></a>
+                                    <font class="smallfont"><p>Chris, I'm nearing the point of jumping in with both feet to running my own Designer server, which is necessary to get this working. I'll probably hold back another couple of weeks in hopes that someone might respond about how / where this code is implemented in the public side. I know there's a "staging" Designer instance out there - maybe others? But if I end up doing it, I'll be sure to confirm how well the documentation goes in terms of implementing it on a Raspberry Pi. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gregoryx at May 06, 2015 19:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598133"></a>
+                                    <font class="smallfont"><p>Hey guys, I am still around.</p>
+
+<p>I'm really not sure what it would entail to get my isy code committed to production.  I figured it would take enough interest from the community, and then maybe the open remote guys would reach out and get the ball rolling.</p>
+
+<p>The changes to the controller are rather trivial to get rid of the polling.  My changes just use the telnet client to connect to port 80 on the isy, and maintain a long term event subscription.  </p>
+
+<p>However, the designer changes are very helpful as there is an explosion of commands, switches,  sliders, etc when you want to hook in to even a moderate isy setup.  I haven't been watching the open remote project much lately, so I really don't know what's going on.  I presume this would be a much more difficult undertaking.  Does anyone know if Dan's omnilink device discovery was ever integrated into the designer production?  The isy device discovery is very, very similar.</p>
+
+<p>I've been spending some time lately trying to figure out if openhab is a better solution for me.  That project is also in java, and has quite a few 'bindings', i.e. to Nest, etc.  When I last checked open remote that wasn't in yet either.</p>
+
+<p>Let me know if you guys decide to try and get the controller and/or designer working so you can continue to develop what I started, I'd be glad to help out if i can.</p>
+
+<p>cheers,<br/>
+craig</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by craigham at May 06, 2015 19:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23598134"></a>
+                                    <font class="smallfont"><p>Thanks so much for replying, Craig. </p>
+
+<p>I'll reach out if I go down that road. </p>
+
+<p>I didn't realize you were just using telnet - not using the UDI API calls. </p>
+
+<p>I completely agree on the advantages that a well built setup would make. The Russound automatically created the first six zones and populated them - what a HUGE advantage over the mess of building a half-dozen OR devices PER INSTEON DEVICE! to get everything to work. I am not looking forward to that and it's a big reason I've postponed while hoping this portion of OR would mature while I wait. </p>
+
+<p>I appreciate the mention of that other project... I'll look into that as well. I'm not very far down the OR road yet and I'm eager to find a setup with this same architecture but more active development community versus active back-end / professional-implementer stuff. Nothing wrong with that, of course; but it makes it really difficult to move forward if Russound and KNX are the only mature elements in the package. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gregoryx at May 06, 2015 20:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599904"></a>
+                                    <font class="smallfont"><p>Hi, it really is a shame that we haven't gotten enough support from the community to get this thoroughly tested and committed. This would be incredibly helpful to have in the main production code. I'm in the exact same boat as having an Open Remote controller running on my Synology NAS and using an ISY to control Insteon devices. I thought the sensor functionality was great until I added too many and ran into the exact same bottleneck issue which has now forced me to rethink and degrade my entire UI design to use simple buttons instead of intelligent switches. </p>
+
+<p>From a functionality/price perspective, it is hard to beat the Insteon devices. I can only imagine their popularity will continue to grow as they introduced their new HomeKit enabled controller. </p>
+
+<p>Craig, definitely appreciate all your work on this. I may too embark on compiling and hosting my own designer. Just trying to figure out whether the pros will outweigh the significant time investment. </p>
+
+<p>I'm also going to check out OpenHab. I would hate to have to make the switch but unfortunately not having the status functionality is a real killer. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by efren at Jul 03, 2015 02:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23599905"></a>
+                                    <font class="smallfont"><p>Efren, if you find ISY support for OpenHAB, let me know. For that matter, if you find anything similar to OpenRemote - in terms of distributed Android GUI clients with support for ISY and Russound - please let me know. </p>
+
+<p>I haven't moved to my own Designer and have basically kept switching to a web interface for Insteon control. I'm doing the same thing with Squeezebox, XBMC/KODI, and OpenHome. Crappy; but it all works. But it /should/ all be do-able in Open Remote; but I'm not a programmer. </p>
+
+<p>I feel like I'm biding time until either Open Remote or some other project or system gets up and going that supports Insteon, Russound, and Global Cache all in 2-way modes with Android clients - preferably with GUI interfaces versus packaged UI like OpenHAB. I was running MainLobby and had support for all those things in full 2-way; but the clients are all Windows. It seems like it's /time/ for something to get off the ground that does this stuff without me having to be a full-on code-writer. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by gregoryx at Jul 03, 2015 04:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

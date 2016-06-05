@@ -1,0 +1,476 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Newbie - rule to turn on Z-Wave switch</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Newbie - rule to turn on Z-Wave switch
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 27, 2014 by <font color="#0050B2">chakie</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I've been struggling to get OpenRemote to do my bidding with my three Z-Wave switches. I want to use them to automate a few tasks.<br/>
+For now I've been triggering them manually from a few iOS devices and it works somewhat ok. I have a simple layout with three<br/>
+switches on that toggles the Z-Wave switches. For 75% of my button presses the real switch is triggered, but quite often nothing<br/>
+happens. The iOS UI may or may not change value on the switch button. This somewhat defeats the purpose of the whole setup as I<br/>
+have to go outside to see if the switch was actually triggered at all.</p>
+
+<p>Anyway, I'm now trying to use rules, as one switch controls a plant light that should be on during certain hours of the day. For<br/>
+this I will eventually try to use a cron rule, but I've resorted to something simpler for now, as cron rules seem to be quite<br/>
+fragile and more or less broken. So, start simple.</p>
+
+<p>I have a rule like:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+
+rule <span class="code-quote">"Turn Plant Light On"</span> when
+    Event( source == <span class="code-quote">"Car Heater Power Status"</span>, value == <span class="code-quote">"on"</span> )
+then
+    execute.command( <span class="code-quote">"Plant Lights Power On"</span> );
+end
+</pre>
+</div></div>
+
+<p>This should turn on the plant lights switch when the car heater switch has been turned on. This does not<br/>
+make too much sense in the real world, it's for testing only. I save my rule and my design, sync it to my<br/>
+Synology NAS where the OpenRemote stuff is running. Syncing the design is also quite fragile, it seems that<br/>
+it frequently does not work. Trying to "Reload configuration and clear cache" always gives the error: <br/>
+"Failed to reload configuration and clear cache!", so something is a bit broken there.</p>
+
+<p>In the designer my setup looks like this:</p>
+
+<p><a href="https://dl.dropboxusercontent.com/u/19808659/Screen%20Shot%202014-01-27%20at%2013.12.31.png">https://dl.dropboxusercontent.com/u/19808659/Screen%20Shot%202014-01-27%20at%2013.12.31.png</a></p>
+
+<p>All switches and sensors are shown. From the documentation it's not really clear what the "source" for an Event<br/>
+should be. I assumed the sensor, but have also tried other random names from my setup. I'm also not sure what<br/>
+the command should be, the documentation isn't too conclusive here either.</p>
+
+<p>When I've synced my design (I've done it several times to try to ensure that it's actually synced) nothing happens<br/>
+when I turn on the car heater switch. I'm not sure it's actually turned on, but at least nothing happens with<br/>
+the plant light switch next to me. Also I see in zwave.log lots of errors like:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2014-01-27 13:14:50,082 (Z-Wave): could not send data: 01 0a 00 13 02 03 20 01 00 05 5a 99 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:14:53,112 (Z-Wave): could not send data: 01 0a 00 13 02 03 20 01 00 05 5a 99 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:14:53,222 (Z-Wave): could not send data: 06 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:14:54,722 (Z-Wave): could not send data: 06 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:15:11,412 (Z-Wave): could not send data: 01 0a 00 13 02 03 20 01 00 05 5c 9f 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:15:21,156 (Z-Wave): could not send data: 06 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:15:22,612 (Z-Wave): could not send data: 06 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:15:24,119 (Z-Wave): could not send data: 06 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:15:24,171 (Z-Wave): could not send data: 06 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:15:24,171 (Z-Wave): could not send data: 01 0a 00 13 02 03 20 01 00 05 5c 9f 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:15:25,628 (Z-Wave): could not send data: 06 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:15:25,634 (Z-Wave): could not send data: 01 0a 00 13 02 03 20 01 00 05 5d 9e 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:15:25,640 (Z-Wave): could not send data: 06 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+</pre>
+</div></div>
+
+<p>These come as soon as I try to turn on/off the car heater switch. Ok, now I tried removing the rule from the online designer and save it, but<br/>
+that fails with this error:</p>
+
+<p><a href="https://dl.dropboxusercontent.com/u/19808659/Screen%20Shot%202014-01-27%20at%2013.29.49.png">https://dl.dropboxusercontent.com/u/19808659/Screen%20Shot%202014-01-27%20at%2013.29.49.png</a></p>
+
+<p>I'm perhaps not too convinced that OpenRemote is a stable solution for Z-Wave stuff, but I'm more than happy to be LART:ed a bit here.</p>
+
+<p>Any comments? Anything obviously fubar? Is it futile to try to use Z-Wave at all with OpenRemote or is my choice of platform (Synology)<br/>
+stupid?</p>
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22883496"></a>
+                                    <font class="smallfont"><p>An event source should be the <b>sensor</b> not the command that sets the sensor.</p>
+
+<p>PS: For better readability you could enclose your code within {code}..{code} tags <a href="http://www.openremote.org/display/website/Wiki+Markup+Quick+Start">(see markup instructions)</a>. Do not place a / inside the end tag.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 27, 2014 12:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883503"></a>
+                                    <font class="smallfont"><p>So in my contrived example it would be:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+    Event( source == <span class="code-quote">"Car Heater Power On/Off"</span>, value == <span class="code-quote">"on"</span> )
+</pre>
+</div></div>
+
+<p>Lets see if that works.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Jan 27, 2014 13:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883504"></a>
+                                    <font class="smallfont"><p>Well, no, it doesn't do anything at all. But the whole setup seems broken right now, only every 10th or so press on any switch in the iOS app actually does something<br/>
+and the zwave.log file gets lots of errors like:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 15:30:26,476 (Z-Wave): could not send data: 01 0a 00 13 02 03 20 01 ff 05 79 45 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 15:30:26,479 (Z-Wave): could not send data: 06 
+java.io.IOException
+	at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+</pre>
+</div></div>
+
+<p>I think it's time to reinstall OpenRemote. On the other hand I've not done anything more than add three switches and a single rule, so it ought<br/>
+to be able to handle that.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Jan 27, 2014 13:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883505"></a>
+                                    <font class="smallfont"><p>Looks like something wrong in your basic Z-Wave set-up.<br/>
+On what platform did you setup. Did you pay attention to the "rxtx" setup? IIRC there is some mention about it in the install notes.<br/>
+PZ</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 27, 2014 13:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883507"></a>
+                                    <font class="smallfont"><p>I did see the rxtx problem in the docs, but I could not see anything similar in my setup. The instructions were for an older version of the Synology NAS I run on (I have an Intel Atom based, the docs were for the older ARM based). Thus I did not do anything related to rxtx. The error I should have been seeing is:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+--------------------------------------------------------------------
+
+ DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+WARNING:  RXTX Version mismatch
+        Jar version = RXTX-2.2pre1
+        <span class="code-keyword">native</span> lib Version = RXTX-2.1-7
+RXTX Warning:  Removing stale lock file. /<span class="code-keyword">var</span>/lock/LCK..ttyUSB0
+...
+</pre>
+</div></div>
+
+<p>I see no such error and have never seen it.</p>
+
+<p>In general (at least up until today) the setup had worked with a 75% reliability, some days better. Today it works with a 10% reliability after I tried<br/>
+to add the rule. I also renamed all my commands to be globally unique, but that can't have had any effect?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Jan 27, 2014 13:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883508"></a>
+                                    <font class="smallfont"><ul class="alternate" type="square">
+	<li>1)Without the rule you don't get errors?</li>
+	<li>2)Does the switch function as expected from the user interface?</li>
+	<li>3)If no, did it before you added the rule?</li>
+</ul>
+
+
+<p>I think the package should indeed run asis on Syno's with x86 processor. IIRC Marcus, the person who wrote the OR Zwave functions does use one of those.</p>
+
+<p>Over the years I learned on this forum these java warning errors are there to be ignored <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>. I do no longer run native Z-Wave, but I do remember that I always did see this warning in my logs.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 27, 2014 13:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883511"></a>
+                                    <font class="smallfont"><p>Digging in the log files there seem to be other errors that are way before the rule was added:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+ERROR 2014-01-16 17:11:30,701 (Z-Wave): IO error
+java.io.IOException: Input/output error in nativeavailable
+	at gnu.io.RXTXPort.nativeavailable(Native Method)
+	at gnu.io.RXTXPort$SerialInputStream.available(RXTXPort.java:1596)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveReaderThread.run(ZWaveGatewayRxtx.java:240)
+ERROR 2014-01-16 17:11:30,701 (Z-Wave): IO error
+java.io.IOException: Input/output error in nativeavailable
+	at gnu.io.RXTXPort.nativeavailable(Native Method)
+	at gnu.io.RXTXPort$SerialInputStream.available(RXTXPort.java:1596)
+	at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveReaderThread.run(ZWaveGatewayRxtx.java:240)
+
+....
+INFO 2014-01-16 17:15:15,600 (Z-Wave): Reader thread asked to start
+INFO 2014-01-16 17:15:15,636 (Z-Wave): Writer thread asked to start
+INFO 2014-01-16 17:15:15,637 (Z-Wave): Writer thread starting
+INFO 2014-01-27 13:12:03,331 (Z-Wave): Reader thread is dead, clean and re-<span class="code-keyword">try</span> to connect
+INFO 2014-01-27 13:12:03,713 (Z-Wave): Reader thread asked to start
+INFO 2014-01-27 13:12:03,714 (Z-Wave): Writer thread asked to start
+INFO 2014-01-27 13:12:03,715 (Z-Wave): Writer thread starting
+ERROR 2014-01-27 13:12:04,286 (Z-Wave): could not send data: 01 09 00 13 04 02 20 02 05 51 95 
+java.io.IOException
+        at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+        at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:12:07,894 (Z-Wave): could not send data: 06 
+java.io.IOException
+        at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+        at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:12:09,351 (Z-Wave): could not send data: 06 
+java.io.IOException
+        at gnu.io.RXTXPort$SerialOutputStream.flush(RXTXPort.java:1231)
+        at org.openremote.controller.protocol.zwave.ZWaveGatewayRxtx$ZWaveWriterThread.run(ZWaveGatewayRxtx.java:207)
+ERROR 2014-01-27 13:12:10,866 (Z-Wave): could not send data: 06 
+
+</pre>
+</div></div>
+
+<p>1: errors even without the rule, but a different error. The date when this new crop of errors started appearing seems to correspond quite exactly with when<br/>
+I synced the new design that used the rule. Initially the rule was definitely broken, perhaps OR was trying to send something to something that did not<br/>
+exist?</p>
+
+<p>2: the switch works as expected most of the time from the iOS interface. I do not use any other interfaces. Often clicks on switches in the iOS interface are<br/>
+not delivered and I have to tap on it a few times for OR to wake up and toggle it.</p>
+
+<p>3: it all worked better before adding the rule, now it's really unpredictable and mostly seems to do nothing at all. The rule should now be fixed to use the<br/>
+sensor and has been synced to my controller.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Jan 27, 2014 14:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883513"></a>
+                                    <font class="smallfont"><p>It looks like a low level communication problem. For the moment I don't think the rules have anything to do with it. For the time being, you could remove them.</p>
+
+<ul class="alternate" type="square">
+	<li>What Z-Wave controller are you using?</li>
+	<li>What is the distance between controller and switches.</li>
+</ul>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Jan 27, 2014 14:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883515"></a>
+                                    <font class="smallfont"><p>Well, I can't remove the rule. If I clear out the "rules" window in the designer and press Submit I get an error:</p>
+
+<p><a href="https://dl.dropboxusercontent.com/u/19808659/Screen%20Shot%202014-01-27%20at%2013.29.49.png">https://dl.dropboxusercontent.com/u/19808659/Screen%20Shot%202014-01-27%20at%2013.29.49.png</a></p>
+
+<p>Seems the designer breaks if someone saves an empty rule set. Ah, I added a single space and now I can save it.</p>
+
+<p>I use an Aeontec Z-Wave Stick Series 2. The distance from the stick to the car heater (which is the only one I've really<br/>
+used so far) is &lt;10. One outside wall in between. The other two are perhaps 12m away, a few light inside walls in between.<br/>
+To me the setup is quite ideal, it can't be much more simple in a real world situation.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Jan 27, 2014 14:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883516"></a>
+                                    <font class="smallfont"><p>The IO errors show that something is wrong with communicating with your Z-wave interface. Have you tried</p>
+
+<p>&gt; dmesg</p>
+
+<p>or</p>
+
+<p>&gt; dmesg | grep -i usb</p>
+
+<p>on your synology and checked that Z-wave stick is recognized and installed correctly? Are you using the same interface as dmesg displays in your z-wave config?<br/>
+For example, I have zwave.comPort /dev/ttyUSB2 and the following is shown in my dmesg:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[    4.302997] usb 4-1: <span class="code-keyword">new</span> full-speed USB device number 2 using ohci_hcd
+[    4.444302] usb 4-1: New USB device found, idVendor=10c4, idProduct=ea60
+[    4.444443] usb 4-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[    4.444564] usb 4-1: Product: CP2102 USB to UART Bridge Controller
+[    4.444673] usb 4-1: Manufacturer: Silicon Labs
+[    4.444767] usb 4-1: SerialNumber: 0001
+[    8.582507] cp210x 4-1:1.0: cp210x converter detected
+[    8.698244] usb 4-1: reset full-speed USB device number 2 using ohci_hcd
+[    8.831768] usb 4-1: cp210x converter now attached to ttyUSB2
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 27, 2014 14:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22883517"></a>
+                                    <font class="smallfont">
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Angua&gt; dmesg | grep -i usb
+[   64.930380] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver usbfs
+[   64.938351] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver hub
+[   64.943982] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver ethub
+[   64.949849] usbcore: registered <span class="code-keyword">new</span> device driver usb
+[   71.076451] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[   71.095520] ehci_hcd 0000:00:1a.7: <span class="code-keyword">new</span> USB bus registered, assigned bus number 1
+[   71.126932] ehci_hcd 0000:00:1a.7: USB 2.0 started, EHCI 1.00
+[   71.133286] hub 1-0:1.0: USB hub found
+[   71.154232] ehci_hcd 0000:00:1d.7: <span class="code-keyword">new</span> USB bus registered, assigned bus number 2
+[   71.184930] ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
+[   71.193146] hub 2-0:1.0: USB hub found
+[   71.258832] xhci_hcd 0000:04:00.0: <span class="code-keyword">new</span> USB bus registered, assigned bus number 3
+[   71.278531] hub 3-0:1.0: USB hub found
+[   71.292277] xhci_hcd 0000:04:00.0: <span class="code-keyword">new</span> USB bus registered, assigned bus number 4
+[   71.308686] hub 4-0:1.0: USB hub found
+[   71.456935] uhci_hcd: USB Universal Host Controller Interface driver
+[   71.475951] uhci_hcd 0000:00:1a.0: <span class="code-keyword">new</span> USB bus registered, assigned bus number 5
+[   71.494604] hub 5-0:1.0: USB hub found
+[   71.522684] uhci_hcd 0000:00:1d.0: <span class="code-keyword">new</span> USB bus registered, assigned bus number 6
+[   71.540782] usb 2-1: <span class="code-keyword">new</span> high-speed USB device number 2 using ehci_hcd
+[   71.546118] hub 6-0:1.0: USB hub found
+[   71.547645] uhci_hcd 0000:00:1d.1: <span class="code-keyword">new</span> USB bus registered, assigned bus number 7
+[   71.558488] hub 7-0:1.0: USB hub found
+[   71.564364] uhci_hcd 0000:00:1d.2: <span class="code-keyword">new</span> USB bus registered, assigned bus number 8
+[   71.573774] hub 8-0:1.0: USB hub found
+[   71.717760] Initializing USB Mass Storage driver...
+[   71.735132] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver usb-storage
+[   71.741208] USB Mass Storage support registered.
+[   71.853232] scsi7 : usb-storage 2-1:1.0
+[   71.867264] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver usblp
+[   72.157868] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver usbhid
+[   72.163504] usbhid: USB HID core driver
+[   72.252520] usb 7-2: <span class="code-keyword">new</span> full-speed USB device number 2 using uhci_hcd
+[   74.639463] usb 3-2: <span class="code-keyword">new</span> low-speed USB device number 2 using xhci_hcd
+[   74.719307] usb 3-2: ep 0x81 - rounding interval to 512 microframes, ep desc says 800 microframes
+[   91.355586] usb 4-1: <span class="code-keyword">new</span> SuperSpeed USB device number 2 using xhci_hcd
+[   91.379982] scsi8 : usb-storage 4-1:1.0
+[  105.103727] usb 3-2: ep 0x81 - rounding interval to 512 microframes, ep desc says 800 microframes
+[  122.042029] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver usbserial
+[  122.049931] USB Serial support registered <span class="code-keyword">for</span> <span class="code-keyword">generic</span>
+[  122.055310] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver usbserial_generic
+[  122.061926] usbserial: USB Serial Driver core
+[  122.466649] USB Serial support registered <span class="code-keyword">for</span> FTDI USB Serial Device
+[  122.473509] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver ftdi_sio
+[  122.479323] ftdi_sio: v1.6.0:USB FTDI Serial Converters Driver
+[  122.501614] USB Serial support registered <span class="code-keyword">for</span> pl2303
+[  122.506917] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver pl2303
+[  122.512596] pl2303: Prolific PL2303 USB to serial adaptor driver
+[  122.532980] USB Serial support registered <span class="code-keyword">for</span> cp210x
+[  122.666160] usb 7-2: reset full-speed USB device number 2 using uhci_hcd
+[  122.829672] usb 7-2: cp210x converter now attached to ttyUSB0
+[  122.835951] usbcore: registered <span class="code-keyword">new</span> <span class="code-keyword">interface</span> driver cp210x
+</pre>
+</div></div>
+
+<p>The cp210x driver is the one that should claim the device. The port is set to /dev/ttyUSB0 in zwave.comPort in the controller config. If there<br/>
+was anything wrong with that part I wouldn't expect anything to work at all, now it has worked somewhat ok for over a month.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by chakie at Jan 27, 2014 14:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:37</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

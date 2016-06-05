@@ -1,0 +1,328 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Socket reply</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Socket reply
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 08, 2010 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I'm trying to get my Onkyo Amp set-up using TCP&lt;-&gt;Serial converter (Software) so i could test out the Status commands.</p>
+
+<p>The commands are simple enough.</p>
+
+<p>&#33;1PWRON/r</p>
+
+
+<p>&#33;1PWROFF/r</p>
+
+<p>However the AMP reponse has a /EOF control character</p>
+
+<p>i.e.</p>
+
+<p>&#33;1PWRON/EOF</p>
+
+<p>Net result is i can't match to the reponse (&#33;1PWRON[square]) as the UI designer only expects displayable characters.</p>
+
+<p>I'm no programmer but I found a regex filter for control characters that if added to the TCPSocketCommand reply() would be enough to remove this issue for me, I have no idea what it would do to ayone else. I'm affraid I don't know how to use SVN to suggest changes nor do have a  IDE for Java I still new to this so any suggestions on what tools to use read etc welcome (OSX 10.8.5) Did some C# and FORTRAN many  moons ago. Would love to be able to contribute more.</p>
+
+<p>Maybe there are other TCP&lt;-&gt; serial users with similar control character issues ?</p>
+
+<p>Should this be a seperate protocol or just a change to the TCPsocket one ?</p>
+
+
+<p>My best guess at the code would be something like..import java.util.regex.*;</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>| | @Override |
+| | public String read(EnumSensorType sensoryType, Map&lt;String, String&gt; stateMap) { 
+| | String rawResult = requestSocket();
+| |String rawResult2 = null;
+| |
+| |Pattern p = Pattern.compile("\\p{Cntrl}");
+| |Matcher m = p.matcher(rawResult);
+| |String rawResult2 = m.replaceAll(""); 
+| |
+| | if ("".equals(rawResult2)) { 
+| | return UNKNOWN_STATUS; 
+| | } 
+| | for (String state : stateMap.keySet()) { 
+| | if (rawResult2.equals(stateMap.get(state))) { 
+| | return state; 
+| | } 
+| | } 
+| | return rawResult2;
+
+</pre>
+</div></div>
+
+<p>Any takers to point me in the right direction.</p>
+
+
+<p>Phill</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-12846224"></a>
+                                    <font class="smallfont"><p>Phill,</p>
+
+<p>First, you've got impressively far.</p>
+
+<p>Second, your idea is exactly right. Thanks for posting it, it's a quick solution for many generic (HTTP, TPC) protocol status update needs.</p>
+
+<p>Don't worry about SVN too much, you can figure it out later. Simple diff will do, I will apply it on your behalf.</p>
+
+<p>This will solve other issues too, including Pierce's Yamaha HTTP API.</p>
+
+<p>If you want to keep trying to get a Java implementation to compile (command line tools are fine, if you have a good text editor, IDE you can worry about later, they take time to learn).</p>
+
+<p>If not, let me know too. The idea is simple enough (and good), I can add it, you already showed enough detail.</p>
+
+<p>If you want to build it as a generic solution, the regex expression should be an additional parameter in the *Builder implementation so it can be parsed from controller.xml and changed per implementation. If you hard code it will obviously be specific to your device and should be a separate protocol.</p>
+
+<p>Bottom line, let me know if you're still itching to work on finishing it (and claim further fame and glory) or if you prefer to hand it over...</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 08, 2010 17:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-12846226"></a>
+                                    <font class="smallfont"><p>Cool, glad I can help.</p>
+
+<p>"Simple Diff wil do" ... if only I knew what&nbsp; Diff was and how to create on...</p>
+
+<p>OK for now I'll just stick to notepad, I downloaded eclipse some time back with the intention of learning, but it's far to complex for me to understand and the IDE curve is a bit steep. ho hum.</p>
+
+<p>Generic solution.. jess didn't even think of that, as for claiming the glory, I happly hand over to someone who knows what they're doing on the basis that it'll actually it done &#33;</p>
+
+<p>Over to you Juha.</p>
+
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Oct 08, 2010 17:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697272"></a>
+                                    <font class="smallfont"><p>Juha,</p>
+
+<p>OK after having no time to learn this before, I finally sat down at the weekend and figured this out. Added the regex to remove control characters from the response words on tcp/ip sockets.</p>
+
+
+<p>Certainly allows me to specify Name/Value pairs and display Names like On / Off instead of the ASCII Value command words &#33;1PWR01 / &#33;PWR00. Switch works well.</p>
+
+
+<p>Next to get this working on a Slider using Name/Value pairs to convince the Slider is a Level/Range</p>
+
+<p>Where do I post the patch file?</p>
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Dec 06, 2010 13:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697283"></a>
+                                    <font class="smallfont"><p>Excellent <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Feel free to post patch here, unless it is too long in which case email directly to me : juha at openremote org</p>
+
+
+<p>Also, let me know by email if you already agreed on the OpenRemote Contributor Agreement (legal click through on the website we require from all contributors to include code into the codebase). If not, I will send you the details over email.</p>
+
+<p>Thanks for taking the time and effort &#8211; sorry for taking so long to get back on this (it was still on my list, just was getting pushed down).</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 07, 2010 08:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697285"></a>
+                                    <font class="smallfont"><p>Phill,</p>
+
+<p>this sounds great. The socket implementation was still missing support for control characters.<br/>
+Thanks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Dec 07, 2010 09:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697288"></a>
+                                    <font class="smallfont"><p>Juha,</p>
+
+<p>Email on it's way.</p>
+
+<p>One thing I have noticed now though is there doesn't seem to be a way to differentiate sensors that are polling different actions on the same TCP/IP socket.</p>
+
+<p>Example: Custom Name/Value Power On Sensor linked to a label and a Custom Name/Value Volume Sensor linked to another label.&nbsp; Both lables display responses from both sensors since they are polling the same socket, but looking for different Name/Value pairs. The default seems to be if a Name/Value match isn't found just to return the Control Word.. need to work on that i think.</p>
+
+<p>A way for a sensor to ignore a control word not listed in the Name/Value pair..</p>
+
+
+<p>Maybe a another patch to follow.. who knows.</p>
+
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Dec 07, 2010 14:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697328"></a>
+                                    <font class="smallfont"><p>Hmm I see.</p>
+
+<p>I need to start building unit tests for this so we can at least document the behavior somehow. And also to ensure we don't regress moving forwards.</p>
+
+<p>Not sure if the default behavior is ideal. Would be excited to receive another patch <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>  Marcus may also have ideas how the implementation should work &#8211; he's using the TCP/IP quite a lot I think.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 08, 2010 08:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697332"></a>
+                                    <font class="smallfont"><p>OK. I lied about the switch. It doesn't work, but I think I know why.</p>
+
+<p>The Sensor is defined as a Custom type. It has Name/Value Pairs:</p>
+
+<p>on : &#33;1ZPW01</p>
+
+<p>off : &#33;1ZPW00</p>
+
+<p>I was expecting the REST reponse for the sensor to show the Name so that it acts in the same way as a Boolean type, however the REST status shows the Value:</p>
+
+<p>&lt;openremote xsi:schemaLocation="http://www.openremote.org <a href="http://www.openremote.org/schemas/status.xsd">http://www.openremote.org/schemas/status.xsd</a>"&gt;<br/>
+&lt;status id="263"&gt;&#33;1ZPW00&lt;/status&gt;<br/>
+&lt;/openremote&gt;</p>
+
+<p>Can anybody (Juha) point me to the code that sets the REST stauts this so I can patch this to Name, can't seem to locate it &#33;</p>
+
+
+<p>Ta.</p>
+
+<p>Phill</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Dec 08, 2010 09:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697336"></a>
+                                    <font class="smallfont"><p>Think what we'll probably want to do is add two properties in the TCP/IP protocol configuration (XML) on the designer: </p>
+
+<ul class="alternate" type="square">
+	<li>Switch regexp</li>
+	<li>Level/Range regexp</li>
+</ul>
+
+
+<p>And use those in the TCP protocol implementation based on the sensor type that has been configured (EnumSensorType).</p>
+
+<p>That way both regular switch and slider functionality should work, you won't need 'custom' sensor for a regular two-state switch, and we can isolate the changes within the protocol implementation.</p>
+
+<p>The two properties can be parsed in the *Builder.java implementation and passed onto the commands.</p>
+
+<p>Does that make sense to you?</p>
+
+<p>I will apply your control character strip patch, let me know if you want to dig into this deeper.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Dec 08, 2010 13:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-13697343"></a>
+                                    <font class="smallfont"><p>Your patch to strip control characters from the return values has been applied to Subversion and will be included in the next developer release (alpha 12) of the controller.</p>
+
+<p>Thanks for your contribution!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Dec 09, 2010 10:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532048"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>I know this is an old thread but this is a subject of interest for me right now. I am interfacing with pulseaudio and MPD as part of a multiroom audio project, both have telnet interfaces that I can successfully send commands to so the next step is reading status data back to update the panel UI (things such as volume, current song).</p>
+
+<p>Both pulseaudio and MPD have 'messy' telnet command responses in that lots of text is returned and there is a need to 'filter' out the required data. I definitely think that the way forward is to use the generic telnet protocol rather than custom protocols with hard coded response filtering. The discussion above regarding the use of regexp seems like a great way of filtering response data but looking through the source code I can't see any reference to regexp in any of the protocols.</p>
+
+<p>I might be missing something but it seems that the read method of the TelnetCommand class hasn't yet been implemented at all. I'd appreciate it if you could bring me up to speed on this and then if I can I am more than willing to help out in implementing a solution.</p>
+
+<p>This is a great bit of work so far and the potential is huge! Ideally I'd like to make this the cornerstone of my home automation control, I see dynamic panel controls and controller scheduling as musts (MisterHouse would be a thing of the past then!) and the M-V-C principal of your architecture is fantastic (I see some similarities with Microsoft's WPF form technology and I'm sure some of the principles could help with the dynamic controls).</p>
+
+<p>I'm getting a bit carried away now and would happily settle for getting the status reading working for the time being!</p>
+
+<p>Many thanks and good work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Jan 17, 2011 22:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

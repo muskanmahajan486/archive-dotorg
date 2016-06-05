@@ -1,0 +1,603 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Timer with variable time (from slider)</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Timer with variable time (from slider)
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jul 08, 2014 by <font color="#0050B2">hennemarc</font>.
+				    </div>
+
+				    <p>Hello all,</p>
+
+<p>using a fixed timer in a rule looks like this:</p>
+
+<p>rule "Turn light off after 10s"<br/>
+	timer (int: 10s)<br/>
+when<br/>
+	Event(source=="LED ON/OFF", value=="on")<br/>
+then<br/>
+	System.out.println("LED turned off after 10 seconds");<br/>
+	execute.command("LED OFF");<br/>
+end</p>
+
+
+<p>Now I have created a slider ("Slider - Timer") which brings back via a sensor a number between 0...60. How can I bring this value into the timer, so that I can set the timer time in a flexible way?</p>
+
+<p>rule "Turn light off after 0...60s"<br/>
+	Range(source == "Slider - Timer", $timer01 : value)<br/>
+	timer (int: $timer01)<br/>
+when<br/>
+	Event(source=="LED ON/OFF", value=="on")<br/>
+then<br/>
+	System.out.println("LED turned off after 10 seconds");<br/>
+	execute.command("LED OFF");<br/>
+end</p>
+
+<p>FYI, this rule does not work, but what is the correct syntax?</p>
+
+
+<p>Marc</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23601504"></a>
+                                    <font class="smallfont"><p>Marc,</p>
+
+<p>Did you get this one working already? im also looking for a variable timer which can be set by a slider</p>
+
+<p>i found this post but didnt tried it yet:<br/>
+stackoverflow.com/questions/24208007/drools-how-to-use-a-variable-in-the-duration-specification</p>
+
+<p>Rob</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by robnas at Oct 01, 2015 15:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602014"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>We're achieved this using Velbus hardware, if that helps you.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Nov 03, 2015 19:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602023"></a>
+                                    <font class="smallfont"><p>In the new Drools 6.x it is possible to do:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+declare Bean
+    delay   : <span class="code-object">String</span> = <span class="code-quote">"30s"</span>
+    period  : <span class="code-object">long</span> = 60000
+end
+
+rule <span class="code-quote">"Expression timer"</span>
+    timer( expr: $d, $p )
+when
+    Bean( $d : delay, $p : period )
+then
+end
+</pre>
+</div></div>
+<p>As far as I'm aware, the new Drools version will be included in the Pro 1.4 controller. It is already available in one test builds <a href="http://svn.code.sf.net/p/openremote/code/workspace/rhitz/Controller_ProInstaller_1_1_0_IOT_SF/">http://svn.code.sf.net/p/openremote/code/workspace/rhitz/Controller_ProInstaller_1_1_0_IOT_SF/</a> and checked with Java 8 on Raspberry Pi 2.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Nov 04, 2015 12:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602187"></a>
+                                    <font class="smallfont"><p>I gathered together advice from all over this forum and came up with this:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-comment">// Block of Rules <span class="code-keyword">for</span> Office Fan (socket)
+</span><span class="code-comment">//
+</span>rule <span class="code-quote">"OfficeFanAuto_Off"</span>
+    timer (<span class="code-object">int</span>: 1s) <span class="code-comment">// <span class="code-quote">"debounce"</span> - let the user settle on a value
+</span>when
+    Event( source == <span class="code-quote">"VirtualTimedOfficeWallSocketValue"</span>, value == <span class="code-quote">"0"</span>)
+then
+    execute.command(<span class="code-quote">"TimedOfficeWallSocketOff"</span>);
+end
+
+rule <span class="code-quote">"OfficeFanAuto_On"</span>
+    timer (<span class="code-object">int</span>: 1s) <span class="code-comment">// <span class="code-quote">"debounce"</span> - let the user settle on a value
+</span>when
+    Event( source == <span class="code-quote">"VirtualTimedOfficeWallSocketValue"</span>, value &gt; 0 )
+then
+    execute.command(<span class="code-quote">"TimedOfficeWallSocketOn"</span>);
+end
+
+rule <span class="code-quote">"OfficeFanAuto_dec"</span>
+    timer (<span class="code-object">int</span>: 1h) <span class="code-comment">//
+</span>when
+    Event( source == <span class="code-quote">"VirtualTimedOfficeWallSocketValue"</span>, $TimeLeft : value &gt; 0 )
+then
+    <span class="code-object">Integer</span> iTl = <span class="code-object">Integer</span>.parseInt($TimeLeft.toString()) ;
+    iTl = iTl - 1 ;
+    execute.command(<span class="code-quote">"VirtualTimedOfficeWallSocketStatus"</span>, iTl );
+end
+</pre>
+</div></div>
+
+<p>In my case, it's a Fan, so I want HOURS not minutes. The Internal Memory (Virtual) value "VirtualTimedOfficeWallSocketValue" is tested and decremented. Three Rules, 1 for On, 1 for Off and 1 for decrementing. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by c.steele at Nov 15, 2015 23:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602229"></a>
+                                    <font class="smallfont"><p>Hello</p>
+
+<p>Thanks for putting your rules example on here.</p>
+
+<p>I've tried to use it in my design to get a timer to count down days while I'm away, so that my house wakes up again as I return.</p>
+
+
+<p>For some reason when I load this version in, all my rules stop.</p>
+
+<p>I know I've done something daft with it, but I just can't see the problem.</p>
+
+
+<p>Can you spot anything?</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+<span class="code-comment">// Block of Rules <span class="code-keyword">for</span> Holiday away days
+</span><span class="code-comment">//
+</span>rule <span class="code-quote">"Holiday_mode_Off"</span>
+    timer (<span class="code-object">int</span>: 1s) <span class="code-comment">// <span class="code-quote">"debounce"</span> - let the user settle on a value
+</span>when
+    Event( source == <span class="code-quote">"Holiday Days"</span>, value == <span class="code-quote">"0"</span>)
+then
+    execute.command(<span class="code-quote">"01-34 Ch4 OFF"</span>);
+end
+
+rule <span class="code-quote">"Holiday_Mode_On"</span>
+    timer (<span class="code-object">int</span>: 1s) <span class="code-comment">// <span class="code-quote">"debounce"</span> - let the user settle on a value
+</span>when
+    Event( source == <span class="code-quote">"Holiday Days"</span>, value &gt; 0 )
+then
+    execute.command(<span class="code-quote">"01-34 Ch4 ON"</span>);
+end
+
+rule <span class="code-quote">"Holiday_Mode_dec"</span>
+    timer (<span class="code-object">int</span>: 10s) <span class="code-comment">//
+</span>when
+    Event( source == <span class="code-quote">"Holiday Days"</span>, $TimeLeft : value &gt; 0 )
+then
+    <span class="code-object">Integer</span> iTl = <span class="code-object">Integer</span>.parseInt($TimeLeft.toString()) ;
+    iTl = iTl - 1 ;
+    execute.command(<span class="code-quote">"Holiday_Days set"</span>, iTl );
+end
+
+</pre>
+</div></div>
+
+
+<p>"Holiday Days" is a sensor attached to an in memory command that has a value set from a slider.<br/>
+This works because I have the sensor shown on the panel.</p>
+
+<p>Just for information,</p>
+
+<p>I'm running OR1.3, with Java 1.6 on a Windows 7 Netbook.</p>
+
+
+<p>Many thanks in advance.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Nov 18, 2015 20:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602236"></a>
+                                    <font class="smallfont"><p>I don't see anything, and when I paste your code into my Rules file, it loads fine, no errors. That's what I expected actually... "all rules stop" tells me there was a load error and the entire file was discarded. I'm on a Mac, so there will be differences but look in boot.log and verify the file loaded. I get this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">DEBUG 2015-11-18 14:13:42,412 : Initializing event processor: Drools Rule Engine
+DEBUG 2015-11-18 14:13:42,466 : Adding Rule 'my_home_rules.drl'...
+DEBUG 2015-11-18 14:13:48,784 : Adding rule definitions from 'my_home_rules.drl'...
+</pre>
+</div></div>
+
+<p>Remove this block of code, and create a new file with only it.. then your regular stuff will load but the fail in the new file will still fail. I have two files in ../webapps/controller/rules/*.drl</p>
+
+<p>I have this at the top of my file... maybe yours is missing one...</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.protocol
+
+<span class="code-keyword">import</span> org.openremote.controller.model.event.*;
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+global org.openremote.controller.statuscache.LevelFacade levels;
+</pre>
+</div></div>
+
+<p>That's all three of my thoughts.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by c.steele at Nov 18, 2015 22:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602255"></a>
+                                    <font class="smallfont"><p>Thanks a million for your input.</p>
+
+<p>I must confess that once you'd suggested there was nothing wrong, I simply synchronized my controller again.</p>
+
+<p>From that point...</p>
+
+<p>Everything is working really well.</p>
+
+<p>The only thing to do now is change the code from 10s to 24h.</p>
+
+
+<p>Thank you so much for creating this set of rules.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Nov 19, 2015 15:29
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602259"></a>
+                                    <font class="smallfont"><p>well... if one code snippet helps, maybe two is "more better"? </p>
+
+<p>I had a problem to solve since I moved into this house.. putting trash into the outdoor trash bins in the dark. I needed a light to even see the bins, but I'd forget to turn it off. Long before I heard Z-Wave I changed the light switch to have a mechanical timer. That twisty type that tick tick ticks til it gets to zero and clicks off. But that meant the light would be on for 10+ mins, for a 20 second task. So then I thought, I know, I'll spend about $70 to save 9 mins of electricity a day! </p>
+
+<p>I added a Aeon Z-Wave Microswitch behind that mechanical one. Then slapped on a door sensor. Now I can turn the light on just by opening the door AND it stays on for only 20 seconds. If I need it longer, the mechanical timer switch (OR the phone app,) turns it on/off. Most importantly, if I twist the mechanical, the light does NOT turn off after 20 seconds.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-comment">// Block of Rules <span class="code-keyword">for</span> Timed Rear-Yard door Light
+</span><span class="code-comment">//
+</span>rule <span class="code-quote">"RearDoorAuto_Off"</span>
+when
+    Event( source == <span class="code-quote">"VirtualTimedRearBackDoorLightValue"</span>, value == <span class="code-quote">"0"</span>)
+then
+    execute.command(<span class="code-quote">"TimedRearBackDoorSwitch_Off"</span>);
+end
+
+rule <span class="code-quote">"RearDoorAuto_On"</span>
+when
+    Event( source == <span class="code-quote">"DateTimeIsNitetime_sensor"</span>, value == <span class="code-quote">"<span class="code-keyword">true</span>"</span> )
+    Event( source == <span class="code-quote">"VirtualTimedRearBackDoorLightValue"</span>, value &gt; 0 )
+then
+    execute.command(<span class="code-quote">"TimedRearBackDoorSwitch_On"</span>);
+end
+
+rule <span class="code-quote">"RearDoorAuto_dec"</span>
+    timer (<span class="code-object">int</span>: 1s) <span class="code-comment">//
+</span>when
+    Event( source == <span class="code-quote">"VirtualTimedRearBackDoorLightValue"</span>, $TimeLeft2 : value &gt; 0 )
+then
+    <span class="code-object">Integer</span> iTl2 = <span class="code-object">Integer</span>.parseInt($TimeLeft2.toString()) ;
+    iTl2 = iTl2 - 1 ;
+    execute.command(<span class="code-quote">"VirtualTimedRearBackDoorLightStatus"</span>, iTl2 );
+end
+
+rule <span class="code-quote">"DoorSensorTrigger"</span>
+when
+    Event( source == <span class="code-quote">"TimedGarageBackDoorSwitch_Status"</span>, value == <span class="code-quote">"0"</span> )
+    Event( source == <span class="code-quote">"RearBackDoor_sensor"</span>, value == <span class="code-quote">"on"</span>)
+then
+    execute.command(<span class="code-quote">"VirtualTimedRearBackDoorLightStatus"</span>, 20 );
+end
+
+</pre>
+</div></div> 
+
+<p>Very simple. Door Sensor sets a timer value (instead of a slider doing that,) leaving off, on, or decrement Rules to be pretty much the same. Two additions: 1) Door Sensor doesn't initiate this if the switch is already on (from the mechanical,) therefore it doesn't shut off automatically; 2) adding "IsNight" to the equation so that the light only comes on automatically if it's night. </p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by c.steele at Nov 19, 2015 17:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602282"></a>
+                                    <font class="smallfont"><p>Wow!</p>
+
+<p>That's a very impressive set of rules you've created.</p>
+
+<p>I'm afraid to say, all of which are beyond me.</p>
+
+
+<p>However... I have got similar actions and conditions setup in my home, and a number of client's homes, but they are far easier to create using Velbus hardware.</p>
+
+<p>That said, Velbus isn't really a retro fit technology like ZWave and other 'wireless' technologies.</p>
+
+
+<p>Personally speaking, I really like the way that OpenRemote can sit above a combination of hardware and create some pretty amazing solutions.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Nov 20, 2015 15:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602285"></a>
+                                    <font class="smallfont"><p>It is great at sitting above, but in 2015, almost 2016, the list of protocols supported is looking not modern. Where's Bluetooth? (Bluetooth MESH will be available in 2016 and that will be interesting Zwave/zigbee competition.) Where's support for a Zigbee dongle? Or Lutron support for SmartBridge (vs the antique Homeworks) ?</p>
+
+<p>Even Z-Wave is under represented. Products released a year ago still have no utility via OpenRemote.</p>
+
+<p>I suspect the answer to ALL of the above is money. ZWave is costly to Develop. Same with Lutron. They reveal their API only to "Partners" and I assume that's a money gateway.</p>
+
+<p>I really wish we could zoom by this era, this proprietary phase, and move straight to the days when the protocol isn't the #1 purchasing decision. </p>
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by c.steele at Nov 20, 2015 18:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602286"></a>
+                                    <font class="smallfont"><p>You're preaching to the converted my friend <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+<p>MDAR Ltd has just funded the code writing to include the Velbus protocol <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>But on that subject, speaking from many years of experience, it will be a dark day when I completely rely on a wireless technology, of any kind.</p>
+
+
+<p>If you are looking for something (in any area) to work predictably and reliably, then make sure it has a bit of cable (Copper or Fibre Optic) to transfer the data.</p>
+
+<p>I've got an associate who selected LightwaveRF for a small housing estate. 2 years on, they still haven't got them all working, at all, let alone all at the same time.</p>
+
+<p>Whereas a hardwired solution..... Etc etc etc</p>
+
+<p>You only have to count how many times your mobile phone drops a call, doesn't have a data connection or doesn't receive a text quickly in a day.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Nov 20, 2015 19:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602289"></a>
+                                    <font class="smallfont"><p>While I can't disagree on the initial run of copper, rodents sure love it. So, reliability over a period of say.. 3 years. How many outages wireless vs how many wired? I think the cable TV people would be the best source of those numbers. Can't remember how many times I've changed an connector on my cable system, but "lots."</p>
+
+<p>I also think there's a HUGE difference between a 300 ft mesh of Zwave/Bluetooth/Zigbee wireless and 2km Cell service. I have been amazed by the reliability of my first use of Zwave - An under stair closet. I installed a battery operated door sensor and a Zwave wall socket (with wall mounted light strip plugged in.) I assumed it would be slow to turn on and would work 50%. I lived for 3 years without a light in there so 50% seemed ok at the time. Now, if it didn't work everytime, I'd pull some (more) hair. It's been installed for at least a year, and I have never seen it fail. And it works in the half second range. Open the door, the light goes on. Close the door, it goes off. Amazing!</p>
+
+<p>Same goes for the Pico Remotes. I got the first one and thought it would work 50%. And initially I was ok with that. It was for a printer's power. I could hear it switch on or off, so clicking the Pico's button 2-3 times didn't seem like a big deal. Again, it's never failed. Same half second response too.</p>
+
+<p>That's Lutron ClearConnect to the Hub, then Zwave out of the hub to the power socket. Amazing!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by c.steele at Nov 20, 2015 20:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605856"></a>
+                                    <font class="smallfont"><blockquote><p>As far as I'm aware, the new Drools version will be included in the Pro 1.4 controller. It is already available in one test builds <a href="http://svn.code.sf.net/p/openremote/code/workspace/rhitz/Controller_ProInstaller_1_1_0_IOT_SF/">http://svn.code.sf.net/p/openremote/code/workspace/rhitz/Controller_ProInstaller_1_1_0_IOT_SF/</a> and checked with Java 8 on Raspberry Pi 2</p></blockquote>
+
+<p>Interesting. Unfortunately it's been postponed to Pro 1.5. according to Jira. I am curious how well it runs on a Raspi2</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 25, 2016 19:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605925"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+
+<p>Carrying on with my holiday countdown thing, can anyone help me again please?</p>
+
+
+<p>The whole countdown thing works really well with a slider, or even better with some preset buttons that simply set the virtual command to a value.</p>
+
+<p>But there is a situation where the slider isn't accurate enough and the presets don't hold the values I need.</p>
+
+
+<p>So, what I thought about was adding a +1 day and -1 day pair of buttons.</p>
+
+
+<p>The only way I could think of doing this was to put two in memory switches on the panel, then get a pair of rules to monitor the state of these switches and add or subtract a day from the in memory value.<br/>
+(As well as switching off the in memory switch)</p>
+
+
+
+<p>I've tried the following rules, but with no luck.</p>
+
+
+<p>I'm sure it's because I don't have a clue what I'm doing.</p>
+
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+
+
+<span class="code-keyword">package</span> org.openremote.controller.protocol;
+
+global org.openremote.controller.statuscache.CommandFacade execute;
+
+<span class="code-keyword">import</span> java.util.*;
+
+
+rule <span class="code-quote">"Holiday+1"</span>
+when
+    $evt:Event(source matches <span class="code-quote">"Holiday+1"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>
+then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"ON"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Holiday days plus one '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    source == <span class="code-quote">"Holiday-Days"</span>, $TimeLeft : value ;
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"Holiday+1-OFF"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>    <span class="code-object">Integer</span> iTl = <span class="code-object">Integer</span>.parseInt($TimeLeft.toString()) ;
+    iTl = iTl + 1 ;
+    execute.command(<span class="code-quote">"Holiday_Days_Set"</span>, iTl );
+
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span>    }
+end
+
+rule <span class="code-quote">"Holiday-1"</span>
+when
+    $evt:Event(source matches <span class="code-quote">"Holiday-1"</span>, $source : source) <span class="code-comment">// NOTE SENSOR NAME IS WHAT IS BEING COMPARED HERE
+</span>
+then
+    <span class="code-object">String</span> buttonStatus = $evt.getValue().toString();
+    <span class="code-object">boolean</span> isActive = buttonStatus != <span class="code-keyword">null</span> &amp;&amp; buttonStatus.equalsIgnoreCase(<span class="code-quote">"ON"</span>);
+
+    <span class="code-object">System</span>.out.println(<span class="code-quote">"Holiday days minus one '"</span> + $source + <span class="code-quote">"': "</span> + buttonStatus);
+
+    source == <span class="code-quote">"Holiday-Days"</span>, $TimeLeft : value ;
+
+    <span class="code-comment">// EXECUTE ANY COMMANDS BY USING THEIR NAME AND VALUE TO SET
+</span>    <span class="code-comment">// ADD ADDITIONAL COMMANDS AS REQUIRED
+</span>
+    <span class="code-keyword">if</span> (isActive)
+    {
+        execute.command(<span class="code-quote">"Holiday-1-OFF"</span>, ""); <span class="code-comment">// Uncomment to send command
+</span>    <span class="code-object">Integer</span> iTl = <span class="code-object">Integer</span>.parseInt($TimeLeft.toString()) ;
+    iTl = iTl - 1 ;
+    execute.command(<span class="code-quote">"Holiday_Days_Set"</span>, iTl );
+
+    }
+    <span class="code-keyword">else</span>
+    {
+<span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span><span class="code-comment">//        execute.command(<span class="code-quote">"Something_Else"</span>, ""); // Edit and uncomment to send command
+</span>    }
+end
+
+
+
+</pre>
+</div></div>
+
+
+
+<p>Thanks in advance for any help.</p>
+
+
+<p>Cheers,</p>
+
+<p>Stuart</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Mar 02, 2016 18:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605927"></a>
+                                    <font class="smallfont"><blockquote><p>But there is a situation where the slider isn't accurate enough and the presets don't hold the values I need</p></blockquote>
+
+<p>Not sure what you mean by accurate. IIRC you can use the slider for a coarse setting, and fine tune that with the icons on top or bottom of a veritcal slider. In <a href="http://www.openremote.org/display/~pz1/OpenRemote+2.0+How+To+-+Optimise+electricity+usage+-+Solar">this draft howto</a> I did use only the top and bottom icons to set the hour that the dishwasher should start. (somewhere half way the page)</p>
+
+<p>The problem with OR sliders often is the sluggish behaviour. I still have on my todo list a slider to an In memory Virtual Command. Leave a bit of time to manipulate the setting, and fire a command after that time has expired. Not nice for dimming lights, but useable for setting thermostats.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Mar 02, 2016 18:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23605928"></a>
+                                    <font class="smallfont"><p>Hi PZ1</p>
+
+
+<p>I didn't realise the top and bottom icons had events associated with them.</p>
+
+<blockquote><p> fine tune that with the icons on top or bottom of a veritcal slider</p></blockquote>
+
+
+<p>I'll give that a try as it would be a really simple solution.</p>
+
+
+<p>Cheers,</p>
+
+<p>Stuart</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mdar at Mar 02, 2016 19:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:39</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

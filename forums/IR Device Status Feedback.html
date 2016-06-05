@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : IR Device Status Feedback</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : IR Device Status Feedback
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 31, 2015 by <font color="#0050B2">ejr1283</font>.
+				    </div>
+
+				    <p>To start, I am new to openremote and I am not a programmer.  I am a DIYer that likes to tinker with computers and technology.</p>
+
+<p>I know this has been addressed on the forums in a couple different areas, such as <a href="http://openremote.org/display/forums/SOLVED+Feedback+for+iR+or+Rules">this</a>. I have tried to replicate the process discussed. But, I am still confused on how to handle scene switching when an device does not have discrete ON/Off codes.</p>
+
+<p>As in the referenced thread, I currently have a harmony remote that I would like to replace with OR.  I will be adding lighting scenes, etc. down the road.  Currently, the devices I am working with do not have discrete IR-codes for On/Off.  Specifically, I am working with the following equipment:</p>
+
+<p>    AVR - Pioneer VSX-917<br/>
+    TV - Insignia TV<br/>
+    Cable - Scientific Atlanta 8240<br/>
+    HTPC - Kodi connected to Emby Server backend (controlled through MCE Controller - Telnet)</p>
+
+<p>On the harmony, the Remote "remembers" the states of the device so if the device is already turned on, the Turn ON/OFF code isn`t sent again.</p>
+
+<p>Scenario would be the following:</p>
+
+<p>Scene (Macro) "Watch TV (TV)" selected:<br/>
+     -&gt; Pioneer VSX-917 Power Toggle Sent -&gt; (AVR turns on)<br/>
+     -&gt; Insignia Power Toggle Sent -&gt; (TV turns on)<br/>
+     -&gt; Cable Toogle sent -&gt; (Cable turns ON)<br/>
+     -&gt; Pioneer VSX-917 Input Select TV -&gt; (AVR TV input selected)</p>
+
+<p>Now i want to watch movies </p>
+
+<p>Scene (Macro) "Watch Movies" selected:<br/>
+     -&gt; Pioneer VSX-917 Power Toggle Sent -&gt; (AVR is already on, nothing should happen)<br/>
+     -&gt; Insignia Power Toggle Sent -&gt; (TV is already on, nothing should happen)<br/>
+     -&gt; Cable Toogle sent -&gt; (Cable turns off)<br/>
+     -&gt; Pioneer VSX-917 Input Select BluRay -&gt; (AVR BluRay input selected)</p>
+
+
+<p>I know that I need to use In Memory Virtual Commands to make this happen.  For the Pioneer VSX917 I have created the following commands:</p>
+
+<p>     1) VSX917_VRStatus (In-Memory Virtual Command - status)<br/>
+     2) VSX917_VROff    (In-Memory Virtual Command - off)<br/>
+     3) VSX917_VROn     (In-Memory Virtual Command - on)</p>
+
+<p>I have created the following Sensor</p>
+
+<p>     VSX917_Power_Sensor (Command - VSX917_VRStatus; Type- switch)</p>
+
+<p>I have created the following switch</p>
+
+<p>     VSX917_VR_Power <br/>
+        sensor - VSX917_Power_Sensor<br/>
+        command<img class="emoticon" src="images/icons/emoticons/lightbulb_on.gif" height="16" width="16" align="absmiddle" alt="" border="0"/> - VSX917_VROn<br/>
+        command<img class="emoticon" src="images/icons/emoticons/lightbulb.gif" height="16" width="16" align="absmiddle" alt="" border="0"/> - VSX917_VROff</p>
+
+<p>I also know that I should use rules.  I have created the following rule:</p>
+
+<p>     package org.openremote.controller.protocol</p>
+
+<p>     global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+     global org.openremote.controller.statuscache.SwitchFacade switches;</p>
+
+<p>     rule "VSX917 On"</p>
+
+<p>       when</p>
+
+<p>         event(source == "VSX917_VRStatus", value = "on")</p>
+
+<p>       then</p>
+
+<p>         execute.command("VSX917_Power");</p>
+
+<p>       end</p>
+
+<p>     rule "VSX917 Off"</p>
+
+<p>       when</p>
+
+<p>         event(source == "VSX917_VRStatus", value = "off")</p>
+
+<p>       then</p>
+
+<p>         execute.command("VSX917_Power");</p>
+
+<p>       end</p>
+
+<p>I then created a macro called "Watch Movies."  This macro calls the "VXS917_VROn" command.  I have a button on my UI that is associated with this macro.  When I push the button, I see the IR emitter flash but nothing happens.  The Pioneer VSX917 does not turn on.  I know that the IR power toggle works because I also have a button on my UI that calls the Power toggle command directly and can turn the Pioneer VSX917 on and off.</p>
+
+<p>What did I do wrong?  I know my problem is something simple.  If I can get this figured out, I think I will be able to setup my "first draft" of the OR system.  Thanks in advance.</p>
+
+
+
+
+
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23602947"></a>
+                                    <font class="smallfont"><p>Your problem appears to be that your Pioneer AVR does not react to your Power command. </p>
+
+<p>A common problem with Pioneer equipment is that the remotes often sends "two commands" (as conceived by many learning remotes and learning sensors) when pressing one button.</p>
+
+<p>What command(s) are you using? How did you get them?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by barf at Jan 02, 2016 09:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602955"></a>
+                                    <font class="smallfont"><p>I am using the power toggle command that I downloaded from the global cache device database.  I do not believe this is the problem.  I can program a Power "hard button" and control the device without problems.  The issue comes when I try to trigger the power with a rule.  I am not sure why the program breaks things.</p>
+
+<p>Again, I know that something is begin sent as the IR emitter blinks.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ejr1283 at Jan 02, 2016 20:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602959"></a>
+                                    <font class="smallfont"><p>Trying to confirm... The single IR command for "on" works,  but the macro doesn't? </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niedejb at Jan 03, 2016 01:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602963"></a>
+                                    <font class="smallfont"><p>That is correct.  If I map the power command to a button I can turn the receiver on and off.  But, if I try use the macro, it does not work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ejr1283 at Jan 03, 2016 04:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602964"></a>
+                                    <font class="smallfont"><p>What other commands are in the macro?   Could the power command be in the macro twice? (turning the component on and then immediately off?)</p>
+
+<p>Can you also confirm that we're talking about the macros in the designer and not any of the rules? </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by niedejb at Jan 03, 2016 04:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23602979"></a>
+                                    <font class="smallfont"><p>What the command VSX917_Power does?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Jan 04, 2016 10:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:33</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Making connectivity layer explicit and simplifying device configuration</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Making connectivity layer explicit and simplifying device configuration
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 21, 2011 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>Looking at the current way devices / commands are defined in the modeler, I would like to improve on the way connectivity is defined.<br/>
+At this stage, it is defined either:</p>
+<ul class="alternate" type="square">
+	<li>at command level (Telnet, 1-Wire, HTTP, TCP/IP)</li>
+	<li>at general controller config level (IR with the LIRC config, Lutron HomeWorks)</li>
+	<li>implicitly (KNX with auto-discovery, X10 ???)</li>
+</ul>
+
+
+<p>Also, for certain types of control, the connectivity can go through different "channels".<br/>
+For instance, a device that is controlled through RS232 is connected to an RS232 port. This port can be physically on the controller hardware or a remote RS232 port that exists for instance on a device such as a GlobalCaché.<br/>
+For IR, the signal is sent via an IR flasher. Here also the flasher can be local controller e.g. through LIRC or could be a specific IR port on a GlobalCaché device.</p>
+
+<p>The picture is a bit less clear to me for IP:</p>
+<ul class="alternate" type="square">
+	<li>not sure what should be part of the config. Basic is IP and port but when appropriate, should username/password be defined at connectivity level ?</li>
+	<li>is this overkill ? Directly entering IP/port at device level might seems more logical to users</li>
+</ul>
+
+
+<p>The bottom line is that for the device it does not matter, it is configured to be controller by a specific mean (IR, serial ...). This mean uses a specific channel (IR flasher, RS232 port ...). And some specific data is sent (this is the command in itself).</p>
+
+<p>I would propose to make this model explicit in the Modeler by adding an additional section in the Building Modeler part. In addition to Device, Macros and Config for Controller, we add Connectivity.<br/>
+There you can add a connectivity channel:</p>
+<ul class="alternate" type="square">
+	<li>LIRC IR port</li>
+	<li>GlobalCaché -&gt; this defines a series of IR / Serial ports</li>
+	<li>local (controller) RS232 port</li>
+	<li>IP "channel"</li>
+</ul>
+
+
+<p>Let's review the device creation flow in light of the above. Here is the proposed flow.<br/>
+New Device</p>
+<ul class="alternate" type="square">
+	<li>first screen with basic information as of now (Name, Vendor, Model)</li>
+	<li>next screen with connectivity option<br/>
+  -&gt; select the connectivity type (IR, RS232, IP), based on this lower part of screen refreshes<br/>
+  -&gt; select the connectivity channel (or for ease of use create a new one)</li>
+	<li>last screen as is now with possibility to create new commands, sensors, ... (but also a generic import mechanism here, to be covered in other post)</li>
+</ul>
+
+
+<p>Eric</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-16024216"></a>
+                                    <font class="smallfont"><p>Makes sense. The UI flow may change over time but this is ok to get started and getting the pieces in place.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 01, 2011 20:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432359"></a>
+                                    <font class="smallfont"><p>It makes senses to me to give the modeler user the ability to configure the connectivity associated to commands and sensors.</p>
+
+<p>Could we define the connectivity as:</p>
+<ul class="alternate" type="square">
+	<li>the hardware port type the controller has to use (serial, usb type, ...)</li>
+	<li>the hardware port id</li>
+	<li>the hardware port configuration (115200 8N1, ...)</li>
+	<li>the driver that will communicate through the port</li>
+	<li>the driver configuration if any</li>
+</ul>
+
+
+<p>Then, as we mentioned it, all the port-related stuff could be reported in a daemon separated from the controller process with a generic interface.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Sep 14, 2011 21:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432376"></a>
+                                    <font class="smallfont"><p>Currently pieces of this are already done through the configuration part of the modeler but I also think it makes sense to move this into it's own connectivity layer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 15, 2011 19:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432558"></a>
+                                    <font class="smallfont"><p>What do you mean with driver at this stage ? Can you provide an example ?</p>
+
+<p>And, maybe this answer is what you meant by driver, but how would you for instance model this configuration:</p>
+<ul class="alternate" type="square">
+	<li>a receiver than can be controlled through an RS232 connection</li>
+	<li>connected to the ORB through a GlobalCaché serial port</li>
+</ul>
+
+
+<p>In such a case, the ORB will see the port as a TCP/IP connection but the high level protocol is the same whether it would be a direct connection to the RS232 port of the PC opening COM1 (or /dev/...) or going through an IP layer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 27, 2011 14:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432581"></a>
+                                    <font class="smallfont"><p>Defining what is a driver, philosophically, is not that easy <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>. I would use the OSGi model in which a driver uses a device and provides services that allow creating a higher-level device.</p>
+
+<p>I'm not familiar with Global Caché so I won't risk taking an example with it.</p>
+
+<p>More generally, we usually use a hardware port (serial, usb, TCP/IP) to connect an interface that gives access to a field bus. I suggest that the ORB sets up a piece of software (named driver), that use the hardware port to communicate with the interface and that presents to the ORB an interface (named device) that is a representation of the actual physical interface. Therefore the ORB can communicate with the field bus interface, regardless of the hardware port involved.</p>
+
+<p>Does this make sense?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Sep 28, 2011 08:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432583"></a>
+                                    <font class="smallfont"><p>Thanks Olivier. Yes after reading it a few times it does make sense.<br/>
+So taking KNX as an example, the driver would expose the fact that we can read/write CEMI frames and isolate the fact that we're doing that through an RS232 interface or an KNX IP gateway. On top of that, the ORB protocol implementation converts the CEMI frames to higher level abstractions like dimming lamps and such.</p>
+
+<p>In my example above, I was introducing yet another level. So for instance, you would have a serial interface on your KNX bus and you plug an IP/RS232 converter into that and access from the ORB using IP packets. This configuration does not really make sense for KNX as you would directly use an IP interface but it's for the example' sake.<br/>
+Thinking about it, this is just a hardware detail and should not be modeled at the software layer. The port the driver uses is the IP port, just as it would if the connection was direct to a KNX IP gateway.</p>
+
+<p>Taking IR as an example, the driver would expose something like blasting an IR code, the port could be IP if the hardware is a GlobalCaché but could be USB if the hardware is a USB-UIRT. In this case though, multiple drivers would be required as there is not one specification of the hardware (not really a field bus but it plays the same role) for blasting IR codes.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 28, 2011 09:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

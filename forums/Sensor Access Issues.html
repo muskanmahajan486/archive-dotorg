@@ -1,0 +1,271 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Sensor Access Issues</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Sensor Access Issues
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 07, 2012 by <font color="#0050B2">mstsai</font>.
+				    </div>
+
+				    <p>In my project, I am using a meter as a sensor. The meter returns all information in a single packet. <br/>
+When I created three sensors to read different parts from the return packet, I saw three requests to the meter.  This create too much traffic. <br/>
+Is there anyway that I could just do a single request and obtain different parts from the return packet?</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/20450382/20742197.png">Untitled-2.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/20450382/20742198.png">Untitled-4.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20450385"></a>
+                                    <font class="smallfont"><p>What protocol are you using to request information from the meter ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 07, 2012 09:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450387"></a>
+                                    <font class="smallfont"><p>I am using web service through http.  The return is in xml format.  In my early post, I had problems extracting the information in JSON format.  I have changed to XML which works well.</p>
+
+<p>I think this issue has been discussed in the past, <a href="http://www.openremote.org/display/forums/Velleman+K8055+Experiment+USB+board?focusedCommentId=19440410#comment-19440410">http://www.openremote.org/display/forums/Velleman+K8055+Experiment+USB+board?focusedCommentId=19440410#comment-19440410</a></p>
+
+<p>Following this discussion, I tried to create a command with "Shell execution protocol" and assign values to different fields for one sensor as:</p>
+
+<p>Path:  java<br/>
+command parameter: -jar /home/ubuntu/EZSocket/XML_Sender.jar<br/>
+Regular Expression: &lt;voltage&gt;(.*)&lt;/voltage&gt;<br/>
+Sensor names: voltage_shell</p>
+
+<p>And created a label with voltage_shell as the sensor.<br/>
+Reloading the webconsole, I got "Some component IDs are invalid and some sensor will not work".</p>
+
+<p>The command runs on the shell and the outputs are as below:</p>
+
+<p>ubuntu@HEMS132:~$ java -jar /home/ubuntu/EZSocket/XML_Sender.jar<br/>
+&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;&lt;measurement&gt;&lt;response&gt;ok&lt;/response&gt;&lt;id&gt;1&lt;/id&gt;&lt;voltage&gt;112.91&lt;/voltage&gt;&lt;current&gt;0.0&lt;/current&gt;&lt;frequency&gt;59.98&lt;/frequency&gt;&lt;power_factor&gt;1.0&lt;/power_factor&gt;&lt;active_power&gt;0.0&lt;/active_power&gt;&lt;apparent_power&gt;0.0&lt;/apparent_power&gt;&lt;main_energy&gt;3.32&lt;/main_energy&gt;&lt;retry&gt;18&lt;/retry&gt;&lt;status&gt;off&lt;/status&gt;&lt;sourcePort&gt;192.168.0.132:38120&lt;/sourcePort&gt;&lt;time&gt;2012-09-09 12:22:49&lt;/time&gt;&lt;/measurement&gt;<br/>
+ubuntu@HEMS132:~$</p>
+
+
+<p>Any suggestion ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mstsai at Sep 07, 2012 10:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450544"></a>
+                                    <font class="smallfont"><p>Can you try executing the command directly on the controller's HTTP interface:</p>
+
+<p>'controller/rest/status/{sensor_id}' where sensor_id is the sensor id you've bound the shellexe command to?</p>
+
+<p>And see if there are any errors in the console or logs related to this? Or log something from your XML_Sender.jar that indicates the java code is executed as intended?</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 13, 2012 14:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450601"></a>
+                                    <font class="smallfont"><p>Thanks for the instructions.<br/>
+The settings of ShellExec are:</p>
+
+<p><img src="attachments/20450382/20742198.png" align="absmiddle" border="0"/></p>
+
+<p>When I 'sync with online designer', I saw following messages:</p>
+
+<p>INFO 2012-09-15 00:34:00,728 : No rule definitions found in '/home/ubuntu/OpenRemote-Controller-2.0.0/webapps/controller/rules'.<br/>
+INFO 2012-09-15 00:34:00,731 : Initialized event processor : Drools Rule Engine<br/>
+ERROR 2012-09-15 00:34:01,375 : Creating sensor failed. Error : The included command reference in a sensor (ID = 185) is not an event producer (Command id : 185, Type : 173)<br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="185" name="Voltage_Sensor" type="custom"&gt;<br/>
+      &lt;include type="command" ref="173" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+org.openremote.controller.exception.XMLParsingException: The included command reference in a sensor (ID = 185) is not an event producer (Command id : 185, Type : 173)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:428)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:286)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:773)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:619)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:537)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:148)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:760)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:373)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1188)<br/>
+        at java.lang.Thread.run(Thread.java:679)<br/>
+ERROR Controller Definition File Watcher for Default Deployer: Creating sensor failed. Error : The included command reference in a sensor (ID = 185) is not an event producer (Command id : 185, Type : 173)<br/>
+ XML Element : &lt;sensor xmlns="http://www.openremote.org" id="185" name="Voltage_Sensor" type="custom"&gt;<br/>
+      &lt;include type="command" ref="173" /&gt;<br/>
+    &lt;/sensor&gt;<br/>
+org.openremote.controller.exception.XMLParsingException: The included command reference in a sensor (ID = 185) is not an event producer (Command id : 185, Type : 173)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.parseSensorEventProducer(Version20SensorBuilder.java:428)<br/>
+        at org.openremote.controller.model.xml.Version20SensorBuilder.build(Version20SensorBuilder.java:286)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorObjectModelFromXML(Version20ModelBuilder.java:773)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.buildSensorModel(Version20ModelBuilder.java:619)<br/>
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java:537)<br/>
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.java:148)<br/>
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:760)<br/>
+        at org.openremote.controller.service.Deployer.softRestart(Deployer.java:373)<br/>
+        at org.openremote.controller.service.Deployer$ControllerDefinitionWatch.run(Deployer.java:1188)<br/>
+        at java.lang.Thread.run(Thread.java:679)<br/>
+INFO 2012-09-15 00:34:02,097 : Registered sensor : Switch Sensor (Name = 'SW_STATUS', ID = '186')<br/>
+INFO 2012-09-15 00:34:02,115 : Registered sensor : Sensor (Name = 'Voltage_Sensor_Label', ID = '187', State Mappings: {})<br/>
+INFO 2012-09-15 00:34:02,136 : Registered sensor : Sensor (Name = 'VOLTAGE_02', ID = '184', State Mappings: {})<br/>
+INFO 2012-09-15 00:34:02,158 : Registered sensor : Sensor (Name = 'DisplayDate Sensor', ID = '190', State Mappings: {})<br/>
+INFO 2012-09-15 00:34:02,214 : Registered sensor : Sensor (Name = 'ENERGY_02', ID = '188', State Mappings: {})<br/>
+INFO 2012-09-15 00:34:02,338 : Registered sensor : Sensor (Name = 'POWER_02', ID = '189', State Mappings: {})<br/>
+INFO 2012-09-15 00:34:02,347 : Registered sensor : Switch Sensor (Name = 'SW2_STATUS', ID = '182')<br/>
+INFO 2012-09-15 00:34:02,424 : Registered sensor : Sensor (Name = 'Energy_Sensor_Label', ID = '183', State Mappings: {})<br/>
+INFO 2012-09-15 00:34:02,500 : Registered sensor : Sensor (Name = 'RealPower_Sensor_Label', ID = '181', State Mappings: {})<br/>
+INFO 2012-09-15 00:34:03,036 : Startup complete.<br/>
+ERROR HTTP\-Thread\-36: Requested sensor id '185' was not found. Defaulting to 'N/A'.<br/>
+ERROR HTTP\-Thread\-50: CommandException occurs<br/>
+org.openremote.controller.exception.NoSuchComponentException: No such component in status cache : 185<br/>
+        at org.openremote.controller.statuscache.StatusCache.queryStatus(StatusCache.java:306)<br/>
+        at org.openremote.controller.service.impl.StatusCommandServiceImpl.readFromCache(StatusCommandServiceImpl.java:72)<br/>
+        at org.openremote.controller.rest.StatusCommandRESTServlet.handleRequest(StatusCommandRESTServlet.java:63)<br/>
+        at org.openremote.controller.rest.RESTAPI.doPost(RESTAPI.java:125)<br/>
+        at org.openremote.controller.rest.RESTAPI.doGet(RESTAPI.java:81)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:58)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+        at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)<br/>
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)<br/>
+        at java.lang.Thread.run(Thread.java:679)<br/>
+ERROR HTTP\-Thread\-50: Requested sensor id '185' was not found. Defaulting to 'N/A'.<br/>
+ERROR HTTP\-Thread\-50: Requested sensor id '185' was not found. Defaulting to 'N/A'.<br/>
+ERROR HTTP\-Thread\-50: Requested sensor id '185' was not found. Defaulting to 'N/A'.<br/>
+ERROR HTTP\-Thread\-50: Requested sensor id '185' was not found. Defaulting to 'N/A'.</p>
+
+<p>Execution of <a href="http://localhost:8800/controller/rest/status/Voltage_Sensor">http://localhost:8800/controller/rest/status/Voltage_Sensor</a> returns following messages:</p>
+
+
+<p>ERROR HTTP\-Thread\-53: Error in handling REST API response:<br/>
+java.lang.NullPointerException:<br/>
+        at org.openremote.controller.service.impl.StatusCommandServiceImpl.readF<br/>
+romCache(StatusCommandServiceImpl.java:76)<br/>
+        at org.openremote.controller.rest.StatusCommandRESTServlet.handleRequest<br/>
+(StatusCommandRESTServlet.java:63)<br/>
+        at org.openremote.controller.rest.RESTAPI.doPost(RESTAPI.java:125)<br/>
+        at org.openremote.controller.rest.RESTAPI.doGet(RESTAPI.java:81)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:617)<br/>
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(Appl<br/>
+icationFilterChain.java:290)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationF<br/>
+ilterChain.java:206)<br/>
+        at org.openremote.controller.rest.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:63)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+        at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)<br/>
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)<br/>
+        at java.lang.Thread.run(Thread.java:679)<br/>
+ERROR HTTP\-Thread\-60: Requested sensor id '185' was not found. Defaulting to 'N/A'.<br/>
+ERROR HTTP\-Thread\-55: Requested sensor id '185' was not found. Defaulting to 'N/A'.</p>
+
+
+<p>The code was never executed.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mstsai at Sep 14, 2012 17:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450608"></a>
+                                    <font class="smallfont"><p>You have to use controller_2.0.1 otherwise the shellexe protocol does not include the eventlistener stuff.<br/>
+Look here: <a href="http://www.redeker-consulting.de/openremote/OpenRemote-Controller-2.0.1.zip">http://www.redeker-consulting.de/openremote/OpenRemote-Controller-2.0.1.zip</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Sep 14, 2012 21:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20450628"></a>
+                                    <font class="smallfont"><p>Thanks.  That solves the problems.  Now I am able to get the readings in one transaction.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mstsai at Sep 15, 2012 17:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

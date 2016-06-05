@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Performance Issue</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Performance Issue
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 01, 2011 by <font color="#0050B2">mariom</font>.
+				    </div>
+
+				    <p>I use several http based sensors and actors. Everything runs fine. </p>
+
+<p>But by increasing the number of actors and sensors with http base the buildin httpclient of the controller requests every second for every element placed on all panels to the webserver.<br/>
+So this ends up in a very heavy load on the webservermachine (In my case the same machine). All Status calls are toggeling because of heavy cpu consumtion.<br/>
+The webserver log shows, that a lot of requests are responding, even if the panel is offline. So I think it would be better to call the status of the elements on the panel and not on the controller.</p>
+
+<p>Any ideas? </p>
+
+<p>Using the catalina log there's a error from the httpd get class<br/>
+Adress already in use: connect.</p>
+
+<p>So I think the interval of the http calls is to short. Is there any possibility to change the value?</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19432341"></a>
+                                    <font class="smallfont"><p>After some tests I have some news. The heavy cpu load resides of a script error in my php Script. After the controller Startup everything runs fine. After several minutes some functions are repeatet in very short time:</p>
+
+<p>        at org.openremote.controller.statuscache.PollingMachineThread.run(Pollin<br/>
+gMachineThread.java:65)<br/>
+Exception in thread "Thread-3" java.lang.NullPointerException<br/>
+        at org.apache.commons.logging.LogFactory.getCachedFactory(LogFactory.jav<br/>
+a:908)<br/>
+        at org.apache.commons.logging.LogFactory.getFactory(LogFactory.java:395)</p>
+
+<p>        at org.apache.commons.logging.LogFactory.getLog(LogFactory.java:645)<br/>
+        at org.apache.http.impl.client.AbstractHttpClient.&lt;init&gt;(AbstractHttpCli<br/>
+ent.java:159)<br/>
+        at org.apache.http.impl.client.DefaultHttpClient.&lt;init&gt;(DefaultHttpClien<br/>
+t.java:178)<br/>
+        at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(Htt<br/>
+pGetCommand.java:208)<br/>
+        at org.openremote.controller.protocol.http.HttpGetCommand.read(HttpGetCo<br/>
+mmand.java:120)<br/>
+Sep 12, 2011 12:05:23 AM org.apache.coyote.http11.Http11Protocol destroy</p>
+
+<p>And then the polling of my http bases sensors begins. I have some Temperature value that are read from some textfiles by http. So a very simple Request. The toggeling occurs about every second.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Sep 11, 2011 23:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432688"></a>
+                                    <font class="smallfont"><p>Is there a property to change the interval of the Pollingservice?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Oct 01, 2011 21:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432819"></a>
+                                    <font class="smallfont"><p>I still need to add one to the release branches.</p>
+
+<p>In the meantime the work branch from Richard Turner may be helpful, it's discussed here: <a href="Connection Manager Code Branch.html" title="Connection Manager Code Branch">Connection Manager Code Branch</a></p>
+
+<p>It exposes polling interval through a gateway.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 10, 2011 03:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433618"></a>
+                                    <font class="smallfont"><p>In my logfile there is another error (java.net.BindException: Address already in use ). In the class HttpGetCommand I guess there is a missing releaseconnection (httpget.releaseconnection()<img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/>. Can somebody confirm/fix this?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Nov 12, 2011 21:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433632"></a>
+                                    <font class="smallfont"><p>If you shutdown the controller completely this error should not occur.<br/>
+Did you do a redeploy and the controller was still running?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 13, 2011 13:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433640"></a>
+                                    <font class="smallfont"><p>This occurs about 1 minute after the start of the controller and the http calls to my Temp sensors. I did not redeploy any application. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Nov 13, 2011 15:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433642"></a>
+                                    <font class="smallfont"><p>If the controller was completely shutdown, the connection could not have been open.<br/>
+What device are you connecting against? Maybe there is a timeout when the socket is released after the opposite side droppen the connection?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 13, 2011 17:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433643"></a>
+                                    <font class="smallfont"><p>How can I run my OR without running controller? Without controller no display. So I think the http connections are fired by the controller. In my panel you can see some toggeling Displays (N/A next second the return value of the http call) and in the log there are hundreds of BindExceptions. I completely stopped the tomcat task and after the start the toggeling behavior occurs. The connection made is to a local apache server that serves some plain textfiles.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Nov 13, 2011 18:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433652"></a>
+                                    <font class="smallfont"><p>Maybe the releaseConnection will help. You could create an issue in OpenRemote Jira, so we keep track of it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 13, 2011 19:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433653"></a>
+                                    <font class="smallfont"><p>After logging in to OR Jira with my user there is no possibility to create a new issue. Are there any restrictions?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Nov 13, 2011 20:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433654"></a>
+                                    <font class="smallfont"><p>Not that I know. I will check with Juha.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 13, 2011 20:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433657"></a>
+                                    <font class="smallfont"><p>Should be fixed</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 14, 2011 09:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433917"></a>
+                                    <font class="smallfont"><p>I have found a workaround. I use the tomcat and an apache server on the same system. The apache is used to call some php scripts. When I call the scripts on a remote apache everything is running fine. </p>
+
+<p>When I use a second IP on my local machine and bind the tomcat to one IP (Port 8080) and the apache to the second (Port 80), the problem occurs again. </p>
+
+<p>I changed the class HttpGetCommand and implemented  client.getConnectionManager().shutdown(); in the finally block of the requestURL method but with no success. Same error.</p>
+
+<p>Any ideas?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Nov 28, 2011 23:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433921"></a>
+                                    <font class="smallfont"><p>Did you try the same IP and just different ports?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Nov 29, 2011 08:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433927"></a>
+                                    <font class="smallfont"><p>Sure, this was the first configuration apache mit Port 80 and Tomcat with 9080 same IP.<br/>
+Perhaps the createClientConnectionManager stuff would be important in the DefaulthttpClient class.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Nov 29, 2011 19:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433930"></a>
+                                    <font class="smallfont"><p>Using Tcpmon you can see thousands of TIME_WAIT Connections in several minutes. Can't get ConnectionManager to work.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Nov 29, 2011 23:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433952"></a>
+                                    <font class="smallfont"><p>I've tested the hole thing on a Linux vmware and it works better. The toggeling appears only a few times. <br/>
+So I think maybe I should not use MicroSoft Stuff</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mariom at Dec 01, 2011 23:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 11:01</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

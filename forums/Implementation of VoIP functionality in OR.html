@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Implementation of VoIP functionality in OR</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Implementation of VoIP functionality in OR
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 26, 2012 by <font color="#0050B2">ebariaux</font>.
+				    </div>
+
+				    <p>I'm currently working on providing some basic support for VoIP in OR and more specifically using it with a Mobotix T24 door entry station.<br/>
+The basic functional scenario is:</p>
+<ul class="alternate" type="square">
+	<li>somebody rings at the door</li>
+	<li>all OR consoles are notified / ring</li>
+	<li>user picks up on one console, others stop ringing and user can see person at the door and have audio conversation</li>
+</ul>
+
+
+<p>In order to achieve that, the following changes will be done:</p>
+
+<p>The controller will act as a SIP registrar and proxy, so that the T24 and consoles can register with the controller.<br/>
+When somebody rings at the door, the T24 calls the controller. The controller proxies the call in parallel to all registered consoles.<br/>
+When one console picks up, the controller establishes the call between T24 and that console and cancels the other call requests.</p>
+
+<p>This mechanism is implemented using a SipServlet.<br/>
+The web container must thus be extended to provide SipServlet support. We are using mobicents 1.7 on top of Tomcat in the runtime distribution for this controller.</p>
+
+
+<p>The console now needs to embed a SIP/VoIP client.<br/>
+I'm currently developing that into the iOS console for now. It can be extended to support the other consoles in a further stage.<br/>
+It needs to:</p>
+<ul class="alternate" type="square">
+	<li>(SIP) register to the controller</li>
+	<li>receive SIP call signaling information (ringing, hangup, ...)</li>
+	<li>handle the audio streams during the call</li>
+</ul>
+
+
+<p>To achieve this, we're using the <a href="http://www.linphone.org/">linphone</a> library.</p>
+
+<p>There however needs to be a way for the SIP client in the console to communicate with the UI.</p>
+
+<p>There should be commands to allow UI elements to:</p>
+<ul class="alternate" type="square">
+	<li>pickup a call</li>
+	<li>hangup</li>
+	<li>mute (on, off, toggle) the audio stream</li>
+</ul>
+
+
+<p>There should also be commands/sensors to query the call status (ringing, in call, no call) and the mute status. Additional information such as caller name can also be provided.</p>
+
+<p>To implement those aspects, I would propose to support client side versions of commands and sensors (of protocols really). This is described in more detail in this <a href="http://www.openremote.org/display/forums/Implementing+client+side+protocols">thread</a>.</p>
+
+<p>There currently is no handling of sound (playing, streaming, recording) in the consoles and so in a first phase, these aspects of VoIP would be handled in a specific way.</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22889092"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>Can you please tell me what the latest status of OR with regards to the Door station and SIP development is.<br/>
+I am looking into putting something together as a door station which can be communicated with through the OR console.<br/>
+The T-24 is becoming obsolete and was also too expensive. Wiring seems impractical as well.<br/>
+Any help on this would be greatly appreciated</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nasser1 at Oct 01, 2014 22:20
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22889188"></a>
+                                    <font class="smallfont"><p>Basically parked until further notice</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Oct 06, 2014 13:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23597012"></a>
+                                    <font class="smallfont"><p>Does the controller really needs to act as a SIP registrar and proxy?<br/>
+Isn't it possible to connect to an asterisk server from the device (e.g. Ipad)?<br/>
+Would be really usefull for ip door phone.</p>
+
+<p>Greetings,<br/>
+Filip </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by fichrist at Mar 10, 2015 07:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Cannot get Russound CAS-44 to react to OpenRemote</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Cannot get Russound CAS-44 to react to OpenRemote
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 26, 2014 by <font color="#0050B2">franka</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>i am struggling to get the OpenRemote SW to work with my Russound system. Here is my setup:</p>
+
+<ul class="alternate" type="square">
+	<li>Using RS232 directly (straight through cable, 19200 baud rate) with a Raspberry Pi as controller</li>
+	<li>I have a level shifter board and a straight through cable between the Raspberry and the CAS</li>
+	<li>On the Russound device i have set the "CPU mode switch" to "Update" ... the documentation of CAS44 suggest that "run" is used for SW updates</li>
+	<li>I installed native RXTX libraries on the controller</li>
+	<li>Running with /dev/ttyS0 that links to /dev/ttyAMA0 to work around "port not found" issue caused by access rights</li>
+	<li>Controller version 2.1.0_SNAPSHOT-2013-06-17</li>
+	<li>Remote is a iPhone with latest app from the AppStore</li>
+	<li>Simple UI design, i started with POWER-ON/OFF for all 4 zones and loudness control for zone 1</li>
+	<li>I used the online designer and synchronized the controller.xml through the controller web interface</li>
+</ul>
+
+
+<p>From what i see the Russound system does not react at all to input on the remote.</p>
+
+<p>I debugged for 3 days now, here is what i know:</p>
+
+<ul class="alternate" type="square">
+	<li>The serial interface works, i tested with loopback and minicom</li>
+	<li>The remote connects to the controller, when i switch on the remote app i see some logs</li>
+	<li>The controller initiates transfers on the RS232 after hitting a remote UI button (I can see the TX lamp on the serial level shifter board)</li>
+	<li>I cannot observer the RX lamp, so i don't know about that</li>
+	<li>I have only one ERROR in my logs (related to VeraClient "Host name may not be null") ... i read in some forum it should not matter for me</li>
+	<li>I have some DEBUG messages in dev.log which i hope are okay "A switch sensor (Name = '&lt;some zone command&gt;, ID=...) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = on/&gt; ... same message once more with name = off at the end.</li>
+</ul>
+
+
+<p>Once everything is up and i start to connect from the iPhone, here is what i see in the dev.log</p>
+
+<p>...<br/>
+2014-12-26 20:21:14,586 INFO main: Registered sensor : Range Sensor (Name = 'Zone1 TurnOnVolume', ID = '5846168', Min: 0, Max: 100)<br/>
+2014-12-26 20:21:14,589 INFO main: Registered sensor : Range Sensor (Name = 'Zone1 Treble Level', ID = '5846169', Min: -10, Max: 10)<br/>
+2014-12-26 20:21:14,593 INFO main: Registered sensor : Range Sensor (Name = 'Zone1 Source', ID = '5846170', Min: -10, Max: 10)<br/>
+2014-12-26 20:21:14,611 INFO main: Registered sensor : Switch Sensor (Name = 'Zone1 Loudness', ID = '5846171')<br/>
+2014-12-26 20:21:14,683 INFO main: Startup complete.<br/>
+2014-12-26 20:21:14,688 INFO main: Controller Definition File Watcher for Default Deployer started.<br/>
+2014-12-26 20:21:35,615 INFO HTTP\-Thread\-1: Querying changed state from ChangedStatus table...<br/>
+2014-12-26 20:21:35,621 INFO HTTP\-Thread\-1: Not Found: [device =&gt; FFFFFFFFC798DA809EE34377B4CCBD77ABCB37CC, sensorIDs =&gt; 5846167, 5846172, 5846180, 5846188, 5846196] in ChangedStatus table.<br/>
+2014-12-26 20:21:35,627 INFO HTTP\-Thread\-1: ChangedStatusRecord:FFFFFFFFC798DA809EE34377B4CCBD77ABCB37CC-5846167, 5846172, 5846180, 5846188, 5846196 sensorID:5846167, 5846172, 5846180, 5846188, 5846196 statusChangedSensorID:[]Waiting...<br/>
+2014-12-26 20:22:25,635 INFO HTTP\-Thread\-1: Had timeout for waiting status change.<br/>
+2014-12-26 20:22:25,640 INFO HTTP\-Thread\-1: Finished polling at 2014-12-26 20:22:25</p>
+
+<p>2014-12-26 20:22:30,711 INFO HTTP\-Thread\-1: Querying changed state from ChangedStatus table...<br/>
+2014-12-26 20:22:30,729 INFO HTTP\-Thread\-1: Found: [device =&gt; FFFFFFFFC798DA809EE34377B4CCBD77ABCB37CC, sensorIDs =&gt; 5846167, 5846172, 5846180, 5846188, 5846196] in ChangedStatus table.<br/>
+2014-12-26 20:22:30,731 INFO HTTP\-Thread\-1: ChangedStatusRecord:FFFFFFFFC798DA809EE34377B4CCBD77ABCB37CC-5846167, 5846172, 5846180, 5846188, 5846196 sensorID:5846167, 5846172, 5846180, 5846188, 5846196 statusChangedSensorID:[]Waiting...<br/>
+2014-12-26 20:23:20,733 INFO HTTP\-Thread\-1: Had timeout for waiting status change.<br/>
+2014-12-26 20:23:20,736 INFO HTTP\-Thread\-1: Finished polling at 2014-12-26 20:23:20</p>
+
+<p>2014-12-26 20:23:20,858 INFO HTTP\-Thread\-1: Querying changed state from ChangedStatus table...<br/>
+2014-12-26 20:23:20,865 INFO HTTP\-Thread\-1: Found: [device =&gt; FFFFFFFFC798DA809EE34377B4CCBD77ABCB37CC, sensorIDs =&gt; 5846167, 5846172, 5846180, 5846188, 5846196] in ChangedStatus table.<br/>
+2014-12-26 20:23:20,868 INFO HTTP\-Thread\-1: ChangedStatusRecord:FFFFFFFFC798DA809EE34377B4CCBD77ABCB37CC-5846167, 5846172, 5846180, 5846188, 5846196 sensorID:5846167, 5846172, 5846180, 5846188, 5846196 statusChangedSensorID:[]Waiting...<br/>
+... <br/>
+&lt;NO other MESSAGEs&gt;</p>
+
+<p>I am happy to try any suggestion i receive as i run out of options on my side.</p>
+
+<p>Thanks,</p>
+
+<p>Frank</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23594946"></a>
+                                    <font class="smallfont"><p>Did you check out <a href="http://svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617">http://svn.code.sf.net/p/openremote/code/tags/snapshot/Controller_2_1_0_FM_SNAPSHOT-20130617</a> ?</p>
+
+<p>Can you provide you Russound settings from the file config.properties? </p>
+
+<p>I suggest you fix this Vera problem. At least I did as I merged with Controller_2_1_0_FM_SNAPSHOT-20130617. It appears that without it the Vera thread starts with bad configuration. The result is an error with every iteration of the main loop. Perhaps your Rasp can't cope. </p>
+
+<p>My solution is found on svn+ssh://tosterdahl@svn.code.sf.net/p/openremote/code/workspace/toesterdahl/Controller_2_1_0_Integration, revision 9985. </p>
+
+<p>As a not to any dev's on the thread. I think we need some common minimum standards for the behaviour of protocol implementations. Two tests that would apply to this case is:</p>
+<ul class="alternate" type="square">
+	<li>Do some validation of the protocol configuration. If configuration is obviously not valid, exit with a informative message. Do not start any threads.</li>
+	<li>In particular if there is no configuration at all - exit nicely.</li>
+</ul>
+
+
+<p>Cheers,<br/>
+Torbjörn</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Dec 27, 2014 09:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594948"></a>
+                                    <font class="smallfont"><p>Hi Torbjörn,</p>
+
+<p>thanks for the quick reply (my config is further down in this reply). So far I used this package from the downloads page (OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17.zip). I cannot find any similar zip file with the <em>FM</em> in the name.</p>
+
+<ul class="alternate" type="square">
+	<li>Torbjörn, is it worth trying this one (OpenRemote-Controller-2.1.0_FM_SNAPSHOT-2013-07-18). Its the closest to what you suggest?</li>
+	<li>How can i avoid the Vera issue (is there anything i can read about it)? Can i remove all the none Russound "Plug-ins"?</li>
+	<li>the only "hook" i found is the config section in the controller.xml. It is generated by the designer and i did not touch it so far.</li>
+	<li>Here is my current config section.</li>
+</ul>
+
+
+<p>  &lt;config&gt;<br/>
+    &lt;property name="controller.roundrobin.multicast.port" value="10000" /&gt;<br/>
+    &lt;property name="controller.roundrobin.tcpserver.port" value="20000" /&gt;<br/>
+    &lt;property name="controller.groupname" value="floor20" /&gt;<br/>
+    &lt;property name="multicast.port" value="3333" /&gt;<br/>
+    &lt;property name="controller.groupmember.autodetect.on" value="true" /&gt;<br/>
+    &lt;property name="amx_ni.port" value="50000" /&gt;<br/>
+    &lt;property name="zwave.commLayer" value="" /&gt;<br/>
+    &lt;property name="copy.lircd.conf.on" value="true" /&gt;<br/>
+    &lt;property name="irsend.path" value="/usr/local/bin/irsend" /&gt;<br/>
+    &lt;property name="controller.applicationname" value="controller" /&gt;<br/>
+    &lt;property name="multicast.address" value="224.0.1.100" /&gt;<br/>
+    &lt;property name="Macro.IR.Execution.Delay" value="500" /&gt;<br/>
+    &lt;property name="controller.roundrobin.multicast.address" value="224.0.1.200" /&gt;<br/>
+    &lt;property name="zwave.comPort" value="" /&gt;<br/>
+    &lt;property name="zwave.pad.port" value="7876" /&gt;<br/>
+    &lt;property name="lutron_homeworks.password" value="openremote" /&gt;<br/>
+    &lt;property name="lagarto_network.broadcast" value="tcp://127.0.0.1:5001" /&gt;<br/>
+    &lt;property name="lircd.conf.path" value="/etc/lircd.conf" /&gt;<br/>
+    &lt;property name="lutron_homeworks.port" value="23" /&gt;<br/>
+    &lt;property name="lutron_homeworks.address" value="192.168.1.1" /&gt;<br/>
+    &lt;property name="zwave.pad.host" value="localhost" /&gt;<br/>
+    &lt;property name="lutron_homeworks.username" value="openremote" /&gt;<br/>
+    &lt;property name="webapp.port" value="8080" /&gt;<br/>
+    &lt;property name="protocol.zwave.classname" value="org.openremote.controller.protocol.zwave.ZWaveCommandBuilder" /&gt;<br/>
+    &lt;property name="resource.upload.enable" value="true" /&gt;<br/>
+    &lt;property name="amx_ni.address" value="192.168.1.1" /&gt;<br/>
+    &lt;property name="enocean.commLayer" value="" /&gt;<br/>
+    &lt;property name="enocean.serialProtocol" value="ESP3" /&gt;<br/>
+    &lt;property name="enocean.comPort" value="" /&gt;<br/>
+    &lt;property name="irsend.path" value="/usr/local/bin/irsend" /&gt;<br/>
+    &lt;property name="controller.applicationname" value="controller" /&gt;<br/>
+    &lt;property name="multicast.address" value="224.0.1.100" /&gt;<br/>
+    &lt;property name="Macro.IR.Execution.Delay" value="500" /&gt;<br/>
+    &lt;property name="controller.roundrobin.multicast.address" value="224.0.1.200" /&gt;<br/>
+    &lt;property name="zwave.comPort" value="" /&gt;<br/>
+    &lt;property name="zwave.pad.port" value="7876" /&gt;<br/>
+    &lt;property name="lutron_homeworks.password" value="openremote" /&gt;<br/>
+    &lt;property name="lagarto_network.broadcast" value="tcp://127.0.0.1:5001" /&gt;<br/>
+    &lt;property name="lircd.conf.path" value="/etc/lircd.conf" /&gt;<br/>
+    &lt;property name="lutron_homeworks.port" value="23" /&gt;<br/>
+    &lt;property name="lutron_homeworks.address" value="192.168.1.1" /&gt;<br/>
+    &lt;property name="zwave.pad.host" value="localhost" /&gt;<br/>
+    &lt;property name="lutron_homeworks.username" value="openremote" /&gt;<br/>
+    &lt;property name="webapp.port" value="8080" /&gt;<br/>
+    &lt;property name="protocol.zwave.classname" value="org.openremote.controller.protocol.zwave.ZWaveCommandBuilder" /&gt;<br/>
+    &lt;property name="resource.upload.enable" value="true" /&gt;<br/>
+    &lt;property name="amx_ni.address" value="192.168.1.1" /&gt;<br/>
+    &lt;property name="enocean.commLayer" value="" /&gt;<br/>
+    &lt;property name="enocean.serialProtocol" value="ESP3" /&gt;<br/>
+    &lt;property name="enocean.comPort" value="" /&gt;<br/>
+    &lt;property name="vera.address" value="" /&gt;<br/>
+    &lt;property name="domintell.port" value="17481" /&gt;<br/>
+    &lt;property name="protocol.vera.classname" value="org.openremote.controller.protocol.vera.VeraCommandBuilder" /&gt;<br/>
+    &lt;property name="domintell.address" value="192.168.1.1" /&gt;<br/>
+  &lt;/config&gt;</p>
+
+
+<p>Here is some additional data:</p>
+
+<ul class="alternate" type="square">
+	<li>the startup seems to continue without issues after Vera error</li>
+</ul>
+
+
+<p>DEBUG 2014-12-26 20:45:37,763 : Deployer 'Default Deployer' initialized.<br/>
+DEBUG 2014-12-26 20:45:39,499 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2014-12-26 20:45:39,666 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2014-12-26 20:45:39,689 : Runtime object model has not been initialized. Using default configuration only.<br/>
+DEBUG 2014-12-26 20:45:39,769 : Runtime object model has not been initialized. Using default configuration only.<br/>
+INFO 2014-12-26 20:45:39,833 : </p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>  DEPLOYING NEW CONTROLLER RUNTIME...</p>
+
+<p>--------------------------------------------------------------------</p>
+
+<p>!!!!!! &lt;Vera error comes here&gt; !!!!</p>
+
+<p>DEBUG 2014-12-26 20:45:45,549 : Created object model for Command( ID = 17, Type = russound, Properties : <div class="error"><span class="error">Unknown macro: {name=Zone1 Power (OFF), command=POWER_OFF, controller=1, zone=1}</span> </div>).<br/>
+DEBUG 2014-12-26 20:45:45,586 : Created object model for Command( ID = 18, Type = russound, Properties : <div class="error"><span class="error">Unknown macro: {name=Zone1 Treble Level (SET), command=SET_TREBLE_LEVEL, controller=1, zone=1}</span> </div>).<br/>
+...</p>
+
+<p>INFO 2014-12-26 20:45:59,833 : Registered sensor : Switch Sensor (Name = 'Zone1 Loudness', ID = '5846171')<br/>
+INFO 2014-12-26 20:45:59,916 : Startup complete.<br/>
+INFO 2014-12-26 20:45:59,921 : Controller Definition File Watcher for Default Deployer started.</p>
+
+
+<p>My configuration file looks like this (i removed all comments):</p>
+
+<p>resource.upload.allowed=true<br/>
+resource.path=/home/pi/openremote/OpenRemote-Controller-2.1.0_SNAPSHOT-2013-06-17/webapps/controller</p>
+
+<p>irsend.path=/usr/local/bin/irsend</p>
+
+<p>lircd.conf.path=/etc/lircd.conf</p>
+
+<p>copy.lircd.conf.on=true</p>
+
+<p>com.port=/dev/ttyS0        </p>
+
+<p>knx.ip.interface.hostname=<br/>
+knx.ip.interface.port=3671</p>
+
+<p>isy99.hostname=192.168.41.12<br/>
+isy99.username=admin<br/>
+isy99.password=admin</p>
+
+<p>samsungTV.interface.ip=192.168.100.15</p>
+
+<p>russound.ip=<br/>
+russound.port=1234<br/>
+russound.keypadId=<br/>
+russound.serialDevice=/dev/ttyS0<br/>
+russound.statusPollingInterval=</p>
+
+<p>hsc40.interface.ip=192.168.100.14<br/>
+hsc40.interface.port=1001</p>
+
+<p>lagarto_network.broadcast=tcp://127.0.0.1:5001</p>
+
+<p>webapp.ip=<br/>
+webapp.port=8080</p>
+
+<p>Macro.IR.Execution.Delay=500</p>
+
+<p>multicast.address=224.0.1.100<br/>
+multicast.port=3333</p>
+
+<p>controller.applicationname=controller<br/>
+beehive.REST.Root.Url = <a href="http://beehive.openremote.org/3.0/alpha5/rest/">http://beehive.openremote.org/3.0/alpha5/rest/</a><br/>
+controller.performBeehiveSyncing=false<br/>
+beehiveAccountService.REST.Root.Url = <a href="http://localhost:8080/uas/rest/">http://localhost:8080/uas/rest/</a><br/>
+beehiveDeviceDiscoveryService.REST.Root.Url = <a href="http://localhost:8080/dds/rest/">http://localhost:8080/dds/rest/</a></p>
+
+
+<p>Bye,</p>
+
+<p>Frank</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by franka at Dec 27, 2014 11:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594949"></a>
+                                    <font class="smallfont"><p>Hi again ... </p>
+
+<p>the "unknown macro" text comes in my message as Wiki seems to try to interpret the bracket. No such text is in my real log.</p>
+
+<p>Frank</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by franka at Dec 27, 2014 11:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594950"></a>
+                                    <font class="smallfont"><p>In the configuration.xml config section above you have the properties 'protocol.vera.classname' and 'vera.adress'. You could try removing those, it should disable Vera completely. </p>
+
+<p>You could also try setting the 'russound.keypadId' property to the value 70 (the dafault value). There was once a bug that the protocol did not start if this property was not set. I seems that it was resolved in the build you are using, but who knows.</p>
+
+<p>Did you enable russound logging in log4j.xml? You can add logging to an existing appender using the following line </p>
+
+<p>log4j.logger.OpenRemote.Controller.protocol.russound = ALL, openremote-console, file.</p>
+
+<p>If you enable logging but you see no response at all, then I would assume that a vital thread is locked-up. Most people would attach a debugger then to figure out which thread. Depending on your JVM you can also send it a signal to generate a thread-dump, where you should see what each tread is doing. </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Dec 27, 2014 13:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594951"></a>
+                                    <font class="smallfont"><p>Hi again,</p>
+
+<p>thanks again.</p>
+
+<ul class="alternate" type="square">
+	<li>I disabled the vera related entries and the startup errors goes away</li>
+	<li>I enabled the logging and see the following (but still no reaction by the russound device)</li>
+	<li>can i enable messages from the RX/TX (serial) driver somehow?</li>
+</ul>
+
+
+<p>2014-12-27 13:45:53,871 INFO HTTP\-Thread\-1: Had timeout for waiting status change.<br/>
+2014-12-27 13:45:53,886 INFO HTTP\-Thread\-1: Finished polling at 2014-12-27 13:45:53</p>
+
+<p>2014-12-27 13:45:53,991 INFO HTTP\-Thread\-1: Querying changed state from ChangedStatus table...<br/>
+2014-12-27 13:45:54,013 INFO HTTP\-Thread\-1: Found: [device =&gt; FFFFFFFFC798DA809EE34377B4CCBD77ABCB37CC, sensorIDs =&gt; 5846167, 5846172, 5846180, 5846188, 5846196] in ChangedStatus table.<br/>
+2014-12-27 13:45:54,016 INFO HTTP\-Thread\-1: ChangedStatusRecord:FFFFFFFFC798DA809EE34377B4CCBD77ABCB37CC-5846167, 5846172, 5846180, 5846188, 5846196 sensorID:5846167, 5846172, 5846180, 5846188, 5846196 statusChangedSensorID:[]Waiting...<br/>
+2014-12-27 13:46:09,067 DEBUG HTTP\-Thread\-2: Building Russound command<br/>
+2014-12-27 13:46:09,067 DEBUG HTTP\-Thread\-2: Building Russound command<br/>
+2014-12-27 13:46:09,070 DEBUG HTTP\-Thread\-2: Russound command: command = POWER_ON<br/>
+2014-12-27 13:46:09,070 DEBUG HTTP\-Thread\-2: Russound command: command = POWER_ON<br/>
+2014-12-27 13:46:09,073 DEBUG HTTP\-Thread\-2: Russound command: controller = 1<br/>
+2014-12-27 13:46:09,073 DEBUG HTTP\-Thread\-2: Russound command: controller = 1<br/>
+2014-12-27 13:46:09,076 DEBUG HTTP\-Thread\-2: Russound command: zone = 4<br/>
+2014-12-27 13:46:09,076 DEBUG HTTP\-Thread\-2: Russound command: zone = 4<br/>
+2014-12-27 13:46:09,079 DEBUG HTTP\-Thread\-2: Russound command created successfully<br/>
+2014-12-27 13:46:09,079 DEBUG HTTP\-Thread\-2: Russound command created successfully</p>
+
+<p>There is still no reaction from the Russound device, e.g. switching on a zone. I also tried to switch RX/TX cabling (just in case), but it did not change the behavior.</p>
+
+<p>Any more ideas? Is there a known good controller.xml file for Russound i could try out, to remove a possible issue with that file?</p>
+
+<p>Thanks,</p>
+
+<p>Frank</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by franka at Dec 27, 2014 13:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594952"></a>
+                                    <font class="smallfont"><p>In that case you know it is running. It is creating messages, messages that it would attempt to write to the serial device. With this version the message is not dumped so we do not expect any more logging. If there were problems in writing to the serial device there should be an error. </p>
+
+<p>I think the software is ok then and you need to look at the rest of you setup. Things that come to mind, </p>
+<ul class="alternate" type="square">
+	<li>What is this setup with "/dev/ttyS0 that links to /dev/ttyAMA0"?.</li>
+	<li>Run switch versus Update. 'Run' seems like the logical option.</li>
+	<li>I am so far not aware of anyone using the CAS-44 Russound controller. According the Russound doc's it should support the same serial protocol, and the SET ZONE ON command.</li>
+</ul>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Dec 27, 2014 14:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594953"></a>
+                                    <font class="smallfont"><p>Hi Torbjörn,</p>
+
+<p>thanks again. I did check the serial port again. I think below shows the required setup, right?</p>
+
+<p>pi@raspberrypi ~ $ stty -F /dev/ttyS0 -a<br/>
+speed 19200 baud; rows 0; columns 0; line = 0;<br/>
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = &lt;undef&gt;; eol2 = &lt;undef&gt;; swtch = &lt;undef&gt;; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R; werase = ^W; lnext = ^V;<br/>
+flush = ^O; min = 0; time = 0;<br/>
+-parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts<br/>
+-ignbrk -brkint -ignpar -parmrk inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -iutf8<br/>
+-opost -olcuc -ocrnl -onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0<br/>
+-isig -icanon -iexten -echo -echoe -echok -echonl -noflsh -xcase -tostop -echoprt -echoctl -echoke</p>
+
+
+<p>Do you know about any diagnostic SW from Russound? Something i can use to send commands from the UNIX shell?</p>
+
+<p>P.S.: I have not found an option to set the serial port property "start bit = 1".</p>
+
+<p>Thanks again,</p>
+
+<p>Frank</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by franka at Dec 27, 2014 15:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594956"></a>
+                                    <font class="smallfont"><p>In order to get some information out of the CAS you can build of my Integration workspace. You will get hex dumps of all messages - also outgoing. It should indicate if the CAS have accepted the message or not. </p>
+
+<p>The messages are binary which is a bit of shame. With ascii messages it is quite a lot easier to try things out using Minicom or Cutecom. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Dec 27, 2014 17:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23594958"></a>
+                                    <font class="smallfont"><p>Hi Torbjörn,</p>
+
+<p>i finally got it to work. It helped to understand that the controller SW is working.</p>
+
+<p>  &gt;&gt; The trick is "NOT" to use a straight through cabling when connecting Russound and the Raspberrry through the 3.3-to-5V level shifter board I used.</p>
+
+<p>The RS 232 level shifter board output (female D9) must be connected with a null-modem connection to the input of the Russound D9.</p>
+
+<p>  &gt;&gt; And the "CPU update" switch on the Russound must be set to "Run" even though the Russound docs mention this setting for FW updates.</p>
+
+<p>Thanks again ... now i can start creating the iPhone UI.</p>
+
+<p>Bye,</p>
+
+<p>Frank</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by franka at Dec 27, 2014 18:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

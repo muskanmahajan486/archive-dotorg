@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Question about HTTP command with variable</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Question about HTTP command with variable
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Mar 04, 2014 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>I would like to send a HTTP POST command with a variable but I get the error:</p>
+
+<p>ERROR [Polling thread for sensor: T1&#95;Sensor&#95;Range]: ClientProtocolException when executing HTTP method<br/>
+org.apache.http.client.HttpResponseException: Internal Server Error<br/>
+at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:67)<br/>
+at org.apache.http.impl.client.BasicResponseHandler.handleResponse(BasicResponseHandler.java:54)<br/>
+at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:735)<br/>
+at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:709)<br/>
+at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:700)<br/>
+at org.openremote.controller.protocol.http.HttpGetCommand.requestURL(HttpGetCommand.java:231)<br/>
+at org.openremote.controller.protocol.http.HttpGetCommand.send(HttpGetCommand.java:162)<br/>
+at org.openremote.controller.model.Command.execute(Command.java:230)<br/>
+at org.openremote.controller.statuscache.CommandFacade.command(CommandFacade.java:85)<br/>
+at org.openremote.controller.protocol.Rule_Graph_0.defaultConsequence(Rule_Graph_0.java:8)<br/>
+at org.openremote.controller.protocol.Rule_Graph_0DefaultConsequenceInvoker.evaluate(Rule_Graph_0DefaultConsequenceInvoker.java:30)<br/>
+at org.drools.common.DefaultAgenda.fireActivation(DefaultAgenda.java:917)<br/>
+at org.drools.common.DefaultAgenda.fireNextItem(DefaultAgenda.java:856)<br/>
+at org.drools.common.DefaultAgenda.fireAllRules(DefaultAgenda.java:1071)<br/>
+at org.drools.common.AbstractWorkingMemory.fireAllRules(AbstractWorkingMemory.java:785)<br/>
+at org.drools.common.AbstractWorkingMemory.fireAllRules(AbstractWorkingMemory.java:751)<br/>
+at org.drools.impl.StatefulKnowledgeSessionImpl.fireAllRules(StatefulKnowledgeSessionImpl.java:218)<br/>
+at org.openremote.controller.statuscache.rules.RuleEngine.push(RuleEngine.java:177)<br/>
+at org.openremote.controller.statuscache.EventProcessorChain.push(EventProcessorChain.java:188)<br/>
+at org.openremote.controller.statuscache.StatusCache.update(StatusCache.java:260)<br/>
+at org.openremote.controller.model.sensor.Sensor.update(Sensor.java:342)<br/>
+at org.openremote.controller.protocol.http.HttpGetCommand.run(HttpGetCommand.java:274)<br/>
+at java.lang.Thread.run(Thread.java:662)</p>
+
+
+<p>Rules load the command value in a variable like: </p>
+
+<p>package org.openremote.controller.protocol<br/>
+global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+import org.openremote.controller.protocol.Event;<br/>
+rule "Graph"<br/>
+when<br/>
+$data : Event ( source == "T1_Sensor_Range" )<br/>
+then<br/>
+System.out.println ($data.getValue());<br/>
+execute.command ("Graph_PAPP_Cde", $data.toString());<br/>
+end</p>
+
+
+<p>And this is a part of my Controller.xml</p>
+
+<p><img src="attachments/22884675/23036483.png" align="absmiddle" border="0"/></p>
+
+<p>Thank you to help me.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22884675/23036485.png">Controller.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22884675/23036484.png">Controller2.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22884675/23036483.png">Controller.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22884682"></a>
+                                    <font class="smallfont"><blockquote>
+<p>execute.command ("Graph_PAPP_Cde", $data.toString());</p></blockquote>
+<p>Try to change it to:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+execute.command (<span class="code-quote">"Graph_PAPP_Cde"</span>, $data.getValue().toString());
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 23, 2014 19:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884687"></a>
+                                    <font class="smallfont"><p>Michal,</p>
+
+<p>I get exactely the same error with the command:</p>
+
+<p>execute.command ("Graph_PAPP_Cde", $data.getValue().toString());</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frank77 at Feb 24, 2014 07:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884691"></a>
+                                    <font class="smallfont"><p>"Internal Server Error" indicates an error on the server side. The HTTP request goes through but the server fails and returns a 500 error.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Feb 24, 2014 08:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884695"></a>
+                                    <font class="smallfont"><p>Yes the HTTP server don't anderstand the variable $data. If I replace the variable by a fixe number like "200", I don't have error?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frank77 at Feb 24, 2014 12:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884696"></a>
+                                    <font class="smallfont"><p>Try to put in your HTTP command definition ${param} instead of $data</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Feb 24, 2014 12:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22884697"></a>
+                                    <font class="smallfont"><p>it works. </p>
+
+<p>I put ${param} in workloard instead $data and I send my variable.</p>
+
+<p>Thanks a lot Michal and Eric</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by frank77 at Feb 24, 2014 13:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23596098"></a>
+                                    <font class="smallfont"><p>Hi I am trying to get my Sonos to announce the time in the morning  - but I am not clear on the how you got this to work.</p>
+
+<p>I have an http command to get my Sonos to say something:</p>
+
+<p><a href="http://192.168.0.3:5005/Living">http://192.168.0.3:5005/Living</a> Room/say/</p>
+
+<p>As a test I want to append a variable from a datetime sensor source = "minute"</p>
+
+<p>In designer I have added a workload <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> ${param} </pre>
+</div></div></p>
+
+<p>Then in rules I have tried</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"Time Say"</span>
+timer(<span class="code-object">int</span>: 30s 30s)
+when
+  $b1 : Event(source==<span class="code-quote">"minute"</span>)
+   	then
+   execute.command(<span class="code-quote">"SONOS SAY TIME"</span>, $b1.getValue());
+end
+
+</pre>
+</div></div>
+
+<p>But this falls over when I try and run it any idea what I'm doing wrong?</p>
+
+<p>Thanks</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Jan 29, 2015 22:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

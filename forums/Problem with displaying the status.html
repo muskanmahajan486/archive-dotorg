@@ -1,0 +1,415 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Problem with displaying the status</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Problem with displaying the status
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Dec 06, 2013 by <font color="#0050B2">preston</font>.
+				    </div>
+
+				    <p>Hello everyone.<br/>
+I have a problem with displaying the status of my dimmer FGD211. When switching from OpenRemote UI (Webconsole, Android App), status is displayed correctly. But if I use the physical switch, then the status of the dimmer display incorrectly. Slider twitches in the UI and incorrectly built graph in EmonCMS.</p>
+
+
+<p>Here's a screenshot EmonCMS when dimmer off through physical button. The values of the sensors in the UI jump to the value that was last set through the UI.</p>
+
+<p><img src="attachments/22880687/23036293.jpg" align="absmiddle" border="0"/></p>
+
+<p>Controller version 2.1.0 </p>
+
+<p>A rule to check the status of the dimmer:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+<span class="code-keyword">package</span> org.openremote.controller.model.event
+global org.openremote.controller.statuscache.CommandFacade execute;
+global org.openremote.controller.statuscache.SwitchFacade switches;
+<span class="code-keyword">import</span> org.openremote.controller.protocol.*;
+<span class="code-keyword">import</span> java.lang.<span class="code-object">Integer</span>;
+
+rule <span class="code-quote">"DimmerStatus"</span>
+    timer(<span class="code-object">int</span>: 2s 3s)
+when
+    eval(<span class="code-keyword">true</span>)
+then
+    execute.command(<span class="code-quote">"dimmer -status-"</span>);
+end
+</pre>
+</div></div>
+
+<p>zwave.log:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+DEBUG 2013-12-05 11:18:31,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:31,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:31,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:31,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:31,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:31,437 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 fe 3b 
+DEBUG 2013-12-05 11:18:31,437 (Z-Wave): received: 06 
+DEBUG 2013-12-05 11:18:31,437 (Z-Wave): received: 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:31,437 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:31,453 (Z-Wave): received: 01 05 00 13 fe 00 17 
+DEBUG 2013-12-05 11:18:31,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:31,484 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:31,484 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:34,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:34,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:34,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:34,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:34,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:34,437 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 ff 3a 
+DEBUG 2013-12-05 11:18:34,437 (Z-Wave): received: 06 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:34,437 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:34,453 (Z-Wave): received: 01 05 00 13 ff 00 16 
+DEBUG 2013-12-05 11:18:34,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:34,484 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:34,484 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:37,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:37,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:37,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:37,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:37,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:37,437 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 00 c5 
+DEBUG 2013-12-05 11:18:37,437 (Z-Wave): received: 06 
+DEBUG 2013-12-05 11:18:37,453 (Z-Wave): received: 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:37,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:37,468 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:37,468 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:40,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:40,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:40,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:40,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:40,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:40,437 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,484 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,546 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,593 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,640 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,687 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,750 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,796 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,843 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,890 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:40,953 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,000 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,046 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,093 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,156 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,203 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,250 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,296 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,359 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,406 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,453 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,500 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,562 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,609 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,656 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,718 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,765 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,812 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,859 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,921 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:41,968 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,015 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,062 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,125 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,171 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,218 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,265 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,328 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,375 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,421 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,468 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,531 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,578 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,625 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,671 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,734 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,781 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,828 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,875 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,937 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:42,984 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,031 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,093 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,140 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,187 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,234 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,296 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,343 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,390 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:43,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:43,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:43,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:43,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:43,437 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,500 (Z-Wave): Timeout reached. Releasing lock.
+DEBUG 2013-12-05 11:18:43,500 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 01 c4 
+DEBUG 2013-12-05 11:18:43,500 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 02 c7 
+DEBUG 2013-12-05 11:18:43,500 (Z-Wave): received: 06 
+DEBUG 2013-12-05 11:18:43,500 (Z-Wave): received: 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:43,546 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:43,546 (Z-Wave): Message lock exists. Frame waiting: 01 09 00 13 05 02 20 02 05 02 c7 
+DEBUG 2013-12-05 11:18:43,546 (Z-Wave): received: 01 05 00 13 01 00 e8 
+DEBUG 2013-12-05 11:18:43,593 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:43,593 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 02 c7 
+DEBUG 2013-12-05 11:18:43,593 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:43,593 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:43,625 (Z-Wave): received: 18 
+DEBUG 2013-12-05 11:18:43,625 (Z-Wave): Received CAN, resend last frame
+DEBUG 2013-12-05 11:18:43,625 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:43,625 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 02 c7 
+DEBUG 2013-12-05 11:18:43,625 (Z-Wave): received: 06 
+DEBUG 2013-12-05 11:18:43,640 (Z-Wave): received: 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:43,640 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:43,640 (Z-Wave): received: 01 05 00 13 02 00 eb 
+DEBUG 2013-12-05 11:18:43,640 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:43,671 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:43,671 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:46,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:46,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:46,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:46,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:46,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:46,437 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 03 c6 
+DEBUG 2013-12-05 11:18:46,453 (Z-Wave): received: 06 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:46,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:46,468 (Z-Wave): received: 01 05 00 13 03 00 ea 
+DEBUG 2013-12-05 11:18:46,468 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:46,500 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:46,500 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:49,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:49,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:49,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:49,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:49,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:49,437 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 04 c1 
+DEBUG 2013-12-05 11:18:49,453 (Z-Wave): received: 06 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:49,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:49,468 (Z-Wave): received: 01 05 00 13 04 00 ed 
+DEBUG 2013-12-05 11:18:49,468 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:49,484 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:49,484 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:52,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:52,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:52,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:52,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:52,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:52,437 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 05 c0 
+DEBUG 2013-12-05 11:18:52,453 (Z-Wave): received: 06 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:52,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:52,468 (Z-Wave): received: 01 05 00 13 05 00 ec 
+DEBUG 2013-12-05 11:18:52,468 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:52,484 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:52,484 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:55,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:55,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:55,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:55,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:55,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:55,437 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 06 c3 
+DEBUG 2013-12-05 11:18:55,453 (Z-Wave): received: 06 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:55,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:55,468 (Z-Wave): received: 01 05 00 13 06 00 ef 
+DEBUG 2013-12-05 11:18:55,468 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:55,484 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:55,484 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:58,453 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:18:58,453 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:18:58,453 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:18:58,453 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:18:58,453 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:18:58,453 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 07 c2 
+DEBUG 2013-12-05 11:18:58,453 (Z-Wave): received: 06 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:18:58,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:58,468 (Z-Wave): received: 01 05 00 13 07 00 ee 
+DEBUG 2013-12-05 11:18:58,468 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:18:58,515 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:18:58,515 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:19:01,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:19:01,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:19:01,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:19:01,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:19:01,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:19:01,437 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 08 cd 
+DEBUG 2013-12-05 11:19:01,437 (Z-Wave): received: 06 
+DEBUG 2013-12-05 11:19:01,437 (Z-Wave): received: 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:19:01,437 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:19:01,453 (Z-Wave): received: 01 05 00 13 08 00 e1 
+DEBUG 2013-12-05 11:19:01,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:19:01,468 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:19:01,468 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:19:04,437 (Z-Wave): Building Z-Wave command
+DEBUG 2013-12-05 11:19:04,437 (Z-Wave): Z-Wave command: command = status
+DEBUG 2013-12-05 11:19:04,437 (Z-Wave): Z-Wave command: nodeId = 5
+DEBUG 2013-12-05 11:19:04,437 (Z-Wave): Z-Wave command: paramValue = <span class="code-keyword">null</span>
+DEBUG 2013-12-05 11:19:04,437 (Z-Wave): Z-Wave command created successfully
+DEBUG 2013-12-05 11:19:04,437 (Z-Wave): sending: 01 09 00 13 05 02 20 02 05 09 cc 
+DEBUG 2013-12-05 11:19:04,437 (Z-Wave): received: 06 01 04 01 13 01 e8 
+DEBUG 2013-12-05 11:19:04,437 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:19:04,453 (Z-Wave): received: 01 05 00 13 09 00 e0 
+DEBUG 2013-12-05 11:19:04,453 (Z-Wave): sending: 06 
+DEBUG 2013-12-05 11:19:04,484 (Z-Wave): received: 01 09 00 04 00 05 03 20 03 00 d7 
+DEBUG 2013-12-05 11:19:04,484 (Z-Wave): sending: 06 
+</pre>
+</div></div>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/22880687/23036293.jpg">DS.jpg</a> (image/jpeg)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-22881003"></a>
+                                    <font class="smallfont"><p>Dear developers. <br/>
+I have a misunderstanding of obtaining the status of a device. Here is what I observed:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+########################Run controller#################
+
+Timestamp: 1386598784------[json] =&gt; {DimmerRange:0.0}
+Timestamp: 1386598784------[json] =&gt; {DimmerRange:15.0}
+Timestamp: 1386598784------[json] =&gt; {DimmerRange:0.0}
+Timestamp: 1386598784------[json] =&gt; {DimmerRange:15.0}
+
+####################################################
+
+####################### No switching  #################
+
+Timestamp: 1386598793------[json] =&gt; {DimmerRange:0.0}
+Timestamp: 1386598793------[json] =&gt; {DimmerRange:15.0}
+
+Timestamp: 1386598803------[json] =&gt; {DimmerRange:0.0}
+Timestamp: 1386598803------[json] =&gt; {DimmerRange:15.0}
+
+####################################################
+
+############### Switch slider to 36 in Webconsole ##########
+
+Timestamp: 1386598808-----[json] =&gt; {DimmerRange:36.0}
+
+####################################################
+
+
+####################### No  switching ##################
+
+Timestamp: 1386598813-----[json] =&gt; {DimmerRange:36.0}
+Timestamp: 1386598813-----[json] =&gt; {DimmerRange:36.0}
+
+Timestamp: 1386598823-----[json] =&gt; {DimmerRange:36.0}
+Timestamp: 1386598823-----[json] =&gt; {DimmerRange:36.0}
+
+#####################################################
+
+############### Switch  physical  button  to 20 ###########
+
+Timestamp: 1386598833-----[json] =&gt; {DimmerRange:36.0}
+Timestamp: 1386598833-----[json] =&gt; {DimmerRange:20.0}
+
+Timestamp: 1386598843-----[json] =&gt; {DimmerRange:36.0}
+Timestamp: 1386598843-----[json] =&gt; {DimmerRange:20.0}
+
+Timestamp: 1386598853-----[json] =&gt; {DimmerRange:36.0}
+Timestamp: 1386598853-----[json] =&gt; {DimmerRange:20.0}
+
+######################################################
+
+#################### Switch  physical  button to 0 #########
+
+Timestamp: 1386598863-----[json] =&gt; {DimmerRange:36.0}
+Timestamp: 1386598863-----[json] =&gt; {DimmerRange:0.0}
+
+Timestamp: 1386598873-----[json] =&gt; {DimmerRange:36.0}
+Timestamp: 1386598873-----[json] =&gt; {DimmerRange:0.0}
+
+######################################################
+
+################ Switch  physical  button to 16 ############
+
+Timestamp: 1386598883-----[json] =&gt; {DimmerRange:36.0}
+Timestamp: 1386598883-----[json] =&gt; {DimmerRange:16.0}
+
+Timestamp: 1386598893-----[json] =&gt; {DimmerRange:36.0}
+Timestamp: 1386598893-----[json] =&gt; {DimmerRange:16.0}
+
+
+
+</pre>
+</div></div>
+
+<p>This shows that, controller separately stores the value set from the WebConsole and does not change when it switches of the button.</p>
+
+
+<p>Why switch from Webconsole status dimmer correctly returns, but when executing the command "status" at the output there are 2 different values?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by preston at Dec 09, 2013 20:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22881079"></a>
+                                    <font class="smallfont"><p>Found a solution: </p>
+
+<p>   1. Added to the controller in the group of the Association "Report any State Change" in the settings dimmer via z-cloud.zwave.me<br/>
+   2. Created a rule for the correct display of the graph in EmonCMS:</p>
+
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"DimmerStatus"</span>
+   timer(<span class="code-object">int</span>: 5s 5s)
+when
+   $evt:Event(source == <span class="code-quote">"DimmerRange"</span>)
+then
+    execute.command(<span class="code-quote">"dimmer -dim-"</span>, $evt.getValue().toString());
+end
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by preston at Dec 11, 2013 09:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:38</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

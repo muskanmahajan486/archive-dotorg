@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Serverless consoles</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Serverless consoles
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 01, 2010 by <font color="#0050B2">marcf</font>.
+				    </div>
+
+				    <p>Following the example of iKNX I am thinking about the serverless console. </p>
+
+<p>Serverless means the panel talks directly to the hardware without going through the ORB.  This obviously only is relevant to simple control scenarios but nonetheless relevant.  Take iKNX.  When someone presses a button, the app opens a socket connection to the IP gateway and sends the CEMI frame. </p>
+
+<p>The advantages of this approach are obvious and the reasons why iKNX is widely. Namely simplicity.  You can upload an app to the iphone/android and off you go, you do not need to download and install and ORB (not that it is complicated). </p>
+
+<p>The usage with composer would remain the same, namely that you develop panels in composer but the deployment is a file to the console and that is it.  </p>
+
+<p>We have been having this discussion already both at CEDIA and over email.  Here is a transcript of email:</p>
+
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'>Lutron on iphone git me thinking about orbless.  There are usually 2</td>
+</tr>
+<tr>
+<td class='confluenceTd'>parts to connecting to the gateway, either a lookup (a la GC) or a</td>
+</tr>
+<tr>
+<td class='confluenceTd'>configuration (a la KNX) but those are different binaries.  The</td>
+</tr>
+<tr>
+<td class='confluenceTd'>formatting of the packets is the complicated part. HOWEVER once you</td>
+</tr>
+<tr>
+<td class='confluenceTd'>have configured the string to be sent over the connection i wonder how</td>
+</tr>
+<tr>
+<td class='confluenceTd'>much we can just put in the button information.  So in essence,</td>
+</tr>
+<tr>
+<td class='confluenceTd'>instead of having a handle to the command in controller we have the</td>
+</tr>
+<tr>
+<td class='confluenceTd'>actual CEMI frame already prepared as a byte array and that is what</td>
+</tr>
+<tr>
+<td class='confluenceTd'>gets sent.  This way all the fancy computing and class generation</td>
+</tr>
+<tr>
+<td class='confluenceTd'>happens IN COMPOSER and in the panel we just have a byte array</td>
+</tr>
+<tr>
+<td class='confluenceTd'>representation of the command to be sent AS IS.  Is this making sense?</td>
+</tr>
+</tbody></table>
+
+<p>That's how it would work yes. It is one generic IP connector which you configure with a protocol specific payload.</p>
+
+<p>This works for the simple case. It won't however work for over-engineered protocols like KNX due to them being... well, over-complicated. They are chatty in bidirectional ways.</p>
+
+<p>So then you need a generic IP connector that you can feed with a script, instead of a basic string payload: "if you receive this, then send that, else..."</p>
+
+<p>So this is a little more work. It is the right generic approach though, although it may in some cases be simpler to just implement a specific handler for protocol X instead. It's the trade-off between doing one generic right, or writing zillion little specific implementations.</p>
+
+<p>And KNX goes further with its own complications that it does actually require a heartbeat management on the connection, so now we are talking about looping structures so a fairly complicated scripting on top of the generic IP connector. Had the brainiacs used TCP instead of UDP....</p>
+
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'>So the change would need to be that the information in the iphone and</td>
+</tr>
+<tr>
+<td class='confluenceTd'>android are just generic ORB and there is a keyword that says</td>
+</tr>
+<tr>
+<td class='confluenceTd'>"LOCAL:protocol" in which case we delegate to the local protocol IP</td>
+</tr>
+<tr>
+<td class='confluenceTd'>connection and pass it the byte array to be sent.</td>
+</tr>
+<tr>
+<td class='confluenceTd'>Everything else remains the same.  Is this making sense to you? let me</td>
+</tr>
+<tr>
+<td class='confluenceTd'>know if I am missing something obvious.  If it does I will go ahead</td>
+</tr>
+<tr>
+<td class='confluenceTd'>and start a more public thread around the idea.</td>
+</tr>
+</tbody></table>
+
+<p>Your general thinking is exactly right but missing the obvious "devil is in the details..." <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'>In any case, this points to the payload being IN THE BUTTON. no</td>
+</tr>
+<tr>
+<td class='confluenceTd'>"mapping" on the server.</td>
+</tr>
+</tbody></table>
+
+<p>Yes, it will be like this, this is already been discussed/planned:</p>
+
+<p>In panel.xml (the command element is merged from controller.xml):</p>
+
+<p>&lt;button id="24" name=""&gt;<br/>
+&lt;default&gt;<br/>
+&lt;image src="home.png" /&gt;<br/>
+&lt;/default&gt;</p>
+
+<p>&lt;command protocol = "knx" &gt;<br/>
+&lt;property name = "command" value = "on"/&gt;<br/>
+&lt;property name = "groupAddress" value = "0/0/4"/&gt;<br/>
+&lt;property name = "DPT" value = "1.001"/&gt;<br/>
+&lt;/command&gt;<br/>
+&lt;/button&gt;</p>
+
+<p>There's no mapping on the server, by definition, of it being serverless. The point here being that this still requires a specific protocol implementation for KNX (and possibly others) embedded into the console implementation, not merely a payload.</p>
+
+<p>A generic payload would require a script element here, instead of command. The scripting would mean a new protocol can be embedded into the console without changing the application.</p>
+
+<p>ORBless is already in 3.0 roadmap.</p>
+
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'>What I was trying to say was that the command would have an IP payload</td>
+</tr>
+<tr>
+<td class='confluenceTd'>already configured.  Meaning that there is no real reason to have all</td>
+</tr>
+<tr>
+<td class='confluenceTd'>the classes on the console to generate the payload.  So the composer</td>
+</tr>
+<tr>
+<td class='confluenceTd'>generates the binary string.</td>
+</tr>
+</tbody></table>
+
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'>&lt;command protocol="local:knx"&gt;</td>
+</tr>
+<tr>
+<td class='confluenceTd'>&lt;property name = "payload" value = "2898ad737290ff345212ad020"/&gt;  // this is the properly formated array it is generated in composer.</td>
+</tr>
+<tr>
+<td class='confluenceTd'>&lt;/command&gt;</td>
+</tr>
+</tbody></table>
+
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'>and then the implementation on the console only deals with socket</td>
+</tr>
+<tr>
+<td class='confluenceTd'>protocol, nothing else.  In the case of KNX that is still a headache.</td>
+</tr>
+<tr>
+<td class='confluenceTd'>In the other cases (GC) it would be rather a simple and somewhat</td>
+</tr>
+<tr>
+<td class='confluenceTd'>generic implementation.</td>
+</tr>
+</tbody></table>
+
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Switched rack PDU</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Switched rack PDU
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 19, 2012 by <font color="#0050B2">rde01</font>.
+				    </div>
+
+				    <p>Hi, i have a apc switched rack pdu lying around witch i am trying to control with openremote.<br/>
+It has 8 switchable power outlets and has its own basic web interface to control them.<br/>
+The web interface uses html post to send the commands (one page to select wich oultets and what to do with them and one to confirm)<br/>
+It also had ssh acces and with console u have to go tru a sequence of menus to control the outlets (mostly while typing numbers)<br/>
+I have tried both the html command option (but saw no option for post parameters) as the telnet command option (by giving the login and number sequence with enters into notepad and copy pasting it to the telenet command field) What would be the easiest way to make this work ? And if it is possible are there some examples i might follow ?</p>
+
+<p>Regards</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19435096"></a>
+                                    <font class="smallfont"><p>It seems it is also possible to manage it thru snmp. Would it bepossbile to send snmp commands with openremote ?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rde01 at Jan 23, 2012 17:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435098"></a>
+                                    <font class="smallfont"><p>There is no SNMP module right now. This has been mentioned in the past and as there are a few SNMP stacks in Java, should not be too difficult to implement.<br/>
+If somebody wants to have a go at it, we'll be glad to provide support through the forums.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Jan 23, 2012 18:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435895"></a>
+                                    <font class="smallfont"><p>Hi, I just made a basic snmp module that switches my light connected to the pdu on.<br/>
+For now it has the ip, port, oid etc hardcoded and no security in it but i am going to try and make it way more generic. <br/>
+I based my snmp module on the telnet module and using snmp4j libraries. (distributed under apache 2.0 licence i hope that's ok ?)<br/>
+Most stuff was well explained on the Openremote Documentation pages but maybe you can add some stuff about external libraries. That's where i had some trouble with (might be because im a .net dev and have no java building experience).<br/>
+I didn't know where to put the snmp4j lib in the controller so i added it to the lib folder in the controller dir and added <br/>
+&lt;path id = "compile.path.id"&gt;<br/>
+  	&lt;fileset dir = "${lib.dir}/snmp4j"/&gt;<br/>
+to the build.xml file. I thought building the built war file would include it somehow but that was not the case so i had to add the snmp4j jar to Runtime\apache-tomcat-6.0.18\webapps\controller\WEB-INF\lib manually.<br/>
+(Maybe my whole approach is not right and its way simpler in another way)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rde01 at Feb 12, 2012 09:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19435958"></a>
+                                    <font class="smallfont"><p>The "compile.path.id" is only for the java compiler.<br/>
+For the runtime the jar also needs to be copied to WEB-INF/lib as you already figured out correctly.<br/>
+This is done in the ant build.xml in the "init" target. There is a command <div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> &lt;copy todir = <span class="code-quote">"${build.dir}/lib"</span> flatten = <span class="code-quote">"<span class="code-keyword">true</span>"</span>&gt; </pre>
+</div></div> which takes the needed jar's and copies them all into one folder. That is later used and packed into WEB-INF/lib. If you add your jar with an additional fileset it should end up in the war file.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 13, 2012 00:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19436293"></a>
+                                    <font class="smallfont"><p>David,</p>
+
+<p>Glad you did manage to have something working there.</p>
+
+<p>If you want to contribute your code (so maybe others can also enhance it if required and I can give it a try), please take a look at
+<a href="http://www.openremote.org/display/project/Contributor+License+Agreement+Signup">http://www.openremote.org/display/project/Contributor+License+Agreement+Signup</a><br/>
+and here
+<a href="http://www.openremote.org/display/Community/New+Contributors+Getting+Started">http://www.openremote.org/display/Community/New+Contributors+Getting+Started</a></p>
+
+<p>Thanks,<br/>
+Eric</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Feb 15, 2012 12:32
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19438002"></a>
+                                    <font class="smallfont"><p>Hi, i tried adding my changes to the repository from within Eclipse by creating a branch and setting the branch folder to <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/rde01/">http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/rde01/</a><br/>
+But seems i messed up and it landed in <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/branches/https%3A/">http://openremote.svn.sourceforge.net/viewvc/openremote/branches/https%3A/</a> <br/>
+I do not seem to be able to relocate it. Is it possible for one of you admins do that? Sorry for the trouble by not following the guide to the letter.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rde01 at Feb 27, 2012 20:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439021"></a>
+                                    <font class="smallfont"><p>So now that i managed to get the code in the right place (<a href="http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/rde01/">http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/rde01/</a>)<br/>
+maybe i should explain some stuff:</p>
+
+<p>For now only snmpv1 get and set commands are possible.<br/>
+(no snmp traps but i might add that when an event receiver interface is added)</p>
+
+<p>For snmp both set and get commands your command needs a port ipAdress and oid and the commandtype.</p>
+
+<p>For snmp set commands you can specify the value it should be set to and the type of that value.<br/>
+I have only tested it with Integer32 but (BIT STRING,OCTET STRING,OBJECT IDENTIFIER,TimeTicks,Counter,Counter64,Gauge,IpAddress) should all be possible</p>
+
+<p>For snmp get commands you can specify a regex and a regex replacement value.<br/>
+You can use grouping in the regex and use | in the regexreplacement to specify a replacement for each group.<br/>
+You can specify null in the regexreplacement to get the exact string where the regex matched on</p>
+
+<p>For example:</p>
+
+<p>For getting the status of an outlet i use:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>snmp get return value &gt; regex &gt; regexreplacement &gt; output
+
+1  &gt;   (\b1\b)|(\b2\b)   &gt;   on|off   &gt;   on
+2  &gt;   (\b1\b)|(\b2\b)   &gt;   on|off   &gt;   off
+</pre>
+</div></div>
+
+<p>or for getting the cpu load in % on my nas with snmp:</p>
+
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>0.60   &gt;   0\{1}\.([0-9]\{2})(.*)   &gt;   null| %   &gt;   60%
+</pre>
+</div></div>
+
+<p>Maybe i made it to complicated but i did not seem to find another way to make it possible to make it flexible to influence the output values.</p>
+
+
+<p>Anyway here is part of my controller.xml:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;command id=<span class="code-quote">"20"</span>  protocol=<span class="code-quote">"snmp"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"161"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.2.3"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"oid"</span> value=<span class="code-quote">"1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.3"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"set"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"setvalue"</span> value=<span class="code-quote">"1"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"settype"</span> value=<span class="code-quote">"Integer32"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"21"</span> protocol=<span class="code-quote">"snmp"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"161"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.2.3"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"oid"</span> value=<span class="code-quote">"1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.3"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"set"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"setvalue"</span> value=<span class="code-quote">"2"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"settype"</span> value=<span class="code-quote">"Integer32"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"24"</span> protocol=<span class="code-quote">"snmp"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"161"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.2.3"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"oid"</span> value=<span class="code-quote">"1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.3"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"get"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"getregex"</span> value=<span class="code-quote">"(\b1\b)|(\b2\b)"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"getregexreplacement"</span> value=<span class="code-quote">"on|off"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"125"</span> protocol=<span class="code-quote">"snmp"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"161"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.2.3"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"oid"</span> value=<span class="code-quote">"1.3.6.1.2.1.1.1.0"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"get"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"getregex"</span> value="" /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"getregexreplacement"</span> value="" /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+    <span class="code-tag">&lt;command id=<span class="code-quote">"124"</span> protocol=<span class="code-quote">"snmp"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"161"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.2.3"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"oid"</span> value=<span class="code-quote">"1.3.6.1.4.1.318.1.1.12.2.3.1.1.2.1"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"get"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+<span class="code-tag">&lt;command id=<span class="code-quote">"123"</span> protocol=<span class="code-quote">"snmp"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"161"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.2.229"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"oid"</span> value=<span class="code-quote">"1.3.6.1.4.1.2021.10.1.3.1"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"get"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"getregex"</span> value=<span class="code-quote">"0\{1}\.([0-9]\{2})(.*)"</span> /&gt;</span>
+	<span class="code-tag">&lt;property name=<span class="code-quote">"getregexreplacement"</span> value=<span class="code-quote">"null| %"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+
+</pre>
+</div></div>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by rde01 at Mar 03, 2012 16:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19439220"></a>
+                                    <font class="smallfont"><p>Hello David,</p>
+
+<p>First, thank you for this contribution. I'll schedule your work branch for review and then for inclusion into the controller and designer release cycles.</p>
+
+<p>I've created a how-to page where you can collect information about your implementation, here: <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+SNMP+Protocol" title="OpenRemote 2.0 How To - SNMP Protocol">OpenRemote 2.0 How To &#45; SNMP Protocol</a>, you should have access rights to make changes there. This way the information has a more permanent home than this forum thread.</p>
+
+<p>Have a look at other how to pages for templates, you can view the wiki source to see how to use the markup.</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Mar 04, 2012 14:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440179"></a>
+                                    <font class="smallfont"><p>I want to use the SNMPv1 protocol to send commands to an ethernet relay. Can someone tell me which files I need from: <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/rde01/">http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/rde01/</a>  </p>
+
+<p>Where do I need to put them to get the SNMPv1 module working in my controller? It is a bit confusing because the directories differ from my controller. It would be great if I can get similar lines like in the example controller.xml above working in my controller.</p>
+
+<p>Thanks in advance!</p>
+
+<p>Caspar    </p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by casparbanis at Apr 13, 2012 20:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440232"></a>
+                                    <font class="smallfont"><p>Which version of the controlelr are you using?<br/>
+In general you would only need the files from "/src/org/openremote/controller/protocol/snmp/".<br/>
+To compile and run those you also need the snmp4j jar file: "/lib/snmp4j/snmp4j-2.0.3.jar"</p>
+
+<p>When you have those compiled put them in your controller under: controller/WEB-INF/classes/org/openremote/controller/protocol/snmp<br/>
+The snmp4j-2.0.3.jar has to go to: controller/WEB-INF/lib</p>
+
+<p>Any you need to register the new CommandBuilder in the file: controller/WEB-INF/classes/applicationContext.xml</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Apr 18, 2012 13:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19440372"></a>
+                                    <font class="smallfont"><p>I think I am using the latest one 2.0? I will give it a try. Thanks for your help!</p>
+
+<p>Caspar</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by casparbanis at Apr 24, 2012 20:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873256"></a>
+                                    <font class="smallfont"><p>So I realize I've completely dropped the ball on this one, until a user came asking for it yesterday. Apologies!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 22, 2013 09:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873584"></a>
+                                    <font class="smallfont"><p>Test binary is available in <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.1%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_FM_SNMP.zip/download">OpenRemote-Controller-2.1.0_FM_SNMP.zip</a></p>
+
+<p>The SNMP designer configuration is currently availabe in instance at <a href="https://composer.openremote.org/staging">https://composer.openremote.org/staging</a></p>
+
+<p>Follow-ups on this thread: <a href="SNMP.html" title="SNMP">SNMP</a></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jul 03, 2013 11:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

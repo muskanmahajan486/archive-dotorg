@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>OpenRemote Box : Beehive Roadmap - M1 Database Schema</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            OpenRemote Box : Beehive Roadmap - M1 Database Schema
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 06, 2009 by <font color="#0050B2">admin</font>.
+				    </div>
+
+				    <p>This milestone is part of the <a href="Beehive Roadmap.html" title="Beehive Roadmap">Beehive Roadmap</a>. See the roadmap for full details of milestones and scheduling of milestones.</p>
+
+<h2><a name="BeehiveRoadmap-M1DatabaseSchema-DatabaseSchema"></a>Database Schema</h2>
+
+<p>Create a database schema from data found at <a href="http://lirc.sourceforge.net/remotes/">http://lirc.sourceforge.net/remotes/</a>. We need a schema to manage (in first phase, LIRC) configuration files in a database.</p>
+
+<p>The typical data needed for the first iteration from a LIRC configuration file are following fields:</p>
+
+<h3><a name="BeehiveRoadmap-M1DatabaseSchema-VendorName%28String%29"></a>Vendor Name (String)</h3>
+
+<p>This is the top level hierarchy shown in <a href="http://lirc.sourceforge.net/remotes/">http://lirc.sourceforge.net/remotes/</a></p>
+
+<h3><a name="BeehiveRoadmap-M1DatabaseSchema-Model%28String%29"></a>Model (String)</h3>
+
+<p>This is the second level hierarchy, for example what is shown in <a href="http://lirc.sourceforge.net/remotes/sony">http://lirc.sourceforge.net/remotes/sony</a></p>
+
+<h3><a name="BeehiveRoadmap-M1DatabaseSchema-InfraredCodes%28arbitrarynamevaluepairs%29"></a>Infrared Codes (arbitrary name-value pairs) </h3>
+
+<p>Typically consists of string names mapped to infrared code hex values.</p>
+
+<p>For example:</p>
+
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'> play </td>
+<td class='confluenceTd'> 0x20 </td>
+</tr>
+<tr>
+<td class='confluenceTd'> plus </td>
+<td class='confluenceTd'> 0xD0 </td>
+</tr>
+<tr>
+<td class='confluenceTd'> ffwd </td>
+<td class='confluenceTd'> 0xE0 </td>
+</tr>
+<tr>
+<td class='confluenceTd'> rev  </td>
+<td class='confluenceTd'> 0x10 </td>
+</tr>
+<tr>
+<td class='confluenceTd'> minus </td>
+<td class='confluenceTd'> 0xB0 </td>
+</tr>
+<tr>
+<td class='confluenceTd'> menu </td>
+<td class='confluenceTd'> 0x40 </td>
+</tr>
+</tbody></table>
+
+<p>The name tends to be something the user can locate on his remote, while the value is the actual infrared code sent (how it translates to infrared pulses and spaces is driven by the infrared options, see below)</p>
+
+<h3><a name="BeehiveRoadmap-M1DatabaseSchema-InfraredOptions%28prefixednamevaluepairs%29"></a>Infrared Options (prefixed name-value pairs) </h3>
+
+<p>There are various option fields in the configuration files. These are interpreted by the specific IR transmitter LIRC device drivers to generate the proper bit sequences for the low level device API.</p>
+
+<p>These tend to be poorly documented, and some fields may be out-of-date or unnecessary.</p>
+
+<p>However, all the data should be preserved so the original LIRC configuration file can be regenerated from the database schema when necessary (<a href="Beehive Roadmap - M2 Java API.html" title="Beehive Roadmap - M2 Java API">see M2 - Java API</a>).</p>
+
+<p>None of the options have semantic meaning to us in the first phases, so they can be stored as name-value pairs that can be later queried by name if necessary.</p>
+
+<p>Some options are obvious and used pretty much by all LIRC config files:</p>
+
+<ul class="alternate" type="square">
+	<li>name</li>
+	<li>flags</li>
+	<li>header</li>
+	<li>one</li>
+	<li>zero</li>
+	<li>bits</li>
+	<li>eps</li>
+	<li>aeps</li>
+	<li>gap</li>
+</ul>
+
+
+<p>There's some amount of discovery to be done here. When scraping the config files into database is also the point to discover what all options exist in the current LIRC config files. As mentioned before, this part is rather poorly maintained in LIRC documentation. </p>
+
+<div class = "note">
+  <img class="noteimage" src="attachments/11960350/12582917.png"/><p>When extracting the data from the LIRC configuration files to database, it makes sense to implement the tooling for data scraping in a way that can be later reused for sync functionality in <a href="Beehive Roadmap.html#BeehiveRoadmap-Version2.0">version 2.0 of Beehive</a>.</p>
+</div>
+
+
+
+
+
+
+<table style="margin: 0 0 0 2em;">      <tr>      <td style="text-align: center;"><img src="attachments/295282/524310.png" align="absmiddle" border="0"/></td>
+      <td style="font-size: large; padding: 0 0 0 0.5em;"> Useful Resources </td>
+</tr>
+
+    <tr><td colspan="2" style="border-style: solid; border-width: 1px 0 0 0; border-color: #B0D9E6;">&nbsp;</td>
+
+
+
+</tr>
+           <td style="text-align: center;"><img src="attachments/295282/524309.png" align="absmiddle" border="0"/></td>
+           <td style="padding: 0 0 0 0.5em;"> <a href="Sample LIRCD Configuration.html" title="Sample LIRCD Configuration">A sample of three arbitrarily chosen IR remote control configs</a> </td>
+        <tr>
+
+</tr>
+           <td style="text-align: center;"><img src="attachments/295282/524309.png" align="absmiddle" border="0"/></td>
+           <td style="padding: 0 0 0 0.5em;"> <a href="http://winlirc.sourceforge.net/technicaldetails.html">Somewhat extensive documentation of LIRC flags values from the WinLIRC homepage</a> </td>
+        <tr>
+
+</tr>
+           <td style="text-align: center;"><img src="attachments/295282/524309.png" align="absmiddle" border="0"/></td>
+           <td style="padding: 0 0 0 0.5em;"> <a href="http://www.hifi-remote.com/infrared/IR-PWM.shtml">High level view of how infrared codes work</a> </td>
+        <tr></tr>
+</table>
+
+
+<h3><a name="BeehiveRoadmap-M1DatabaseSchema-Timestamp"></a>Timestamp</h3>
+
+<p>Save a timestamp on each recorded LIRC remote configuration based on the creation date of the file. Timestamps may later be updated based on modifications or sync updates (<a href="Beehive Roadmap.html#BeehiveRoadmap-Version2.0">see Version 2.0 of Beehive</a>)</p>
+
+
+<h3><a name="BeehiveRoadmap-M1DatabaseSchema-Other"></a>Other</h3>
+
+<p>There are other content in the LIRC config files that should be preserved in order to recreate the original file from a database (<a href="Beehive Roadmap - M2 Java API.html" title="Beehive Roadmap - M2 Java API">see M2 - Java API</a>). For example, the comment sections. Possibly others.</p>
+
+
+<h2><a name="BeehiveRoadmap-M1DatabaseSchema-Deliverables"></a>Deliverables</h2>
+
+<p>Database schema (with associated schema creation SQL instructions) that can be used to construct and deconstruct LIRC configuration file to a database schema and reverse from schema to a LIRC configuration file.</p>
+
+
+				    
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:23</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

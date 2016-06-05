@@ -1,0 +1,1265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Telnet Status Read Implemented</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Telnet Status Read Implemented
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 02, 2011 by <font color="#0050B2">kurrazyman</font>.
+				    </div>
+
+				    <p>Anyone interested in the Telnet command may have realised that in the current release the read method has not been implemented, and so you cannot use telnet commands to get the status of sensors. I have created a branch with an implementation of the status read method.</p>
+
+<p><a href="http://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha11_telnet/">http://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha11_telnet/</a></p>
+
+<h3><a name="TelnetStatusReadImplemented-ModifiedFiles"></a>Modified Files</h3>
+
+<p>The only files that have been altered in this branch are the TelnetCommand.java and TelnetCommandBuilder.java (in the protocol folder)</p>
+
+<h3><a name="TelnetStatusReadImplemented-Howitworks"></a>How it works</h3>
+
+<p>The idea is similar to the send method, so the first part of the command (before the '|') is the string to wait for before sending the next part of the command, multiple commands (e.g. OK|command1|YES|command2 ) can be used and each time the response back is added to a buffer and processed at the end. The statusFilter regex is then applied to the response text and the statusFilterGroup number is used to determine which group number contains the result in the regex match (need to be familiar with regex). The statusDefault is the response returned if the filter cannot be applied or no result is returned.</p>
+
+<h3><a name="TelnetStatusReadImplemented-Usage"></a>Usage</h3>
+
+<p>You'll need to add some attributes to your telnet command in the controller.xml after you have imported your controller.xml from the designer (have a look at TelnetCommandBuilder you can see the properties it's looking for), below is an example telnet command with these new properties set: -</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+    <span class="code-tag">&lt;command id=<span class="code-quote">"340"</span> protocol=<span class="code-quote">"telnet"</span>&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"6601"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"OK|currentsong"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.74"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"statusFilter"</span> value=<span class="code-quote">"^(?i)(?s)(?m).*artist.\s(.+).title.*$"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"statusFilterGroup"</span> value=<span class="code-quote">"1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"statusDefault"</span> value=<span class="code-quote">"None"</span> /&gt;</span>      
+    <span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-15532280"></a>
+                                    <font class="smallfont"><p>Richard,</p>
+
+<p>Thank you very much for taking the lead on this. I plan on rolling this into the release branches as soon as I can (still traveling this week). I know several people are waiting for it.</p>
+
+<p>And also congratulations on making a contribution to OpenRemote. You're one of the few and we deeply appreciate it.</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 03, 2011 12:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532281"></a>
+                                    <font class="smallfont"><p>I hope I can play a bigger role in the development of this great project (albeit on a slightly selfish level as I have a new house build underway at the moment and I need a Home Automation Control System that can integrate the various automation/AV elements together and I think OpenRemote is a good base to work from).</p>
+
+<p>I've been using my newly implemented Telnet read status and I've come to a stumbling block that I know has been discussed (notably for KNX); if I have multiple sensors that need to get their status from the same telnet server only one connection can be made at any one time but with the current Openremote configuration it seems that multiple connections are being attempted at the same time.</p>
+
+<p>There's some notes in the KNXConnnectionBuilder.java file discussing this sort of issue and I'm looking to implement a connection manager for the telnet protocol also, can't help thinking that a generic solution would be best here for all current and future protocols; what are your thoughts/plans on this?</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 03, 2011 12:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532282"></a>
+                                    <font class="smallfont"><p>If anyone is interested there's a great online regex tool which I use for prooving out my regex to statusFilter property, you can paste in multiple lines of text (your telnet response text) and also see the matching group numbers and content:</p>
+
+<p><a href="http://www.fileformat.info/tool/regex.htm">http://www.fileformat.info/tool/regex.htm</a></p>
+
+<p>You need to set the CANON_EQ and UNICODE_CASE options as these have been hardcoded into the Regex Pattern (they can't be set in the expression). Another pointer, the DOTALL (?s) and MULTILINE (?m) options are your friends when working with blocks of text which includes Carriage Returns and/or Line Feeds.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 03, 2011 12:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532284"></a>
+                                    <font class="smallfont"><p>Although ive only been testing so far ive run into similair issues. The plugin I use for Homeseer can also only accept 1 connection from each source IP at any one time. With only a couple of sensors I can run into conflicts.</p>
+
+<p>For me the solution would be to abstract some of the protocol information to a per-device setup rather than per-command. So i can configure port + destination IP just once per device and have a single IP session for all commands/sensors to any given device. All commands for that device would inherit those settings.</p>
+
+<p>I wish I knew enough JAVA to contribute directly......but its going to take me a while.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by deanox at Feb 03, 2011 17:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532290"></a>
+                                    <font class="smallfont"><p>Hi Richard,</p>
+
+<p>At 1st thanks for the effort so far and as requested here is my first test report.</p>
+
+<p>In the designer i added a standard switch with NO sensor and only a on/of command set. So very basic</p>
+
+
+<p>The error i get is the same as before when i did not modify the TelnetCommand.java</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [Controller]2011-02-04 12:20:09,450 INFO [HTTP-<span class="code-object">Thread</span>-3] org.openremote.controller.protocol.telnet.TelnetCommand.waitForString(245) | Read before running into timeout:
+[Controller]2011-02-04 12:20:09,452 ERROR [HTTP-<span class="code-object">Thread</span>-3] org.openremote.controller.protocol.telnet.TelnetCommand.send(216) | could not perform telnetEvent
+java.lang.Exception: Response timed-out waiting <span class="code-keyword">for</span> <span class="code-quote">"set Stalamp_KL on"</span>
+	at org.openremote.controller.protocol.telnet.TelnetCommand.waitForString(TelnetCommand.java:246)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:205)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:188)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:56)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.doPost(ControlCommandRESTServlet.java:85)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.support.json.JSONCallbackFilter.doFilter(JSONCallbackFilter.java:65)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.<span class="code-object">Thread</span>.run(<span class="code-object">Thread</span>.java:662)
+</pre>
+</div></div>
+<p>I took a look at the controller.xml but i could find anything strange. What could be the error in this?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 04, 2011 11:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532291"></a>
+                                    <font class="smallfont"><p>Hi Ernst,</p>
+
+<p>Looking at the error there I would say the problem is with your Telnet command itself; it looks like you haven't specified a 'waitForString' that the telnet command expects to get sent from the Telnet server before it initiates the actual command you want to send it (this is to make sure the telnet session is established and ready for input). If you don't know what this waitForString value should be simply manually create a telnet session to the server you are trying to connect to (telnet command in dos and linux e.g. telnet x.x.x.x 1234 where x.x.x.x is the IP address and 1234 is the port number) once connected the server should give some sort of prompt and you need to set this prompt string as your waitForString.</p>
+
+<p>As an example if I connect to pulseaudio via telnet it responds with '&gt;&gt;&gt;' and I can then enter my command 'setvol 0' for example. So in Openremote my telnet command would be:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&gt;&gt;&gt;|setvol 0
+</pre>
+</div></div>
+<p>If you get the send command working then that's a good start.</p>
+
+<p>When using a telnet command as a slider set command to get the current value of the slider you need to use the ${param} string, so in my example above with the setvol command my telnet command string would become:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+&gt;&gt;&gt;|setvol ${param}
+</pre>
+</div></div>
+
+<p>Good Luck</p>
+
+<p>Rich </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 04, 2011 11:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532292"></a>
+                                    <font class="smallfont"><p>I know what you mean but my Telnet reciever is in no such need of doing this.</p>
+
+<p>If i telnet to my device "telnet &lt;ip&gt; &lt;port&gt;"&nbsp; i can directly send a "set Stalamp_KL on" without getting a decent prompt 1st.</p>
+
+<p>I tried it with hitting &lt;enter&gt; and i get a prompt like " fhem&gt;"&nbsp; where i can type commando's but i dont need to...</p>
+
+<p>Would it be able to send a &lt;enter&gt; before executing the command?</p>
+
+<p>Could you look at this link were we've discussed and (partially) fixed it <a href="http://www.openremote.org/pages/viewpage.action?pageId=15532042&amp;focusedCommentId=15532236#comment-15532236">telnet</a></p>
+
+<p>Its a work around but more people seem to have problenms with it. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 04, 2011 11:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532293"></a>
+                                    <font class="smallfont"><p>I modified the TelnetCommand.java so it doesnt wait and switching on works ok. The command is sent and picked up.</p>
+
+<p>However when the controller starts i see the following comming up.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">[Controller]2011-02-04 13:25:03,363 INFO [<span class="code-object">Thread</span>-7] org.openremote.controller.net.RoundRobinTCPServer.run(48) | TCP Server : started successfully <span class="code-keyword">for</span> receiving groupmember urls...
+[Controller]2011-02-04 13:25:03,363 INFO [<span class="code-object">Thread</span>-7] org.openremote.controller.net.RoundRobinTCPServer.run(49) | TCP Server : Waiting <span class="code-keyword">for</span> groupmember response...
+[Controller]2011-02-04 13:25:03,593 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(263) | send: { $value{Stalamp_KL} }
+[Controller]2011-02-04 13:25:03,594 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.readString(282) | received:
+[Controller]2011-02-04 13:25:05,198 INFO [Timer-0] org.quartz.utils.UpdateChecker.doCheck(86) | New update(s) found: 1.8.4 [http:<span class="code-comment">//www.terracotta.org/kit/reflector?kitID=<span class="code-keyword">default</span>&amp;pageID=QuartzChangeLog]
+</span>
+</pre>
+</div></div>
+<p>The sensor command is sent but nothing is recorded as a respons. If i trace the tcpstream i see the command and also its respons being: on</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 04, 2011 12:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532298"></a>
+                                    <font class="smallfont"><p>Hi Ernst,</p>
+
+<p>Rather than modifying the TelnetCommand.java file you could have tried using an empty string for the WaitForString i.e. ' |commandhere' haven't got the source code in front of me but this should work.</p>
+
+<p>With regards to not getting a response the command is it your intention to send the string '{ $value{Stalamp_KL} }' or is there some variable substitution needed?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 04, 2011 14:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532301"></a>
+                                    <font class="smallfont"><p>Hi Richard,</p>
+
+<p>I Tried your sugestion with the modified command " &#124;commandhere" but the same problem occurs. It just times out. Or i'm doing something totally wrong here&nbsp;</p>
+
+<p>my controller.xml:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">   ^M
+    <span class="code-quote">"529"</span> protocol=<span class="code-quote">"telnet"</span>&gt;^M
+      <span class="code-quote">"port"</span> value=<span class="code-quote">"7072"</span> /&gt;^M
+      <span class="code-quote">"command"</span> value=<span class="code-quote">" |set Stalamp_KL on"</span> /&gt;^M
+      <span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.10.110"</span> /&gt;^M
+    ^M
+    <span class="code-quote">"530"</span> protocol=<span class="code-quote">"telnet"</span>&gt;^M
+      <span class="code-quote">"port"</span> value=<span class="code-quote">"7072"</span> /&gt;^M
+      <span class="code-quote">"command"</span> value=<span class="code-quote">" |set Stalamp_KL off"</span> /&gt;^M
+      <span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.10.110"</span> /&gt;^M
+    ^M
+  ^M
+  ^M
+</pre>
+</div></div>
+<p>And my controller.log</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [Controller]2011-02-04 18:13:16,586 ERROR [HTTP-<span class="code-object">Thread</span>-2] org.openremote.controller.protocol.telnet.TelnetCommand.send(216) | could not perform telnetEvent
+java.lang.Exception: Response timed-out waiting <span class="code-keyword">for</span> <span class="code-quote">" "</span>
+	at org.openremote.controller.protocol.telnet.TelnetCommand.waitForString(TelnetCommand.java:246)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:205)
+	at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:188)
+	at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:56)
+	at org.openremote.controller.<span class="code-keyword">rest</span>.ControlCommandRESTServlet.doPost(ControlCommandRESTServlet.java:85)
+
+</pre>
+</div></div>
+<p>To comment on my send string. The string&nbsp;</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">{ $value{Stalamp_KL}}
+</pre>
+</div></div>
+<p>&nbsp; needs to be executed exactly like this on the telnet prompt. Dont ask my why but this is how FHEM require it to get the status of a switch. it will return "on" "off" or "dimxx%"</p>
+
+<p>I Also passed the "respond prompt" issue back in the usergroup and i'm awaiting responds.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 04, 2011 17:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532310"></a>
+                                    <font class="smallfont"><p>ok this is a bit embarising but after a long "tug of war" within the FHEM usergroup i can to the conclusion that FHEM is not supporting a telnet library but a normal TCP/IP socket library.</p>
+
+<p>They use telnet just as a tool and they not support telnet as a protocol in complete. Not that its working now but that is something else i've got to figure out.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 05, 2011 17:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532311"></a>
+                                    <font class="smallfont"><p>Hi Ernst,</p>
+
+<p>Well at least you figured something out!</p>
+
+<p>Looking at the controller.xml that you posted yesterday if you are trying to use the read method that I've implemented in my telnet branch then you need to manually specify the extra properties in the controller.xml as well (as per my initial post above).</p>
+
+<p>I don't think the read method has been implemented in the the TCP/IP protocol yet either.</p>
+
+<p>Even though your telnet server for FHEM isn't supported if it exists and you can successfully send commands to it and they are actioned then it should be usable with Openremote. I am just making a change to my branch so that you can specify a null waitForString value so the command would become 'null|commandhere'.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 05, 2011 17:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532312"></a>
+                                    <font class="smallfont"><p>Ok great i'll be waiting for the mod in your branch. But lets be carefull that you dont make modifications to get something to work that doesnt support the protocol in complete. I mean its great to get it working but maybe we are introducing overhead that normally wouldnt be nessecary.</p>
+
+<p>I checked the status change for TCP/IP sockets and it seems NOT implemented as far as i can relate from the logfiles. My java is no where near good to actually check it in he code.Could you?</p>
+
+<p>My controller.log tells me this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [Controller]2011-02-05 19:18:38,297 INFO [HTTP-<span class="code-object">Thread</span>-6] org.openremote.controller.<span class="code-keyword">rest</span>.RoundRobinRESTServlet.doPost(63) | Start RoundRobin group member REST service. at 2011-02-05 19:18:38
+[Controller]2011-02-05 19:18:38,316 INFO [<span class="code-object">Thread</span>-12] org.openremote.controller.net.RoundRobinUDPServer$UDPServerDealThread.run(132) | UDP Server : Received the controller multicast request from the same group floor20
+[Controller]2011-02-05 19:18:38,317 INFO [<span class="code-object">Thread</span>-7] org.openremote.controller.net.RoundRobinTCPServer.run(53) | TCP Server : a <span class="code-keyword">new</span> groupmember socket established...
+[Controller]2011-02-05 19:18:38,320 INFO [<span class="code-object">Thread</span>-13] org.openremote.controller.net.RoundRobinTCPServer$AppendGroupMemberThread.run(80) | TCP Server deal thread : Ready <span class="code-keyword">for</span> receiving groupmember url ...
+[Controller]2011-02-05 19:18:38,321 INFO [<span class="code-object">Thread</span>-13] org.openremote.controller.net.RoundRobinTCPServer$AppendGroupMemberThread.run(84) | TCP Server deal thread : received a groupmember url : http:<span class="code-comment">//192.168.10.108:8080/controller
+</span>[Controller]2011-02-05 19:18:38,694 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(77) | Started polling at 2011-02-05 19:18:38
+[Controller]2011-02-05 19:18:38,696 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...
+[Controller]2011-02-05 19:18:38,697 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: [device =&gt; 030070774321090, sensorIDs =&gt; 531] in ChangedStatus table.
+[Controller]2011-02-05 19:18:38,698 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:030070774321090	sensorID:[531]statusChangedSensorID:[]Waiting...
+[Controller]2011-02-05 19:18:38,817 INFO [HTTP-<span class="code-object">Thread</span>-6] org.openremote.controller.<span class="code-keyword">rest</span>.RoundRobinRESTServlet.doPost(86) | Finished RoundRobin group member REST service.  at 2011-02-05 19:18:38
+[Controller]2011-02-05 19:19:28,699 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(103) | Had timeout <span class="code-keyword">for</span> waiting status change.
+[Controller]2011-02-05 19:19:28,701 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(116) | Finished polling at 2011-02-05 19:19:28
+[Controller]2011-02-05 19:19:28,721 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(77) | Started polling at 2011-02-05 19:19:28
+[Controller]2011-02-05 19:19:28,723 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...
+[Controller]2011-02-05 19:19:28,724 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: [device =&gt; 030070774321090, sensorIDs =&gt; 531] in ChangedStatus table.
+[Controller]2011-02-05 19:19:28,724 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:030070774321090	sensorID:[531]statusChangedSensorID:[]Waiting...
+[Controller]2011-02-05 19:20:18,725 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(103) | Had timeout <span class="code-keyword">for</span> waiting status change.
+[Controller]2011-02-05 19:20:18,727 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(116) | Finished polling at 2011-02-05 19:20:18
+[Controller]2011-02-05 19:20:18,749 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(77) | Started polling at 2011-02-05 19:20:18
+[Controller]2011-02-05 19:20:18,750 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...
+[Controller]2011-02-05 19:20:18,751 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: [device =&gt; 030070774321090, sensorIDs =&gt; 531] in ChangedStatus table.
+[Controller]2011-02-05 19:20:18,752 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:030070774321090	sensorID:[531]statusChangedSensorID:[]Waiting...
+[Controller]2011-02-05 19:21:08,753 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(103) | Had timeout <span class="code-keyword">for</span> waiting status change.
+[Controller]2011-02-05 19:21:08,755 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(116) | Finished polling at 2011-02-05 19:21:08
+[Controller]2011-02-05 19:21:08,777 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(77) | Started polling at 2011-02-05 19:21:08
+[Controller]2011-02-05 19:21:08,778 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...
+[Controller]2011-02-05 19:21:08,779 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: [device =&gt; 030070774321090, sensorIDs =&gt; 531] in ChangedStatus table.
+[Controller]2011-02-05 19:21:08,780 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:030070774321090	sensorID:[531]statusChangedSensorID:[]Waiting...
+[Controller]2011-02-05 19:21:58,781 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(103) | Had timeout <span class="code-keyword">for</span> waiting status change.
+[Controller]2011-02-05 19:21:58,782 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(116) | Finished polling at 2011-02-05 19:21:58
+[Controller]2011-02-05 19:21:58,805 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(77) | Started polling at 2011-02-05 19:21:58
+[Controller]2011-02-05 19:21:58,807 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...
+[Controller]2011-02-05 19:21:58,808 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: [device =&gt; 030070774321090, sensorIDs =&gt; 531] in ChangedStatus table.
+[Controller]2011-02-05 19:21:58,809 INFO [HTTP-<span class="code-object">Thread</span>-8] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:030070774321090	sensorID:[531]statusChangedSensorID:[]Waiting...
+
+</pre>
+</div></div>
+<p>I checked the target host and no packets are comming in on the desired port so i support your oppinion that status checking for TCP sockets is not implemented. But this will come in a later part/separate topic.</p>
+
+<p>Please page me when your branch is syned and i'll test it with your mod.</p>
+
+<p>To be clear on the content of the controller.xml. If i'm correct it should contain something like:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">     &lt;command id=<span class="code-quote">"340"</span> protocol=<span class="code-quote">"telnet"</span>&gt;
+      &lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"7072"</span> /&gt;
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"<span class="code-keyword">null</span>|{ $value{Stalamp_KL}}"</span> /&gt;
+      &lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.10.110"</span> /&gt;
+      &lt;property name=<span class="code-quote">"statusDefault"</span> value=<span class="code-quote">"None"</span> /&gt;
+    &lt;/command&gt;
+</pre>
+</div></div>
+<p>And i can leave the filter out?</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">      &lt;property name=<span class="code-quote">"statusFilter"</span> value=<span class="code-quote">"^(?i)(?s)(?m).*artist.\s(.+).title.*$"</span> /&gt;
+      &lt;property name=<span class="code-quote">"statusFilterGroup"</span> value=<span class="code-quote">"1"</span> /&gt;
+</pre>
+</div></div>
+<p>right?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 05, 2011 18:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532313"></a>
+                                    <font class="smallfont"><p>I haven't checked the TCP protocol source code but Juha told me the other day that the read status methods needed implementing for the HTTP and TCP/IP protocols.</p>
+
+<p>Back onto the Telnet command, no you can't leave out the statusFilter or statusFilterGroup properties. I understand that you want to return the entire response so what you need for these properties is:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;property name=<span class="code-quote">"statusFilter"</span> value=<span class="code-quote">"^(?i)(?s)(?m)(.*)$"</span> /&gt;</span>
+<span class="code-tag">&lt;property name=<span class="code-quote">"statusFilterGroup"</span> value=<span class="code-quote">"1"</span> /&gt;</span>
+</pre>
+</div></div>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 05, 2011 18:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532315"></a>
+                                    <font class="smallfont"><p>Yes, i would like to read the complete return since its "on" or "off" if its regarding a status for a switch.</p>
+
+<p>If you could explain me how the "Statusfilter" and the "StatusfilterGroup" work i could filter it much more easily from another command and i can included it in the "Telnet Howto" i'm creating.</p>
+
+
+<p>You can contact me at ernst[dot]cozijnsen[at]gmail[dot]com</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 05, 2011 19:12
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532316"></a>
+                                    <font class="smallfont"><p>I am going to modify the read method so it works without the statusFilter and statusFilterGroup properties for cases like yours; once this is committed to subversion I will let you know.</p>
+
+<p>To explain the statusFilter:</p>
+
+<p>The read method stores the response returned from the telnet command, the statusFilter regular expression is then applied to the entire response. An understanding of regular expressions is needed but basically when a match is found then a match group is created (like a string array) where index 0 contains the entire matched string and all other indices are dependent on whether or not groups are used in the regular expression (groups are created by enclosing part of the expression in brackets). If a requested group doesn't exist then null is returned. A practical example explains things better I think:</p>
+
+<p>I want to create a slider to get/set the current volume of an MPD server via telnet, there is a telnet command for MPD to set the volume called 'setvol int' but there isn't a command to just get the volume instead there is a 'status' command that returns lots of info, a typical response for this command would be:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+OK MPD 0.15.0
+status
+volume: 65
+repeat: 0
+random: 0
+single: 0
+consume: 0
+playlist: 18
+playlistlength: 14
+xfade: 0
+state: play
+song: 0
+songid: 1
+time: 15:262
+bitrate: 160
+audio: 44100:24:2
+nextsong: 1
+nextsongid: 2
+OK
+</pre>
+</div></div>
+
+<p>I only want the number after the volume line so I need to filter the response, the statusFilter regex to do this is:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+^(?i)(?s).*volume.\s(.\d+).*$
+</pre>
+</div></div>
+
+<p>You'll notice the brackets around the '.\d+', this tells the regex engine to store that part of the matched response in statusFilterGroup 1 (group 0 always contains the entire match).</p>
+
+<p>So my Slider would have two telnet commands associated with it, the first to set the volume the second to get the volume:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+    <span class="code-tag">&lt;command id=<span class="code-quote">"" protocol="</span>telnet"&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"6602"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"OK|setvol ${param}"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.74"</span> /&gt;</span>
+    <span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+    <span class="code-tag">&lt;command id=<span class="code-quote">"" protocol="</span>telnet"&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"6601"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"OK|status"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.1.74"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"statusFilter"</span> value=<span class="code-quote">"^(?i)(?s).*volume.\s(.\d+).*$"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"statusFilterGroup"</span> value=<span class="code-quote">"1"</span> /&gt;</span>
+      <span class="code-tag">&lt;property name=<span class="code-quote">"statusDefault"</span> value=<span class="code-quote">"0"</span> /&gt;</span>      
+    <span class="code-tag">&lt;/command&gt;</span>
+</pre>
+</div></div>
+
+<p>I am also adding an optional timeOut property because at the moment it is hardcoded to 1 Second, example to change the telnet command time out to 2 seconds:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml">
+<span class="code-tag">&lt;property name=<span class="code-quote">"timeOut"</span> value=<span class="code-quote">"2"</span> /&gt;</span> 
+</pre>
+</div></div>
+
+<p>It would be great if you can put all this into a TELNET HOW TO GUIDE, highlighting the required properties and the optional ones.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 05, 2011 19:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532319"></a>
+                                    <font class="smallfont"><p>I've now updated the branch with the following changes:</p>
+
+<p>Added: Ability for null waitForString value so command would become 'null|commandhere' for telnet servers with no prompt or to keep reading back until timeout expires</p>
+
+<p>Added: timeOut property support to override default 1 second time out</p>
+
+<p>Updated: Read method now works without statusFilter and statusFilterGroup properties (entire response is returned to the sensor)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 05, 2011 23:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532322"></a>
+                                    <font class="smallfont"><p>the "null&#124;&lt;commandhere&gt;" works splendid&nbsp; now. I can send a command which executes (and works)</p>
+
+
+<p>Only my regular expression knowledge is (very) limited as i just experienced <img class="emoticon" src="images/icons/emoticons/sad.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>If we want this to be more accessible then we need to include some very good examples that explain the basics because without it 9 out of 10 people will stop using because its simply to difficult and not accessible.</p>
+
+<p>Not everybody is a ACE programmer.</p>
+
+
+<p>I'm trying to select the "on" after "STATE" in the following output:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">    BTN        03
+   DEF        2611 03
+   IODev      CUNO1
+   NAME       Stalamp_KL
+   NR         22
+   STATE      on
+   TYPE       FS20
+   XMIT       2611
+   Code:
+     1          2611 03
+   Readings:
+     2011-02-06 13:14:34   state           on
+Attributes:
+   loglevel   5
+   model      fs20di
+   room       Huiskamer
+
+</pre>
+</div></div>
+<p>I poked around in eclipse to give me a hand with the expressions but my knowledge ends with using "sed" and "awk"</p>
+
+<p>I'll try to find a matching case but a hint would be nice. Maybe it would be a good thing to have a kind of test script which helpes with the expressions and testing it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 06, 2011 13:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532324"></a>
+                                    <font class="smallfont"><p>Hi Ernst,</p>
+
+<p>Glad things are working for you now, I've done some testing my end and everything should behave.</p>
+
+<p>Yes I agree that the documentation and examples is the key; unfortunately I had to resort to using the regex filter method as it is extremely powerful and should be able to get out any string from a stream of text but the learning curve is a little<br/>
+steep. The link I put earlier in this thread is what I use for prooving/testing my regex (I'm definitely not an expert but getting to grips with it slowly - it's like learning another language)</p>
+
+<p><a href="http://www.fileformat.info/tool/regex.htm">http://www.fileformat.info/tool/regex.htm</a></p>
+
+<p>Looking at your case above:</p>
+
+<p>1) Go to the regex tester at fileformat.info<br/>
+2) Paste your response text into the Test String #1 field<br/>
+3) Click the CANON\_EQ and UNICODE\_CASE checkboxes<br/>
+4) Begin developing your regex<br/>
+5) To get you on your way, for what you want you need to use the following regex:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>^(?i)(?m).*state\s+(\w+).*$
+</pre>
+</div></div>
+
+<p>6) Click the Test button and you'll see the matches and their group number</p>
+
+<p>Rich<br/>
+Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 06, 2011 15:04
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532325"></a>
+                                    <font class="smallfont"><p>Hi Rich,</p>
+
+<p>Thanks for the hint but ehh..... if i fill in the required parameters and hit "Test" i get a result which says: "Matches NO" &amp; "groupCount 1"</p>
+
+<p>If my assumption is is right the total outcome would be that the value "on" should be saved in the 1st group right?</p>
+
+<p>I did a test with your expression and i got the following:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [Controller]2011-02-06 16:41:22,233 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: list Stalamp_KL
+[Controller]2011-02-06 16:41:23,251 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: Internals:
+   BTN        03
+   DEF        2611 03
+   IODev      CUNO1
+   NAME       Stalamp_KL
+   NR         22
+   STATE      on
+   TYPE       FS20
+   XMIT       2611
+   Code:
+     1          2611 03
+   Readings:
+     2011-02-06 13:14:34   state           on
+Attributes:
+   loglevel   5
+   model      fs20di
+   room       Huiskamer
+
+
+[Controller]2011-02-06 16:41:23,252 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.read(372) | Telnet Read Status: No Match using Regex: '^(?i)(?m).*state\s+(\w+).*$' on response from command '<span class="code-keyword">null</span>|list Stalamp_KL'
+
+</pre>
+</div></div>
+<p>One big hocuspocus for me</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 06, 2011 15:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532327"></a>
+                                    <font class="smallfont"><p>Sorry Ernst,</p>
+
+<p>Try</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>^(?i)(?s)(?m).*state\s+(\w+).*$
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 06, 2011 15:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532329"></a>
+                                    <font class="smallfont"><p>Ok that seemed to work (i have to figure out why... but that will come)</p>
+
+<p>The next issue is what i see in the controller.log</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [Controller]2011-02-06 16:56:16,813 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: list Stalamp_KL
+[Controller]2011-02-06 16:56:17,817 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: Internals:
+   BTN        03
+   DEF        2611 03
+   IODev      CUNO1
+   NAME       Stalamp_KL
+   NR         22
+   STATE      on
+   TYPE       FS20
+   XMIT       2611
+   Code:
+     1          2611 03
+   Readings:
+     2011-02-06 16:56:03   state           on
+Attributes:
+   loglevel   5
+   model      fs20di
+   room       Huiskamer
+
+
+</pre>
+</div></div>
+<p>It look all nice but the status of the button is not updated and when i push my switch it sends the command:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [Controller]2011-02-06 16:56:01,400 INFO [HTTP-<span class="code-object">Thread</span>-4] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: set Stalamp_KL on
+</pre>
+</div></div>
+<p>Also after this the status of the button doesnt change to "on".</p>
+
+<p>Is it normal that the status request keeps polling almost every second?</p>
+
+
+<p>sadsa</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 06, 2011 16:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532330"></a>
+                                    <font class="smallfont"><p>I'm pretty sure now then that your sensor will be getting an 'on' or 'off' string back from the telnet command read method.</p>
+
+<p>I haven't done much testing with switches but I know labels work fine so if you can add a label to your panel and tie it to a custom sensor (leave the state map empty) if you then turn your lights on/off with another button (assuming you can successfully send on/off commands) then you should see the label text change to show the current state of the light.</p>
+
+<p>Unfortunately all sensors poll their server every 1 second (apart from maybe KNX because some extra work has been done for that protocol) which is bad news especially when you have lots of sensors all connecting to the same server.</p>
+
+<p>I am just about to start looking into a better approach for this so watch out for another branch!</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 06, 2011 16:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532331"></a>
+                                    <font class="smallfont"><p>I tested it with a label as you said but even if i start with the "state on"&nbsp; its not reflected back in the button on the label.</p>
+
+<p>When i reload the UI panel from the controller i see the following in the controller.log</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [Controller]2011-02-06 17:31:02,219 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: list Stalamp_KL
+[Controller]2011-02-06 17:31:02,407 INFO [HTTP-<span class="code-object">Thread</span>-7] org.openremote.controller.<span class="code-keyword">rest</span>.RoundRobinRESTServlet.doPost(65) | Start RoundRobin group member REST service. at 2011-02-06 17:31:02
+[Controller]2011-02-06 17:31:02,427 INFO [<span class="code-object">Thread</span>-169] org.openremote.controller.net.RoundRobinUDPServer$UDPServerDealThread.run(132) | UDP Server : Received the controller multicast request from the same group floor20
+[Controller]2011-02-06 17:31:02,428 INFO [<span class="code-object">Thread</span>-7] org.openremote.controller.net.RoundRobinTCPServer.run(53) | TCP Server : a <span class="code-keyword">new</span> groupmember socket established...
+[Controller]2011-02-06 17:31:02,428 INFO [<span class="code-object">Thread</span>-170] org.openremote.controller.net.RoundRobinTCPServer$AppendGroupMemberThread.run(80) | TCP Server deal thread : Ready <span class="code-keyword">for</span> receiving groupmember url ...
+[Controller]2011-02-06 17:31:02,429 INFO [<span class="code-object">Thread</span>-170] org.openremote.controller.net.RoundRobinTCPServer$AppendGroupMemberThread.run(84) | TCP Server deal thread : received a groupmember url : http:<span class="code-comment">//192.168.10.108:8080/controller
+</span>[Controller]2011-02-06 17:31:02,797 INFO [HTTP-<span class="code-object">Thread</span>-10] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(79) | Started polling at 2011-02-06 17:31:02
+[Controller]2011-02-06 17:31:02,798 INFO [HTTP-<span class="code-object">Thread</span>-10] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...
+[Controller]2011-02-06 17:31:02,799 INFO [HTTP-<span class="code-object">Thread</span>-10] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: [device =&gt; 030070774321090, sensorIDs =&gt; 539] in ChangedStatus table.
+[Controller]2011-02-06 17:31:02,800 INFO [HTTP-<span class="code-object">Thread</span>-10] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:030070774321090	sensorID:[539]statusChangedSensorID:[]Waiting...
+[Controller]2011-02-06 17:31:02,928 INFO [HTTP-<span class="code-object">Thread</span>-7] org.openremote.controller.<span class="code-keyword">rest</span>.RoundRobinRESTServlet.doPost(80) | Finished RoundRobin group member REST service.  at 2011-02-06 17:31:02
+
+[Controller]2011-02-06 17:31:03,222 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: Internals:
+   BTN        03
+   DEF        2611 03
+   IODev      CUNO1
+   NAME       Stalamp_KL
+   NR         22
+   STATE      on
+   TYPE       FS20
+   XMIT       2611
+   Code:
+     1          2611 03
+   Readings:
+     2011-02-06 17:24:05   state           on
+Attributes:
+   loglevel   5
+   model      fs20di
+   room       Huiskamer
+</pre>
+</div></div>
+<p>It looks like the sensor is found but the " statusChangedSensorID" keeps waiting for a change. I cant relate if the change is made after this line.</p>
+
+<p>I manually switched the Stalamp_KL via telnet to an "on" and "off" state to see if OR would pick up the change and modify the status ID but i didnt. Well out of 20 attempts i saw 1 sensor change. This was only in the logs and not reflected back onto the UI.</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [Controller]2011-02-06 17:41:39,746 INFO [<span class="code-object">Thread</span>-8] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: list Stalamp_KL
+[Controller]2011-02-06 17:41:40,118 INFO [HTTP-<span class="code-object">Thread</span>-5] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(103) | Had timeout <span class="code-keyword">for</span> waiting status change.
+[Controller]2011-02-06 17:41:40,120 INFO [HTTP-<span class="code-object">Thread</span>-5] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(109) | Finished polling at 2011-02-06 17:41:40
+
+[Controller]2011-02-06 17:41:40,138 INFO [HTTP-<span class="code-object">Thread</span>-5] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(79) | Started polling at 2011-02-06 17:41:40
+[Controller]2011-02-06 17:41:40,140 INFO [HTTP-<span class="code-object">Thread</span>-5] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...
+[Controller]2011-02-06 17:41:40,141 INFO [HTTP-<span class="code-object">Thread</span>-5] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: [device =&gt; 030070774321090, sensorIDs =&gt; 539] in ChangedStatus table.
+[Controller]2011-02-06 17:41:40,141 INFO [HTTP-<span class="code-object">Thread</span>-5] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:030070774321090      sensorID:[539]statusChangedSensorID:[]Waiting...
+
+</pre>
+</div></div>
+<p>Could you try to test this at your end?</p>
+
+<p>Is there a way to inject a debug line which tells us the current status of the sensor?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 06, 2011 16:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532334"></a>
+                                    <font class="smallfont"><p>Hi Ernst,</p>
+
+<p>I still haven't fully got to grips with the code structure of OR yet and I don't know why you're getting those REST queries and Round Robin activity.</p>
+
+<p>What is your current setup, do you have multiple panels/controllers running?</p>
+
+<p>I do my testing with a very basic setup:</p>
+
+<p>Create a test composer account<br/>
+Create one device and one command (telnet command - you'll have to manually add the statusFilter and statusFilterGroup properties to the controller.xml after syncing)<br/>
+Create a new custom sensor (leave State map empty)<br/>
+Create a basic Android panel (I think you said in another post you're using Android)<br/>
+Add a label component and set the sensor to the one you just created<br/>
+Save everything<br/>
+Run your controller and load in the new controller and panel configuration using the web interface or other means<br/>
+Connect to your controller from your panel device and hopefully things will be working</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 06, 2011 19:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532336"></a>
+                                    <font class="smallfont"><p>Hi Richard,</p>
+
+<p>The roudrobbin only occurs when the new config has been synced with the online composer and loaded into the android app. Thats the only time i've seen it.</p>
+
+<p>My current setup is only one controller (2 test panels) and 1 device with 3 commands, 1 sensor and 1 switch. More basic than this it doesnt get.</p>
+
+<p>I did as you requested but i still have the same result and the status is not chaging.</p>
+
+<p>To be completely clear i did a fresh checkout with svn to make sure nothing is left behind.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 06, 2011 21:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532337"></a>
+                                    <font class="smallfont"><p>I'm not sure what's going wrong for you Ernst.</p>
+
+<p>I can't test your exact setup as I don't have your telnet server setup, from my experience with the telnet servers I have (I even created a basic telnet server that has no prompt to test the null functionality I added) everything works as expected.</p>
+
+<p>The controller periodically (every 1 second) does a read on all sensors which I believe is working correctly in your case. If you have the ability try switching off your telnet server whilst OR is running and you should see Telnet read errors starting to appear in the window, then restart the telnet server and if the errors stop then your issue isn't with my code changes but something more fundamental I'd say.</p>
+
+<p>If you send me your panel and controller xml files I'll run them my end and see what messages I get.</p>
+
+<p>richarddotturner83<a href="at.html" title="at">at</a>gmaildotcom</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 06, 2011 21:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532338"></a>
+                                    <font class="smallfont"><p>Been following the changes and debate with interest but only had a chance to test myself this evening as I needed the "null" wait aswell (to a Homeseer plugin). Richard - thanks for your efforts so far.</p>
+
+<p>Anyway, I have a couple of sensors updating now.</p>
+
+<p>1 sensor of type Level which returns 0 to 100</p>
+
+<p>1 sensor of Switch which returns "TRUE" or "FALSE"</p>
+
+<p>Labels on the panel update quite happily as I change the state of either, but at the moment I cant get either a slider or switch to update automatically on my panel. Also on the slider on I cant get the set position parameter to be sent properly to a telnet command. Still trying a few things though.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by deanox at Feb 06, 2011 22:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532339"></a>
+                                    <font class="smallfont"><p>That's good news Dean,</p>
+
+<p>Glad you've had some success; I have had sliders working without any problem using the usual syntax:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>waitForString|command ${param}
+</pre>
+</div></div>
+
+<p>Haven't really tested the switches but I know the switch sensor expects an on/off string, what I'm not sure about is whether the sensor tries to convert values to the correct type i.e. TRUE =&gt; ON or FALSE =&gt; OFF.</p>
+
+<p>I was going to put this logic into the telnet command but not sure this is the right place to deal with it as all protocols need this functionality really.</p>
+
+<p>Keep me posted on your progress!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 06, 2011 22:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532341"></a>
+                                    <font class="smallfont"><p>What panel are you using - I'm guessing not Android ?</p>
+
+<p>Found <a href="http://openremote.org/display/forums/Sliders+on+Android">http://openremote.org/display/forums/Sliders+on+Android</a>which essenitally describes the same issue. Manually added "min" and "Max" lines to the slider definition in panel.xml and it works. This was regardless of whether the sensor was set to level or range (with 0 to 100 set). So looks like a bug either in the xml generation or android code itself.</p>
+
+
+<p>Could you check what your panel.xml has for the slider definition ?</p>
+
+
+<p>Anyway, slider now works with full bi-directional feedback.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by deanox at Feb 06, 2011 23:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532342"></a>
+                                    <font class="smallfont"><p>Ok finally we have some (positive) result. The trick was in 2 things</p>
+
+<p>As a test i created everything new with the following controller.xml config. Yes with an error but it worked</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">   &lt;commands&gt;
+    &lt;command id=<span class="code-quote">"14"</span> protocol=<span class="code-quote">"telnet"</span>&gt;
+      &lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"7072"</span> /&gt;
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"<span class="code-keyword">null</span>|set Stalamp_KL on"</span> /&gt;
+      &lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.10.110"</span> /&gt;
+    &lt;/command&gt;
+    &lt;command id=<span class="code-quote">"15"</span> protocol=<span class="code-quote">"telnet"</span>&gt;
+      &lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"7072"</span> /&gt;
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"<span class="code-keyword">null</span>|set Stalamp_KL off"</span> /&gt;
+      &lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.10.110"</span> /&gt;
+    &lt;/command&gt;
+    &lt;command id=<span class="code-quote">"16"</span> protocol=<span class="code-quote">"telnet"</span>&gt;
+      &lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"7072"</span> /&gt;
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"<span class="code-keyword">null</span>|{ $value{Stalamp_KL} }"</span> /&gt;
+      &lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.10.110"</span> /&gt;
+    &lt;/command&gt;
+  &lt;/commands&gt;
+  &lt;config&gt;
+
+</pre>
+</div></div>
+<p>Also i added a&nbsp; label which would display the status variable of the "custom" sensor with a empty status map.</p>
+
+<p>After running the controller and syncing the panel i saw the following ik the controller.log</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> Controller]2011-02-07 07:22:29,589 INFO [<span class="code-object">Thread</span>-34] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: { $value{Stalamp_KL} }
+[Controller]2011-02-07 07:22:29,589 INFO [<span class="code-object">Thread</span>-32] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: { $value{Stalamp_KL} }
+[Controller]2011-02-07 07:22:30,591 INFO [<span class="code-object">Thread</span>-34] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: on
+
+[Controller]2011-02-07 07:22:30,591 INFO [<span class="code-object">Thread</span>-32] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: on
+
+[Controller]2011-02-07 07:22:31,096 INFO [<span class="code-object">Thread</span>-34] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: { $value{Stalamp_KL} }
+[Controller]2011-02-07 07:22:31,096 INFO [<span class="code-object">Thread</span>-32] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: { $value{Stalamp_KL} }
+[Controller]2011-02-07 07:22:32,098 INFO [<span class="code-object">Thread</span>-32] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: off
+
+[Controller]2011-02-07 07:22:32,098 INFO [<span class="code-object">Thread</span>-34] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: off
+
+[Controller]2011-02-07 07:22:32,098 INFO [HTTP-<span class="code-object">Thread</span>-1] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(121) | Had waited the skipped sensor ids of statuses in DEVICEID:030070774321090	sensorID:[12, 13]statusChangedSensorID:[12]
+[Controller]2011-02-07 07:22:32,100 INFO [HTTP-<span class="code-object">Thread</span>-1] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedStatusesFromCachedStatusTable(134) | Querying changed data from StatusCache...
+[Controller]2011-02-07 07:22:32,100 INFO [HTTP-<span class="code-object">Thread</span>-1] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedStatusesFromCachedStatusTable(138) | Have queried changed data from StatusCache.
+[Controller]2011-02-07 07:22:32,101 INFO [HTTP-<span class="code-object">Thread</span>-1] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(105) | Return the polling status.
+[Controller]2011-02-07 07:22:32,102 INFO [HTTP-<span class="code-object">Thread</span>-1] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(109) | Finished polling at 2011-02-07 07:22:32
+
+[Controller]2011-02-07 07:22:32,138 INFO [HTTP-<span class="code-object">Thread</span>-1] org.openremote.controller.<span class="code-keyword">rest</span>.StatusPollingRESTServlet.doPost(79) | Started polling at 2011-02-07 07:22:32
+[Controller]2011-02-07 07:22:32,139 INFO [HTTP-<span class="code-object">Thread</span>-1] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(74) | Querying changed state from ChangedStatus table...
+[Controller]2011-02-07 07:22:32,140 INFO [HTTP-<span class="code-object">Thread</span>-1] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(89) | Found: [device =&gt; 030070774321090, sensorIDs =&gt; 12,13] in ChangedStatus table.
+[Controller]2011-02-07 07:22:32,140 INFO [HTTP-<span class="code-object">Thread</span>-1] org.openremote.controller.service.impl.StatusPollingServiceImpl.queryChangedState(107) | DEVICEID:030070774321090	sensorID:[12, 13]statusChangedSensorID:[]Waiting...
+[Controller]2011-02-07 07:22:32,601 INFO [<span class="code-object">Thread</span>-34] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: { $value{Stalamp_KL} }
+[Controller]2011-02-07 07:22:32,601 INFO [<span class="code-object">Thread</span>-32] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) | send: { $value{Stalamp_KL} }
+[Controller]2011-02-07 07:22:33,603 INFO [<span class="code-object">Thread</span>-34] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: off
+
+[Controller]2011-02-07 07:22:33,603 INFO [<span class="code-object">Thread</span>-32] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: off
+</pre>
+</div></div>
+<p>Yes&#33; the status was updating and i could see the change reflecting in the label which was now telling me "off"</p>
+
+<p>So that is some good progress here. On the other hand i also added a button and a switch sensor and they stayed both in the OFF state even if a manually switched the lamp to ON.</p>
+
+<p>I modified the controller.xml so it would use the regex filter like:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">   &lt;commands&gt;^M
+    &lt;command id=<span class="code-quote">"14"</span> protocol=<span class="code-quote">"telnet"</span>&gt;^M
+      &lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"7072"</span> /&gt;^M
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"<span class="code-keyword">null</span>|set Stalamp_KL on"</span> /&gt;^M
+      &lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.10.110"</span> /&gt;^M
+    &lt;/command&gt;^M
+    &lt;command id=<span class="code-quote">"15"</span> protocol=<span class="code-quote">"telnet"</span>&gt;
+      &lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"7072"</span> /&gt;
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"<span class="code-keyword">null</span>|set Stalamp_KL off"</span> /&gt;
+      &lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.10.110"</span> /&gt;
+    &lt;/command&gt;
+    &lt;command id=<span class="code-quote">"16"</span> protocol=<span class="code-quote">"telnet"</span>&gt;
+      &lt;property name=<span class="code-quote">"port"</span> value=<span class="code-quote">"7072"</span> /&gt;
+      &lt;property name=<span class="code-quote">"command"</span> value=<span class="code-quote">"<span class="code-keyword">null</span>|list Stalamp_KL"</span> /&gt;
+      &lt;property name=<span class="code-quote">"ipAddress"</span> value=<span class="code-quote">"192.168.10.110"</span> /&gt;
+      &lt;property name=<span class="code-quote">"statusFilter"</span> value=<span class="code-quote">"^(?i)(?s)(?m).*state\s+(\w+).*$"</span> /&gt;
+      &lt;property name=<span class="code-quote">"statusFilterGroup"</span> value=<span class="code-quote">"1"</span> /&gt;
+      &lt;property name=<span class="code-quote">"statusDefault"</span> value=<span class="code-quote">"0"</span> /&gt;
+    &lt;/command&gt;
+
+</pre>
+</div></div>
+<p>After running the controller.log showed:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">\[Controller\]2011-02-07 07:46:49,887 INFO \[<span class="code-object">Thread</span>-8\] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(327) \| send: list Stalamp_KL
+\[Controller\]2011-02-07 07:46:50,903 INFO \[<span class="code-object">Thread</span>-8\] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) \| received: Internals:
+&amp;nbsp;&amp;nbsp; BTN&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; 03
+&amp;nbsp;&amp;nbsp; DEF&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; 2611 03
+&amp;nbsp;&amp;nbsp; IODev&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; CUNO1
+&amp;nbsp;&amp;nbsp; NAME&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; Stalamp_KL
+&amp;nbsp;&amp;nbsp; NR&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; 22
+&amp;nbsp;&amp;nbsp; STATE&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; off
+&amp;nbsp;&amp;nbsp; TYPE&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; FS20
+&amp;nbsp;&amp;nbsp; XMIT&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; 2611
+&amp;nbsp;&amp;nbsp; Code:
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; 1&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; 2611 03
+&amp;nbsp;&amp;nbsp; Readings:
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; 2011-02-07 07:41:57&amp;nbsp;&amp;nbsp; state&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; off
+Attributes:
+&amp;nbsp;&amp;nbsp; loglevel&amp;nbsp;&amp;nbsp; 5
+&amp;nbsp;&amp;nbsp; model&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; fs20di
+&amp;nbsp;&amp;nbsp; room&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; Huiskamer
+</pre>
+</div></div>
+<p>And also the label is now showing the correct status. Also after a manual change it is&nbsp; picked up and processed.</p>
+
+<p>The only weird thing is that in the 1st setup you see a recieved line like:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> [Controller]2011-02-07 07:22:33,603 INFO [<span class="code-object">Thread</span>-34] org.openremote.controller.protocol.telnet.TelnetCommand.readString(349) | received: off
+</pre>
+</div></div>
+<p>Which is not there in the second setup. Maybe you could filter out the complete input and only show the lines that are relavant? its more cosmetic and not nessecary at this moment.</p>
+
+<p>Conclusion:</p>
+
+<p>Richard your code works splendid and thank you for that. The updating of other relevant sensors in and button states is buggy which we should report to Juha or Marc probably?</p>
+
+<p>Do you have anything more you would like me to test with?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 07, 2011 06:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532343"></a>
+                                    <font class="smallfont"><p>after playing around i found the following very interesting:</p>
+
+<p>i sayed in a previous post "So that is some good progress here. On the other hand i also added a  button and a switch sensor and they stayed both in the OFF state even if  a manually switched the lamp to ON."</p>
+
+<p>This does not seem to be true.</p>
+
+
+<p>If you add a switch in the designer and you do NOT use ON/OFF pictures the state of the button wil allways stay in OFF.</p>
+
+<p>When you use ON/OFF pictures it switches when the state switches&#33; so its a little bug here. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 07, 2011 06:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532347"></a>
+                                    <font class="smallfont"><p>Dean,</p>
+
+<p>I have been using an Android panel and sliders were working for me fine without the need to manually change the panel.xml; in the post you have linked to above I noticed Juha was able to fix the issue with the persons composer account so to me it seems like an issue that doesn't affect everyone.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 07, 2011 07:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532348"></a>
+                                    <font class="smallfont"><p>Ernst,</p>
+
+<p>Glad you've finally got things working.</p>
+
+<p>As you say there appears to be some bugs in a few of the button component which need to be raised and fixed.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 07, 2011 07:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532350"></a>
+                                    <font class="smallfont"><blockquote>
+<p>albeit on a slightly selfish level as I have a new house build underway at the moment and I need a Home Automation Control System that can integrate the various automation/AV elements together and I think OpenRemote is a good base to work from.</p></blockquote>
+
+<p>Selfish motives are completely acceptable and expected. I can speak for myself and the rest of the community when I say thank you for contributing your effort back to Open Source for everyone else to try and use as well. That's how we build this thing to address the automation needs without getting locked in to horribly over-priced, proprietary solutions.</p>
+
+
+<blockquote>
+<p>There's some notes in the KNXConnnectionBuilder.java file discussing this sort of issue and I'm looking to implement a connection manager for the telnet protocol also, can't help thinking that a generic solution would be best here for all current and future protocols; what are your thoughts/plans on this?</p></blockquote>
+
+<p>I assume the case here are implementations on telnetd side that only allow one concurrent connection?</p>
+
+<p>On one hand I view these as exception cases (both for KNX and Telnet) as I would think in normal circumstances concurrency should not be something that the telnetd cannot handle.</p>
+
+<p>However, when such limitation exists, connection manager/pooling is an appropriate solution.</p>
+
+<p>Partly this is in Java through JCA but I haven't wanted to pull everything that's involved with that into the controller yet. At the moment am trying to limit 3rd party dependencies to make the controller more portable and available to smaller (lower cost BOM) systems.</p>
+
+<p>However, if there's a low cost JCA implementation we should look at, then I'm open to evaluating it.</p>
+
+<p>Barring that, we could pull generic connection management implementation for all protocols to re-use. What the right abstractions are exactly I haven't thought about yet. It may make sense to implement a duplicate for your telnet protocol implementation first and then we compare it with KNX one and extract and abstract the commonalities. Or simply building connection mgr classes to delegate to at this point from the implementation and we later pull them up to controller level is an option.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 07, 2011 08:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532351"></a>
+                                    <font class="smallfont"><p>as i mailed you i've reported the bugs to Juha and l hope it will be fixed soon.</p>
+
+<p>Question: could you modify the status polling interval to something else than 1 sec or is it outside your working space.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 07, 2011 08:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532353"></a>
+                                    <font class="smallfont"><p>The status polling interval is controlled by the PollingMachineThread.java and I don't think it's customisable at present but have a look.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at Feb 07, 2011 08:41
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532354"></a>
+                                    <font class="smallfont"><p>One way to deal with this is not to react to every read request coming from the controller (throttle it) &#8211; will be done for KNX as well and I think Eric did the same for Lutron.</p>
+
+<p>I.e. you can disconnect the polling from controller which is saying it can deal with/wants events every n seconds to a reduced number of requests when you actually go to the device (and you can cache device status as well).</p>
+
+<p>This could naturally fit into your connection manager functionality. And something we may eventually want to abstract out into the controller so it is reusable across several protocol implementations.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Feb 07, 2011 08:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482416"></a>
+                                    <font class="smallfont"><p>Richard / Juha<br/>
+I've started work on implementing (copying) Richards work to the Socket Protocol. <br/>
+A while back I provided a patch to use Regex to remove the Non-ASCII values, but this approach seems to be much more flexible.<br/>
+So far I've been able to implement a slider for Onkyo Amp Vol using IP &lt;-&gt; RS232 GC-100 Gateway and it works very well.<br/>
+I am getting some NullPointer exceptions in the controller for Sensors, but haven't investigated that yet, it works though with little effort. (I suspect the errors are for commands that I didn't update to the new structure.)  <br/>
+All credit should go to Richard since I'm only CPing his work.<br/>
+BTW. I have no idea how to create a branch in the SVN let alone actually upload something there. The original patch to me long enough to figure out how to do, but if either of you are interested I guess I can provide another patch. (have to remember how)<br/>
+Phill.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at May 24, 2011 08:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-16482422"></a>
+                                    <font class="smallfont"><p>Hi Phill,</p>
+
+<p>Well done for contributing, copying or not any contribution that builds on existing code is how things progress...all I did was add to someone else's code for this telnet enhancement.</p>
+
+
+<p>I'm sure if you email Juha with your additions to the socket protocol he'd be very grateful and could add it to the repo for everyone's benefit.</p>
+
+<p>Rich</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kurrazyman at May 24, 2011 20:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039450"></a>
+                                    <font class="smallfont"><p>Hello Phillip,</p>
+
+<p>Let me know if you need help with this (or if I lost your email?)</p>
+
+<p>&#8211; Juha</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by admin at Jun 12, 2011 10:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039611"></a>
+                                    <font class="smallfont"><p>Hi Richard<br/>
+I went to update my work on the Socket protocol and provide a valid patch to Juha (Juha I did send you what I had so far). It looks like the feature branch has gone, or been folded into another branch.<br/>
+Any chance you could update the link at the top of the post. (<a href="http://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha11_telnet/">http://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha11_telnet/</a>)<br/>
+Many Thanks<br/>
+Phill </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Jun 23, 2011 16:31
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-17039628"></a>
+                                    <font class="smallfont"><p>Found it. It merged with the trunk.. All good.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by flipit at Jun 24, 2011 10:47
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:32</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

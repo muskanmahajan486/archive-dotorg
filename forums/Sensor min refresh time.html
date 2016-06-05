@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Sensor min refresh time</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Sensor min refresh time
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 27, 2012 by <font color="#0050B2">happybird</font>.
+				    </div>
+
+				    <p>Hi - using the staging designer, you are able to set a refresh time for each sensor - <a href="http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+1-Wire+Sensors">http://www.openremote.org/display/docs/OpenRemote+2.0+How+To+-+1-Wire+Sensors</a> </p>
+
+<p>Has this feature been merged into an alpha release of the controller - I am currently using Controller_2_0_0_Alpha11.  As far as I can see it's not in this tagged code.</p>
+
+<p>In addition, from my glance the existing Alpha11 code does not seem to kill/restart sensor threads properly when the config changes.  The threads continue.  Before I went too much into the detail, I was wonder where I might find the implementation to support min refresh time, and try that.  I also would have thought having one thread per sensor, is very heavy on resources.  Maybe one thread to iterate through the sensors, another thread to monitor the sensor thread.</p>
+
+<p>Last question, is there a url or way to stop/pause the sensors while controller is running, then resume.  I don't think there is - but as my mother said it's best to ask.  (Sometimes you don't know what you don't know).</p>
+
+<p>Loving this project - learning more each day</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19438001"></a>
+                                    <font class="smallfont"><p>hi, i think you can have a look at the latest snaphot of thevcontroller. Should have tag like 20120103 and available on svn<br/>
+for the stop/pause feaure, don't think that exist</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Feb 27, 2012 20:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19438007"></a>
+                                    <font class="smallfont"><p>Thanks Yann - Ill take a look.  I've just changed my local Alpha11 version to only use a single thread and iterate around the sensors - (rather than a thread per sensor).  The services I have do not block - I haven't implemented a monitor, or executer thread as I am just playing and learning.</p>
+
+<p>I was having problems as I am trying to run controller under Karaf, and Karaf uses quite a few threads.  It was getting too much for my Alix board.  What I also did was slow down the sensor refresh if there is an error - right down to one http get per miniute.  As soon as a failed service resumes and went good, the sensor loop notices and resumes with the appropriate short delay.  I did this because Controller hammers the http services no matter if they are available or are off line. </p>
+
+<p>Thanks for the pointer... everyone's work is sincerely appreciated.</p>
+
+<p>Edit It does look like threads are not being stopped when you stop and restart a WAB - So I changed my local  code to terminated the thread when the context closes - this solves the rouge threads from continuing.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by happybird at Feb 27, 2012 21:28
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19438081"></a>
+                                    <font class="smallfont"><p>Hi Yann - just having my first coffee of the day and browsing svn - <a href="https://openremote.svn.sourceforge.net/svnroot/openremote/tags">https://openremote.svn.sourceforge.net/svnroot/openremote/tags</a> - I don't appear to see any code tagged as 20120103.  Am I looking in the wrong place?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by happybird at Feb 28, 2012 08:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19438094"></a>
+                                    <font class="smallfont"><p>The version 20120103 is not tagged. That is just the date we put the zip togeteher.<br/>
+It's based on the controller from this source location: <a href="http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/juha/Controller_EP_SNAP_20111129/">http://openremote.svn.sourceforge.net/viewvc/openremote/workspace/juha/Controller_EP_SNAP_20111129/</a><br/>
+Juha is currently doing some more work in that version and will release as final 2.0 soon.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Feb 28, 2012 09:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19438098"></a>
+                                    <font class="smallfont"><p>Nice Marcus - At first glance it looks like there's a better model for managing sensors.  Thank you for the pointer. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by happybird at Feb 28, 2012 10:01
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19438140"></a>
+                                    <font class="smallfont"><p>Thank you to correct me Marcus, still have to learn the subtlety of the release process <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/><br/>
+regards</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by yannph at Feb 28, 2012 16:48
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Time dependent luminosity</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Time dependent luminosity
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Apr 08, 2013 by <font color="#0050B2">goovaerg</font>.
+				    </div>
+
+				    <p>Hi,</p>
+
+<p>the thing I would like to do is the following:</p>
+
+<p>From 9pm until 7am, when turning on some lights they have to turn on at 60% luminosity. Outside this window they can turn on at 100%.</p>
+
+<p>Is this possible with rules? Because the luminosity setting of a light is set in ETS. How can I change it from OpenRemote?</p>
+
+<p>Kinds regards,<br/>
+Glenn</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21860177"></a>
+                                    <font class="smallfont"><p>Hi Glenn,</p>
+
+<p>Use Drools.</p>
+
+<p>look at the bottom of this thread <a href="http://openremote.org/display/forums/Openremote+rules">http://openremote.org/display/forums/Openremote+rules</a> for  <br/>
+Dec 05 <br/>
+Art Balourdas says:This may help: Cron expressions are comprised of 6 required fields and one opt... </p>
+
+<p>Here the cron jobs are well explained..</p>
+
+
+
+
+<p>So in short your rules should look like:</p>
+
+
+
+<p>package org.openremote.controller.model.event<br/>
+global org.openremote.controller.statuscache.CommandFacade execute;<br/>
+global org.openremote.controller.statuscache.SwitchFacade switches;<br/>
+import org.openremote.controller.protocol.*;</p>
+
+<p>rule "turn on light at 60%"</p>
+
+<p>  timer (cron: 0 0 21-7 ? * *)</p>
+
+<p>when</p>
+
+<p>  eval(true)<br/>
+  Switch (source == "L18", value == "on")</p>
+
+<p>then</p>
+
+<p>  execute.command("L18 at 60%");</p>
+
+<p>end</p>
+
+
+
+
+
+<p>If you post the command you use for 60% light, i could adapt the code here</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by icefluffy at Apr 12, 2013 10:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860178"></a>
+                                    <font class="smallfont"><blockquote><p>Here the cron jobs are well explained..</p></blockquote>
+<p>Did you intend to place a link at the end of that line?<br/>
+May I refer to an excellent page that Juha recently published on this matter:
+<a href="http://www.openremote.org/display/docs/Designer+2.0+-+Scheduled+Rule+Examples">http://www.openremote.org/display/docs/Designer+2.0+-+Scheduled+Rule+Examples</a><br/>
+A.o. it describes the cron syntax in great detail.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Apr 12, 2013 11:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860185"></a>
+                                    <font class="smallfont"><p>Hi,</p>
+
+<p>with this rule you turn on the lights at 60% at 21 until 7? No? The thing I want to do is when I switch on the lights at 21 they have to go on at 60%. Before that, when you swicth on the light they have to be at 100%</p>
+
+<p>Or am I wrong?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by goovaerg at Apr 12, 2013 12:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860193"></a>
+                                    <font class="smallfont"><p>No, condition1 is the time, condition2 is pressing the button THEN lights will be at 60%</p>
+
+<p>It could be that the light will light up at 100% because the bus gets that command first, but it will quickly receive the command to dim at 60%. Let me know if it lights up first and then dims or if it dims at 60% immediatly.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by icefluffy at Apr 12, 2013 14:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21860440"></a>
+                                    <font class="smallfont"><p>any news?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by icefluffy at Apr 17, 2013 10:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:43</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

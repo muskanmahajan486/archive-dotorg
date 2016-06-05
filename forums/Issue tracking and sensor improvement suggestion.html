@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Issue tracking and sensor improvement suggestion</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Issue tracking and sensor improvement suggestion
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 30, 2012 by <font color="#0050B2">cavadino</font>.
+				    </div>
+
+				    <p>Hi all,</p>
+
+<p>first, I like your stuff. There are a few things that can be optimized.</p>
+
+<p>Why don´t you use an issue tracker? Especially when user base grows, you will need this. As a user it gives me the chance to see if an issue was already reported.</p>
+
+<p>I see points in optimizing the sensor stuff.<br/>
+I would expect to have the following objects</p>
+<ul>
+	<li>Command -&gt; execute something</li>
+	<li>Sensor Writer -&gt; executes one Reader Command to retrieve one string. Might split this string into multiple key value pairs to fill the state cache. It should contain properties that are currently part of some commands like (PollingInterval, Regexp, RegexpGroups). It should maintain its values in the state cache. This would also allow lazy polling (only poll when state cache is read), dynamic polling frequency and a common value treatment for all commands.</li>
+	<li>Sensor Reader -&gt; should connect a GUI element to the state cache.</li>
+</ul>
+
+
+
+<p>I would like to hear your feedback.</p>
+
+<p>Kind regards,</p>
+
+<p>Sebastian</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-20451286"></a>
+                                    <font class="smallfont"><p><a href="http://jira.openremote.org">http://jira.openremote.org</a></p>
+
+<p>I'm not understanding your ideas wrt sensors, please expand.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 01, 2012 11:10
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451294"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>thanks for the link to Jira.</p>
+
+<p>When a user creates a command, it is either used as a "read command" (sensor) or "write command" (button, action). Nevertheless, it is the same entity type and therefore share the same implementation. From the user point of view, many parameters are only needed for "read commands", e.g. PollingInterval, Regexp, RegexpGroups. I would expect to configure this on sensor level, not on command level. </p>
+
+<p>When this is solved via interfaces, it might clean up some code and make protocol implementation easier. <br/>
+e.g.</p>
+
+<p>MyProtocolCommand: IRegexpParseAnswer, IPollingCommand.<br/>
+For the implementation, you could use Dependency injection, so additional code for protocols can be minimized.</p>
+
+<p>I just start playing and see a lot of improvement possibilities like:</p>
+<ul>
+	<li>add parameters to devices that can be dynamically reused in corresponding commands similar to the $<div class="error"><span class="error">Unknown macro: {param}</span> </div> feature</li>
+	<li>add the possibility to store multiple values with one command call. (Weather API returning temp, humidity, forecast per call)</li>
+	<li>not only export, but also import your files to the designer.</li>
+	<li>retrieve sensor values via REST call<br/>
+....</li>
+</ul>
+
+
+<p>Maybe I can provide an example implementation for the Sensor/command thing. I am not that java specialist.<br/>
+Currently, I can compile the controller using ant in eclipse, but do not know right now how to debug it. Would be nice if somebody could provide some hints how to set up the IDE.</p>
+
+<p>What is the right medium to discuss this ideas? Is there a developer mailing list or should I use this forum, or direct to jira?</p>
+
+<p>Kind regards,</p>
+
+<p>Sebastian</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by cavadino at Oct 01, 2012 20:15
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-20451542"></a>
+                                    <font class="smallfont"><blockquote>
+<p>When a user creates a command, it is either used as a "read command" (sensor) or "write command" (button, action). Nevertheless, it is the same entity type and therefore share the same implementation. From the user point of view, many parameters are only needed for "read commands", e.g. PollingInterval, Regexp, RegexpGroups. I would expect to configure this on sensor level, not on command level.</p></blockquote>
+
+<p>Correct. The reason we haven't made the change yet is because it requires updates to object model and XML schemas. So next time we break the compatibility, these will change. But given it is an incompatible change, it needs to be accompanied with migration tools so that requires some extra effort on top of the actual change.</p>
+
+<p>There may be other ways to address this to improve the user experience while maintaining compatibility, but haven't finished an implementation to experiment with this yet.</p>
+
+<blockquote>
+<p>add parameters to devices that can be dynamically reused in corresponding commands similar to the ${param}</p></blockquote>
+
+<p>Makes sense. The current schema does include device attributes and these are currently unused so this addition is plausible without schema compatibility issues.</p>
+
+<blockquote>
+<p>add the possibility to store multiple values with one command call.</p></blockquote>
+
+<p>This may already be doable with rules (which process the return values) although I haven't written a test case for it yet. I probably should, when I get around to it.</p>
+
+<blockquote>
+<p>not only export, but also import your files to the designer.</p></blockquote>
+
+<p>Yes, <a href="http://jira.openremote.org/browse/MODELER-390">MODELER-390</a></p>
+
+
+<blockquote>
+<p>retrieve sensor values via REST call</p></blockquote>
+
+<p>I do believe many users are already doing this with existing tools...</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 08, 2012 00:58
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Port abstraction on controller</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Port abstraction on controller
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Sep 15, 2011 by <font color="#0050B2">ogandit</font>.
+				    </div>
+
+				    <p>Currently, the controller lets all its field bus drivers deal with controller hardware. This may cause many issues related to optimisation, robustness, concurrency and hardware management.</p>
+
+<p>These issues could be addressed by developing a separate daemon in charge of handling controller ports and providing a unified interface to the controller.<br/>
+The constraints are to support serial interfaces and later on, at least USB. It must run on Linux and Windows (The APR lib can help).</p>
+
+<p>Enocean support development will give a chance to test this architecture.</p>
+
+
+<p>After a first analysis, this port abstraction daemon (PAD) will have to implement the following model:<br/>
+<div align="center"><img src="attachments/19432364/19398666.png" border="0"/></div></p>
+
+<p>The PortManager class brings services to manage and detect hardware ports.<br/>
+The abstract Port class represents a controller port, that can be serial or USB type or any other. The goal is to be able to use methods send and receive, but before the port must be detected and configured.with.<br/>
+To each port instance a Configuration instance can be attached.</p>
+
+<p>In this model, the port lifecycle would look like this:<br/>
+<div align="center"><img src="attachments/19432364/19398667.png" border="0"/></div></p>
+
+<p>This lifecycle allows a port to be detected by the OS or created by the controller. Then, once configured, it can be locked by a client in order to exchange data with.</p>
+
+				    					    <br/>
+                        <div class="tabletitle">
+                            <a name="attachments">Attachments:</a>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19432364/19398666.png">main classes.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19432364/19398667.png">Port lifecycle.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19432364/19398673.png">main classes-2.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19432364/19398674.png">basic service.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19432364/19398675.png">messages.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/19432364/19398691.png">PortAPI.png</a> (image/png)
+                                <br/>
+                                                    </div>
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-19432386"></a>
+                                    <font class="smallfont"><p>Thanks for starting this. Will go my usual cycles to understand this so bear with me (we've been through this before).</p>
+
+<p>Port/ConcretePort/Configuration/ConcreteConfiguration clear. Although this side will be in C, so no abstracts and extends there, right?</p>
+
+<p>Am unclear on role of PortManager and PortListener.</p>
+
+<p>In terms of use, I like to see it from the client side which in this case means the client protocol / RPC.</p>
+
+<p>Configuration should be driven from tooling, passed through controller so would expect something like:</p>
+
+<p>daemon:configure(Configuration, portID)</p>
+
+<p>For data transfer (send):</p>
+
+<p>daemon:send(bytes, portID)</p>
+
+<p>Above doesn't address streaming (missing offset marks) but that could be for later milestones, maybe relevant in designing the protocol payloads though.</p>
+
+<p>For receive, bidirectional connection would seem like a potential option, so:</p>
+
+<p>client:receive(bytes, portId)</p>
+
+<p>See comment above on streams.</p>
+
+
+<p>For robustness/status, would need at minimum:</p>
+
+<p>daemon:ping() client:pong()</p>
+
+<p>Also, should be able to propagate errors back to controller:</p>
+
+<p>client:error(portID, Error) [I like to see errors as typed objects, structs rather than just strings, makes it easier to add analysis tools]</p>
+
+<p>and obviously for lifecycle maintenance:</p>
+
+<p>daemon:shutdown()</p>
+
+<p>Port management:</p>
+
+<p>daemon:close(portID)</p>
+
+
+<p>There's probably a few more things, but that's off the top of my head. Does the above make sense to you?</p>
+
+
+
+
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 15, 2011 22:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432449"></a>
+                                    <font class="smallfont"><p>Yes, the above makes sense to me. <br/>
+The above model is just a design, regardless of implementation. But as implementation will be in C, this design model will have to be adapted in an implementation model. <br/>
+As well, a protocol between the client (controller) and the server (daemon) will have to be defined. As you said, it will have to be bidirectional and event-based. As we consider the link between the client and the server as liable, we can use UDP.</p>
+
+<p>Regarding the model, the PortManager is the main entry point of the daemon. It gives access to ports. It also is able to notify the client that the system created a port (for instance because someone plugged a USB stick). That's the role of the PortListener that is implemented by the client.<br/>
+Regarding configuration, I would rather say : daemon:PortManager.getPort(id).configure(c), which is nearly the same as you.<br/>
+Regarding streaming, the entry points can of course be added.<br/>
+Regarding data reception, I would rather say that the call is : daemon:PortManager.getPort(id).receive(c), which will result in dequeuing the first message in the port reception queue, daemon-side or controller-side.</p>
+
+<p>Regarding robustness, ping is a good idea, on both sides. Error reporting and shutdown as well.<br/>
+Finally, closing a port does not make sense to me, unlocking seems more relevant.</p>
+
+<p>I'm going to integrate all this in a next version of the model.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Sep 19, 2011 20:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432473"></a>
+                                    <font class="smallfont"><p>Following our conversations, first an edit of the model:<br/>
+<div align="center"><img src="attachments/19432364/19398673.png" border="0"/></div></p>
+
+<p>I have added some of the requested services and status responses.</p>
+
+<p>Regarding implementation, I start with the idea that a unique 'basic service' can support all the exchanges between the ORB and the daemon, on both directions:<br/>
+<div align="center"><img src="attachments/19432364/19398674.png" border="0"/></div></p>
+
+<p>In this service, the client sends a request and waits for an ACK from the server. If no ACK is received within a reasonable period, the client retries. If again no ACK is received, the client considers the server as dead. As soon as the ACK is received, the client can send another request.</p>
+
+<p>Following diagram gathers all requests and ACKs:<br/>
+<div align="center"><img src="attachments/19432364/19398675.png" border="0"/></div></p>
+
+<p>The way messages are serialized is to be defined.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Sep 21, 2011 21:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432501"></a>
+                                    <font class="smallfont"><p>Regarding message serialization, I have in mind two options:</p>
+
+<p>1/ XML.<br/>
+Pro : easy to set up, easy testing<br/>
+Con : additional libs on bot sides, not a really embedded approach, need to uuencode/uudecode binary strings</p>
+
+<p>2/ Homemade serialization like KNX/IP packets<br/>
+Pro : embedded efficient approach<br/>
+Con : Heavier development and tests</p>
+
+
+<p>After thinking again about it, I would now favour a TCP socket as link between both sides because this would allow the daemon to know the IP and port of its client(s) for bidirectional communications without configuration.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Sep 23, 2011 20:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432519"></a>
+                                    <font class="smallfont">
+<p>On #1:</p>
+
+<p>I think XML is an overkill in this case. </p>
+
+<p>Howver, there's a benefit in having the protocol easily accessible and readable for debugging, logging, analysis and testing scenarios. But we are not dealing with an arbitrary data structure (which XML handles well) but a well-defined and fixed one so much of the XML parsing is just an overhead.</p>
+
+<p>Instead I would clearly specify a delimiter format to separate data fields and encoding/decoding semantics for data outside of the [a-zA-Z0-9] range where necessary.</p>
+
+<p>This could be as simple as having a payload such as:</p>
+
+<p>&lt;DATA port ID, DATA len, DATA operation ID, DATA payload&gt;</p>
+
+<p>Which could translate as:</p>
+
+<p>"Serial, 3, Send, 0x0F 0x0A 0x00"</p>
+
+<p>In this case using a defined encoding/decoding from hex strings on the data payload to binary data, and using comma as delimiter on data fields. Constraining data fields port ID, len, operation ID as strings is also not difficult, plenty of library support for conversions between values in standard C lib.</p>
+
+<p>I don't think the overhead of encoding the payload into strings in this case makes a difference. But you could leave the encoding mode as something that is configurable between the nodes, which could be then trivially be modified to use a binary encoding instead, if necessary.</p>
+
+<p>I'd default for string encoding initially as it makes logging and diagnostics simple. I'd also default for TCP because of simplicity. If there's need to optimize later then UDP can be alternative.</p>
+
+<p>So I wouldn't go as far as KNX/IP in option #2 (as it seems unnecessary to optimize that far, we're not limited to bus bandwidth) but wouldn't go silly with XML either. </p>
+
+<p>Find a simple string encoding/decoding convention instead. Readable but trivial to parse.</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 26, 2011 10:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432523"></a>
+                                    <font class="smallfont"><p>Sounds good. <br/>
+I'll propose a format following these rules, ie homemade format with ASCII encoding for octet strings.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Sep 26, 2011 10:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432559"></a>
+                                    <font class="smallfont"><p>Regarding reception, I suppose we need something like the client being able to register to receive either the message directly, either a notification so that it can dequeue the message, all this happening async without the need to implement any polling.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ebariaux at Sep 27, 2011 14:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432575"></a>
+                                    <font class="smallfont"><p>Good for a first step. </p>
+
+<p>Please make sure that it is possible to enter ascii payloads as ascii for readability. Binary payloads is probably best encoded as hex. </p>
+
+<p>I see two additional features that might be needed going forward. </p>
+
+<p>I would also suggest that we need some kind of parametrisation of payloads. Consider the operation to set the volume. Often there is an operation for setting the volume with a certain value where the value is the parameter. Obviously one could create many operations for all possible values but it is not as convenient as parametrization and it have some limitations when used in combination with say sliders. If adding parameters there needs to be some options for choosing encoding apropriately (ascii, hex,). </p>
+
+<p>Further, there is often a checksum. For static operations (with no parameters) they may be pre-calculated and made part of the payload. But this takes an extra effort for the configurator so it would be preferable if there was a selection of checksums (often vendor-specific) that could be added as an option to the operation. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Sep 27, 2011 20:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432582"></a>
+                                    <font class="smallfont"><p>My wording was probably not correct.</p>
+
+<p>I have no case of ASCII payloads, so I suggest all payloads are serialized with and hex encoding (for instance ABCD -&gt; 41 42 43 44).</p>
+
+<p>Regarding checksums, I know favour the use of TCP to have explicit connections. So calculating checksums is redundant unless we want a protocol that does not need to rely on a liable transport layer.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Sep 28, 2011 08:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432589"></a>
+                                    <font class="smallfont"><p>Ok. I first thougth you were targeting a more general problem but now I see that you are dealing with one manufacturers set of sensors. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Sep 28, 2011 20:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432590"></a>
+                                    <font class="smallfont"><p>Actually, I'm aiming at specifying a daemon that allows the ORB to access hardware ports (serial, USB or others) to interact with many field buses, not a specific set of sensors.</p>
+
+<p>The communication with the ORB would use a TCP socket.</p>
+
+<p>Once again, I see no case of ASCII payloads, but if you have any, we can add this feature.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Sep 28, 2011 20:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432628"></a>
+                                    <font class="smallfont"><p>I think in this case it is just a question of readability at the very lowest level (the serialization format). When the payload is within ASCII range, should we encode it as ASCII rather than hex?</p>
+
+<p>I've no firm opinion on this at the moment. I'm leaning towards single encoding (hex) on serialization for simplicity (see point on serialization vs API below). Hex is easy to translate but you still do need the translator somewhere to make it easier to read, so may lack convenience.</p>
+
+<p>As for entering the ASCII payload, that should obviously be possible as ASCII where needed but this question is not part of the serialization format, but the API to read/write using it (i.e. where the hex-to-ascii translator would exist, where required). I think Torbjörn was asking about how to enter the payloads, so this would be different from the concern of serialization format you were talking about (API vs. serialization).</p>
+
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Sep 29, 2011 16:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432773"></a>
+                                    <font class="smallfont"><p>Regarding message serialization, here is my proposal:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>message         ::= header body
+header          ::= protcolVersion /* The header is the same for all messages */
+protocolVersion ::= 0x10
+body            ::= messageCode field*
+messageCode     ::= [PSGANCLUDVO]
+field           ::= (encoding)? (length)? data
+encoding        ::= 'H'                /* H = hex encoding */
+length          ::= [0..9a..f]{4}      /* data length, hex encoding, between 1 and 65535 */
+data            ::= &lt;content encoded according to encoding field, hex if no encoding&gt;
+</pre>
+</div></div>
+
+<p>Message content:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>Message         Dir Code Field 1  Field 2  Field 3 Field 4
+--------------- --- ---- -------- -------- ------- --------
+ping		&lt;&gt;  P
+shutdown	&gt;   S
+sutting down    &lt;   G
+ACK		&lt;&gt;  A    code
+notify request  &lt;&gt;  N    portId  content
+configure req.	&gt;   C    portId  nbParams  key     value
+Lock request	&gt;   L    portId  sourceId
+Unlock request	&gt;   U    portId  sourceId
+Port created r.	&lt;   D    portId
+Port removed r.	&lt;   V    portId
+create port r.	&gt;   O    portId  portType
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Oct 07, 2011 14:43
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432800"></a>
+                                    <font class="smallfont"><p>{noformat} and/or {code} work for monospace formatting</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 09, 2011 15:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432801"></a>
+                                    <font class="smallfont">
+<p>Looks ok to me. SourceID was not clear to me. Is notify request content the data read from the port and sent back to controller?</p>
+
+<p>At this point this is probably detailed enough. Additional details/requirements will be exposed by the implementation.</p>
+
+<p>Torbjorn did you have any additional comments/requirements?</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Oct 09, 2011 15:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432806"></a>
+                                    <font class="smallfont"><p>So far so good. </p>
+
+<p>I would be interested in some more analysis or examples around how to make use of the results in the panels but I understand if you defer from that for now. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by toesterdahl at Oct 09, 2011 19:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432808"></a>
+                                    <font class="smallfont"><p>sourceId is the identifier of the entity wishing to lock a port. Its content is not clear to me either.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Oct 09, 2011 20:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19432947"></a>
+                                    <font class="smallfont"><p>Torbjörn, are you interested in being involved in this development? Or at least in code reviewing?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Oct 13, 2011 21:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19433413"></a>
+                                    <font class="smallfont"><p>I suggest the Java client API uses the PhysicalBus interface I have already designed to provide an abstraction of the physical ports.</p>
+
+<p>To make more sense, I propose it is renamed Port interface.</p>
+
+<p>Here is this API:</p>
+
+<p><div align="center"><img src="attachments/19432364/19398691.png" border="0"/></div></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by ogandit at Oct 31, 2011 15:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:31</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

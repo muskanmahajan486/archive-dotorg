@@ -1,0 +1,829 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Generic TCP IP & Telnet Questions</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Generic TCP IP & Telnet Questions
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Jan 17, 2011 by <font color="#0050B2">deanox</font>.
+				    </div>
+
+				    <p>I'm trying to get OR (on an Android Archos101) to talk to Homeseer. I have a generic TCP/IP plugin for homeseer that responds to simple text commands fine from a telnet client - e.g. "execx10,a1,off" and also offers very good low level debugging output so I can see what is being received.</p>
+
+
+<p>If I implement a Telnet command in OR - I can't structure the command properly. There is no text sent from the server when the socket is opened, so nothing to wait for. So setting the command to "execx10,a1,off" results in openremote timing out waiting for "execx10,a1,off". If I use " &#124;execx10,a1,off" it times out waiting for " " and if I used "&#124;execx10,a1,off" OR doesn't give the time out error, but I dont see the command being received, just the socket opens and closes as if it had timed out.</p>
+
+<p>So for a telnet command is there a format for "dont wait for a string from the far end" ?</p>
+
+<p>If I implement a TCP/IP command - its received fine, but the homeseer plugin is expecting (CR)(LF) and OR appears to only send (CR) so deosnt action the received command.</p>
+
+<p>Is there a way of getting OR to send (CR)(LF) ? (Can I insert control characters into the command string?)</p>
+
+
+<p>And is there a similar UDP socket protocol available ? I have an IP to IR box that uses a simple UDP command. Openremote would be perfect to drive it if a basic UDP (IP,Port,Command) protocol were available. Although I've used Vbasic in the past and some general scripting I haven't got my head around how I could add that myself to Openremote yet.</p>
+
+<p>URL for UDP based IP to IR box : <a href="http://www.keene.co.uk/electronics/multi.php?mycode=KIRA">http://www.keene.co.uk/electronics/multi.php?mycode=KIRA</a></p>
+
+
+<p>Thanks for any assitance. With the UDP protocol for IR and TCP/IP to Homeseer I could control everything very nicely <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-15532044"></a>
+                                    <font class="smallfont"><p>Hi Dean,</p>
+
+<p>I've run into something similar with my TiVo Series 3 so I'll try to shed a little more light on this problem.&nbsp; I am running OR from a version I have recently downloaded from Subversion and compiled using the Eclipse IDE.&nbsp; In the class TelnetCommand.java there is a method called send().&nbsp; In that class exists the condition statement if(count%2==0){ waitForString(cmd, tc); ...&nbsp; When execution reaches this line it stops waiting for a response from the client which will never come.&nbsp; After one second waitForString() times out.</p>
+
+
+<p>When I comment out the condition statement, telnet when used with the TiVo series 3, works fine.</p>
+
+<p>&#45;Doug</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by drick at Jan 17, 2011 21:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532115"></a>
+                                    <font class="smallfont"><p>Doug - thanks, I may have to spend a couple of evenings trying to getmy head round subversion and eclipse. - Do I just have to build the controller to start tweaking the telnet implementation ?</p>
+
+<p>I have thrown a Visual Basic converison layer together (sorry VB is about all I can do really at the moment) that accepts a socket connection from the controller and initiates one out to Homeseer (in my case) and echos data between. If I convert CR to CRLF on the way through I can get simple commands to work. Haven't tried interaction with sensors yet - but the same principle should mean I can convert any response to the simple "on/off" or "0-100" that I think OR is looking for.</p>
+
+
+<p>Bouyed with that success I then adapted it to accept a TCP connection from OR and initiate a UDP connection to my IR device aswell. Managed to also add a pronto hex conversion to the format required for my IR box on the way through. Strangely the Wife wasn't quite so impressed with a button press on my Android tablet changing the Sky digital (Satellite) channel as I was <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+
+<p>So I now have proof of concept to get OR controlling HomeSeer and IR for me and confirmed I need...</p>
+
+<p>Option for TCP Socket (or Telnet) to use CRLF instead of CR</p>
+
+<p>Option for UDP protocol with parameters for IP, Port, Command (also with CRLF)...This would be enough if I manually convert all my IR codes. Clearly if I want to use a generic Pronto (or other) IR format I would need a dedicated protocol with that conversion built in.</p>
+
+
+<p>Anyone recommend a good starter Java book &#33;?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by deanox at Jan 22, 2011 23:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532119"></a>
+                                    <font class="smallfont"><p>Hi</p>
+
+<p>I see from your posts that you apear to be having the same problem I had some time ago when trying to send Telnet commands. I could send the first one OK and then the controler locked up (see my post</p>
+
+
+<h6><a name="GenericTCPIP%26TelnetQuestions-SendingTelnetorTCPIPcommands%29"></a>Sending Telnet or TCP IP commands)</h6>
+
+<p>I believed it was down to CR/LF command not being sent from OR as I tested it with Putty and all worked OK.</p>
+
+<p>Would it be possable to have this as user configured in OR so that it would send either a CR or LF and also whether it should receive a response. This would be most helpfull.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jan 23, 2011 13:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532125"></a>
+                                    <font class="smallfont"><p>Pierce - I actually had the same issue with my temporary VB App. OR wants to create a new TCP connection for each button press with a Telnet command. Some clients (like my very rushed vb app) couldn't cope with the previous TCP session closing, so wouldnt cleanly open the new session for the next button press from the same host. Meaning I had exactly the same sympton for a while - 1st one worked, subsequent one wouldn't. because it was only a temporary app I simply forced the socket closed after each code is received and it was fine. So whilst the CR/LF might fix it ... it might not.</p>
+
+<p>I may well go back and look at whats happening with wireshark to see which end isnt closing the socket cleanly.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by deanox at Jan 23, 2011 19:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532126"></a>
+                                    <font class="smallfont"><p>Hi Dean</p>
+
+<p>the aplication I am tyying to controll is called "mce controller" it has a client and server which can be used as a controffer as well as starting programs on a pc. The server excepts Telnet commands</p>
+
+<p>I have tried the lates version of OR&nbsp; and it now appears that it does not even send the first command.</p>
+
+<p>Any help you can give would be much appriciated</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jan 23, 2011 20:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532133"></a>
+                                    <font class="smallfont"><p>Hi Dean,</p>
+
+<p>I was using Telnet up to now and it does not send any command now. I tried using TCPIP</p>
+
+<p>and it works for the once. If I re start the OP server I can then send one more command</p>
+
+<p>would it be waiting for a string back like the problem you had before.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jan 24, 2011 18:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532139"></a>
+                                    <font class="smallfont"><p>Pierce - I just had a quick test with MCEController and wireshark and it appears that the MCE controller end is entirely silent. It doesn't send an acknowldegement either on initial connect or after a successfull command.</p>
+
+<p>So with OR set to "telnet", OR times out waiting for an initial response before sending the command.</p>
+
+<p>and with OR set to "TCP/IP", OR connects and sends the command but then times out waiting for the far end to acknowledge which it never does and the connection isn't cleanly closed by either side.</p>
+
+
+<p>So yes you're not tripping over the CRLF/CR issue...but the fact that OR expects a response on both Telnet and TCP/IP commands.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by deanox at Jan 24, 2011 21:30
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532140"></a>
+                                    <font class="smallfont"><p>Hi Dean</p>
+
+<p>many thanks for the reply does that mean that if you comment out the condition statement</p>
+
+<p>will it work then.</p>
+
+<p>Would there be a way to have this selectible ie to expect a responce or not to expect a</p>
+
+<p>responce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jan 24, 2011 21:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532154"></a>
+                                    <font class="smallfont"><p>I think I'm now in a position to outline what I would need from a slightly more detailed "IP" command including some of the issues with the current Telnet &amp; TCP/IP options.</p>
+
+<p>Unfortunately I've never written a line of Java before so I'm not really in a good place to suggest in detail what changes are required to the current code. Even if I could convert what I know into java I dont really understand how I'd go about creating both a customised version of the controller - and a customised local copy of the designer which would need to be able to add the required parameters for a new or modified protocol. I suspect thats not an easy skills/knowledge gap to jump so I think we'd need a more experienced OR programmer to jump in at this point.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by deanox at Jan 25, 2011 20:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532157"></a>
+                                    <font class="smallfont"><p>Hi Dean</p>
+
+<p>many thanks for all the help at least you have established why we are able to only send one command using TCPIP and no command while using Telnet.</p>
+
+<p>Juha is hoping to do a&nbsp; patch for telnet&nbsp; soon. Hopfully that might help. </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jan 25, 2011 22:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532218"></a>
+                                    <font class="smallfont"><p>I lookup the statement you described and i found the follwowing</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">    <span class="code-keyword">public</span> void send() {
+      TelnetClient tc = <span class="code-keyword">null</span>;
+      <span class="code-keyword">try</span> {
+         tc = <span class="code-keyword">new</span> TelnetClient();
+         tc.connect(getIp(), <span class="code-object">Integer</span>.parseInt(getPort()));
+         StringTokenizer st = <span class="code-keyword">new</span> StringTokenizer(getCommand(), <span class="code-quote">"|"</span>);
+         <span class="code-object">int</span> count = 0;
+         <span class="code-keyword">while</span> (st.hasMoreElements()) {
+            <span class="code-object">String</span> cmd = (<span class="code-object">String</span>) st.nextElement();
+            <span class="code-keyword">if</span> (count % 2 == 0) {
+               waitForString(cmd, tc);
+            } <span class="code-keyword">else</span> {
+               sendString(cmd, tc);
+            }
+            count++;
+         }
+      } <span class="code-keyword">catch</span> (Exception e) {
+         logger.error(<span class="code-quote">"could not perform telnetEvent"</span>, e);
+      } <span class="code-keyword">finally</span> {
+         <span class="code-keyword">if</span> (tc != <span class="code-keyword">null</span>) {
+            <span class="code-keyword">try</span> {
+               tc.disconnect();
+            } <span class="code-keyword">catch</span> (IOException e) {
+               logger.error(<span class="code-quote">"could not disconnect from telnet"</span>, e);
+            }
+         }
+      }
+   }
+</pre>
+</div></div>
+<p>Could you explain which part you removed? I tried removing the if</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> <span class="code-keyword">if</span> (count % 2 == 0) {
+               waitForString(cmd, tc);
+            } <span class="code-keyword">else</span> {
+               sendString(cmd, tc);
+            }
+</pre>
+</div></div>
+<p>But without any luck. I'm not wel known to java so i'm taking my 1st steps here.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Jan 30, 2011 15:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532223"></a>
+                                    <font class="smallfont"><p>In the 'if' block you removed, you want to remove everything EXCEPT the line sendString(cmd, tc);</p>
+
+<p>The problem seems to be that the code is waiting for the response 'CRLF' at the line waitForString(cmd, tc).&nbsp; That response is never comming so the telnet session just times out.&nbsp; If you remove the 'if' block leaving just the sendString(cmd, tc); the controller will send the command to your device.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by drick at Jan 30, 2011 16:05
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532231"></a>
+                                    <font class="smallfont"><p>Hi,thanks for sharing the information regarding to generic tcp ip and telnet.Really a good information is provided by you.Actually i'm new in programming area so i feel some hasitation in sharing this information.Thanks a lot again for sharing the information here.</p>
+
+<p>&nbsp;[url=<a href="http://www.3magicbeans.com\]Website">http://www.3magicbeans.com]Website</a> Development Denver[/url]<br/>
+&nbsp;[url=<a href="http://www.3magicbeans.com\]Denver">http://www.3magicbeans.com]Denver</a> Web Designs[/url]</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by 3magic at Jan 31, 2011 05:51
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532233"></a>
+                                    <font class="smallfont"><p>It works like a charm <img class="emoticon" src="images/icons/emoticons/thumbs_up.gif" height="19" width="19" align="absmiddle" alt="" border="0"/></p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">[Controller]2011-01-31 07:36:14,701 INFO [HTTP-<span class="code-object">Thread</span>-6] org.openremote.controller.protocol.telnet.TelnetCommand.sendString(203) | send: set Stalamp_KL on
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Jan 31, 2011 06:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532236"></a>
+                                    <font class="smallfont"><p>Ernst - could you share how you ran from modified source ?</p>
+
+<p>I'd love to start experimenting with a few minor changes in places and maybe a UDP option for my IR. I've downloaded the source form SVN and can see the relevant protocol sections etc but have no idea how to turn that into a controller version I could run.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by deanox at Jan 31, 2011 09:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532237"></a>
+                                    <font class="smallfont"><p>Well there are multiple ways but here's what i did since i was wresteling with the documentation for a while</p>
+
+<p>Build teh developer release via this document <span class="error">&#91;Building OpenRemote 2.0 Developer Releases|display/docs/Building+OpenRemote+2.0+Developer+Releases&#93;</span></p>
+
+<p>This will give you the latest version of the controller (Alpha 11)</p>
+
+<p>Before you build it modify the file "TelnetCommand.java" with eclipse and change:</p>
+
+<p>This:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">            <span class="code-object">String</span> cmd = (<span class="code-object">String</span>) st.nextElement();
+            <span class="code-keyword">if</span> (count % 2 == 0) {
+               waitForString(cmd, tc);
+            } <span class="code-keyword">else</span> {
+               sendString(cmd, tc);
+            }
+</pre>
+</div></div>
+<p>into this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">            <span class="code-object">String</span> cmd = (<span class="code-object">String</span>) st.nextElement();
+            <span class="code-keyword">if</span> (count % 2 == 0) {
+/**               waitForString(cmd, tc);
+            } <span class="code-keyword">else</span> {
+*/
+               sendString(cmd, tc);
+            }
+</pre>
+</div></div>
+<p>Now build the controller, download the panel and be amazed <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Jan 31, 2011 09:18
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532254"></a>
+                                    <font class="smallfont"><p>Hi Ernst,</p>
+
+<p>can you confirm if Telnet should wait for the response 'CRLF' or should it not?.</p>
+
+<p>If it should not should this fix not be a permanent fix?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Jan 31, 2011 23:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532261"></a>
+                                    <font class="smallfont"><p>i cant confirm nor deny this. This would be something to mail to the designers for them to take a look at.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 01, 2011 06:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532385"></a>
+                                    <font class="smallfont"><p>@All: please look at the following topic for more information/solution</p>
+
+<p><a href="http://www.openremote.org/pages/viewpage.action?pageId=15532278&amp;focusedCommentId=15532354#comment-15532354">Telnet status read implemented</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 10, 2011 13:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532393"></a>
+                                    <font class="smallfont"><p>Hi Ernst</p>
+
+<p>I have looked at this post and have the following questions</p>
+
+<p>Is this fix available now or in the future.</p>
+
+<p>Pierce</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 11, 2011 13:45
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532395"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>The fix is available now&#33;. You can sync the specific svn tree with</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">svn co http:<span class="code-comment">//openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha11_telnet</span>
+</pre>
+</div></div>
+<p>Do you know how to build a Developers release?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 11, 2011 15:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532396"></a>
+                                    <font class="smallfont"><p>Hi that great news. I have not built a Development release but if you point me in the right direction</p>
+
+<p>ill give it a bash</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 11, 2011 15:21
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532397"></a>
+                                    <font class="smallfont"><p>Follow this link <a href="http://www.openremote.org/display/docs/Building+OpenRemote+2.0+Developer+Releases">Building OpenRemote 2.0 Developer Releases</a></p>
+
+<p>Sync the the Openremote Boss alpha 8 branch with:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">   svn co http:<span class="code-comment">//openremote.svn.sourceforge.net/svnroot/openremote/tags/OpenRemote_Boss_2_0_0_Alpha8</span>
+</pre>
+</div></div>
+<p>Now you have the base Dev relaease including all the tools you need together with the Alpha11 release of the controller.</p>
+
+<p>Enter the Directory "OpenRemote_Boss_2_0_0_Alpha8" and sync the modified telnet target with:</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"> svn co http:<span class="code-comment">//openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha11_telnet</span>
+</pre>
+</div></div>
+<p>Now follow the rest of the document (with correct paths) and your good to go <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+
+<p>Have fun</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 11, 2011 15:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532444"></a>
+                                    <font class="smallfont"><p>Hi Ernst</p>
+
+<p>I tried what you sugesrted usinghttp://openremote.svn.sourceforge.net/svnroot/openremote/branches/feature/Controller_2_0_0_Alpha11_telnet<br/>
+but I still got the same results as I got before when trying to send a telnet command.</p>
+
+<p>I then edited the file as per your post</p>
+
+<p>String cmd = (String) st.nextElement();<br/>
+if (count % 2 == 0) <div class="error"><span class="error">Unknown macro: { /**               waitForString(cmd, tc);             }</span> </div> else <div class="error"><span class="error">Unknown macro: { */                sendString(cmd, tc)}</span> </div><br/>
+this worked allowing me to send telnet commands. After each command it disconnected and reconnected but I am still able to send multible commands.  Can you tell me what were the updates which were made to the file and should it have worked for me</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 12, 2011 18:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532453"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>I hope you didnt edit the file "TelnetCommand.java" because this hack is not needed anymore.</p>
+
+<p>All the neccecary changes are made to the code that it should work out of te box.</p>
+
+<p>Could you explain in detail what you are trying to do?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 13, 2011 07:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532460"></a>
+                                    <font class="smallfont"><p>Hi Ernst</p>
+
+<p>I am trying to use an aplication by the name of MCEController to controll a PC.</p>
+
+<p>This aplication can receive commands by Telnet and comes as a client and server.</p>
+
+<p>I can sucessfully controll it using Putty and was previously able to only send one command from</p>
+
+<p>Open Remote before it locked up.</p>
+
+<p>I downloaded and installed your new Telnet file but this did not work.</p>
+
+<p>I then modified the old TelnetCommand.jave and this worked. I am able to send</p>
+
+<p>several commands and controll the PC. It does appear to terminate the session each time but it re connects after each command.</p>
+
+<p>You can If you have time download MCEController and see can you replicate the problem.</p>
+
+<p>Many thanks for your help</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 13, 2011 11:55
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532463"></a>
+                                    <font class="smallfont"><p>Pierce - Whats the format of your telnet command ?</p>
+
+<p>It should be "null&#124;key=1" for example with the new version of the Telnet command.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by deanox at Feb 13, 2011 14:13
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532464"></a>
+                                    <font class="smallfont"><p>Ok i see where your going wrong here.</p>
+
+<p>I assume you downloaded the SVN tree + the new telnet branch as i described. right? and DO NOT modify anything. Skip the hack i mentioned before&#33;</p>
+
+
+<p>In the "commands" section in composer you need to do the following</p>
+
+<p>instead of using the normal command&nbsp; you need to place a "null &#124;" before it so it will skip the control prompt check.</p>
+
+<p>e.g. in my case it was:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">set Stalamp_KL off
+</pre>
+</div></div>
+<p>my command now:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java"><span class="code-keyword">null</span> | set Stalamp off
+</pre>
+</div></div>
+<p>Now sync it, run it and be amazed <img class="emoticon" src="images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 13, 2011 14:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532494"></a>
+                                    <font class="smallfont"><p>Hi Ernst</p>
+
+<p>so I fully understand when I would normally send "vol+" I should now send "&#124;vol+" is that correct?</p>
+
+<p>Can you tell me what happens when you insert the"&#124;" before the command?</p>
+
+
+<h2><a name="GenericTCPIP%26TelnetQuestions-"></a></h2></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 13, 2011 21:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532507"></a>
+                                    <font class="smallfont"><p>Hi PIerce,</p>
+
+<p>Nope.... instead of "vol &#43;" you send literally "null &#124; vol &#43;"</p>
+
+<p>the pipe "&#124;" does exactly what it is it pipes a sequence. As i did you needed a control prompt sop what we did in this topic we eliminated the checking of that prompt. In the new code there is a new feature which is able to compensate for the checking of that control prompt.</p>
+
+<p>if you put "null &#124;" before you actual command it tells the code to "forget the control prompt check and directly execute the command"&nbsp;</p>
+
+<p>For a full explination about that the "&#124;" can do more please read <a href="http://www.openremote.org/pages/viewpage.action?pageId=15532278&amp;focusedCommentId=15532354#comment-15532354">Telnet Status Read Implemented</a></p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 14, 2011 07:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532611"></a>
+                                    <font class="smallfont"><p>Hi Ernst</p>
+
+<p>I tried that out but unfortunatly it dident work this is the entry from the controler log</p>
+
+<p>maby you can see what is going wrong</p>
+
+
+<p>[Controller]2011-02-17 19:13:19,358 INFO [HTTP-Thread-1] org.openremote.controller.protocol.telnet.TelnetCommand.waitForString(310) &#124; WaitForString read before running into timeout:<br/>
+[Controller]2011-02-17 19:13:19,374 ERROR [HTTP-Thread-1] org.openremote.controller.protocol.telnet.TelnetCommand.send(281) &#124; could not perform telnetEvent<br/>
+java.lang.Exception: waitForString response timed-out waiting for "null "<br/>
+&nbsp;&nbsp;&nbsp; at org.openremote.controller.protocol.telnet.TelnetCommand.waitForString(TelnetCommand.java:311)<br/>
+&nbsp;&nbsp;&nbsp; at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:270)<br/>
+&nbsp;&nbsp;&nbsp; at org.openremote.controller.protocol.telnet.TelnetCommand.send(TelnetCommand.java:251)<br/>
+&nbsp;&nbsp;&nbsp; at org.openremote.controller.service.impl.ControlCommandServiceImpl.trigger(ControlCommandServiceImpl.java:56)<br/>
+&nbsp;&nbsp;&nbsp; at org.openremote.controller.rest.ControlCommandRESTServlet.doPost(ControlCommandRESTServlet.java:76)<br/>
+&nbsp;&nbsp;&nbsp; at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)<br/>
+&nbsp;&nbsp;&nbsp; at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+&nbsp;&nbsp;&nbsp; at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)<br/>
+&nbsp;&nbsp;&nbsp; at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:286)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:845)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)<br/>
+&nbsp;&nbsp;&nbsp; at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:354)<br/>
+&nbsp;&nbsp;&nbsp; at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)<br/>
+&nbsp;&nbsp;&nbsp; at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)<br/>
+&nbsp;&nbsp;&nbsp; at java.lang.Thread.run(Thread.java:619)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 17, 2011 19:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532612"></a>
+                                    <font class="smallfont"><p>Hi Ernst</p>
+
+<p>I figured it out I entered "null &#124; vol+" is should be "null&#124;vol+" no space before and after "&#124;"</p>
+
+<p>It now appears to work OK</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 17, 2011 20:39
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532714"></a>
+                                    <font class="smallfont"><p>I need to send a Telnet command string and it must be in total 16 bytes long OpenRemote adds</p>
+
+<p>CRLF and then the string is 18 bytes long.</p>
+
+<p>Is it possable to disable sending the CRLF</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 22, 2011 18:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532795"></a>
+                                    <font class="smallfont"><p>Hi Pierce,</p>
+
+<p>Sorry i totally missed you message here.</p>
+
+<p>Yes sure you can do it. Do the following null&#124;&lt;your first command&gt;&#124;&lt;your second command&gt;</p>
+
+<p>the "&#124;" will send a CRLF as i understood correctly.</p>
+
+<p>Please be so kind and take a look at <a href="http://www.openremote.org/pages/viewpage.action?pageId=15532786">Telnet Howto docs</a></p>
+
+<p>This is a first draft and feel free to comment on it.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Feb 28, 2011 17:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532800"></a>
+                                    <font class="smallfont"><p>Hi Ernst</p>
+
+<p>I want to send</p>
+
+
+<p><font color="#1f497d">HCA0002010002058 without any CFLF (or CR) which makes it18 bytes long</font></p>
+
+<p>It must be this string and only 16 Bytes long in total</p>
+
+<p>How do I do this</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Feb 28, 2011 21:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532805"></a>
+                                    <font class="smallfont"><p>Ok lets cut it down into pieces because obviously i missed the bus here.</p>
+
+<p>What are you trying to do?</p>
+
+
+<p>If you telnet to your target:</p>
+
+<p>&#45; What is the responds you get on the screen (direct after login)</p>
+
+<p>&#45; What do you type as a command</p>
+
+<p>&#45; And what (should) happen</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Mar 01, 2011 08:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532814"></a>
+                                    <font class="smallfont"><p>I need to send "HCA0002010002058" this string only with no cr/lf at the end</p>
+
+<p>It must only be a total of 16 bytes otherwise the program I am trying to talk to will</p>
+
+<p>not responde.</p>
+
+<p>Is it possable just to send HCA0002010002058 without cr/lf</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 01, 2011 20:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532815"></a>
+                                    <font class="smallfont"><p>I need to send "HCA0002010002058" this string only with no cr/lf at the end</p>
+
+<p>It must only be a total of 16 bytes otherwise the program I am trying to talk to will</p>
+
+<p>not responde.</p>
+
+<p>Is it possable just to send HCA0002010002058 without cr/lf</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 01, 2011 20:37
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532816"></a>
+                                    <font class="smallfont"><p>Ok i'm still not sure if i get you.</p>
+
+<p>In simple term: Do You want to send a command without hitting enter?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Mar 02, 2011 07:27
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532844"></a>
+                                    <font class="smallfont"><p>Yes if the line is terminated with a cr or crlf it will not be exactly 16 bytes</p>
+
+<p>and the program at the other end will not responde</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pjmm at Mar 03, 2011 22:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-15532858"></a>
+                                    <font class="smallfont"><p>Sorry i dont know the awnser to your question. Can you make a new topic of it?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kide at Mar 05, 2011 09:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-19431431"></a>
+                                    <font class="smallfont"><p>Could I ask what syntax you were using for sending telnet commands to your TiVo?  I have a Series 3 also, and I can successfully send telnet commands via my laptop.  For example, I can send the command 'IRCODE GUIDE', and the episode guide will come up.  Doing so again will remove the episode guide.  However, I cannot figure out the syntax for the command box in the Online Designer.  I've tried some of the following:<br/>
+&gt;'IRCODE GUIDE'<br/>
+&gt;'|IRCODE GUIDE|'<br/>
+&gt;'null|IRCODE GUIDE|null'</p>
+
+<p>What command text did you use?</p>
+
+<p>Thanks!</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jammastercd at Aug 20, 2011 03:11
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:30</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : slider and sensor problems with telnet</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : slider and sensor problems with telnet
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Feb 20, 2013 by <font color="#0050B2">jbforth</font>.
+				    </div>
+
+				    <p>I am using OpenRemote-Controller-2.0.1.  I am using Telnet commands to control an Audio Authority ADX-1616, which is a 16 zone audio mixer/preamp.  I have the commands all working properly (e.g. mute on/off, volume up/down, etc.) using buttons, but I am really struggling with the use of a slider.  I have two separate problems.<br/>
+My first problem is that I can't get the slider to correctly read the source of the preamp.  (I can adjust the source of the preamp with the slider to whatever I want, but I can't get it to read what the source is in the first place.)   I must be doing something wrong with my Telnet command, which is as follows.<br/>
+Name: 1 Get Source<br/>
+Protocol: Telnet<br/>
+IP Address: 192.168.1.5<br/>
+Port: 23<br/>
+Command: connected|QCO1<br/>
+Read Timeout:<br/>
+Read Regex filter: (?&lt;=I)\d<br/>
+Read Regex Group:<br/>
+Default Read Response: 1<br/>
+Polling interval: 1s<br/>
+How do I get the result into the param variable?  Also, as a test, I assigned a button to the above command so that I can trigger it manually.  By looking at the Telnet traffic, I can see that the preamp responds with "(CO1I2)", meaning that output 1 is assigned to input 2.  My Regex applied to this string would produce a 2.  I think part of my problem is that my Regex filter may be getting applied to the text that is produced when the Telnet session starts, which ends in the word "connected" hence why "connected" precedes the pipe in the command (waiting for "connected" works fine for all the commands that I do have working properly, by the way) as opposed to the response to the command (i.e. "(CO1I2"), so it ends up timing out.  As back ground, my "1 Set Source" command, which can be controlled properly by the slider is "connected|CO1$<div class="error"><span class="error">Unknown macro: {param}</span> </div>", so the param value is being controlled properly by the iPhone, so the only problem is that the slider starts in the incorrect position because it isn't being read properly.</p>
+
+<p>My second problem only occurred after I upgraded to the new iPhone app (version 2.1.1), which was released today.  The standard slider, which was displaying properly when using the prior version of the iPhone app, is now behaving strangely.  The slider in the panel is mapped to a slider device that I've created using a source with a Min of 1 and a Max of 4.  However, when I bring up the panel on the iPhone, it seems to be defaulting to 0, and if I drag it to 4, the slider goes beyond the end of the slider bar.</p>
+
+<p>Any help with these problems would be very much appreciated!</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21857850"></a>
+                                    <font class="smallfont"><p>Sorry: my questions aren't being displayed properly in a couple of places because the Webpage interpreted the special characters.  In the command for "1 Get Source", there should be square brackets around QCO1. (The preamp needs to have its commands surrounded by square brackets to recognize them.) Next, when i describe the "1 Set Source" command, it should read "connected|square bracket CO1 dollar sign curly bracket param curly bracket square bracket", if you understand what I mean.  Instead, it says "unknown macro."</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jbforth at Feb 20, 2013 21:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857871"></a>
+                                    <font class="smallfont"><p>Include your logs etc. within {code}... {code} tags</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by pz1 at Feb 21, 2013 07:35
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21857883"></a>
+                                    <font class="smallfont"><p>Here is the excerpt from the catalina.out log.  Please note that I changed the command to include the param variable as I have been attempting to debug this, so that's why it now reads slightly differently in the log below versus my original post.  Please also note that there are actually square brackets around QCO1, but the Wiki Markup Preview is removing then.</p>
+
+
+<p>INFO 2013-02-21 07:13:32,462 : No rule definitions found in '/opt/OpenRemote-Controller-2.0.1/webapps/controller/rules'.<br/>
+INFO 2013-02-21 07:13:32,462 : Initialized event processor : Drools Rule Engine<br/>
+INFO 2013-02-21 07:13:32,464 : Registered sensor : Range Sensor (Name = 'source', ID = '208', Min: 1, Max: 4)<br/>
+INFO 2013-02-21 07:13:32,464 : Startup complete.<br/>
+ERROR Polling Sensor Thread ID = 208, Name ='source': Telnet Read Status: No Match using Regex: '(?&lt;=I)\d' on response from command 'null|{$param{QCO1}}'<br/>
+Exception in thread "Polling Sensor Thread ID = 208, Name ='source'" java.lang.NullPointerException<br/>
+	at org.openremote.controller.model.sensor.Sensor.isUnknownSensorValue(Sensor.java:161)<br/>
+	at org.openremote.controller.component.RangeSensor.processEvent(RangeSensor.java:117)<br/>
+	at org.openremote.controller.model.sensor.Sensor.update(Sensor.java:338)<br/>
+	at org.openremote.controller.model.sensor.Sensor$DeviceReader.run(Sensor.java:608)<br/>
+	at java.lang.Thread.run(Thread.java:679)</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jbforth at Feb 21, 2013 15:24
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:45</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

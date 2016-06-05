@@ -1,0 +1,833 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : X10 Motion Sensors</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : X10 Motion Sensors
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on May 27, 2013 by <font color="#0050B2">juha</font>.
+				    </div>
+
+				    <p>I'd appreciate help on setting up an x10 motion sensor.</p>
+
+<p>I defined a new device, "Motion Sensor," which contains two commands, "Motion Detected" and "Motion Absent," protocol x10, address A11, and commands "ON" and "OFF" respectively.  Then two switch sensors, one for the command "Motion Detected," the other for "Motion Absent."  I haven't added anything to the UI yet...waiting until I get a dev log that looks OK.</p>
+
+<p>Everything looks OK in the device log except the following:</p>
+
+<div style="max-width: 800px;"><div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>2013-01-03 15:54:38,037 WARN [Controller Definition File Watcher for Default Deployer]: Unknown X10 property '&lt;property name = "name" value = "Motion detected"/&gt;'.
+2013-01-03 15:54:38,037 DEBUG [Controller Definition File Watcher for Default Deployer]: A switch sensor (Name = 'Motion Present', ID = 25) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = on/&gt;.
+2013-01-03 15:54:38,037 DEBUG [Controller Definition File Watcher for Default Deployer]: A switch sensor (Name = 'Motion Present', ID = 25) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = off/&gt;.
+2013-01-03 15:54:38,037 DEBUG [Controller Definition File Watcher for Default Deployer]: Created object model for sensor 'Motion Present' (ID = '25').
+2013-01-03 15:54:38,045 WARN [Controller Definition File Watcher for Default Deployer]: Unknown X10 property '&lt;property name = "name" value = "Motion Absent"/&gt;'.
+2013-01-03 15:54:38,045 DEBUG [Controller Definition File Watcher for Default Deployer]: A switch sensor (Name = 'No Motion', ID = 27) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = on/&gt;.
+2013-01-03 15:54:38,046 DEBUG [Controller Definition File Watcher for Default Deployer]: A switch sensor (Name = 'No Motion', ID = 27) has an incomplete &lt;state&gt; element mapping, the value attribute is missing in &lt;state name = off/&gt;.
+2013-01-03 15:54:38,046 DEBUG [Controller Definition File Watcher for Default Deployer]: Created object model for sensor 'No Motion' (ID = '27').
+2013-01-03 15:54:38,047 INFO [Controller Definition File Watcher for Default Deployer]: Registered sensor : Switch Sensor (Name = 'Motion Present', ID = '25')
+2013-01-03 15:54:38,049 INFO [Polling Sensor Thread ID = 25, Name ='Motion Present']: Started polling thread for sensor (ID = 25, name = Motion Present).
+2013-01-03 15:54:38,049 INFO [Controller Definition File Watcher for Default Deployer]: Registered sensor : Switch Sensor (Name = 'No Motion', ID = '27')
+2013-01-03 15:54:38,058 INFO [Polling Sensor Thread ID = 27, Name ='No Motion']: Started polling thread for sensor (ID = 27, name = No Motion).
+2013-01-03 15:54:38,056 INFO [Controller Definition File Watcher for Default Deployer]: Startup complete.
+--------------------
+</pre>
+</div></div></div>
+
+<p>Clearly I have something set up incorrectly; anyone have any ideas?<br/>
+Thanks,<br/>
+     Tom</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-21528585"></a>
+                                    <font class="smallfont"><p>A switch sensor needs a command that returns a status (either "on" or "off").<br/>
+Your case sounds like you have 2 action commands ("on" and "off"). I don't know the X10 stuff but is it possible to have a status command the returns "on" or "off"?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 07, 2013 10:34
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528596"></a>
+                                    <font class="smallfont"><p>The warning on X10 looks like a false positive, caused by a separate change that automatically adds a 'name' property to all commands. The X10 implementation hasn't been updated to reflect this change so it warns about an unrecognized property ('name') but should carry on as normal.</p>
+
+<p>The X10 implementation should be updated to remove this false warning.</p>
+
+<p>The debug statements about &lt;state&gt; elements are nothing to concern about (and that's why they are recorded at debugging level) &#8211; the controller notices an inconsistency in the controller model caused by our current tooling (this happens regardless if you configure things right or wrong) and the debug statement is there just to indicate that the controller noticed this and remedied the issue.</p>
+
+<p>So based on these logs, you're good to go (there's always a possibility of other errors of course not shown here).</p>
+
+<p>Best regards,</p>
+
+<p>&#8211; Juha</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jan 07, 2013 13:03
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528597"></a>
+                                    <font class="smallfont"><p>And Marcus has a good point too. I haven't used X10-based sensors either, only for sending commands out without return values.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jan 07, 2013 13:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528620"></a>
+                                    <font class="smallfont"><p>Juha and Marcus -<br/>
+      Thank you very much for your replies.  I suspect you are correct, Juha; in spite of occasional errors being reported, turning modules on and off seems to work fine, and although the reported errors might be interesting, are inconsequential.</p>
+
+<p>      I've been using X10 modules for years using a program that runs on Windows, and as such is not portable to the Raspberry Pi...hence my desire to implement OR.  To the best of my knowledge, X10 is a very dumb system, in that it is impossible to determine the status of anything by polling...other than noticing that a motion sensor has detected motion, at which time it reports 'On.'  Send 'A15 On,' and if a module is set to A15 and is plugged in, it will turn on.  Is it already turned on?  Who knows?  When a motion sensor is set to A11, if it detects motion, it will report 'A11 On,' not when it's asked if there is motion, but when it sees it.  The CM11A or CM15A will recognize this on the power line and report it, and also doesn't care if anyone is listening, so it's incumbent upon the software to be looking for it.</p>
+
+<p>       The usefulness of X10 in my opinion is limited to 'time' or 'motion' activated commands; 'time,' for example, being actions controlled by dawn/dusk or issues, and 'motion' being actions resulting from detecting activity somewhere.  In my current Windows-based system, for example, I receive an email from the system containing a webcam shot whenever someone drives down my lane.</p>
+
+<p>       It's already clear from the examples posted on the forum that the time-based commands can be achieved using the rules function.  Since to the best of my knowledge there is no X10 command that reports anything (as you indicate is a requirement for a switch sensor, Marcus), then maybe trying to use a switch sensor is illogical.  Possibly it makes more sense to simply use a rule (for example, when A11==On...) to initiate another command.  My thought on using a switch sensor was to attack one problem at a time; before jumping into rules, first make sure I can detect motion.  </p>
+
+<p>      I was hoping that someone might have already crossed this hurdle, so that was the main purpose of my post.  If that isn't the case, then I'm willing to be the first...but I need some guidance.  As another poster mentioned, I can write Java programs, but I'm not a Java programmer.  If detecting motion and initiating ensuing action is only possible using rules, then so be it...I'll quit avoiding it and jump in.  Any advice?</p>
+
+<p>Thanks,<br/>
+      Tom </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tompark at Jan 07, 2013 18:00
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528636"></a>
+                                    <font class="smallfont"><blockquote><p>The CM11A or CM15A will recognize this on the power line and report it, ...</p></blockquote>
+<p>Can this "report it" be recognized? Meaning can the CM11A send this to the computer?<br/>
+The current X10 code does not show anything that it supports sensors.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 07, 2013 23:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528637"></a>
+                                    <font class="smallfont"><p>Marcus -<br/>
+    With my current (non-OR) Windows system, the motion sensor is set to A11, and wirelessly communicates with a transceiver that receives the "motion" indication, and creates the "A11 - On" command that it puts on the power line.  The CM11A recognizes "A11 - On" and reports it to the software.  So I guess in answer to your question, the CM11A does send this information to the computer.</p>
+
+<p>    When you say "The current X10 code..." are you referring to the current OR controller code?  If so, are you saying that OR has no way to recognize this command from the CM11A?</p>
+
+<p>Thanks,<br/>
+    Tom</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tompark at Jan 07, 2013 23:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528673"></a>
+                                    <font class="smallfont"><p>Yes, I do refer to the OR controller code.<br/>
+OpenRemote will have todo the same as your windows software which is todo something with the "A11 - On" which is received by the CM11A.<br/>
+That is currently not the case.<br/>
+If you are a Java developer fell free to dig into this.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by mredeker at Jan 08, 2013 14:09
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-21528726"></a>
+                                    <font class="smallfont"><p>Marcus -<br/>
+    Thanks for the reply...but bummer.  Is it safe to assume that since X10 is such a small piece of what OR is designed to handle, that adding the polling of the CM11A will be way down on the priority list?</p>
+
+<p>    And sadly, as I mentioned before...I can write Java programs, but I'm certainly not a Java programmer.  If you want to evaluate a variety of strategies for maximizing how long your money will last while playing video poker, I'm your guy...but I'm a fourth grader in the world of you accomplished Java programmers.</p>
+
+<p>     I'll continue to monitor the forum to see if anyone else decides to add this capability, but until then, I guess I'll have to pursue a different avenue to find a suitable system that will run on the Raspberry Pi.<br/>
+   Thanks again,<br/>
+       Tom</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tompark at Jan 08, 2013 16:14
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415063"></a>
+                                    <font class="smallfont"><p>I'm using X10 integrated with OR using HEYU on another machine (not RPi).  Commands are currently relayed between OR and HEYU using SSH.  Works pretty good for my application.</p>
+
+<p>I was thinking about having a MYSQL database which is written to by HEYU, OR and related python scripts, so that polling could be done on the MYSQL records returning the required data for OR switches and sensors.</p>
+
+<p>Regards.</p>
+
+<p>K</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by kalross at May 27, 2013 02:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415073"></a>
+                                    <font class="smallfont"><p>Since I had the X10 code open due to debugging another related issue, I took a look at how the current X10 might support receiving events from X10 modules.</p>
+
+<p>There was very little in terms of documentation I was able to locate. That means doing anything around this will require trial and error plus someone who can already test X10 in detail with a working OR/X10 combination.</p>
+
+<p>There is a function listener implementation which may be what would work in the case Tom describes (receiving A1 ON from motion sensor) although it's hard to tell without being able to try with X10 hardware. There's certainly a 'STATUS REQUEST' command that can be used that can respond with either 'STATUS ON' or 'STATUS OFF' which could potentially at least give us some switch state functionality.</p>
+
+<p>If anyone has hardware ready I can try to give it a go but it will be a bit tough without the actual hardware present.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 27, 2013 10:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415080"></a>
+                                    <font class="smallfont"><p>   Based on this discussion last January, I decided to develop my own X10 interface using Python, so it could be easily moved to a RPi.  My Python-based system now resides on a Windows 7 computer; I will eventually move it to a RPi, but haven't yet because the RPi I bought for this is now used 24/7 for Pandora.<br/>
+   During this project, I've made several observations, the most notable being that X10 is patently unreliable.  Anecdotal evidence suggests that this is a result of random noise on the power line being misinterpreted by the CM11A; for example, after running flawlessly for many days, the system locked up following the use of a paper shredder, a device known for generating power line noise.  When X10 was designed in the 60's, power lines were relatively noise-free; such is not the case today.  The Internet is loaded with discussions about why CM11A's lock up, and the various incantations that can be used to remedy or prevent these lock ups, but the bottom line is--random noise on the power line can cause the CM11A to lock up, and once it is locked up, there is no way for software to unlock it (until now; more below).<br/>
+    Many of the lockups can be corrected by valid communications on the power line, a condition that occurs naturally in a system that uses motion detectors.  I can detect when the CM11A is locked up, because my system sends a phony command every 5 minutes, and when the CM11A doesn't respond properly, the system sends me an email message reporting the communications failure.  Once it has reported this, if/when the CM11A once again becomes responsive, it sends me another email message reporting the resumption of normal operation.  Again anecdotally, I've determined that the correction is usually a result of my cat walking near an extra motion detector whose sole function is to create random valid X10 commands on the power line.<br/>
+    A system that includes a cat with insomnia as a key component can hardly be described as reliable, so I sought a more reliable solution, and discovered this: <a href="http://www.numato.com/1-channel-usb-powered-relay-module">http://www.numato.com/1-channel-usb-powered-relay-module</a>. Since my system can detect when the CM11A becomes non-responsive, and cycling its power always resets it, I now have a method for the software to unlock the CM11A.<br/>
+    Since I've written the software to satisfy my needs (turn lights on and off depending on time, dawn &amp; dusk, be notified when my cat wants to come inside, email myself a webcam shot when someone drives down my lane, send my wife a text message when the greenhouse windows need to be opened), it would never fit into the 'general purpose' category.  And as I mentioned with regard to my Java programming expertise, I can write Python programs, but I am not an accomplished Python programmer.<br/>
+    My advice for OR; don't waste a lot of time implementing the code to communicate with the CM11A.  Yes, it's pretty straightforward under ideal conditions to turn lights on and off, and to determine if a motion sensor has detected motion, but these days conditions (as related to the integrity of the power line) are rarely ideal.  I'm now convinced that an implementation that doesn't accommodate power line noise is a system that will inevitably periodically lock up, and I doubt that many will be willing to go to the lengths that I have (cycle the power to the CM11A) to ensure reasonable up-time.<br/>
+    All the best,<br/>
+          Tom</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tompark at May 27, 2013 15:07
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22415081"></a>
+                                    <font class="smallfont"><p>Thanks for sharing Tom. Yes the issues with line noise and lock-ups were already known, sorry you had to learn it the hard way. And it is part of the reason X10 has been much on the back-burner given there are alternatives.</p>
+
+<p>Anyway the offer still stands, if somebody has an X10 set up and ready with OR, I can try to check if we can pull some statuses out of them, while I'm still moving about in this area...</p>
+
+<p>Good luck with your cat <img class="emoticon" src="images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/></p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at May 27, 2013 15:22
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872641"></a>
+                                    <font class="smallfont"><p>Hi Juha,</p>
+
+<p>Does your offer still stand? I have X10 working with OR using a CM11a to send commands to X10 powerline devices. Works great but would love to be able to respond to X10 commands received by the CM11a. BTW, the STATUS REQUEST is implemented in only a few X10 devices so I would not spend any time trying to get it to work. Simply being able to receive powerline X10 commands using the CM11a would be a great addition to OR. This is not just about motion sensors but control devices like the Minicontroler 2 <a href="http://kbase.x10.com/wiki/Mini_Controller">http://kbase.x10.com/wiki/Mini_Controller</a>, the Powerflash module <a href="http://kbase.x10.com/wiki/Powerflash">http://kbase.x10.com/wiki/Powerflash</a>, and In-Wall Controllers  <a href="http://www.x10pro.com/pro/catalog/inwall.transmitters.html#popular">http://www.x10pro.com/pro/catalog/inwall.transmitters.html</a>, all of which send standard X10 commands.</p>
+
+<p>I know X10 has a bad reputation but I and others use it VERY successfully. With the devices sold by JV Digital Engineering <a href="http://jvde.us/">http://jvde.us/</a> reliability approaches 100%. Even without one of their devices reliability can be near 100% with a little effort and you cannot beat the low cost! </p>
+
+<p>Anyway, please let me know if your offer still stands and I will be glad to do any testing you need. Thanks.</p>
+
+<p>Art </p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jun 13, 2013 06:17
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872657"></a>
+                                    <font class="smallfont"><p>Nice to hear that X10 success stories exist.</p>
+
+<p>I can try to take a look at this in a couple of weeks. Need to finish a few other high priority items first. Feel free to ping back to remind me.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 13, 2013 09:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872680"></a>
+                                    <font class="smallfont"><p>Hi Tom,<br/>
+I also have a good sprinkling of X10 gear and used to have a W800RF that did the RF receiving into my Misterhouse software. I also use windows as my main operating system.<br/>
+My W800RF has unfortunately died. </p>
+
+<p>I was not aware that the cm11 also picked up and sent the signals to the serial port. I have a couple of the x10 receivers and would like to give your RF..SerRX..OR a go. Maybe get my X10 motion sensors back online.<br/>
+Could you please share your code.</p>
+
+<p>Thanks,<br/>
+Neil.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nwe at Jun 13, 2013 13:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872702"></a>
+                                    <font class="smallfont"><p>Neil -<br/>
+    Yep, the CM11A reports everything it sees on the power line, whether anyone is listening or not.  Here is the link I found when I decided to implement my own X10 system: <a href="http://nick.stefanisko.net/x10/PROTOCOL.TXT">http://nick.stefanisko.net/x10/PROTOCOL.TXT</a>.<br/>
+    I decided to implement my system using Python 3, to make it easy to port it to the Raspberry Pi.  It's still running on a Windows 7 computer, and probably will be for a while, since I keep adding things to it; I decided it would be handy to have it text my wife when it's time to open the windows on the greenhouse, and email myself a webcam shot when someone drives down our lane, for example.  I'm also in the process of adding remote temperature sensors, using the Ciseco RF products.<br/>
+     As I've said before, I can write Python code, but I'm not a Python programmer; I'm afraid accomplished Python programmers would cringe at my code.  That said, I'd be happy to share with you my Python 3 CM11A monitoring code if it would be helpful.  It's heavily commented, since I'm old and depend on comments to jog my memory about why I did certain things.  I'm not sure how to share it; I don't have a web site, and don't know how to share personal email addresses on this forum.  But if you can figure it out, let me know, and I'll be happy to share any of what I've done.<br/>
+    Tom</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tompark at Jun 13, 2013 15:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872714"></a>
+                                    <font class="smallfont"><p>Hi Tom,<br/>
+Thanks for the quick reply. My email address is nwemail at hotmail dot com<br/>
+This is my public email address. Send me an email to this and I will respond with my personal address.<br/>
+You may be interested in the panstamp equipment.<br/>
+Thanks,<br/>
+Neil.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nwe at Jun 13, 2013 22:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872843"></a>
+                                    <font class="smallfont"><p>Since this thread became so active again, I took a quick look at the X10 implementation.</p>
+
+<p>I'm going to need some help with confirming how it operates.</p>
+
+<p>Here's what to do:</p>
+
+<p>1) set up a JAVA_OPTS environment variable before starting openremote.sh run script</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>&gt; export JAVA_OPTS=-DDEBUG=true
+</pre>
+</div></div>
+
+<p>(note the double D in -DDEBUG is not a typo)</p>
+
+<p>This should enable logging from the CM11A interface. It can be quite verbose. You should see it on the console (or standard output stream if it has been redirected).</p>
+
+<p>What I am looking for are statements such as this:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>DEBUG: decoding X10 events
+DEBUG: function/address byte - X
+DEBUG: event XX
+</pre>
+</div></div>
+
+<p>If those statements appear, and they arrive from the addresses of your other X10 devices (<b>not</b> commands you sent through OR and CM11A yourself) then I'll be able to move forward.</p>
+
+<p>I am trying to confirm how/if the events from the other X10 devices are received by CM11A and further propagated back to the serial port and the OR CM11A implementation to process.</p>
+
+<p>Thanks,</p>
+
+<p>&#8211; Juha</p>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 15, 2013 18:26
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872847"></a>
+                                    <font class="smallfont"><p>Wow! Thanks Juha. Looking forward to the testing and debugging. I am running OR on a Windows machine right so not sure how do this in Windows. I was planning to set up a Linux machine soon but I can do that in the next couple of days if necessary.</p>
+
+<p>Thanks,</p>
+
+<p>Art</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jun 15, 2013 19:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872849"></a>
+                                    <font class="smallfont"><p>On Windows it is</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>&gt; set JAVA_OPTS=-DDEBUG=true
+&gt; openremote run
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 15, 2013 20:52
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872851"></a>
+                                    <font class="smallfont"><p>Juha -<br/>
+   The CM11A watches the power line, and reports anything it sees back to the serial port using the protocol defined here:  <a href="http://nick.stefanisko.net/x10/PROTOCOL.TXT">http://nick.stefanisko.net/x10/PROTOCOL.TXT</a>. Sadly, I'm not proficient enough with Java to provide any help; I used Python to implement the interface.<br/>
+          Tom</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by tompark at Jun 15, 2013 22:23
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872860"></a>
+                                    <font class="smallfont"><p>I entered set JAVA_OPTS=-DDEBUG=true at the command prompt. Then, started OR and sent X10 signals using a powerline controller but nothing showed up in the console. I know the commands are being received because I have another program monitoring the CM11 and they show up there. Should the console respond with something after set JAVA_OPTS=-DDEBUG=true?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jun 16, 2013 01:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872861"></a>
+                                    <font class="smallfont"><p>Yes, you will see the X10 gateway initialized:</p>
+
+<p>DEBUG: Starting interface<br/>
+...</p>
+
+<p>when you send the command, for example</p>
+
+<p>Maybe the second equals is throwing it off, try using quotes instead:</p>
+
+<p>&gt; set JAVA_OPTS="-DDEBUG=true"</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 16, 2013 01:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872862"></a>
+                                    <font class="smallfont"><p>Also you can do:</p>
+
+<p>&gt; echo %JAVA_OPTS%</p>
+
+<p>to make sure the variable has been correctly set.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 16, 2013 01:40
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872865"></a>
+                                    <font class="smallfont"><p>The echo works. I get "-DDEBUG=true" after entering echo %JAVA_OPTS% at the command prompt but still nothing shows up in the console when sending an X10 command from the X10 controller. I am going to try shutting down and restarting the PC and see if that works.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jun 16, 2013 06:19
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872868"></a>
+                                    <font class="smallfont"><p>Shut down and restarted everything but no CM11/X10 showing up on the console. I guess OR is not picking up anything from the serial port.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jun 16, 2013 07:16
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872872"></a>
+                                    <font class="smallfont"><p>Do you see statements like:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>DEBUG: Starting interface
+...
+</pre>
+</div></div>
+
+<p>When <b>sending</b> X10 commands from OpenRemote though. These at least need to show up, otherwise the debug is not working or is getting directed somewhere else.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 16, 2013 11:02
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22872878"></a>
+                                    <font class="smallfont"><p>When sending X10 from OR I see the usual:</p>
+
+<p>WARNING:  RXTX Version mismatch<br/>
+        Jar version = RXTX-2.2pre1<br/>
+        native lib Version = RXTX-2.1-7<br/>
+Incorrect number of bytes in the interface Poll Signal buffer.  Expected 90, but received 1 bytes.<br/>
+Breakdown in protocol, consuming all bytes in input stream.<br/>
+Exception in thread "Thread-4" java.lang.NullPointerException<br/>
+        at com.jpeterson.x10.module.CM11A.processPendingRequests(CM11A.java:1631)<br/>
+        at com.jpeterson.x10.module.CM11A.run(CM11A.java:1483)<br/>
+        at java.lang.Thread.run(Thread.java:662)</p>
+
+<p>No DEBUG statements.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jun 16, 2013 20:33
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873053"></a>
+                                    <font class="smallfont"><p>I've created a new binary to test, which is here: <a href="http://sourceforge.net/projects/openremote/files/For%20Developers/OpenRemote%202.0%20%28Developer%20Releases%29/OpenRemote-Controller-2.1.0_FM-X10Events.zip/download">OpenRemote-Controller-2.1.0_FM-X10Events.zip</a></p>
+
+<p>It should:</p>
+
+<p>a) get rid of the error you posted above with a patch described in <a href="http://jira.openremote.org/browse/ORCJAVA-359">ORCJAVA-359</a></p>
+
+<p>b) I've changed the event related logging so that it should always go to standard output, regardless how debugging is configured</p>
+
+<p>c) if the -DDEBUG setting is done correctly, you should see DEBUG statements such as shown in this thread (also on Windows): <a href="http://openremote.wiki-neon.adaptavist.com/display/forums/X10+and+Windows?focusedCommentId=22414968#comment-22414968">http://openremote.wiki-neon.adaptavist.com/display/forums/X10+and+Windows?focusedCommentId=22414968#comment-22414968</a></p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>DEBUG: Starting interface
+WARNING:  RXTX Version mismatch
+        Jar version = RXTX-2.2pre1
+        native lib Version = RXTX-2.2pre2
+DEBUG: Interface started
+DEBUG: process thread awakened
+DEBUG: Transmitting CM11AStatusTransmission
+Sending CM11AStatusTransmission
+PC-&gt;CM11A: 0x8b
+DEBUG: Received data
+DEBUG: Received data
+DEBUG: Received data
+DEBUG: Received data
+DEBUG: Received data
+Bytes available: 14
+Reading...
+Checking number of bytes read...
+Calling method to decode status...
+Battery usage: 0 minutes
+Interface Time: 10:47:26
+Julian Day: -111
+Current Day of Week: 1
+Monitored House Code: A
+Last Addressed Device: {3}
+On/Off Status: {}
+Dim Status: {}
+DEBUG: Transmission of CM11AStatusTransmission complete.
+DEBUG: Transmitting CM11AX10EventTransmission - X10 Address Event: house code&lt;B&gt; device code&lt;4&gt;
+Sending CM11AStandardTransmission
+PC-&gt;CM11A: 0x04,0xea
+Received checksum: ee
+Expected checksum: ee
+PC&lt;-CM11A: 0xee
+PC-&gt;CM11A: 0x00
+DEBUG: Received data
+PC&lt;-CM11A: 0x55
+DEBUG: Transmission of CM11AX10EventTransmission - X10 Address Event: house code &lt;B&gt; device code&lt;4&gt; complete.
+DEBUG: Transmitting CM11AX10EventTransmission - X10 Off Event: house code&lt;B&gt; function code&lt;3&gt;
+Sending CM11AStandardTransmission
+PC-&gt;CM11A: 0x06,0xe3
+Received checksum: e9
+Expected checksum: e9
+PC&lt;-CM11A: 0xe9
+PC-&gt;CM11A: 0x00
+PC&lt;-CM11A: 0x55
+DEBUG: Transmission of CM11AX10EventTransmission - X10 Off Event: house code&lt;B&gt; function code&lt;3&gt; complete.
+DEBUG: Interface stopped
+</pre>
+</div></div>
+
+<p>As before, set the controller up for X10, send some commands through OR to X10 to make sure your setup is correct (you get the DEBUG statements, the connection to CM11A is established correctly, etc), and then look for the incoming event statements if any:</p>
+
+<div class="preformatted panel" style="border-width: 1px;"><div class="preformattedContent panelContent">
+<pre>DEBUG: decoding X10 events
+DEBUG: function/address byte - X
+DEBUG: event XX
+</pre>
+</div></div>
+
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 18, 2013 23:56
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873170"></a>
+                                    <font class="smallfont"><p>No go. I installed the binary and X10 from OR is working but see this:</p>
+
+<p>Jun 19, 2013 10:56:16 PM org.openremote.controller.utils.Logger getLogger<br/>
+WARNING: Log category 'X10' is not using parent log category OpenRemote.Controller. The logging beha<br/>
+vior may not be what was expected.<br/>
+INFO 2013-06-19 22:56:16,875 :</p>
+
+<p>Also still seeing:</p>
+
+<p>WARNING:  RXTX Version mismatch<br/>
+        Jar version = RXTX-2.2pre1<br/>
+        native lib Version = RXTX-2.1-7<br/>
+Incorrect number of bytes in the interface Poll Signal buffer.  Expected 90, but received 1 bytes.<br/>
+Breakdown in protocol, consuming all bytes in input stream.</p>
+
+<p>I also tried setting the Debug like this: set JAVA_OPTS="-Dgnu.io.log.mode=PRINT_MODE -DDEBUG=true" as shown in the post you linked but that did not work either. The option is being set as evidenced by echo %JAVA_OPTS% producing the correct response.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jun 20, 2013 06:54
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873172"></a>
+                                    <font class="smallfont"><p>I had a look on my system last night and it would appear that the X10 debug is ON?<br/>
+I'm getting lot's of X10 debug messages coming through as per Juha's example.<br/>
+I will add in a X10 RR receiver and a "Vehicle Announcer" and see what I get coming back in from the CM11.<br/>
+I'll let you know.<br/>
+Neil.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nwe at Jun 20, 2013 07:25
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873175"></a>
+                                    <font class="smallfont"><p>Then I don't know what else to do. I get the first DEBUG message even without having any X10 installed on my system. That none of them would appear doesn't make sense to me.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 20, 2013 09:46
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873176"></a>
+                                    <font class="smallfont"><p>Are you starting openremote with 'openremote.bat run' instead of 'openremote.bat start'?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 20, 2013 09:50
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873197"></a>
+                                    <font class="smallfont"><p>I tried both. Very strange. Here is everything I get when I start up OR. Maybe there is something here that might be a clue.</p>
+
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-xml"> Using CATALINA_BASE:   C:\OR_X10_test
+Using CATALINA_HOME:   C:\OR_X10_test
+Using CATALINA_TMPDIR: C:\OR_X10_test\temp
+Using JRE_HOME:        C:\Program Files\Java\jdk1.6.0_33
+Jun 20, 2013 7:05:23 AM org.apache.catalina.core.AprLifecycleListener init
+INFO: The APR based Apache Tomcat Native library which allows optimal performance in production envi
+ronments was not found on the java.library.path: C:\OR_X10_test\webapps\controller\WEB-INF\lib\nativ
+e
+Jun 20, 2013 7:05:23 AM org.apache.coyote.http11.Http11Protocol init
+INFO: Initializing Coyote HTTP/1.1 on http-8080
+Jun 20, 2013 7:05:23 AM org.apache.catalina.startup.Catalina load
+INFO: Initialization processed in 811 ms
+Jun 20, 2013 7:05:23 AM org.apache.catalina.core.StandardService start
+INFO: Starting service Catalina
+Jun 20, 2013 7:05:23 AM org.apache.catalina.core.StandardEngine start
+INFO: Starting Servlet Engine: Apache Tomcat/6.0.18
+Jun 20, 2013 7:05:23 AM org.apache.catalina.startup.HostConfig deployWAR
+INFO: Deploying web application archive webconsole.war
+Jun 20, 2013 7:05:24 AM org.openremote.controller.bootstrap.Startup redirectJULtoLog4j
+INFO: Initialized JUL to LOG4J Redirector.
+Jun 20, 2013 7:05:26 AM org.openremote.controller.utils.Logger getLogger
+WARNING: Log category 'X10' is not using parent log category OpenRemote.Controller. The logging beha
+vior may not be what was expected.
+INFO 2013-06-20 07:05:26,437 :
+
+--------------------------------------------------------------------
+
+  DEPLOYING NEW CONTROLLER RUNTIME...
+
+--------------------------------------------------------------------
+
+ERROR 2013-06-20 07:05:26,828 : Could not load commandBuilder class: org.openremote.controller.proto
+col.zwave.ZWaveCommandBuilder
+java.lang.ClassNotFoundException: org.openremote.controller.protocol.zwave.ZWaveCommandBuilder
+        at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1387)
+        at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1233)
+        at java.lang.Class.forName0(Native Method)
+        at java.lang.Class.forName(Class.java:169)
+        at org.openremote.controller.command.CommandFactory.updateCommandBuilders(CommandFactory.jav
+a:96)
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java
+:552)
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.j
+ava:154)
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:858)
+        at org.openremote.controller.service.Deployer.startController(Deployer.java:336)
+        at org.openremote.controller.spring.SpringContext.initializeController(SpringContext.java:10
+9)
+        at org.openremote.controller.service.ServiceContext.init(ServiceContext.java:383)
+        at org.openremote.controller.bootstrap.Startup.loadServiceContext(Startup.java:85)
+        at org.openremote.controller.bootstrap.servlet.ServletStartup.initializeServiceContext(Servl
+etStartup.java:190)
+        at org.openremote.controller.bootstrap.servlet.ServletStartup.contextInitialized(ServletStar
+tup.java:109)
+        at org.apache.catalina.core.StandardContext.listenerStart(StandardContext.java:3843)
+        at org.apache.catalina.core.StandardContext.start(StandardContext.java:4342)
+        at org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:791)
+        at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:771)
+        at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:525)
+        at org.apache.catalina.startup.HostConfig.deployDirectory(HostConfig.java:926)
+        at org.apache.catalina.startup.HostConfig.deployDirectories(HostConfig.java:889)
+        at org.apache.catalina.startup.HostConfig.deployApps(HostConfig.java:492)
+        at org.apache.catalina.startup.HostConfig.start(HostConfig.java:1149)
+        at org.apache.catalina.startup.HostConfig.lifecycleEvent(HostConfig.java:311)
+        at org.apache.catalina.util.LifecycleSupport.fireLifecycleEvent(LifecycleSupport.java:117)
+        at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1053)
+        at org.apache.catalina.core.StandardHost.start(StandardHost.java:719)
+        at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1045)
+        at org.apache.catalina.core.StandardEngine.start(StandardEngine.java:443)
+        at org.apache.catalina.core.StandardService.start(StandardService.java:516)
+        at org.apache.catalina.core.StandardServer.start(StandardServer.java:710)
+        at org.apache.catalina.startup.Catalina.start(Catalina.java:578)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+        at java.lang.reflect.Method.invoke(Method.java:597)
+        at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:288)
+        at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:413)
+ERROR [main]: Could not load commandBuilder class: org.openremote.controller.protocol.zwave.ZWaveCom
+mandBuilder
+java.lang.ClassNotFoundException: org.openremote.controller.protocol.zwave.ZWaveCommandBuilder
+        at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1387)
+        at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1233)
+        at java.lang.Class.forName0(Native Method)
+        at java.lang.Class.forName(Class.java:169)
+        at org.openremote.controller.command.CommandFactory.updateCommandBuilders(CommandFactory.jav
+a:96)
+        at org.openremote.controller.deployer.Version20ModelBuilder.build(Version20ModelBuilder.java
+:552)
+        at org.openremote.controller.deployer.AbstractModelBuilder.buildModel(AbstractModelBuilder.j
+ava:154)
+        at org.openremote.controller.service.Deployer.startup(Deployer.java:858)
+        at org.openremote.controller.service.Deployer.startController(Deployer.java:336)
+        at org.openremote.controller.spring.SpringContext.initializeController(SpringContext.java:10
+9)
+        at org.openremote.controller.service.ServiceContext.init(ServiceContext.java:383)
+        at org.openremote.controller.bootstrap.Startup.loadServiceContext(Startup.java:85)
+        at org.openremote.controller.bootstrap.servlet.ServletStartup.initializeServiceContext(Servl
+etStartup.java:190)
+        at org.openremote.controller.bootstrap.servlet.ServletStartup.contextInitialized(ServletStar
+tup.java:109)
+        at org.apache.catalina.core.StandardContext.listenerStart(StandardContext.java:3843)
+        at org.apache.catalina.core.StandardContext.start(StandardContext.java:4342)
+        at org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:791)
+        at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:771)
+        at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:525)
+        at org.apache.catalina.startup.HostConfig.deployDirectory(HostConfig.java:926)
+        at org.apache.catalina.startup.HostConfig.deployDirectories(HostConfig.java:889)
+        at org.apache.catalina.startup.HostConfig.deployApps(HostConfig.java:492)
+        at org.apache.catalina.startup.HostConfig.start(HostConfig.java:1149)
+        at org.apache.catalina.startup.HostConfig.lifecycleEvent(HostConfig.java:311)
+        at org.apache.catalina.util.LifecycleSupport.fireLifecycleEvent(LifecycleSupport.java:117)
+        at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1053)
+        at org.apache.catalina.core.StandardHost.start(StandardHost.java:719)
+        at org.apache.catalina.core.ContainerBase.start(ContainerBase.java:1045)
+        at org.apache.catalina.core.StandardEngine.start(StandardEngine.java:443)
+        at org.apache.catalina.core.StandardService.start(StandardService.java:516)
+        at org.apache.catalina.core.StandardServer.start(StandardServer.java:710)
+        at org.apache.catalina.startup.Catalina.start(Catalina.java:578)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+        at java.lang.reflect.Method.invoke(Method.java:597)
+        at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:288)
+        at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:413)
+INFO 2013-06-20 07:05:26,843 : No rule definitions found in 'C:\OR_X10_test\webapps\controller\rules
+'.
+INFO 2013-06-20 07:05:26,843 : Initialized event processor : Drools Rule Engine
+INFO 2013-06-20 07:05:26,859 : Startup complete.
+INFO 2013-06-20 07:05:26,859 : Controller Definition File Watcher for Default Deployer started.
+Jun 20, 2013 7:05:27 AM org.apache.coyote.http11.Http11Protocol start
+INFO: Starting Coyote HTTP/1.1 on http-8080
+Jun 20, 2013 7:05:27 AM org.apache.catalina.startup.Catalina start
+INFO: Server startup in 4217 ms
+ </pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jun 20, 2013 15:06
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873208"></a>
+                                    <font class="smallfont"><p>The DEBUG would only show up after you try to send an X10 command from a button in the UI (or if a status is received from CM11A <b>if</b> that is working).</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by juha at Jun 20, 2013 23:38
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-22873210"></a>
+                                    <font class="smallfont"><p>I wish I could say that the worked but as I said in previous emails sending X10 from OR works fine but no DEBUG commands show up sending or receiving. Anything else more drastic I should try - like reinstall?</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by artart at Jun 21, 2013 07:08
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 10:46</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>

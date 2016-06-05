@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Forums : Aggregate sensor values for a switch</title>
+	    <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">	    
+    </head>
+
+    <body>
+	    <table class="pagecontent" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+		    <tr>
+			    <td valign="top" class="pagebody">
+				    <div class="pageheader">
+					    <span class="pagetitle">
+                            Forums : Aggregate sensor values for a switch
+                                                    </span>
+				    </div>
+				    <div class="pagesubheading">
+					    This page last changed on Oct 14, 2014 by <font color="#0050B2">jules_bike</font>.
+				    </div>
+
+				    <p>I am using the Sonos node.js within OR and I want to have a Play/Pause switch that reads the status of the player.  I've got a sensor which works fine but it returns several values:</p>
+
+<p>STOPPED<br/>
+PAUSED_PLAYBACK<br/>
+PLAYING<br/>
+TRANSITIONING</p>
+
+<p>I would like to aggregate the values <br/>
+STOPPED <br/>
+PAUSED_PLAYBACK <br/>
+to be treated as off </p>
+
+<p>PLAYING <br/>
+TRANSITIONING <br/>
+to be treated as on</p>
+
+<p>The switch would then use these values to show player state and also allow play and pause commands.</p>
+
+<p>Is there a way to do this?  I assume I need to use rules but I can't work out how!</p>
+
+				    
+                                            <div class="tabletitle">
+                            <a name="comments">Comments:</a>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-23593088"></a>
+                                    <font class="smallfont"><p>You can use custom sensor and assign for your names corresponding on/off states. Then you can use this custom sensor for your switch. No rules necessary.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 15, 2014 00:36
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593094"></a>
+                                    <font class="smallfont"><p>Hi Michal I get it working with a custom sensor with names: off and on assigned to values: paused_playback and playing.</p>
+
+<p>However when I try and add two more names on and off for transitioning and stopped the designed only saves the first two because I guess names have to be unique.</p>
+
+<p>Is there a way to fix this?   When I pause a Sonos playlist it returns a status paused_playback but when I pause the radio it returns stopped.  This means the switch only can work with one of them.</p>
+</font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Oct 15, 2014 13:44
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593100"></a>
+                                    <font class="smallfont"><p>I think that names must be from paused/playing/stopped set and values on/off, but I haven't tested it. Of course you can do this also through rules like this:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+rule <span class="code-quote">"r1"</span>
+when
+  Event(source==<span class="code-quote">"aaa"</span>, value==<span class="code-quote">"STOPPED"</span>)
+then
+  execute.command(<span class="code-quote">"in-memoryVirtualCommand"</span>, <span class="code-quote">"off"</span>)
+end
+
+rule <span class="code-quote">"r2"</span>
+when
+  Event(source==<span class="code-quote">"aaa"</span>, value==<span class="code-quote">"PAUSED_PLAYBACK"</span>)
+then
+  execute.command(<span class="code-quote">"in-memoryVirtualCommand"</span>, <span class="code-quote">"off"</span>)
+end
+
+etc.
+</pre>
+</div></div></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by aktur at Oct 15, 2014 14:53
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-23593102"></a>
+                                    <font class="smallfont"><p>I tried making the names the variables and the values on and off but that did not work.   </p>
+
+<p>In the end I've found a feature/bug!  You can put on and off in lower and upper case and it seems to allow duplicates and it triggers the switch.   </p>
+
+<p>I think the rules one is the better option plus it can work with your fix for storing values outside of OR.</p>
+
+<p>thanks for the help</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/comment_16.gif" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by jules_bike at Oct 15, 2014 16:57
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    			    </td>
+		    </tr>
+	    </table>
+	    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td height="12" background="http://www.openremote.org/images/border/border_bottom.gif"><img src="images/border/spacer.gif" width="1" height="1" border="0"/></td>
+			</tr>
+		    <tr>
+			    <td align="center"><font color="grey">Document generated by Confluence on Jun 05, 2016 09:34</font></td>
+		    </tr>
+	    </table>
+    </body>
+</html>
